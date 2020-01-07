@@ -1,8 +1,17 @@
-h1 {
-  color: green;
+html,
+body,
+#root,
+.f-photo {
+  height: 100%;
 }
 
 body {
-  text-align: center;
   margin: auto;
+}
+
+.flex {
+  display: flex;
+}
+.flexDirColumn {
+  flex-direction: column;
 }

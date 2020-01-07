@@ -13,10 +13,15 @@
   "author": "Sandeep Raveesh",
   "license": "ISC",
   "dependencies": {
+    "antd": "^3.26.6",
     "babel-polyfill": "^6.26.0",
+    "body-parser": "^1.19.0",
+    "drivelist": "^8.0.9",
     "express": "^4.16.3",
     "react": "^16.5.2",
-    "react-dom": "^16.5.2"
+    "react-dom": "^16.5.2",
+    "usb-detection": "^4.7.0",
+    "webusb": "^2.0.1"
   },
   "devDependencies": {
     "@babel/core": "^7.0.0",
