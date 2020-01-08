@@ -15,7 +15,7 @@ export class Tune extends React.Component {
       .then(list => this.setState({ driveLetters: list.driveLetters }));
   }
 
-  onSelectFlashDrive = (e) => {
+  onSelectFlashDrive = e => {
     const driveLetter = e.target.value;
 
     this.setState({
@@ -51,6 +51,8 @@ export class Tune extends React.Component {
             ))}
           </Radio.Group>
         </div>
+        <div>Выбрать типы фото</div>
+        <div>Выбрать место хранения фото</div>
       </div>
     );
   }

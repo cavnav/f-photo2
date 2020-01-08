@@ -1,13 +1,20 @@
 import React, { Component } from 'react';
-import './app.css';
-import ReactImage from './react.png';
 import { ControlPanel, View } from './components';
+import './app.css';
 
 export default class App extends Component {
   state = {
-    username: null,
-    devices: '',
-    view: ''
+    view: '',
+    actions: {
+      Tune: {
+        title: 'Настроить',
+        isActive: true
+      },
+      Copy: {
+        title: 'Копировать',
+        isActive: true
+      }
+    }
   };
 
   componentDidMount() {}
@@ -17,10 +24,10 @@ export default class App extends Component {
   };
 
   render() {
-    const { username, devices, view } = this.state;
+    const { view, actions } = this.state;
     return (
       <div className="f-photo flex flexDirColumn">
-        <ControlPanel changeState={this.changeState} />
+        <ControlPanel changeState={this.changeState} actions={actions} />
         <View target={view} changeState={this.changeState} />
       </div>
     );

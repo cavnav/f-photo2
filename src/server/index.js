@@ -6,6 +6,7 @@ const fs = require('fs');
 
 const usbDetect = require('usb-detection');
 const drivelist = require('drivelist');
+const find = require('find');
 
 const app = express();
 
@@ -30,6 +31,28 @@ app.get('/api/getUsbDevices', (req, res) => {
       driveLetters
     });
   })();
+});
+
+app.post('/api/copyPhotos', (req, res) => {
+  const { userDirName } = req.body;
+  const rootDir = 'E:/f-photo/';
+  const dir = `${rootDir}${userDirName}/`;
+
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir);
+
+    find.file(/\.jpg$|\.png$/, 'F:/', (files) => {
+      console.log(files);
+      files.map((file) => {
+        const destFileName = `${dir}${file.slice(file.lastIndex('\\') + 1)}`;
+        fs.copyFile(file, destFileName, (err) => {
+          if (err) throw err;
+        });
+      });
+      res.send(req.body);
+      console.log('successful');
+    });
+  }
 });
 
 app.post('/api/saveSettings', (req, res) => {

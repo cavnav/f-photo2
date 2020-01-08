@@ -1,7 +1,8 @@
 import { Tune } from './Tune';
 import { Navigator } from './Navigator';
+import { Copy } from './Copy';
 
 export { ControlPanel } from './ControlPanel';
 export { View } from './View';
 
-export const Views = { Tune, default: Navigator };
+export const Views = { Tune, Copy, default: Navigator };
