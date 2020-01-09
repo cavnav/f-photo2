@@ -10,12 +10,14 @@ const find = require('find');
 
 const app = express();
 
+let newPhotos = [];
+const copyProgress = 0;
+
 // ------------------------------------------------------------------------------------------------
 
 app.use(express.static('dist'));
 app.use(bodyParser.json());
 
-app.get('/api/getUsername', (req, res) => res.send({ username: os.userInfo().username }));
 app.get('/api/getUsbDevices', (req, res) => {
   const driveLetters = [];
   (async () => {
@@ -33,6 +35,16 @@ app.get('/api/getUsbDevices', (req, res) => {
   })();
 });
 
+app.get('/api/getNewPhotos', (req, res) => {
+  find.file(/\.jpg$|\.png$/i, 'F:/', (files) => {
+    newPhotos = [...files];
+
+    res.send({
+      countNewPhotos: files.length
+    });
+  });
+});
+
 app.post('/api/copyPhotos', (req, res) => {
   const { userDirName } = req.body;
   const rootDir = 'E:/f-photo/';
@@ -41,10 +53,10 @@ app.post('/api/copyPhotos', (req, res) => {
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir);
 
-    find.file(/\.jpg$|\.png$/, 'F:/', (files) => {
+    find.file(/\.jpg$|\.png$/i, 'F:/', (files) => {
       console.log(files);
       files.map((file) => {
-        const destFileName = `${dir}${file.slice(file.lastIndex('\\') + 1)}`;
+        const destFileName = `${dir}${file.slice(file.lastIndexOf('\\') + 1)}`;
         fs.copyFile(file, destFileName, (err) => {
           if (err) throw err;
         });
