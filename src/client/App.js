@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { ControlPanel, View } from './components';
+import { ControlPanel, MyView } from './components';
 import './app.css';
 
 export default class App extends Component {
@@ -28,7 +28,7 @@ export default class App extends Component {
     return (
       <div className="f-photo flex flexDirColumn">
         <ControlPanel changeState={this.changeState} actions={actions} />
-        <View target={view} changeState={this.changeState} />
+        <MyView target={view} changeState={this.changeState} />
       </div>
     );
   }

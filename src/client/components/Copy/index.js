@@ -6,14 +6,15 @@ import './styles.css';
 
 export function Copy({ props }) {
   const stateInit = {
-    isCopied: false,
+    isCopying: false,
+    isCountGetted: false,
     progress: 0,
     countNewPhotos: 0,
   };
 
   const [state, setState] = useState(stateInit);
 
-  serverApi({
+  !state.isCountGetted && serverApi({
     props: {
       url: 'getNewPhotos'
     }
@@ -23,6 +24,7 @@ export function Copy({ props }) {
       setState({
         ...state,
         countNewPhotos: res.countNewPhotos,
+        isCountGetted: true,
       });
     });
 

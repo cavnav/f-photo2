@@ -1,7 +1,7 @@
 import React from 'react';
 import { Views } from '../index';
 
-export class View extends React.Component {
+export class MyView extends React.Component {
   props = {
     target: '',
     ...this.props

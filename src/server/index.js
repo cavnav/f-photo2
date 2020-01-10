@@ -22,6 +22,7 @@ app.get('/api/getUsbDevices', (req, res) => {
   const driveLetters = [];
   (async () => {
     const drives = await drivelist.list();
+    console.log(111, drives);
     drives
       .filter(drive => drive.isUSB)
       .map((drive) => {
