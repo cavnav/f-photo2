@@ -4,14 +4,19 @@ const bodyParser = require('body-parser');
 const os = require('os');
 const fs = require('fs');
 
+const { Worker } = require('worker_threads');
 const usbDetect = require('usb-detection');
 const drivelist = require('drivelist');
 const find = require('find');
 
 const app = express();
 
-let newPhotos = [];
-const copyProgress = 0;
+let state = {
+  newPhotos: [],
+  countNewPhotos: 0,
+  copyProgress: 0,
+  countCopiedPhotos: 0,
+};
 
 // ------------------------------------------------------------------------------------------------
 
@@ -38,11 +43,19 @@ app.get('/api/getUsbDevices', (req, res) => {
 
 app.get('/api/getNewPhotos', (req, res) => {
   find.file(/\.jpg$|\.png$/i, 'F:/', (files) => {
-    newPhotos = [...files];
-
-    res.send({
-      countNewPhotos: files.length
+    setState({
+      newPhotos: [...files],
+      countNewPhotos: files.length,
     });
+    res.send({
+      countNewPhotos: state.countNewPhotos,
+    });
+  });
+});
+
+app.get('/api/checkCopyProgress', (req, res) => {
+  res.send({
+    copyProgress: state.copyProgress,
   });
 });
 
@@ -51,20 +64,30 @@ app.post('/api/copyPhotos', (req, res) => {
   const rootDir = 'E:/f-photo/';
   const dir = `${rootDir}${userDirName}/`;
 
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir);
+  res.send(req.body);
 
-    find.file(/\.jpg$|\.png$/i, 'F:/', (files) => {
-      console.log(files);
-      files.map((file) => {
-        const destFileName = `${dir}${file.slice(file.lastIndexOf('\\') + 1)}`;
-        fs.copyFile(file, destFileName, (err) => {
-          if (err) throw err;
-        });
-      });
-      res.send(req.body);
-      console.log('successful');
+  if (fs.existsSync(dir)) {
+    return;
+  }
+
+  fs.mkdirSync(dir);
+
+  setState({
+    copyProgress: 0,
+    countCopiedPhotos: 0,
+  });
+
+  startCopy({}).catch(err => console.log(err));
+
+  async function startCopy({ numWorkers = 2 }) {
+    const photosPerWorker = Math.round(state.countNewPhotos / numWorkers);
+    const promises = [...Array(numWorkers)].map((_, ind) => {
+      const chunkPhotos = state.newPhotos.slice(photosPerWorker * ind, photosPerWorker * (ind + 1));
+      return copyPhotoByWorker({ arr: chunkPhotos, dir });
     });
+
+    const result = await Promise.all(promises);
+    return result;
   }
 });
 
@@ -100,3 +123,41 @@ app.post('/api/saveSettings', (req, res) => {
 });
 
 app.listen(process.env.PORT || 8080, () => console.log(`Listening on port ${process.env.PORT || 8080}!`));
+
+function copyPhotoByWorker({ arr, dir }) {
+  return new Promise((rs, rj) => {
+    const worker = new Worker(
+      './src/server/workerCopyPhoto.js',
+      {
+        workerData: {
+          newPhotos: arr,
+          dir,
+        }
+      }
+    );
+    worker.on('message', () => {
+      const countCopiedPhotosUpd = state.countCopiedPhotos + 1;
+      setState({
+        copyProgress: calcCopyProgress({ countCopiedPhotos: countCopiedPhotosUpd }),
+        countCopiedPhotos: countCopiedPhotosUpd,
+      });
+      rs();
+    });
+    worker.on('error', rj);
+    worker.on('exit', (code) => {
+      if (code !== 0) { rj(new Error(`Worker stopped with exit code ${code}`)); }
+    });
+  });
+}
+
+function calcCopyProgress({ countCopiedPhotos }) {
+  const { countNewPhotos, } = state;
+  return Math.floor(countCopiedPhotos * 100 / countNewPhotos);
+}
+
+function setState(propsUpd) {
+  state = {
+    ...state,
+    ...propsUpd,
+  };
+}

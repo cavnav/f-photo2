@@ -6,9 +6,8 @@ import './styles.css';
 
 export function Copy({ props }) {
   const stateInit = {
-    isCopying: false,
     isCountGetted: false,
-    progress: 0,
+    copyProgress: 0,
     countNewPhotos: 0,
   };
 
@@ -28,8 +27,8 @@ export function Copy({ props }) {
       });
     });
 
-  const onCopy = () => {
-    !state.isCopied && serverApi({
+  function onCopy() {
+    serverApi({
       props: {
         url: 'copyPhotos',
         userDirName: 'The quick brown fox jumps over the lazy dog'
@@ -37,19 +36,34 @@ export function Copy({ props }) {
           .slice(Math.random() * 15, Math.random() * 15) || 'one'
       }
     }).then((res) => {
-      setState({
-        ...state,
-        isCopied: true,
-      });
+      checkCopyProgress();
     });
-  };
+  }
+
+  function checkCopyProgress() {
+    serverApi({
+      props: {
+        url: 'checkCopyProgress',
+      }
+    })
+      .then(res => res.json())
+      .then((res) => {
+        setTimeout(() => (res.copyProgress === 100 ? null : checkCopyProgress()), 500);
+        console.log(333, res.copyProgress);
+        setState({
+          ...state,
+          copyProgress: res.copyProgress,
+        });
+      });
+  }
 
   return (
     <div className="copy">
       Количество новых фото:
       { state.countNewPhotos }
       <div onClick={onCopy}>Копировать</div>
-      <Progress percent={state.progress} status="active" />
+      <Progress percent={state.copyProgress} status="active" />
+      <button onClick={() => console.log(Math.floor(Math.random() * 100))}>push me!</button>
     </div>
   );
 }
