@@ -13,6 +13,10 @@ export default class App extends Component {
       Copy: {
         title: 'Копировать',
         isActive: true
+      },
+      Browse: {
+        title: 'Смотреть',
+        isActive: true,
       }
     }
   };

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Progress } from 'antd';
 import { serverApi } from '../../serverApi';
 
+import 'antd/dist/antd.css';
 import './styles.css';
 
 export function Copy({ props }) {
@@ -62,8 +63,7 @@ export function Copy({ props }) {
       Количество новых фото:
       { state.countNewPhotos }
       <div onClick={onCopy}>Копировать</div>
-      <Progress percent={state.copyProgress} status="active" />
-      <button onClick={() => console.log(Math.floor(Math.random() * 100))}>push me!</button>
+      <Progress type="circle" percent={state.copyProgress} />
     </div>
   );
 }

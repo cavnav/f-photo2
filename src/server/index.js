@@ -16,6 +16,8 @@ let state = {
   countNewPhotos: 0,
   copyProgress: 0,
   countCopiedPhotos: 0,
+  rootDir: 'E:/f-photo/',
+  curDir: 'E:/f-photo/one/',
 };
 
 // ------------------------------------------------------------------------------------------------
@@ -27,7 +29,6 @@ app.get('/api/getUsbDevices', (req, res) => {
   const driveLetters = [];
   (async () => {
     const drives = await drivelist.list();
-    console.log(111, drives);
     drives
       .filter(drive => drive.isUSB)
       .map((drive) => {
@@ -47,9 +48,20 @@ app.get('/api/getNewPhotos', (req, res) => {
       newPhotos: [...files],
       countNewPhotos: files.length,
     });
+    console.log('photo', files[0]);
     res.send({
       countNewPhotos: state.countNewPhotos,
     });
+  });
+});
+
+app.get('/api/browsePhotos', (req, res) => {
+  const photos = state.newPhotos.map((photo) => {
+    const photoUpd = getPhotoName({ file: photo });
+    return `${state.curDir}${photoUpd}`;
+  });
+  res.send({
+    photos,
   });
 });
 
@@ -61,33 +73,41 @@ app.get('/api/checkCopyProgress', (req, res) => {
 
 app.post('/api/copyPhotos', (req, res) => {
   const { userDirName } = req.body;
-  const rootDir = 'E:/f-photo/';
-  const dir = `${rootDir}${userDirName}/`;
+  const destDir = `${state.rootDir}${userDirName}/`;
 
-  res.send(req.body);
-
-  if (fs.existsSync(dir)) {
+  if (fs.existsSync(destDir)) {
     return;
   }
 
-  fs.mkdirSync(dir);
+  fs.mkdirSync(destDir);
 
   setState({
     copyProgress: 0,
     countCopiedPhotos: 0,
+    curDir: destDir,
   });
 
-  startCopy({}).catch(err => console.log(err));
+  startCopy({ photos: state.newPhotos, destDir });
 
-  async function startCopy({ numWorkers = 2 }) {
-    const photosPerWorker = Math.round(state.countNewPhotos / numWorkers);
-    const promises = [...Array(numWorkers)].map((_, ind) => {
-      const chunkPhotos = state.newPhotos.slice(photosPerWorker * ind, photosPerWorker * (ind + 1));
-      return copyPhotoByWorker({ arr: chunkPhotos, dir });
-    });
+  res.send(req.body);
 
-    const result = await Promise.all(promises);
-    return result;
+  function startCopy({ photos, destDir }) {
+    photos.length && setTimeout(() => {
+      const [photo] = photos;
+      const photoName = getPhotoName({ file: photo });
+      const destPath = `${destDir}${photoName}`;
+      fs.copyFile(photo, destPath, (err) => {
+        if (err) throw err;
+
+        const countCopiedPhotosUpd = state.countCopiedPhotos + 1;
+        setState({
+          copyProgress: calcCopyProgress({ countCopiedPhotos: countCopiedPhotosUpd }),
+          countCopiedPhotos: countCopiedPhotosUpd,
+        });
+      });
+
+      startCopy({ photos: photos.slice(1), destDir });
+    }, 1000);
   }
 });
 
@@ -160,4 +180,8 @@ function setState(propsUpd) {
     ...state,
     ...propsUpd,
   };
+}
+
+function getPhotoName({ file }) {
+  return file.slice(file.lastIndexOf('\\') + 1);
 }

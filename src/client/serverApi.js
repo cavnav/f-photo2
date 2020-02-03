@@ -18,6 +18,9 @@ export const serverApi = ({ props }) => {
     case 'checkCopyProgress':
       return fetch(fullUrl);
 
+    case 'browsePhotos':
+      return fetch(fullUrl);
+
     default: return undefined;
   }
 };
