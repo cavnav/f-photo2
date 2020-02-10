@@ -1,8 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 
-const os = require('os');
-const fs = require('fs');
+const fs = require('fs-extra');
 
 const { Worker } = require('worker_threads');
 const usbDetect = require('usb-detection');
@@ -17,12 +16,15 @@ let state = {
   copyProgress: 0,
   countCopiedPhotos: 0,
   rootDir: 'E:/f-photo/',
-  curDir: 'E:/f-photo/one/',
+  curDir: 'one/',
 };
 
 // ------------------------------------------------------------------------------------------------
 
+app.use(express.static('E:/f-photo/'));
+app.use(express.static('public'));
 app.use(express.static('dist'));
+
 app.use(bodyParser.json());
 
 app.get('/api/getUsbDevices', (req, res) => {
@@ -48,7 +50,6 @@ app.get('/api/getNewPhotos', (req, res) => {
       newPhotos: [...files],
       countNewPhotos: files.length,
     });
-    console.log('photo', files[0]);
     res.send({
       countNewPhotos: state.countNewPhotos,
     });

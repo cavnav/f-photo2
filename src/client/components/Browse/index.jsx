@@ -5,6 +5,10 @@ export function Browse({ props }) {
   const stateInit = {
     photos: [],
     isPhotosGetted: false,
+    thWidth: 100,
+    thHeight: 100,
+    curPhotoInd: -1,
+    forReact: 0,
   };
 
   const [state, setState] = useState(stateInit);
@@ -23,9 +27,26 @@ export function Browse({ props }) {
       });
     });
 
+  let toRender = null;
+  if (state.curPhotoInd === -1) {
+    toRender = state.photos.map((photo, ind) => <img key={photo} ind={ind} src={photo} width={state.thWidth} height={state.thHeight} />);
+  }
+  if (state.curPhotoInd !== -1) {
+    const photo = state.photos[state.curPhotoInd];
+    toRender = <img key={photo} ind={state.curPhotoInd} src={photo} />;
+  }
+
   return (
-    <div className="browse">
-      { state.photos.map((photo, ind) => <img key={photo} src={photo} />) }
+    <div className="browse" onDoubleClick={onDblClickPhoto}>
+      { toRender }
     </div>
   );
+
+
+  function onDblClickPhoto(e) {
+    setState({
+      ...state,
+      curPhotoInd: e.target.getAttribute('ind'),
+    });
+  }
 }
