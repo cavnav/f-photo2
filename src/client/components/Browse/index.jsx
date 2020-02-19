@@ -108,6 +108,8 @@ export function Browse({ props }) {
     
     const stateUpd = { ...state };
     switch (e.which) {
+      case 32: addPhotoPrint(); break; 
+
       case 37: stateUpd.curPhotoInd = prevPhotoInd; break; // prev
       case 39: stateUpd.curPhotoInd = nextPhotoInd; break; // next
       case 38: stateUpd.curPhotoRotateDeg = stateUpd.curPhotoRotateDeg + 90; break; // rotate right
@@ -127,5 +129,23 @@ export function Browse({ props }) {
       res.height = '100%';
     }
     return res;
+  }
+
+  function getCurPhoto() {
+    return photos[state.curPhotoInd];
+  }
+
+  function addPhotoPrint() {
+    const dateISO = new Date().toISOString();
+    const dateISOFormatted = date.slice(0, dateISO.indexOf('T'));
+    const printStateUpd = props.printState;
+    const curPhoto = getCurPhoto();
+    // !!! lodash.
+    printStateUpd[dateISOFormatted][curPhoto] = 1;
+    printStateUpd = {
+      ...printStateUpd,
+    };
+
+    props.dispatch.setPrintState(printStateUpd);
   }
 }

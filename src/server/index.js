@@ -16,7 +16,7 @@ let state = {
   copyProgress: 0,
   countCopiedPhotos: 0,
   rootDir: 'E:/f-photo/',
-  curDir: 'one/',
+  curDir: 'br/',
 };
 
 // ------------------------------------------------------------------------------------------------
@@ -108,7 +108,7 @@ app.post('/api/copyPhotos', (req, res) => {
       });
 
       startCopy({ photos: photos.slice(1), destDir });
-    }, 1000);
+    }, 200);
   }
 });
 
@@ -144,32 +144,6 @@ app.post('/api/saveSettings', (req, res) => {
 });
 
 app.listen(process.env.PORT || 8080, () => console.log(`Listening on port ${process.env.PORT || 8080}!`));
-
-function copyPhotoByWorker({ arr, dir }) {
-  return new Promise((rs, rj) => {
-    const worker = new Worker(
-      './src/server/workerCopyPhoto.js',
-      {
-        workerData: {
-          newPhotos: arr,
-          dir,
-        }
-      }
-    );
-    worker.on('message', () => {
-      const countCopiedPhotosUpd = state.countCopiedPhotos + 1;
-      setState({
-        copyProgress: calcCopyProgress({ countCopiedPhotos: countCopiedPhotosUpd }),
-        countCopiedPhotos: countCopiedPhotosUpd,
-      });
-      rs();
-    });
-    worker.on('error', rj);
-    worker.on('exit', (code) => {
-      if (code !== 0) { rj(new Error(`Worker stopped with exit code ${code}`)); }
-    });
-  });
-}
 
 function calcCopyProgress({ countCopiedPhotos }) {
   const { countNewPhotos, } = state;
