@@ -1,22 +1,32 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useReducer } from 'react';
 import { serverApi } from '../../serverApi';
+import { curPhotoStatusIcons, CurPhotoStatusIcons } from './constants';
+
+import { set as _set, get as _get } from 'lodash';
 
 import './styles.css';
 
-export function Browse({ props }) {
-  const stateInit = {
-    previewWidth: 100,
-    previewHeight: 100,
-    curPhotoInd: -1,
-    curPhotoRotateDeg: 0,
-    componentClass: 'browse',
-    curPhotoHeight: undefined,
-    curPhotoWidth: undefined,
-    addRenderCompleted: false,
-  };
+const stateInit = {
+  previewWidth: 100,
+  previewHeight: 100,
+  curPhotoInd: -1,
+  curPhotoRotateDeg: 0,
+  componentClass: 'browse',
+  curPhotoHeight: undefined,
+  curPhotoWidth: undefined,
+  addRenderCompleted: false,
+  curDate: getCurDate(),
+};
+
+export function Browse(props) {
+  const {
+    printState: propPrintState,
+  } = props;
 
   const [state, setState] = useState(stateInit);
   const [photos, setPhotos] = useState([]);
+
+  const [ignored, forceUpdate] = useReducer(x => !x, false);
 
   useEffect(() => {
     document.addEventListener('keydown', onKeyDown);
@@ -85,6 +95,8 @@ export function Browse({ props }) {
   return (
     <div className={state.componentClass} onDoubleClick={onDblClickPhoto}>
       { toRender }
+
+      { renderCurPhotoStatus() }    
     </div>    
   );
 
@@ -135,17 +147,33 @@ export function Browse({ props }) {
     return photos[state.curPhotoInd];
   }
 
-  function addPhotoPrint() {
-    const dateISO = new Date().toISOString();
-    const dateISOFormatted = date.slice(0, dateISO.indexOf('T'));
-    const printStateUpd = props.printState;
+  function addPhotoPrint() {    
+    let propPrintStateUpd = propPrintState;
     const curPhoto = getCurPhoto();
-    // !!! lodash.
-    printStateUpd[dateISOFormatted][curPhoto] = 1;
-    printStateUpd = {
-      ...printStateUpd,
-    };
+    const path = [state.curDate, curPhoto];
+    const statusUpd = _get(propPrintStateUpd, path, new CurPhotoStatusIcons());
+    statusUpd.toPrint = statusUpd.toPrint === 0 ? 1 : 0;
+    _set(propPrintStateUpd, path, statusUpd);
 
-    props.dispatch.setPrintState(printStateUpd);
+    forceUpdate();
   }
+
+  function renderCurPhotoStatus() {
+    const statuses = _get(propPrintState, [state.curDate, getCurPhoto()]);
+    return (state.curPhotoInd === -1 || statuses === undefined) ? null : (
+      <div className="curPhotoStatusIcons">
+        { Object.entries(statuses)
+          .filter(([status, count]) => count)
+          .map(([status]) => (
+            <img key={status} width="16" height="16" src={`public/${status}.png`} />
+          )) 
+        }
+      </div>
+    );
+  }
+}
+
+function getCurDate() {
+  const dateISO = new Date().toISOString();
+  return dateISO.slice(0, dateISO.indexOf('T'));
 }

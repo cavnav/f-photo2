@@ -1,33 +1,30 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
 import './styles.css';
 
-export class ControlPanel extends React.Component {
-  state = {
-    changeState: null,
-    ...this.props
-  };
+export function ControlPanel(props) {
+  const stateInit = {};
+  const [state, setState] = useState(stateInit);
 
-  onClick = e => {
+  return (
+    <div className="ControlPanel flex" onClick={onClickAction}>
+      {Object.entries(props.actions)
+        .filter(([action, actionProps]) => actionProps.isActive)
+        .map(([action, actionProps]) => (
+          <div key={action} className="action" data-id={action}>
+            {actionProps.title}
+          </div>
+        ))}
+    </div>
+  );
+
+  // -----------------------------------------------------------------------
+  function onClickAction(e) {
     const actionId = e.target.getAttribute('data-id');
-    this.state.changeState({
-      key: 'view',
-      val: actionId
+    props.dispatch.setAppState({
+      ...props.appState,
+      view: actionId, 
     });
   };
 
-  render() {
-    const { actions } = this.state;
-    return (
-      <div className="ControlPanel flex" onClick={this.onClick}>
-        {Object.entries(actions)
-          .filter(([action, props]) => props.isActive)
-          .map(([action, props]) => (
-            <div key={action} className="action" data-id={action}>
-              {props.title}
-            </div>
-          ))}
-      </div>
-    );
-  }
 }

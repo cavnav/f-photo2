@@ -26,3 +26,12 @@
   background-position: center center;
   background-size: contain;
 }
+
+.curPhotoStatusIcons {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  right: 100px;
+  bottom: 100px;
+
+}

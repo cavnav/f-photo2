@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ControlPanel, MyView } from './components';
+
 import './app.css';
 
 export function App(props) {
@@ -30,7 +31,7 @@ export function App(props) {
     //   'asdf': 1,
     //   'asdff': 2,
     // }
-  },
+  };
 
   const [appState, setAppState] = useState(appStateInit);
   const [printState, setPrintState] = useState(printInit);
@@ -40,26 +41,24 @@ export function App(props) {
     setPrintState,
   };
 
-  changeState = ({ key, val }) => {
-    this.setState({ [key]: val });
-  };
-
   const { view, actions } = appState;
 
   return (    
     <div className="f-photo flex flexDirColumn">
-      <ControlPanel changeState={this.changeState} actions={actions} />
+      <ControlPanel 
+        dispatch={dispatch} 
+        actions={actions} 
+        appState={appState}
+      />
       <MyView 
         target={view} 
-        changeState={this.changeState} 
-        appState={
-          appState,
-        }
-        printState={
-          printState
-        }
+        appState={appState}
+        printState={printState}
         dispatch={dispatch}
       />
     </div>
   );
+
+  //--------------------------------------------------------------------------
+  
 }
