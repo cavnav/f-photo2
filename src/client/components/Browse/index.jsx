@@ -6,19 +6,19 @@ import { set as _set, get as _get } from 'lodash';
 
 import './styles.css';
 
-const stateInit = {
-  previewWidth: 100,
-  previewHeight: 100,
-  curPhotoInd: -1,
-  curPhotoRotateDeg: 0,
-  componentClass: 'browse',
-  curPhotoHeight: undefined,
-  curPhotoWidth: undefined,
-  addRenderCompleted: false,
-  curDate: getCurDate(),
-};
-
 export function Browse(props) {
+  const stateInit = {
+    previewWidth: 100,
+    previewHeight: 100,
+    curPhotoInd: -1,
+    curPhotoRotateDeg: 0,
+    componentClass: 'browse',
+    curPhotoHeight: undefined,
+    curPhotoWidth: undefined,
+    addRenderCompleted: false,
+    curDate: getCurDate(),
+  };
+
   const {
     printState: propPrintState,
   } = props;
