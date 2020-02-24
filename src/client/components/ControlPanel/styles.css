@@ -1,3 +1,6 @@
 .ControlPanel {
+  font-size: 24px;
+  font-weight: 800;
   justify-content: space-around;
 }
+
