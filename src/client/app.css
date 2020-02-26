@@ -27,3 +27,25 @@ body {
 .marginRight10 {
   margin-right: 10px;
 }
+
+.marginBottom10 {
+  margin-bottom: 10px;
+}
+
+.overFlowHidden {
+  overflow: hidden;
+}
+
+.flexCenter {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.height100pr {
+  height: 100%;
+}
+
+.width100pr {
+  width: 100%;
+}

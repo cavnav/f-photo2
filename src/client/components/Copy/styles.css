@@ -1,9 +1,39 @@
+.copy {  
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 40px;
+  overflow: hidden;
+  height: 100%;
+}
+
+.copy .step {  
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  overflow: hidden;
+}
+
+.copy .step .title {
+  font-size: 24px;text-align: center;
+}
+
+.copy .step .imgBlock {
+  display: flex;
+  overflow: hidden;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
 .copy .step img {
   width: 30%;
 }
 
 .copy .step img:hover {
-  transform: scale(1.5);
+  transform: scale(2);
   transition: transform 0.5s;
 }
 

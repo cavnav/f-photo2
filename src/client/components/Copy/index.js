@@ -57,7 +57,7 @@ export function Copy({ props }) {
   return (
     <div className="copy">      
       { step }
-      <input type="button" onClick={onClickNextStep} value="Следующий шаг" /> 
+      <input className="marginBottom10" type="button" onClick={onClickNextStep} value="Следующий шаг" /> 
     </div>
   );
 
@@ -73,8 +73,12 @@ export function Copy({ props }) {
     const step = arr[state.stepNum];
     const content = []; 
 
-    step.desc && content.push(<div>{step.desc}</div>);
-    step.photoSrc && content.push(<img className="copyWizardImg" src={step.photoSrc} />);
+    step.desc && content.push(<div className="title">{step.desc}</div>);
+    step.photoSrc && content.push(
+      <div className="imgBlock marginBottom10">
+        <img className="copyWizardImg" src={step.photoSrc} />
+      </div>
+    );
     step.toRender && content.push(step.toRender);
 
     return <div className="step">{ content }</div>;
