@@ -27,9 +27,11 @@ export function App(props) {
   };
 
   const printInit = {
-    // 20200219: {
-    //   'asdf': 1,
-    //   'asdff': 2,
+    // "2020-02-21": {
+    //   "br/20170107_112131.jpg": {
+    //     toPrint: 1,
+    //     toShare: 0,
+    //   }
     // }
   };
 
@@ -44,7 +46,7 @@ export function App(props) {
   const { view, actions } = appState;
 
   return (    
-    <div className="f-photo flex flexDirColumn">
+    <div className="f-photo">     
       <ControlPanel 
         dispatch={dispatch} 
         actions={actions} 

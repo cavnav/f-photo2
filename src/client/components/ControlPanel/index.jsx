@@ -7,7 +7,7 @@ export function ControlPanel(props) {
   const [state, setState] = useState(stateInit);
 
   return (
-    <div className="ControlPanel flex" onClick={onClickAction}>
+    <div className="controlPanel flex" onClick={onClickAction}>
       {Object.entries(props.actions)
         .filter(([action, actionProps]) => actionProps.isActive)
         .map(([action, actionProps]) => (
