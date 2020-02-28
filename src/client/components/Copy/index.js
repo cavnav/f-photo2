@@ -29,24 +29,38 @@ export function Copy({ props }) {
       });
     });
 
-  const arr = [
+  const stepStruct = {
+    photoSrc: ({key, step}) => <div className="imgBlock marginBottom10" key={key}>
+        <img className="copyWizardImg" src={step.photoSrc} />
+      </div>,
+    desc: ({key, step}) => <div className="title" key={key}>{step.desc}</div>,
+    toRender: (render) => render.constructor === Function ? render : null,
+  };
+  
+  const steps = [
     {
+      ...stepStruct,
       photoSrc: 'public/wizardCopy/001_getOutMemCard.jpg',
       desc: 'нажми пальцем на синюю карту памяти, и, вдавив внутрь, отпусти.',
     }, {
+      ...stepStruct,
       photoSrc: 'public/wizardCopy/002_insertIntoCardReader.jpg',
       desc: 'Вставь карту памяти в кардРидер, как показано ниже:',
     }, {
+      ...stepStruct,
       photoSrc: 'public/wizardCopy/004_plugInPC.jpg',
       desc: 'Вставь кардРидер в системный блок, как показано ниже, чтобы совпал ключ.',
     }, {    
-      toRender: <div className="flex flexDirColumn">
-        Количество новых фото:
-        { state.countNewPhotos }
-        <input type="button" onClick={onCopy} value="Копировать" />
-        <Progress type="circle" percent={state.copyProgress} />
-      </div>,
+      ...stepStruct,
+      toRender: stepStruct.toRender(({key, step}) => <div className="flex flexDirColumn" key={key}>
+          Количество новых фото:
+          { state.countNewPhotos }
+          <input type="button" onClick={onCopy} value="Копировать" />
+          <Progress type="circle" percent={state.copyProgress} />
+        </div>
+      ),
     }, {
+      ...stepStruct,
       photoSrc: 'public/wizardCopy/005_returnMemCardInPhoto.jpg',
       desc: 'После завершения копирования вытащить карту памяти из кардРидера и всавить обратно в фотоаппарат до щелчка, как показано ниже:',
     }
@@ -70,18 +84,19 @@ export function Copy({ props }) {
   }
   
   function createStep() {
-    const step = arr[state.stepNum];
-    const content = []; 
+    const step = steps[state.stepNum];
+    const items = Object.keys(stepStruct); 
+    let content;
 
-    step.desc && content.push(<div className="title">{step.desc}</div>);
-    step.photoSrc && content.push(
-      <div className="imgBlock marginBottom10">
-        <img className="copyWizardImg" src={step.photoSrc} />
+    content = items.map((item, ind) => {
+      return step[item] && stepStruct[item]({key: ind, step});
+    });
+
+    return (
+      <div className="step">
+        { content }
       </div>
     );
-    step.toRender && content.push(step.toRender);
-
-    return <div className="step">{ content }</div>;
   }
 
   function onCopy() {

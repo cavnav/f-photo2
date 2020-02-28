@@ -1,8 +1,10 @@
 import React from 'react';
 
+import './styles.css';
+
 export function Welcome(props) {  
   React.useEffect(() => {
-    setTimeout(() => controlPanelAttention(), 1500);
+    setTimeout(() => controlPanelAttention({}), 1500);
 
     return () => {
       controlPanelAttention({ enabled: false }) ;
@@ -11,7 +13,7 @@ export function Welcome(props) {
 
   return (
    <div className="welcome textCenter">
-      Выберите одно из действий в верхней строке.
+      Выбери одно из действий в верхней строке.
     </div>
   );
 
