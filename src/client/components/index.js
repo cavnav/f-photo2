@@ -1,8 +1,10 @@
-import { Tune } from './Tune';
-import { Copy } from './Copy';
-import { Browse } from './Browse';
-import { Print } from './Print';
-import { Welcome } from './Welcome';
+export { Tune } from './Tune';
+export { Copy } from './Copy';
+export { Browse } from './Browse';
+export { Print } from './Print';
+export { Info } from './Info';
+export { Stepper } from './Stepper';
+export { Welcome } from './Welcome';
 
 export { ControlPanel } from './ControlPanel';
 export { MyView } from './MyView';

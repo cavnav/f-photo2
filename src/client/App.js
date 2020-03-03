@@ -5,7 +5,7 @@ import './app.css';
 
 export function App(props) {
   const appStateInit = {
-    view: '',
+    view: 'Welcome',
     actions: {
       Tune: {
         title: 'Настроить',

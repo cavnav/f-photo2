@@ -6,8 +6,10 @@ export function ControlPanel(props) {
   const stateInit = {};
   const [state, setState] = useState(stateInit);
 
+  const isInfoState = props.appState.view === 'Info';
+
   return (
-    <div className="controlPanel flex" onClick={onClickAction}>
+    <div className={`controlPanel flex ${isInfoState ? 'attention' : null}`} onClick={onClickAction}>
       {Object.entries(props.actions)
         .filter(([action, actionProps]) => actionProps.isActive)
         .map(([action, actionProps]) => (
