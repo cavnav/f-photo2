@@ -1,0 +1,42 @@
+.stepper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 40px;
+  overflow: hidden;
+}
+
+.stepper .title {
+  text-align: center;
+}
+
+.stepper .step {  
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  overflow: hidden;
+}
+
+.stepper .step .imgBlock {
+  display: flex;
+  overflow: hidden;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+.stepper .step img {
+  width: 30%;
+}
+
+.stepper .step img:hover {
+  transform: scale(2);
+  transition: transform 0.5s;
+}
+
+.stepper .step img {
+  transform: scale(1);
+  transition: transform 0.5s;
+}

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Progress, } from 'antd';
 import { serverApi } from '../../serverApi';
+import { Stepper } from '../';
 
 import 'antd/dist/antd.css';
 import './styles.css';
@@ -9,7 +10,7 @@ export function Copy(props) {
   const stateInit = {
     copyProgress: 0,
     countNewPhotos: 0,
-    isInfo: false,
+    isHelp: false,
   };
 
   const [state, setState] = useState(stateInit);
@@ -19,14 +20,12 @@ export function Copy(props) {
   }, []);
 
   let content;
-  if (state.isInfo) {
-    const steps = createSteps();
+  const steps = createSteps();
 
-    content = <Stepper 
-      steps={steps}
-    />;
-  }
-  
+  content = <Stepper 
+    steps={steps}
+  />;
+
   return (
     <div className="copy">      
       { content }
@@ -54,7 +53,7 @@ export function Copy(props) {
           </div>,        
       }, {
         photoSrc: 'public/wizardCopy/005_returnMemCardInPhoto.jpg',
-        desc: 'После завершения копирования вытащить карту памяти из кардРидера и всавить обратно в фотоаппарат до щелчка, как показано ниже:',
+        desc: 'После завершения копирования вытащить карту памяти из кардРидера и вставить обратно в фотоаппарат до щелчка, как показано ниже:',
       }
     ];
   }

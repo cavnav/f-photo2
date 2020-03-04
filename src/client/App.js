@@ -4,37 +4,6 @@ import { ControlPanel, MyView } from './components';
 import './app.css';
 
 export function App(props) {
-  const appStateInit = {
-    view: 'Welcome',
-    actions: {
-      Tune: {
-        title: 'Настроить',
-        isActive: true
-      },
-      Copy: {
-        title: 'Копировать',
-        isActive: true
-      },
-      Browse: {
-        title: 'Смотреть',
-        isActive: true,
-      },
-      Print: {
-        title: 'Напечатать',
-        isActive: true,
-      }
-    }
-  };
-
-  const printInit = {
-    // "2020-02-21": {
-    //   "br/20170107_112131.jpg": {
-    //     toPrint: 1,
-    //     toShare: 0,
-    //   }
-    // }
-  };
-
   const [appState, setAppState] = useState(appStateInit);
   const [printState, setPrintState] = useState(printInit);
 
@@ -64,3 +33,38 @@ export function App(props) {
   //--------------------------------------------------------------------------
   
 }
+
+const appStateInit = {
+  view: 'Welcome',
+  actions: {
+    Tune: {
+      title: 'Настроить',
+      isActive: true
+    },
+    Copy: {
+      title: 'Копировать',
+      isActive: true
+    },
+    Browse: {
+      title: 'Смотреть',
+      isActive: true,
+    },
+    Print: {
+      title: 'Печатать',
+      isActive: true,
+    },
+    Share: {
+      title: 'Отправить',
+      isActive: true,
+    }
+  }
+};
+
+const printInit = {
+  // "2020-02-21": {
+  //   "br/20170107_112131.jpg": {
+  //     toPrint: 1,
+  //     toShare: 0,
+  //   }
+  // }
+};

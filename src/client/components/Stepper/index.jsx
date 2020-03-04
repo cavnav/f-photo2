@@ -1,12 +1,6 @@
 import React from 'react';
 
-const stepStruct = {
-  desc: ({key, step}) => <div className="title" key={key}>{step.desc}</div>,
-  photoSrc: ({key, step}) => <div className="imgBlock marginBottom10" key={key}>
-      <img className="copyWizardImg" src={step.photoSrc} />
-    </div>,
-  toRender: ({key, step}) => render.constructor === Function ? render({key, step}) : null,
-};
+import './styles.css';
 
 export function Stepper(props) {
   const initState = {
@@ -20,7 +14,7 @@ export function Stepper(props) {
   return (
     <div className="stepper">      
       { step }
-      <input className="marginBottom10" type="button" onClick={onClickNextStep} value="Следующий шаг" /> 
+      { (state.stepNum + 1 < props.steps.length) && <input className="marginBottom10" type="button" onClick={onClickNextStep} value="Следующий шаг" /> }
     </div>
   );
 
@@ -33,7 +27,8 @@ export function Stepper(props) {
   }
 
   function createStep() {
-    const step = steps[state.stepNum];
+    const { steps, stepNum } = state;
+    const step = steps[stepNum];
     const items = Object.keys(stepStruct); 
     let content;
 
@@ -48,3 +43,11 @@ export function Stepper(props) {
     );
   }
 }
+
+const stepStruct = {
+  desc: ({key, step}) => <div className="title" key={key}>{step.desc}</div>,
+  photoSrc: ({key, step}) => <div className="imgBlock marginBottom10" key={key}>
+      <img className="copyWizardImg" src={step.photoSrc} />
+    </div>,
+  toRender: ({key, step}) => step.toRender({key, step}),
+};
