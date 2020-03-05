@@ -21,12 +21,14 @@ export function App(props) {
         actions={actions} 
         appState={appState}
       />
-      <MyView 
-        target={view} 
-        appState={appState}
-        printState={printState}
-        dispatch={dispatch}
-      />
+      <div className="myView">
+        <MyView 
+          target={view} 
+          appState={appState}
+          printState={printState}
+          dispatch={dispatch}
+        />
+      </div>
     </div>
   );
 

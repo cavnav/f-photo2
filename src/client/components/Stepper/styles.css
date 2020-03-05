@@ -3,8 +3,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  margin: 40px;
-  overflow: hidden;
+  height: -webkit-fill-available;
 }
 
 .stepper .title {
@@ -16,7 +15,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100%;
+  height: -webkit-fill-available;
   overflow: hidden;
 }
 

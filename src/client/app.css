@@ -15,6 +15,11 @@ body {
   font-size: 24px;
 }
 
+.myView {
+  flex: 2 0 auto;
+  padding: 10px;
+}
+
 .flex {
   display: flex;
 }

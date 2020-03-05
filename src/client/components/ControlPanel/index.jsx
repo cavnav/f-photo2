@@ -9,7 +9,7 @@ export function ControlPanel(props) {
   const isWelcome = props.appState.view === 'Welcome';
 
   return (
-    <div className={`controlPanel flex ${isWelcome ? 'attention' : null}`} onClick={onClickAction}>
+    <div className={`controlPanel flex ${isWelcome ? 'attention' : ''}`} onClick={onClickAction}>
       {Object.entries(props.actions)
         .filter(([action, actionProps]) => actionProps.isActive)
         .map(([action, actionProps]) => (

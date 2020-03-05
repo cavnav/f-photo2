@@ -6,7 +6,9 @@ export function Stepper(props) {
   const initState = {
     stepNum: 0,
     steps: props.steps,
+    stepsTotal: props.steps.length - 1,
   };
+
   const [state, setState] = React.useState(initState);
 
   const step = createStep();
@@ -14,7 +16,7 @@ export function Stepper(props) {
   return (
     <div className="stepper">      
       { step }
-      { (state.stepNum + 1 < props.steps.length) && <input className="marginBottom10" type="button" onClick={onClickNextStep} value="Следующий шаг" /> }
+      { (state.stepNum + 1 < state.stepsTotal) && <input className="marginBottom10" type="button" onClick={onClickNextStep} value="Далее" /> }
     </div>
   );
 
