@@ -1,15 +1,8 @@
-.browse {
+.Browse {
   display: flex;
   flex-wrap: wrap;
-}
-
-.fitScreen {
-  display: flex;
-  overflow: hidden;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
   height: 100%;
+  overflow-y: scroll;
 }
 
 .fitPreview100 {  
@@ -25,13 +18,4 @@
   background-repeat: no-repeat;
   background-position: center center;
   background-size: contain;
-}
-
-.curPhotoStatusIcons {
-  position: absolute;
-  display: flex;
-  flex-direction: column;
-  right: 100px;
-  bottom: 100px;
-
 }

@@ -14,5 +14,6 @@ export const Views = {
   Copy, 
   Browse,
   Print, 
+  Help,
   default: Welcome,
 };

@@ -1,0 +1,8 @@
+.PhotoStatusIcons {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  right: 100px;
+  bottom: 100px;
+
+}

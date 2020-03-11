@@ -58,6 +58,10 @@ const appStateInit = {
     Share: {
       title: 'Отправить',
       isActive: true,
+    },
+    Help: {
+      title: '?',
+      isActive: true,
     }
   }
 };

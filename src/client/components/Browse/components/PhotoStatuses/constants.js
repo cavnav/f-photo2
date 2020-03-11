@@ -1,4 +1,4 @@
-export class CurPhotoStatusIcons {  
+export class PhotoStatusIcons {  
   toPrint = 0;
   toShare = 0;
   
