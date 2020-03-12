@@ -15,12 +15,6 @@ body {
   font-size: 24px;
 }
 
-.myView {
-  overflow: hidden;
-  padding: 10px;
-  height: 100%;
-}
-
 .flex {
   display: flex;
 }
@@ -69,4 +63,18 @@ body {
 
 .textCenter {
   text-align: center;
+}
+
+.attention {
+  animation: glowing 1000ms infinite;
+}
+
+@-webkit-keyframes glowing {
+  0% { background-color: #fd9a9a; }
+  50% { background-color: #FF0000; }
+  100% { background-color:#fd9a9a; }
+}
+
+.fontSize20 {
+  font-size: 20px;
 }

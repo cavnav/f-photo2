@@ -5,7 +5,6 @@ import { OnePhoto } from './components';
 import './styles.css';
 
 export function Browse(props) {
-  const { appState, } = props;
   const [state, setState] = useState(stateInit);
   const [photos, setPhotos] = useState([]);
 
@@ -17,9 +16,6 @@ export function Browse(props) {
   function getRender() {
     let render;
 
-    if (appState.view === 'Help') {
-      render = <Help />;
-    }
     if (state.curPhotoInd > -1) {
       render = <OnePhoto 
         curPhotoInd={state.curPhotoInd}

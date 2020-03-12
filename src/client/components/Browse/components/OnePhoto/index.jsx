@@ -1,10 +1,11 @@
 import React from 'react';
 import { PhotoStatuses } from '../';
+import { Help } from '../../..';
 
 import './styles.css';
 
 export function OnePhoto(props) {
-  const { photos, curPhotoInd } = props;
+  const { photos, curPhotoInd, appState } = props;
   const [state, setState] = React.useState({
     ...stateInit,
     curPhotoInd,
@@ -38,8 +39,23 @@ export function OnePhoto(props) {
           {...props}
           onRenderCb={onRenderPhotoStatuses}
         /> 
+        <Help
+          toRender={toRenderHelp()}
+          {...props}
+        />
       </div>
     );
+  }
+
+  function toRenderHelp() {
+    return <div className="flexCenter marginBottom10">
+      Стрелка вправо - показать следующее фото.<br></br>
+      Стрелка влево - показать предыдущее фото.<br></br>
+      Стрелка вверх - повернуть текущее фото по часовой стрелке.<br></br>
+      Стрелка вниз - повернуть текущее фото против часовой стрелки.<br></br>
+      Цифра 1 - добавить фото к списку "Печатать".<br></br>
+      Цифра 2 - добавить фото к списку "Отправить".<br></br>
+    </div>
   }
 
   function onRenderPhotoStatuses(api) {
@@ -72,7 +88,7 @@ export function OnePhoto(props) {
     const stateUpd = { ...state };
 
     switch (e.which) {
-      case 32:  photoStatusesApi.addPhotoPrint(); 
+      case 49:  photoStatusesApi.addPhotoPrint(); 
                 break; 
 
       case 37:  stateUpd.curPhotoInd = prevPhotoInd;

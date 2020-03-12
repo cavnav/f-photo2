@@ -23,7 +23,7 @@ export function Print(props) {
   });
 
   return (
-    <div className="printPhoto">
+    <div className="Print">
       { renderPrintState() }
     </div>    
   );

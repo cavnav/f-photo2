@@ -23,9 +23,10 @@ export function ControlPanel(props) {
   // -----------------------------------------------------------------------
   function onClickAction(e) {
     const actionId = e.target.getAttribute('data-id');
+
     props.dispatch.setAppState({
       ...props.appState,
-      view: actionId, 
+      view: actionId,
     });
   };
 

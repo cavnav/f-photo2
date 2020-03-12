@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { ControlPanel, MyView } from './components';
+import React, { useState, useReducer } from 'react';
+import { ControlPanel, MyView, } from './components';
 
 import './app.css';
 
 export function App(props) {
-  const [appState, setAppState] = useState(appStateInit);
+  const [appState, setAppState] = useReducer(stateReducer, appStateInit);
   const [printState, setPrintState] = useState(printInit);
 
   const dispatch = {
@@ -21,23 +21,21 @@ export function App(props) {
         actions={actions} 
         appState={appState}
       />
-      <div className="myView">
-        <MyView 
-          target={view} 
-          appState={appState}
-          printState={printState}
-          dispatch={dispatch}
-        />
-      </div>
+      <MyView 
+        target={view} 
+        appState={appState}
+        printState={printState}
+        dispatch={dispatch}
+      />
     </div>
   );
 
   //--------------------------------------------------------------------------
-  
 }
 
 const appStateInit = {
   view: 'Welcome',
+  doNeedHelp: false,
   actions: {
     Tune: {
       title: 'Настроить',
@@ -74,3 +72,16 @@ const printInit = {
   //   }
   // }
 };
+
+function stateReducer(prevState, newState) {
+  if (newState.view === 'Help') return {
+    ...newState,
+    view: prevState.view,
+    doNeedHelp: true,
+  };
+
+  return {
+    ...newState,
+    doNeedHelp: false,
+  };
+}

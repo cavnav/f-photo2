@@ -3,16 +3,3 @@
   font-weight: 800;
   justify-content: space-around;
 }
-
-.controlPanel.attention {
-  animation: attention 1s infinite;
-}
-
-@keyframes attention {
-  0% {
-    background: none;
-  }
-  100% {
-    background: radial-gradient(red, transparent);
-  }
-}

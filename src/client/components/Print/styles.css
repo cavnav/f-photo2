@@ -1,3 +1,9 @@
+.Print {
+  display: flex;
+  height: 100%;
+  overflow-y: scroll;
+}
+
 .rowDataForPrint {
   display: flex;
   justify-content: flex-start;

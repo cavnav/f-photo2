@@ -16,7 +16,7 @@ export function Stepper(props) {
   return (
     <div className="stepper">      
       { step }
-      { (state.stepNum + 1 < state.stepsTotal) && <input className="marginBottom10" type="button" onClick={onClickNextStep} value="Далее" /> }
+      { (state.stepNum + 1 < state.stepsTotal) && <input className="attention marginBottom10" type="button" onClick={onClickNextStep} value="Далее" /> }
     </div>
   );
 
