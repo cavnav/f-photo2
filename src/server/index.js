@@ -17,6 +17,7 @@ let state = {
   countCopiedPhotos: 0,
   rootDir: 'E:/f-photo/',
   curDir: 'br/',
+  usbDriveLetter: undefined,
 };
 
 // ------------------------------------------------------------------------------------------------
@@ -28,18 +29,19 @@ app.use(express.static('dist'));
 app.use(bodyParser.json());
 
 app.get('/api/getUsbDevices', (req, res) => {
-  const driveLetters = [];
   (async () => {
     const drives = await drivelist.list();
-    drives
+    [usbDriveLetter] = drives
       .filter(drive => drive.isUSB)
+      .slice(-1)
       .map((drive) => {
-        const [mountpoint] = drive.mountpoints;
-        driveLetters.push(mountpoint.path);
+        const [mountpoint] = drive.mountpoints.slice(-1);
+        return mountpoint.path;
       });
 
+      console.log('usbDriveLetter', usbDriveLetter);
     res.send({
-      driveLetters
+      driveLetter: usbDriveLetter,
     });
   })();
 });

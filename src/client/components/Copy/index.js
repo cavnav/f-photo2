@@ -16,23 +16,22 @@ export function Copy(props) {
   const [state, setState] = useState(stateInit);
 
   React.useEffect(() => {
-    getNewPhotos();
+    // getNewPhotos();
   }, []);
 
-  let content;
-  const steps = createSteps();
-
-  content = <Stepper 
-    steps={steps}
-  />;
-
-  return (
-    <div className="copy">      
-      { content }
-    </div>
-  );
+  return getRender();
 
   // ----------------------------------------------------------------------------------
+  function getRender() {
+    const steps = createSteps();
+  
+    return <div className="Copy">      
+      <Stepper 
+        steps={steps}
+      />
+    </div>;
+  }
+  
   function createSteps() {
     return [
       {
@@ -45,17 +44,37 @@ export function Copy(props) {
         photoSrc: 'public/wizardCopy/004_plugInPC.jpg',
         desc: 'Вставь кардРидер в системный блок, как показано ниже, чтобы совпал ключ.',
       }, {    
+        desc: 'Ищу карту памяти...',
+        trigger: waitUSBconnect,   
+        triggerStepNumDeltaOnResolve: +2,
+        triggerStepNumDeltaOnReject: +1,
+        isNextBtn: false,
+      }, {    
+        type: 'reject',
+        desc: 'Что-то пошло не так... Попробуй еще раз',
+        stepNumDelta: -2,
+      }, {
         toRender: ({key, step}) => <div className="flex flexDirColumn" key={key}>
             Количество новых фото:
             { state.countNewPhotos }
             <input type="button" onClick={onCopy} value="Копировать" />
             <Progress type="circle" percent={state.copyProgress} />
-          </div>,        
+          </div>,
       }, {
         photoSrc: 'public/wizardCopy/005_returnMemCardInPhoto.jpg',
         desc: 'После завершения копирования вытащить карту памяти из кардРидера и вставить обратно в фотоаппарат до щелчка, как показано ниже:',
       }
     ];
+  }
+
+  function waitUSBconnect() {
+    return serverApi({
+      props: {
+        url: 'getUsbDevices'
+      }
+    })
+    .then(res => res.json())
+    .then(res => res.driveLetter);
   }
 
   function getNewPhotos() {

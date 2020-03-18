@@ -21,6 +21,9 @@ export const serverApi = ({ props }) => {
     case 'browsePhotos':
       return fetch(fullUrl);
 
+    case 'getUsbDevices':
+      return fetch(fullUrl);
+
     default: return undefined;
   }
 };
