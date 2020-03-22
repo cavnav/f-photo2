@@ -11,6 +11,7 @@ export function Copy(props) {
     copyProgress: 0,
     countNewPhotos: 0,
     isHelp: false,
+    isCopyCompleted: false,
   };
 
   const [state, setState] = useState(stateInit);
@@ -67,11 +68,19 @@ export function Copy(props) {
             { state.countNewPhotos }
             <input type="button" onClick={onCopy} value="Копировать" />
             <Progress type="circle" percent={state.copyProgress} />
+            
+            Все фотографии успешно скопированы!
           </div>,
       }, {
         photoSrc: 'public/wizardCopy/005_returnMemCardInPhoto.jpg',
         desc: 'Вытащи карту памяти из кардРидера и вставь обратно в фотоаппарат до щелчка, как показано ниже:',
-        isNextBtn: false,
+      }, {
+        trigger: () => {
+          props.dispatch.setAppState({
+            ...props.appState,
+            view: 'Welcome',
+          });
+        } 
       }
     ];
   }
@@ -123,10 +132,10 @@ export function Copy(props) {
       .then(res => res.json())
       .then((res) => {
         setTimeout(() => (res.copyProgress === 100 ? null : checkCopyProgress()), 500);
-        console.log(333, res.copyProgress);
         setState({
           ...state,
           copyProgress: res.copyProgress,
+          isCopyCompleted: true,
         });
       });
   }
