@@ -4,62 +4,93 @@ import './styles.css';
 
 export function Stepper(props) {
 
-  const [state, setState] = React.useState({
-    ...initState,
-    steps: props.steps,
-    stepsTotal: props.steps.length - 1,
-  });
+  const [state, dispatch] = React.useReducer(
+    stateReducer, 
+    {
+      ...initState,
+      steps: props.steps,
+      stepsTotal: props.steps.length - 1,
+    }, 
+    stateReducer
+  );
+
+  React.useEffect(onRender);
 
   return (
     <div className="Stepper">      
-      { createStep() }
+      { state.stepJSX }
     </div>
   );
 
   // ------------------------------------------------------------------
+  function onRender() {
+    const { step: { trigger = () => {} } } = state;
+    trigger({ state, dispatch });
+  }
+
+  function stateReducer(prevState, newState) {
+    const stateUpd = {
+      ...prevState,
+      ...newState,
+    };
+
+    const step = stateUpd.steps[stateUpd.stepNum];
+
+    stateUpd.step = step;
+    stateUpd.stepJSX =  createStepJSX({ step });
+    
+    return stateUpd;
+
+    // ----------------------------------------------    
+  }
+
   function onClickNextStep({stepNumDelta}) {
-    setState({
-      ...state,
+    dispatch({
       stepNum: state.stepNum + (stepNumDelta || state.stepNumDelta),
     });
   }
 
-  function createStep() {
-    const { steps, stepNum } = state;
-    const step = steps[stepNum];
-    const items = Object.keys(stepStruct); 
-    let content;
+  function createStepJSX({ step }) {   
+    return (
+      <div className="step">
+        { getContent() }
+      </div>
+    );
 
-    content = items.map((item, ind) => {
-      return step[item] && stepStruct[item]({
-        key: ind, 
-        step, 
-        state,
-        setState: ({stepNum}) => setState({
-          ...state,
-          stepNum, 
-        })
+    // -----------------------------------------------------------------
+    function getContent() {
+      const items = Object.keys(stepStruct); 
+      let content;
+  
+      content = items.map((item, ind) => {
+        return step[item] && stepStruct[item]({
+          key: ind, 
+          step, 
+          state,
+          dispatch,
+        });
       });
-    });
+  
+      // Добавить кнопку Дальше.
+      if (step.isNextBtn !== false) {
+        content = [
+          ...content,
+          getNextBtn(),
+        ];
+      }
+      
+      return content;
 
-    // Добавить кнопку Дальше.
-    if (step.isNextBtn !== false) {
-      content = [
-        ...content,
-        <input 
+      // -----------------------------------------
+      function getNextBtn() {
+        return <input 
           className="attention marginBottom10" 
           type="button" 
           onClick={() => onClickNextStep({stepNumDelta: step.stepNumDelta})} 
           value="Далее" 
-        />
-      ];
+        />;
+      }
     }
-
-    return (
-      <div className="step">
-        { content }
-      </div>
-    );
   }
 }
 
@@ -68,27 +99,14 @@ const stepStruct = {
   photoSrc: ({key, step}) => <div className="imgBlock marginBottom10" key={key}>
       <img className="copyWizardImg" src={step.photoSrc} />
     </div>,
-  toRender: ({key, step}) => step.toRender({key, step}),
-  trigger: ({step, state, setState}) => {
-    
-    setTimeout(async () => {
-      let result = await step.trigger();
-      console.log(result);
-      // const result = await step.trigger() ? 'Resolve' : 'Reject'; 
-      result = result ? 'Resolve' : 'Reject'; 
-
-      setState({
-        stepNum: state.stepNum + (step[`triggerStepNumDeltaOn${result}`] || 1),
-      });
-    }, 1000);
-
-    return null;
-  },
+  toRender:  ({key, step}) => step.toRender({key, step}),
 };
 
 const initState = {
-  stepNum: 0,
   steps: [],
   stepsTotal: 0,
+  step: {},
+  stepJSX: null,
+  stepNum: 0,
   stepNumDelta: +1,
 };

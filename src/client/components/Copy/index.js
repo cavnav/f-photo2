@@ -45,7 +45,15 @@ export function Copy(props) {
         desc: 'Вставь кардРидер в системный блок, как показано ниже, чтобы совпал ключ.',
       }, {    
         desc: 'Ищу карту памяти...',
-        trigger: waitUSBconnect,   
+        trigger: ({ state: { step, stepNum }, dispatch }) => {
+          setTimeout(async () => {
+            let result = await $waitUSBconnect() ? 'Resolve' : 'Reject'; 
+    
+            dispatch({
+              stepNum: stepNum + (step[`triggerStepNumDeltaOn${result}`] || 1),
+            });
+          }, 1000);
+        },  
         triggerStepNumDeltaOnResolve: +2,
         triggerStepNumDeltaOnReject: +1,
         isNextBtn: false,
@@ -54,7 +62,7 @@ export function Copy(props) {
         desc: 'Что-то пошло не так... Попробуй еще раз',
         stepNumDelta: -2,
       }, {
-        toRender: ({key, step}) => <div className="flex flexDirColumn" key={key}>
+        toRender: ({ key }) => <div className="flex flexDirColumn" key={key}>
             Количество новых фото:
             { state.countNewPhotos }
             <input type="button" onClick={onCopy} value="Копировать" />
@@ -62,12 +70,13 @@ export function Copy(props) {
           </div>,
       }, {
         photoSrc: 'public/wizardCopy/005_returnMemCardInPhoto.jpg',
-        desc: 'После завершения копирования вытащить карту памяти из кардРидера и вставить обратно в фотоаппарат до щелчка, как показано ниже:',
+        desc: 'Вытащи карту памяти из кардРидера и вставь обратно в фотоаппарат до щелчка, как показано ниже:',
+        isNextBtn: false,
       }
     ];
   }
 
-  function waitUSBconnect() {
+  function $waitUSBconnect() {
     return serverApi({
       props: {
         url: 'getUsbDevices'
