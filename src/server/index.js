@@ -15,8 +15,8 @@ let state = {
   countNewPhotos: 0,
   copyProgress: 0,
   countCopiedPhotos: 0,
-  rootDir: 'E:/f-photo/',
-  curDir: 'br/',
+  rootDir: getRootDir(),
+  curDir: undefined,
   usbDriveLetter: undefined,
 };
 
@@ -31,7 +31,7 @@ app.use(bodyParser.json());
 app.get('/api/getUsbDevices', (req, res) => {
   (async () => {
     const drives = await drivelist.list();
-    [usbDriveLetter] = drives
+    const [usbDriveLetter] = drives
       .filter(drive => drive.isUSB)
       .slice(-1)
       .map((drive) => {
@@ -39,22 +39,38 @@ app.get('/api/getUsbDevices', (req, res) => {
         return mountpoint.path;
       });
 
-      console.log('usbDriveLetter', usbDriveLetter);
+    setState({
+      usbDriveLetter,
+    });
+    
     res.send({
       driveLetter: usbDriveLetter,
     });
   })();
 });
 
-app.get('/api/getNewPhotos', (req, res) => {
-  find.file(/\.jpg$|\.png$/i, 'F:/', (files) => {
+app.get('/api/getNewPhotos', async (req, res) => {
+
+  if (!state.usbDriveLetter) {
+    setState({
+      newPhotos: [],
+      countNewPhotos: 0,
+    });
+    res.send({
+      countNewPhotos: state.countNewPhotos,
+    });
+
+    return;
+  }
+
+  find.file(/.*\..*/, state.usbDriveLetter, (files) => {
     setState({
       newPhotos: [...files],
       countNewPhotos: files.length,
     });
     res.send({
       countNewPhotos: state.countNewPhotos,
-    });
+    }); 
   });
 });
 
@@ -77,6 +93,8 @@ app.get('/api/checkCopyProgress', (req, res) => {
 app.post('/api/copyPhotos', (req, res) => {
   const { userDirName } = req.body;
   const destDir = `${state.rootDir}${userDirName}/`;
+
+  console.log('destDir', destDir)
 
   if (fs.existsSync(destDir)) {
     return;
@@ -152,13 +170,23 @@ function calcCopyProgress({ countCopiedPhotos }) {
   return Math.floor(countCopiedPhotos * 100 / countNewPhotos);
 }
 
+function getPhotoName({ file }) {
+  return file.slice(file.lastIndexOf('\\') + 1);
+}
+
+function getRootDir() {
+  let rootDir;
+  if(process.env.NODE_ENV === 'production') {
+    rootDir = '../f-photo/';
+  } else  {
+    rootDir = 'E://f-photo/';
+  }
+  return rootDir;
+}
+
 function setState(propsUpd) {
   state = {
     ...state,
     ...propsUpd,
   };
-}
-
-function getPhotoName({ file }) {
-  return file.slice(file.lastIndexOf('\\') + 1);
 }

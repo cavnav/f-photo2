@@ -25,6 +25,7 @@ export function Stepper(props) {
   // ------------------------------------------------------------------
   function onRender() {
     const { step: { trigger = () => {} } } = state;
+    console.log('state.stepNum', state.stepNum);
     trigger({ state, dispatch });
   }
 

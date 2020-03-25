@@ -7,18 +7,8 @@ import 'antd/dist/antd.css';
 import './styles.css';
 
 export function Copy(props) {
-  const stateInit = {
-    copyProgress: 0,
-    countNewPhotos: 0,
-    isHelp: false,
-    isCopyCompleted: false,
-  };
-
+  
   const [state, setState] = useState(stateInit);
-
-  React.useEffect(() => {
-    // getNewPhotos();
-  }, []);
 
   return getRender();
 
@@ -63,14 +53,8 @@ export function Copy(props) {
         desc: 'Что-то пошло не так... Попробуй еще раз',
         stepNumDelta: -2,
       }, {
-        toRender: ({ key }) => <div className="flex flexDirColumn" key={key}>
-            Количество новых фото:
-            { state.countNewPhotos }
-            <input type="button" onClick={onCopy} value="Копировать" />
-            <Progress type="circle" percent={state.copyProgress} />
-            
-            Все фотографии успешно скопированы!
-          </div>,
+        toRender: getCopyingContent,
+        trigger: $getNewPhotos,
       }, {
         photoSrc: 'public/wizardCopy/005_returnMemCardInPhoto.jpg',
         desc: 'Вытащи карту памяти из кардРидера и вставь обратно в фотоаппарат до щелчка, как показано ниже:',
@@ -85,6 +69,19 @@ export function Copy(props) {
     ];
   }
 
+  function getCopyingContent({ key }) {
+    const beforeCopying = <div className="flex flexDirColumn" key={key}>
+      Количество новых фото:
+      { state.countNewPhotos }
+      <input type="button" onClick={onCopy} value="Копировать" />
+      <Progress type="circle" percent={state.copyProgress} />      
+    </div>;    
+
+    const afterCopying = <div>Все фотографии успешно скопированы!</div>;
+
+    return state.isCopyCompleted ? afterCopying : beforeCopying;    
+  }
+
   function $waitUSBconnect() {
     return serverApi({
       props: {
@@ -95,8 +92,8 @@ export function Copy(props) {
     .then(res => res.driveLetter);
   }
 
-  function getNewPhotos() {
-    serverApi({
+  function $getNewPhotos() {
+    return serverApi({
       props: {
         url: 'getNewPhotos'
       }
@@ -114,9 +111,7 @@ export function Copy(props) {
     serverApi({
       props: {
         url: 'copyPhotos',
-        userDirName: 'The quick brown fox jumps over the lazy dog'
-          .replace(' ', '')
-          .slice(Math.random() * 15, Math.random() * 15) || 'one'
+        userDirName: '',
       }
     }).then((res) => {
       checkCopyProgress();
@@ -131,12 +126,20 @@ export function Copy(props) {
     })
       .then(res => res.json())
       .then((res) => {
-        setTimeout(() => (res.copyProgress === 100 ? null : checkCopyProgress()), 500);
+        const isCopyCompleted = res.copyProgress === 100;
+        setTimeout(() => (isCopyCompleted ? null : checkCopyProgress()), 500);
         setState({
           ...state,
           copyProgress: res.copyProgress,
-          isCopyCompleted: true,
+          isCopyCompleted,
         });
       });
   }
 }
+
+const stateInit = {
+  copyProgress: 0,
+  countNewPhotos: 0,
+  isHelp: false,
+  isCopyCompleted: false,
+};
