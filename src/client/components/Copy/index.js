@@ -36,12 +36,12 @@ export function Copy(props) {
         desc: 'Вставь кардРидер в системный блок, как показано ниже, чтобы совпал ключ.',
       }, {    
         desc: 'Ищу карту памяти...',
-        trigger: ({ state: { step, stepNum }, dispatch }) => {
+        trigger: ({ step, setStepNum }) => {
           setTimeout(async () => {
             let result = await $waitUSBconnect() ? 'Resolve' : 'Reject'; 
     
-            dispatch({
-              stepNum: stepNum + (step[`triggerStepNumDeltaOn${result}`] || 1),
+            setStepNum({
+              val: step[`triggerStepNumDeltaOn${result}`],
             });
           }, 1000);
         },  

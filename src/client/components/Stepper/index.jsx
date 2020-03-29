@@ -6,40 +6,41 @@ export function Stepper(props) {
 
   const [state, dispatch] = React.useReducer(
     stateReducer, 
-    {
-      ...initState,
-      steps: props.steps,
-      stepsTotal: props.steps.length - 1,
-    }, 
+    initState,
     stateReducer
   );
 
-  React.useEffect(onRender);
+  let stateFinal = state;
+  if  (state.steps !== props.steps) {
+    stateFinal = stateReducer(state, {steps: props.steps});
+  };
+
+  React.useEffect(fireTrigger, [stateFinal.stepNum]);
 
   return (
     <div className="Stepper">      
-      { state.stepJSX }
+      { stateFinal.stepJSX }
     </div>
   );
 
   // ------------------------------------------------------------------
-  function onRender() {
-    const { step: { trigger = () => {} } } = state;
-    console.log('state.stepNum', state.stepNum);
-    trigger({ state, dispatch });
+
+  function fireTrigger() {
+    const { step: { trigger = () => {} }} = stateFinal;
+    trigger({ step: stateFinal.step, setStepNum });
   }
 
-  function stateReducer(prevState, newState) {
+  function stateReducer(prevState, delta,) {
     const stateUpd = {
       ...prevState,
-      ...newState,
+      ...delta,
     };
 
     const step = stateUpd.steps[stateUpd.stepNum];
-
     stateUpd.step = step;
-    stateUpd.stepJSX =  createStepJSX({ step });
-    
+    stateUpd.stepJSX = createStepJSX({ step });
+    stateUpd.stepsTotal = stateUpd.steps.length - 1;
+
     return stateUpd;
 
     // ----------------------------------------------    
@@ -47,11 +48,13 @@ export function Stepper(props) {
 
   function onClickNextStep({stepNumDelta}) {
     dispatch({
-      stepNum: state.stepNum + (stepNumDelta || state.stepNumDelta),
+      stepNum: stateFinal.stepNum + (stepNumDelta || stateFinal.stepNumDelta),
     });
   }
 
-  function createStepJSX({ step }) {   
+  function createStepJSX({ step }) {  
+    if (!step) return null;
+     
     return (
       <div className="step">
         { getContent() }
@@ -67,8 +70,6 @@ export function Stepper(props) {
         return step[item] && stepStruct[item]({
           key: ind, 
           step, 
-          state,
-          dispatch,
         });
       });
   
@@ -92,6 +93,12 @@ export function Stepper(props) {
         />;
       }
     }
+  }
+
+  function setStepNum({ val }) {
+    dispatch({
+      stepNum: stateFinal.stepNum + val,
+    });
   }
 }
 
