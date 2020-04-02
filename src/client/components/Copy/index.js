@@ -36,17 +36,15 @@ export function Copy(props) {
         desc: 'Вставь кардРидер в системный блок, как показано ниже, чтобы совпал ключ.',
       }, {    
         desc: 'Ищу карту памяти...',
-        trigger: ({ step, setStepNum }) => {
+        trigger: ({ setStepNum }) => {
           setTimeout(async () => {
-            let result = await $waitUSBconnect() ? 'Resolve' : 'Reject'; 
+            let stepNum = await $waitUSBconnect() ? +2 : +1; 
     
             setStepNum({
-              val: step[`triggerStepNumDeltaOn${result}`],
+              val: stepNum,
             });
           }, 1000);
         },  
-        triggerStepNumDeltaOnResolve: +2,
-        triggerStepNumDeltaOnReject: +1,
         isNextBtn: false,
       }, {    
         type: 'reject',
@@ -55,9 +53,26 @@ export function Copy(props) {
       }, {
         toRender: getCopyingContent,
         trigger: $getNewPhotos,
+        isNextBtn: state.isCopyCompleted,
       }, {
         photoSrc: 'public/wizardCopy/005_returnMemCardInPhoto.jpg',
         desc: 'Вытащи карту памяти из кардРидера и вставь обратно в фотоаппарат до щелчка, как показано ниже:',
+      }, {
+        desc: 'Проверяю, что карта памяти извлечена...',
+        trigger: ({ setStepNum }) => {
+          setTimeout(async () => {
+            let stepNum = await $waitUSBconnect() ? +1 : +2; 
+    
+            setStepNum({
+              val: stepNum,
+            });
+          }, 1000);
+        },  
+        isNextBtn: false,
+      }, {    
+        type: 'reject',
+        desc: 'Что-то пошло не так... Попробуй еще раз',
+        stepNumDelta: -2,
       }, {
         trigger: () => {
           props.dispatch.setAppState({
@@ -70,16 +85,16 @@ export function Copy(props) {
   }
 
   function getCopyingContent({ key }) {
-    const beforeCopying = <div className="flex flexDirColumn" key={key}>
+    const started = <div className="flex flexDirColumn" key={key}>
       Количество новых фото:
       { state.countNewPhotos }
-      <input type="button" onClick={onCopy} value="Копировать" />
+      <div><input type="button" onClick={onCopy} value="Копировать" /></div>
+      <div>* Внимание! После копирования карта памяти будет очищена.</div>
       <Progress type="circle" percent={state.copyProgress} />      
     </div>;    
+    const finished = <div>Все фотографии успешно скопированы!</div>;
 
-    const afterCopying = <div>Все фотографии успешно скопированы!</div>;
-
-    return state.isCopyCompleted ? afterCopying : beforeCopying;    
+    return state.isCopyCompleted ? finished : started;
   }
 
   function $waitUSBconnect() {
@@ -108,7 +123,7 @@ export function Copy(props) {
   }
 
   function onCopy() {
-    serverApi({
+    return serverApi({
       props: {
         url: 'copyPhotos',
         userDirName: '',

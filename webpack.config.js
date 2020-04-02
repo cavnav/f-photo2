@@ -36,7 +36,7 @@ module.exports = {
     open: true,
     proxy: {
       '/api': 'http://localhost:8080',
-      '/br': 'http://localhost:8080',
+      '/': 'http://localhost:8080',
     }
   },
   plugins: [
