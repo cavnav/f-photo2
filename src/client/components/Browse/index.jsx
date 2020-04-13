@@ -5,8 +5,15 @@ import { OnePhoto } from './components';
 import './styles.css';
 
 export function Browse(props) {
+  const { dispatch } = props;
+  const { 
+    photosState,
+    photosState: {
+      photos
+    }
+  } = props;
+
   const [state, setState] = useState(stateInit);
-  const [photos, setPhotos] = useState([]);
 
   useEffect(getPhotos, []);
 
@@ -43,7 +50,9 @@ export function Browse(props) {
     })
     .then(res => res.json())
     .then((res) => {
-      setPhotos(res.photos);
+      dispatch.setPhotos({
+        photos: res,
+      });
     });
   }
 

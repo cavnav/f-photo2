@@ -1,18 +1,20 @@
 import React, { useState, useReducer } from 'react';
-import { ControlPanel, MyView, } from './components';
+import { ControlPanel, MyView, AdditionalPanel} from './components';
 
 import './app.css';
 
 export function App(props) {
   const [appState, setAppState] = useReducer(stateReducer, appStateInit);
   const [printState, setPrintState] = useState(printInit);
+  const [photosState, setPhotos] = useReducer(photosReducer, photosStateInit);
 
   const dispatch = {
     setAppState,
     setPrintState,
+    setPhotos,
   };
 
-  const { view, actions } = appState;
+  const { view, actions, } = appState;
 
   return (    
     <div className="f-photo">     
@@ -21,10 +23,16 @@ export function App(props) {
         actions={actions} 
         appState={appState}
       />
+      <AdditionalPanel 
+        dispatch={dispatch} 
+        appState={appState}
+        photosState={photosState}
+      />
       <MyView 
         target={view} 
         appState={appState}
         printState={printState}
+        photosState={photosState}
         dispatch={dispatch}
       />
     </div>
@@ -36,6 +44,7 @@ export function App(props) {
 const appStateInit = {
   view: 'Welcome',
   doNeedHelp: false,
+  additionalActionId: undefined,
   actions: {
     Tune: {
       title: 'Настроить',
@@ -48,6 +57,7 @@ const appStateInit = {
     Browse: {
       title: 'Смотреть',
       isActive: true,
+      additionalActions: ['ExitFromAlbum', 'SelectAlbum'],
     },
     Print: {
       title: 'Печатать',
@@ -61,7 +71,17 @@ const appStateInit = {
       title: '?',
       isActive: true,
     }
-  }
+  },
+  additionalActions: {
+    ExitFromAlbum: {
+      title: 'Закрыть альбом',
+      isActive: true,
+    },
+    SelectAlbum: {
+      title: 'Выбрать альбом',
+      isActive: false,
+    },
+  },
 };
 
 const printInit = {
@@ -71,6 +91,10 @@ const printInit = {
   //     toShare: 0,
   //   }
   // }
+};
+
+const photosStateInit = {
+  photos: [],
 };
 
 function stateReducer(prevState, newState) {
@@ -83,5 +107,12 @@ function stateReducer(prevState, newState) {
   return {
     ...newState,
     doNeedHelp: false,
+  };
+}
+
+function photosReducer(prevState, newState) {
+  return {
+    ...prevState,
+    ...newState,
   };
 }

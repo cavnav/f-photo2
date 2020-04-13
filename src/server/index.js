@@ -25,7 +25,7 @@ console.log('state', state);
 
 // ------------------------------------------------------------------------------------------------
 
-app.use(express.static('E:/f-photo/'));
+app.use(express.static('E:/f-photo'));
 app.use(express.static('public'));
 app.use(express.static('dist'));
 
@@ -68,7 +68,8 @@ app.get('/api/getNewPhotos', async (req, res) => {
 
   findFiles({
     path: state.usbDriveLetter,
-    onResolve: ({ files }) => {
+    doNeedFullPath: true,
+    onResolve({ files }) {
       setState({
         newPhotos: [...files],
         countNewPhotos: files.length,
@@ -81,38 +82,60 @@ app.get('/api/getNewPhotos', async (req, res) => {
 });
 
 app.get('/api/browsePhotos', (req, res) => {
-  findFiles({
-    onResolve,
+  findFiles({ 
+    onResolve({ files: browseFiles }) {
+      setState({
+        browseFiles,
+      });
+    
+      res.send({
+        photos: browseFiles,
+      });
+    }
   });
-
-
-  // -------------------------
-  function onResolve({ files }) {
-    const browseFiles = files.map((file) => {
-      const fileUpd = getPhotoName({ file });
-      return `${state.curDir}${fileUpd}`;
-    });
-
-    setState({
-      browseFiles,
-    });
-
-    res.send({
-      photos: browseFiles,
-    });
-  }
 });
 
 app.get('/api/toward', (req, res) => {
-  res.send({
-    copyProgress: state.copyProgress,
+  const { id } = req.query;
+  const path = `${state.curDir}//${id}`;
+
+  if (!id) {
+    res.send({
+      files: [],
+    });
+  }
+
+  findFiles({
+    path,
+    onResolve({
+      files,
+    }) {
+      res.send({
+        files,
+      });
+
+      setState({
+        curDir: path,
+      })
+    }
   });
 });
 
 app.get('/api/backward', (req, res) => {
-  res.send({
-    copyProgress: state.copyProgress,
-  });
+  const path = getBackwardPath();
+  findFiles({
+    path,
+    onResolve({ files }) {
+      res.send({
+        files,
+      });
+
+      setState({
+        curDir: path,
+      })
+    }
+  })
+  
 });
 
 app.get('/api/checkCopyProgress', (req, res) => {
@@ -218,15 +241,29 @@ function calcCopyProgress({ countCopiedPhotos }) {
   return Math.floor(countCopiedPhotos * 100 / countNewPhotos);
 }
 
+function getBackwardPath() {
+  return state.curDir.slice(0, state.curDir.lastIndexOf('//'));
+}
+
 function findFiles({ 
   path = state.curDir,
+
+  doNeedFullPath = false,
   onResolve = () => {} 
 }) {
-  const fullPath = `${state.rootDir}${state.curDir}`;
-  console.log('find', state.curDir, path, onResolve);
+  const fullPath = `${state.rootDir}${path}`;
+  console.log(fullPath, state.curDir);
+  
   find.file(/.*\..*/, fullPath, (files) => {
-    onResolve({ files });
+    const browseFiles = doNeedFullPath ? files : files.map((file) => {
+      const fileUpd = getPhotoName({ file });
+      return `${state.curDir}${fileUpd}`;
+    });  
+    onResolve({ files: browseFiles });
   });  
+
+  // -------------------------------------------
+ 
 }
 
 function getCurMoment() {
@@ -235,17 +272,17 @@ function getCurMoment() {
 }
 
 function getPhotoName({ file }) {
-  return file.slice(file.lastIndexOf('\\') + 1);
+  return file.slice(file.lastIndexOf('\\'));
 }
 
 function getRootDir() {
   let rootDir;
   if(process.env.NODE_ENV === 'production') {
-    rootDir = '../f-photo/';
+    rootDir = '..//f-photo';
   } else  {
-    rootDir = 'E://f-photo/';
+    rootDir = 'E://f-photo';
   }
-  console.log('rootDir', rootDir);
+
   return rootDir;
 }
 
