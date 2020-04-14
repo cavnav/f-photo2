@@ -10,22 +10,23 @@ export function AdditionalPanel(props) {
 
   const { appState, appState: {view} } = props;
 
-  const additionalActions = _get(appState, ['actions', view, 'additionalActions']);
+  const customAdditionalActions = _get(appState, ['actions', view, 'additionalActions'], []);
   
-  if (!additionalActions) return null;
+  if (customAdditionalActions.length === 0) return null;
+
+  const { additionalActions } = appState;
 
   return (
     <div 
-      className=''       
+      className='AdditionalPanel'       
     >{
-      Object.entries(additionalActions)
-        .filter(([action, actionProps]) => actionProps.isActive)
-        .map(([action, actionProps]) => {
-          const Target = CompsAddPanel[action] || CompsAddPanel.Default;
+      customAdditionalActions
+        .map(actionName => {
+          const action = additionalActions[actionName];
+          const Target = action.isActive ? CompsAddPanel[actionName] : CompsAddPanel.Default;
           return (
             <Target 
               {...props}
-              additionalActions={additionalActions}
             />
           );
         })

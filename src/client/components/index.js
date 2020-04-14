@@ -25,5 +25,5 @@ export const Views = {
 export const CompsAddPanel = {
   ExitFromAlbum,
   SelectAlbum,
-  Default: null,
+  Default: () => null,
 };

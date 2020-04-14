@@ -3,15 +3,14 @@ import React, { useState, useEffect } from 'react';
 import './styles.css';
 
 export function ExitFromAlbum(props) {
-  const { dispatch } = props;
-  const { title } = props.additionalActions;
-
-  const stateInit = {};
+  const { dispatch } = props;  
   const [state, setState] = useState(stateInit);
+
+  const { title } = state;
 
   return (
     <div 
-      className='' 
+      className='ExitFromAlbum' 
       onClick={onClick}      
     >
       <div>{title}</div>  
@@ -37,3 +36,7 @@ export function ExitFromAlbum(props) {
   };
 
 }
+
+const stateInit = {
+  title: 'Закрыть альбом',
+};

@@ -88,9 +88,7 @@ app.get('/api/browsePhotos', (req, res) => {
         browseFiles,
       });
     
-      res.send({
-        photos: browseFiles,
-      });
+      res.send(browseFiles);
     }
   });
 });

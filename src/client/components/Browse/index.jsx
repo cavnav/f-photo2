@@ -50,7 +50,7 @@ export function Browse(props) {
     })
     .then(res => res.json())
     .then((res) => {
-      dispatch.setPhotos({
+      dispatch.setPhotosState({
         photos: res,
       });
     });

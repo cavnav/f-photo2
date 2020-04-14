@@ -4,14 +4,14 @@ import { ControlPanel, MyView, AdditionalPanel} from './components';
 import './app.css';
 
 export function App(props) {
-  const [appState, setAppState] = useReducer(stateReducer, appStateInit);
   const [printState, setPrintState] = useState(printInit);
-  const [photosState, setPhotos] = useReducer(photosReducer, photosStateInit);
+  const [appState, setAppState] = useReducer(stateReducer, appStateInit);
+  const [photosState, setPhotosState] = useReducer(photosReducer, photosStateInit);
 
   const dispatch = {
     setAppState,
     setPrintState,
-    setPhotos,
+    setPhotosState,
   };
 
   const { view, actions, } = appState;
