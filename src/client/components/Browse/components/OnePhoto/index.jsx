@@ -5,11 +5,18 @@ import { Help } from '../../..';
 import './styles.css';
 
 export function OnePhoto(props) {
-  const { photos, curPhotoInd, appState } = props;
+  const { dispatch } = props;
+  const { appServerAPI } = dispatch;
+  const { 
+    photosState: {
+      files,
+      dirs
+    }
+  } = props;
   const [state, setState] = React.useState({
     ...stateInit,
     curPhotoInd,
-    curPhoto: photos[curPhotoInd],
+    curPhoto: files[curPhotoInd],
   });
 
   let photoStatusesApi;
@@ -55,6 +62,8 @@ export function OnePhoto(props) {
       Стрелка вниз - повернуть текущее фото против часовой стрелки.<br></br>
       Цифра 1 - добавить фото к списку "Печатать".<br></br>
       Цифра 2 - добавить фото к списку "Отправить".<br></br>
+      Цифра 0 - удалить фото.<br></br>
+
     </div>
   }
 

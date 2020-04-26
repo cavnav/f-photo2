@@ -1,78 +1,86 @@
-import React, { useState, useEffect, } from 'react';
-import { serverApi } from '../../serverApi';
-import { OnePhoto } from './components';
+import React, { useState, useEffect, useReducer } from 'react';
+import { Help } from '../../';
+import { tempReducer } from '../../functions';
 
 import './styles.css';
 
 export function Browse(props) {
   const { dispatch } = props;
+  const { appServerAPI } = dispatch;
   const { 
-    photosState,
     photosState: {
-      photos
+      files,
+      dirs
     }
   } = props;
 
-  const [state, setState] = useState(stateInit);
-
-  useEffect(getPhotos, []);
+  const [state, setState] = useReducer(tempReducer(), stateInit);
+  
+  useEffect(appServerAPI.toward, []);
 
   return getRender();
 
   // --------------------------------------------------------------------
   function getRender() {
-    let render;
+    return (
+      <div 
+          className='Browse' 
+        >
+        { getDirsToRender() }
+        { getFilesToRender() }   
 
-    if (state.curPhotoInd > -1) {
-      render = <OnePhoto 
-        curPhotoInd={state.curPhotoInd}
-        photos={photos}
-        {...props}
-      />;
-    }
-    if (state.curPhotoInd === -1) {
-      render = <div 
-        className='Browse' 
-        onDoubleClick={onDblClickPhoto}
-      >
-        { getPhotosToRender() }
+        <Help
+          toRender={toRenderHelp()}
+          {...props}
+        />
       </div>
-    }
-
-    return render;
+    );
   }
 
-  function getPhotos() {
-    serverApi({
-      props: {
-        url: 'browsePhotos'
-      }
-    })
-    .then(res => res.json())
-    .then((res) => {
-      dispatch.setPhotosState({
-        photos: res,
-      });
+  function toRenderHelp() {
+    return <div className="flexCenter marginBottom10">
+      Открыть альбом<br></br>
+      Закрыть альбом<br></br>
+      Рассмотреть фото<br></br>
+      Вернуть фото в альбом.<br></br>
+
+    </div>
+  }
+
+  function getDirsToRender() {
+    return dirs.map(dir => {
+      return (
+        <div 
+          key={dir}
+          name={dir}
+          className="fitPreview100 dir"
+          onClick={onClickDir}
+        >{dir}</div>
+      );
     });
   }
 
-  function onDblClickPhoto(e) {
-    
-    setState({
-      ...state,
+  function onClickDir(e) {
+    const subdir = e.target.getAttribute('name');
+    appServerAPI.toward({ subdir });
+  }
+
+  function onClickFile(e) {
+    dispatch.setBrowseState({      
       curPhotoInd: +e.target.getAttribute('ind'),
     });
   }
 
-  function getPhotosToRender() {
-    return photos.map((photo, ind) => {
+  function getFilesToRender() {
+    return files.map((file, ind) => {
       return (
         <div 
-          key={photo}
-          className='fitPreview100'
-          style={{ 'backgroundImage': `url(${photo})` }}
+          key={file}
+          className='fitPreview100 file'
+          style={{ 'backgroundImage': `url(${file})` }}
           ind={ind} 
-          src={photo}
+          src={file}
+          onClick={onClickFile}
         >
         </div>
       );
@@ -83,5 +91,4 @@ export function Browse(props) {
 const stateInit = {
   previewWidth: 100,
   previewHeight: 100,
-  curPhotoInd: -1,
 };
