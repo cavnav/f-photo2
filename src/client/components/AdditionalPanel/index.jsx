@@ -5,12 +5,13 @@ import { get as _get } from 'lodash';
 import './styles.css';
 
 export function AdditionalPanel(props) {
+  const { dispatch, states } = props; 
+  const { setAppState } = dispatch;
+  const { appState } = states;
   const stateInit = {};
   const [state, setState] = useState(stateInit);
 
-  const { appState, appState: {view} } = props;
-
-  const customAdditionalActions = _get(appState, ['actions', view, 'additionalActions'], []);
+  const customAdditionalActions = _get(appState, ['actions', appState.view, 'additionalActions'], []);
   
   if (customAdditionalActions.length === 0) return null;
 
@@ -38,8 +39,7 @@ export function AdditionalPanel(props) {
   function onClickAction(e) {
     const actionId = e.target.getAttribute('data-id');
 
-    props.dispatch.setAppState({
-      ...props.appState,
+    setAppState({
       additionalActionId: actionId,
     });
   };

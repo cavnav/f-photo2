@@ -41,6 +41,7 @@ export function PhotoStatuses(props) {
   }
 
   function addPhotoPrint() {    
+    // Изменяю объект, чтобы не было рендера.
     let printStateUpd = printState;
     const path = [curDate, curPhoto];
     const statusUpd = _get(printStateUpd, path, new PhotoStatusIcons());

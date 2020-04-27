@@ -1,18 +1,17 @@
 import React, { useState, useEffect, useReducer } from 'react';
-import { Help } from '../../';
+import { Help } from '../';
 import { tempReducer } from '../../functions';
 
 import './styles.css';
 
 export function Browse(props) {
-  const { dispatch } = props;
-  const { appServerAPI } = dispatch;
-  const { 
-    photosState: {
-      files,
-      dirs
-    }
-  } = props;
+  const { dispatch, states } = props;
+  const { appServerAPI, setBrowseState, setAppState, } = dispatch;
+  const { appState, photosState } = states;
+  const {
+    files,
+    dirs
+  } = photosState;
 
   const [state, setState] = useReducer(tempReducer(), stateInit);
   
@@ -66,9 +65,13 @@ export function Browse(props) {
   }
 
   function onClickFile(e) {
-    dispatch.setBrowseState({      
+    setBrowseState({      
       curPhotoInd: +e.target.getAttribute('ind'),
     });
+
+    setAppState({
+      view: 'OnePhoto',
+    })
   }
 
   function getFilesToRender() {

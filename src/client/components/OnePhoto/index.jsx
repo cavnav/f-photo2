@@ -1,18 +1,16 @@
 import React from 'react';
-import { PhotoStatuses } from '../';
-import { Help } from '../../..';
+import { PhotoStatuses } from '..';
+import { Help } from '..';
 
 import './styles.css';
 
 export function OnePhoto(props) {
-  const { dispatch } = props;
+  const { dispatch, states } = props;
   const { appServerAPI } = dispatch;
-  const { 
-    photosState: {
-      files,
-      dirs
-    }
-  } = props;
+  const { browseState, photosState } = states;
+  const { files } = photosState;
+  const { curPhotoInd } = browseState;
+
   const [state, setState] = React.useState({
     ...stateInit,
     curPhotoInd,
@@ -115,16 +113,6 @@ export function OnePhoto(props) {
   }
 }
 
-const stateInit = {
-  curPhoto: undefined,
-  curPhotoInd: -1,
-  curPhotoRotateDeg: 0,
-  curPhotoWidth: undefined,
-  curPhotoHeight: undefined,
-  curDate: getCurDate(),
-  forceRender: false,
-};
-
 function getCurDate() {
   const dateISO = new Date().toISOString();
   return dateISO.slice(0, dateISO.indexOf('T'));
@@ -141,3 +129,15 @@ function getFitSize({ width, height }) {
   }
   return res;
 }
+
+const stateInit = {
+  curPhoto: undefined,
+  curPhotoInd: -1,
+  curPhotoRotateDeg: 0,
+  curPhotoWidth: undefined,
+  curPhotoHeight: undefined,
+  curDate: getCurDate(),
+  forceRender: false,
+};
+
+const navLink = [stateInit,];

@@ -7,12 +7,12 @@ import './app.css';
 export function App(props) {
   const d = {}; // dispatch.
   const s = {}; // states.
-  const [s.printState, d.setPrintState] = useState(printInit);
-  const [s.appState, d.setAppState] = useReducer(stateReducer, appStateInit);
-  const [s.photosState, d.setPhotosState] = useReducer(tempReducer(), photosStateInit);
-  const [s.browseState, d.setBrowseState] = useReducer(tempReducer(), browseStateInit);
+  [s.printState, d.setPrintState] = useState(printInit);
+  [s.appState, d.setAppState] = useReducer(stateReducer, appStateInit);
+  [s.photosState, d.setPhotosState] = useReducer(tempReducer(), photosStateInit);
+  [s.browseState, d.setBrowseState] = useReducer(tempReducer(), browseStateInit);
 
-  const { view, actions, } = appState;
+  const { view, actions, } = s.appState;
 
   return (    
     <div className="f-photo">     

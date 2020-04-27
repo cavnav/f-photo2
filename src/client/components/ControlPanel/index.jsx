@@ -3,10 +3,13 @@ import React, { useState, useEffect } from 'react';
 import './styles.css';
 
 export function ControlPanel(props) {
+  const { dispatch, states } = props;
+  const { setAppState } = dispatch;
+  const { appState } = states;
   const stateInit = {};
   const [state, setState] = useState(stateInit);
 
-  const isWelcome = props.appState.view === 'Welcome';
+  const isWelcome = appState.view === 'Welcome';
 
   return (
     <div className={`controlPanel flex ${isWelcome ? 'attention' : ''}`} onClick={onClickAction}>
@@ -24,8 +27,7 @@ export function ControlPanel(props) {
   function onClickAction(e) {
     const actionId = e.target.getAttribute('data-id');
 
-    props.dispatch.setAppState({
-      ...props.appState,
+    setAppState({
       view: actionId,
     });
   };

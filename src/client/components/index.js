@@ -12,6 +12,8 @@ export { AdditionalPanel} from './AdditionalPanel';
 export { MyView } from './MyView';
 export { Stepper } from './Stepper';
 export { Help } from './Help';
+export { PhotoStatuses } from './PhotoStatuses';
+export { OnePhoto } from './OnePhoto';
 
 export const Views = {
   Tune, 
