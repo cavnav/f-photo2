@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useReducer } from 'react';
-import { Help } from '../';
+import { Help, Views } from '../';
 import { tempReducer } from '../../functions';
 
 import './styles.css';
@@ -16,7 +16,7 @@ export function Browse(props) {
   const [state, setState] = useReducer(tempReducer(), stateInit);
   
   const { doNeedHelp } = appState;
-  
+
   useEffect(appServerAPI.toward, []);
 
   return getRender();
@@ -72,7 +72,7 @@ export function Browse(props) {
     });
 
     setAppState({
-      view: 'OnePhoto',
+      view: Views.OnePhoto,
     })
   }
 

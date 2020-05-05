@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
 import './styles.css';
+import { Views } from '..';
 
 export function ControlPanel(props) {
   const { dispatch, states } = props;
@@ -9,7 +10,7 @@ export function ControlPanel(props) {
   const stateInit = {};
   const [state, setState] = useState(stateInit);
 
-  const isWelcome = appState.view === 'Welcome';
+  const isWelcome = appState.view === Views.Welcome;
 
   return (
     <div className={`controlPanel flex ${isWelcome ? 'attention' : ''}`} onClick={onClickAction}>
@@ -28,7 +29,7 @@ export function ControlPanel(props) {
     const actionId = e.target.getAttribute('data-id');
 
     setAppState({
-      view: actionId,
+      view: Views[actionId],
     });
   };
 

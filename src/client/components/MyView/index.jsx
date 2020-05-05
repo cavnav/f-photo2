@@ -4,7 +4,7 @@ import { Views } from '../';
 import './styles.css';
 
 export function MyView(props) {  
-  const Target = Views[props.target] || Views.default;
+  const { target: Target } = props;
   return (
     <div className="MyView">
       <Target 

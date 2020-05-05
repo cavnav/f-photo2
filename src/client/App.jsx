@@ -2,6 +2,7 @@ import React, { useState, useReducer } from 'react';
 import { ControlPanel, MyView, AdditionalPanel} from './components';
 import { tempReducer } from './functions';
 import { serverApi } from './serverApi';
+import { Views } from './components';
 
 import './app.css';
 
@@ -40,7 +41,7 @@ export function App(props) {
 }
 
 const appStateInit = {
-  view: 'Welcome',
+  view: Views.Welcome,
   doNeedHelp: false,
   additionalActionId: undefined,
   actions: {
@@ -74,6 +75,10 @@ const appStateInit = {
     ExitFromAlbum: {
       title: 'Закрыть альбом',
       isActive: true,
+    },
+    ExitFromOnePhoto: {
+      title: 'Вернуть фото',
+      isActive: false,
     },
     SelectAlbum: {
       title: 'Выбрать альбом',

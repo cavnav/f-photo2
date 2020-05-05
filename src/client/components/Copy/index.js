@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Progress, } from 'antd';
 import { serverApi } from '../../serverApi';
-import { Stepper } from '../';
+import { Stepper, Views } from '../';
 
 import 'antd/dist/antd.css';
 import './styles.css';
@@ -77,7 +77,7 @@ export function Copy(props) {
         trigger: () => {
           props.dispatch.setAppState({
             ...props.appState,
-            view: 'Welcome',
+            view: Views.Welcome,
           });
         } 
       }

@@ -23,7 +23,7 @@ export const Views = {
   Print, 
   Help,
   OnePhoto,
-  default: Welcome,
+  Welcome,
 };
 
 export const CompsAddPanel = {
