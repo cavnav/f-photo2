@@ -3,9 +3,9 @@ import React from 'react';
 import './styles.css';
 
 export function Help(props) {  
-  const { appState } = props;
+  const { states } = props;
 
-  if (appState.doNeedHelp === false) return null;
+  if (states.appState.doNeedHelp === false) return null;
 
   return (
     <dialog className="Help fontSize20">

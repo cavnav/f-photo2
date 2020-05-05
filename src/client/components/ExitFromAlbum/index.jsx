@@ -3,11 +3,17 @@ import React, { useState, useEffect } from 'react';
 import './styles.css';
 
 export function ExitFromAlbum(props) {
-  const { dispatch } = props;  
+  const { dispatch, states } = props;  
   const [state, setState] = useState(stateInit);
 
-  const { title } = state;
+  const { appServerAPI } = dispatch;
+  const { browseState } = states;
 
+  const [albumName] = browseState.path.slice(-1);
+  const title = `Закрыть альбом ${albumName}`;
+
+  if (!albumName) return null;
+  
   return (
     <div 
       className='ExitFromAlbum' 
@@ -19,24 +25,10 @@ export function ExitFromAlbum(props) {
 
   // -----------------------------------------------------------------------
   function onClick(e) {
-    
-    function navigateBackward() {
-      serverApi({
-        props: {
-          url: 'backward'
-        }
-      })
-      .then(res => res.json())
-      .then((res) => {
-        dispatch.setPhotos({
-          photos: res
-        });    
-      });
-    }
+    appServerAPI.backward();
   };
 
 }
 
 const stateInit = {
-  title: 'Закрыть альбом',
 };

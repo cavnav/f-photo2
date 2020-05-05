@@ -1,3 +1,4 @@
+
 const express = require('express');
 const bodyParser = require('body-parser');
 
@@ -13,11 +14,12 @@ const app = express();
 let state = {
   newPhotos: [],
   browseFiles: [],
+  browseDirs: [],
   countNewPhotos: 0,
   copyProgress: 0,
   countCopiedPhotos: 0,
   rootDir: getRootDir(),
-  curDir: '',
+  curDir: getRootDir(),
   usbDriveLetter: undefined,
 };
 
@@ -67,7 +69,6 @@ app.get('/api/getNewPhotos', async (req, res) => {
   }
 
   findFiles({
-    path: state.usbDriveLetter,
     doNeedFullPath: true,
     onResolve({ files }) {
       setState({
@@ -81,59 +82,42 @@ app.get('/api/getNewPhotos', async (req, res) => {
   });
 });
 
-app.get('/api/browsePhotos', (req, res) => {
+app.get('/api/browseFiles', (req, res) => {
   findFiles({ 
-    onResolve({ files: browseFiles }) {
+    doNeedDirs: true,
+    onResolve({ files, dirs }) {
       setState({
-        browseFiles,
+        files,
+        dirs,
       });
     
-      res.send(browseFiles);
+      res.send({
+        files,
+        dirs,
+      });
     }
   });
 });
 
 app.get('/api/toward', (req, res) => {
-  const { id } = req.query;
-  const path = `${state.curDir}//${id}`;
+  let { subdir } = req.query;
+  subdir = subdir ? `\\${subdir}` : '';
+  const path = `${state.curDir}${subdir}`;
 
-  if (!id) {
-    res.send({
-      files: [],
-    });
-  }
-
-  findFiles({
-    path,
-    onResolve({
-      files,
-    }) {
-      res.send({
-        files,
-      });
-
-      setState({
-        curDir: path,
-      })
-    }
+  setState({
+    curDir: path,
   });
+
+  res.redirect('browseFiles');
 });
 
 app.get('/api/backward', (req, res) => {
   const path = getBackwardPath();
-  findFiles({
-    path,
-    onResolve({ files }) {
-      res.send({
-        files,
-      });
+  setState({
+    curDir: path,
+  });
 
-      setState({
-        curDir: path,
-      })
-    }
-  })
-  
+  res.redirect('browseFiles');  
 });
 
 app.get('/api/checkCopyProgress', (req, res) => {
@@ -170,7 +154,7 @@ app.post('/api/copyPhotos', (req, res) => {
   function startCopy({ photos, destDir }) {
     photos.length && setTimeout(() => {
       const [photo] = photos;
-      const photoName = getPhotoName({ file: photo });
+      const photoName = getFileName({ file: photo });
       const destPath = `${destDir}${photoName}`;
 
       fs.copyFile(photo, destPath, (err) => {
@@ -240,28 +224,43 @@ function calcCopyProgress({ countCopiedPhotos }) {
 }
 
 function getBackwardPath() {
+  if (state.rootDir === state.curDir) return state.curDir;
   return state.curDir.slice(0, state.curDir.lastIndexOf('//'));
 }
 
 function findFiles({ 
   path = state.curDir,
 
+  doNeedDirs = false,
   doNeedFullPath = false,
   onResolve = () => {} 
 }) {
-  const fullPath = `${state.rootDir}${path}`;
-  console.log(fullPath, state.curDir);
+  console.log(state.curDir);
   
-  find.file(/.*\..*/, fullPath, (files) => {
+  find.file('', path, (files) => {
     const browseFiles = doNeedFullPath ? files : files.map((file) => {
-      const fileUpd = getPhotoName({ file });
-      return `${state.curDir}${fileUpd}`;
+      const fileUpd = getFileName({ file });
+      return `${fileUpd}`;
     });  
-    onResolve({ files: browseFiles });
-  });  
 
-  // -------------------------------------------
- 
+    if (doNeedDirs === false) {
+      onResolve({ files: browseFiles, dirs: [] });
+      return;
+    }
+
+    find.dir('', path, (dirs) => {
+      const browseDirs = dirs.filter(isTopLevelDir).map((dir) => {
+        return getFileName({ file: dir });
+      });  
+      console.log('browseDirs', browseDirs);
+      onResolve({ files: browseFiles, dirs: browseDirs });
+    });  
+  });
+
+  // ------------------------------------------- 
+  function isTopLevelDir(dir) {
+    return path.length === dir.lastIndexOf('\\');
+  }
 }
 
 function getCurMoment() {
@@ -269,16 +268,16 @@ function getCurMoment() {
   return dateISO.slice(0, dateISO.indexOf('.')).replace(/:/g, '');
 }
 
-function getPhotoName({ file }) {
-  return file.slice(file.lastIndexOf('\\'));
+function getFileName({ file }) {
+  return file.slice(file.lastIndexOf('\\') + 1);
 }
 
 function getRootDir() {
   let rootDir;
   if(process.env.NODE_ENV === 'production') {
-    rootDir = '..//f-photo';
+    rootDir = '..\\f-photo';
   } else  {
-    rootDir = 'E://f-photo';
+    rootDir = 'E:\\f-photo';
   }
 
   return rootDir;

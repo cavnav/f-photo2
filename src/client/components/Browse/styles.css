@@ -7,7 +7,6 @@
 
 .fitPreview100 {  
   padding: 5px;
-  width: 100px;
   height: 100px;
   margin-right: 5px;
   margin-top: 5px;
@@ -18,4 +17,12 @@
   background-repeat: no-repeat;
   background-position: center center;
   background-size: contain;
+}
+
+.Browse .file {
+  width: 100px;
+}
+
+.Browse .dir {
+
 }

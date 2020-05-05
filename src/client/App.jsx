@@ -1,14 +1,17 @@
 import React, { useState, useReducer } from 'react';
 import { ControlPanel, MyView, AdditionalPanel} from './components';
 import { tempReducer } from './functions';
+import { serverApi } from './serverApi';
 
 import './app.css';
 
 export function App(props) {
   const d = {}; // dispatch.
   const s = {}; // states.
+  d.appServerAPI = new AppServerAPI({ dispatch: d, states: s });
+
   [s.printState, d.setPrintState] = useState(printInit);
-  [s.appState, d.setAppState] = useReducer(stateReducer, appStateInit);
+  [s.appState, d.setAppState] = useReducer(tempReducer(), appStateInit);
   [s.photosState, d.setPhotosState] = useReducer(tempReducer(), photosStateInit);
   [s.browseState, d.setBrowseState] = useReducer(tempReducer(), browseStateInit);
 
@@ -34,19 +37,6 @@ export function App(props) {
   );
 
   //--------------------------------------------------------------------------
-}
-
-function stateReducer(prevState, newState) {
-  if (newState.view === 'Help') return {
-    ...newState,
-    view: prevState.view,
-    doNeedHelp: true,
-  };
-
-  return {
-    ...newState,
-    doNeedHelp: false,
-  };
 }
 
 const appStateInit = {
@@ -102,13 +92,46 @@ const printInit = {
 };
 
 const photosStateInit = {
-  photos: [],
+  files: [],
+  dirs: [],
 };
 
 const browseStateInit = {
+  path: [],
   curPhotoInd: -1,
   scrollY: 0,
 };
+
+class AppServerAPI {
+  constructor({ dispatch, states }) {
+    this.dispatch = dispatch;
+    this.states = states;
+  }
+  backward = () => {
+    this.navigate({ direction: 'backward' });
+    this.states.browseState.path = path.slice(0, -1);
+  }
+  toward = ({ subdir } = {}) => {
+    this.navigate({ direction: 'toward', params: { subdir } });
+    this.states.browseState.path.push(subdir);
+  }
+  navigate = ({ direction, params = {} }) => {
+    serverApi({
+      props: {
+        url: direction,
+        params,
+      }
+    })
+    .then(res => res.json())
+    .then((res) => {
+      const { files, dirs } = res;
+      this.dispatch.setPhotosState({
+        files,
+        dirs,
+      });    
+    });
+  }
+}
 
 const navLink = [
   appStateInit, 

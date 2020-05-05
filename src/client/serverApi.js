@@ -3,6 +3,12 @@ export const serverApi = ({ props }) => {
   const fullUrl = `/api/${url}`;
 
   switch (url) {
+    case 'toward': 
+      let { subdir } = props.params;
+      subdir = subdir ? `?subdir=${subdir}` : '';
+      return fetch(`${fullUrl}${subdir}`);
+    case 'backward':
+      return fetch(fullUrl);
     case 'copyPhotos':
       return fetch(fullUrl, {
         method: 'POST',
