@@ -9,11 +9,12 @@ export function ExitFromAlbum(props) {
   const { appServerAPI } = dispatch;
   const { browseState } = states;
 
+  console.log('path', browseState.path);
   const [albumName] = browseState.path.slice(-1);
   const title = `Закрыть альбом ${albumName}`;
 
   if (!albumName) return null;
-  
+
   return (
     <div 
       className='ExitFromAlbum' 

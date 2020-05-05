@@ -109,7 +109,7 @@ class AppServerAPI {
   }
   backward = () => {
     this.navigate({ direction: 'backward' });
-    this.states.browseState.path = path.slice(0, -1);
+    this.states.browseState.path = this.states.browseState.path.slice(0, -1);
   }
   toward = ({ subdir } = {}) => {
     this.navigate({ direction: 'toward', params: { subdir } });

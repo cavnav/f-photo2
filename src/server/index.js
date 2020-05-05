@@ -225,7 +225,7 @@ function calcCopyProgress({ countCopiedPhotos }) {
 
 function getBackwardPath() {
   if (state.rootDir === state.curDir) return state.curDir;
-  return state.curDir.slice(0, state.curDir.lastIndexOf('//'));
+  return state.curDir.slice(0, state.curDir.lastIndexOf('\\'));
 }
 
 function findFiles({ 
