@@ -20,7 +20,7 @@ export function ExitFromAlbum(props) {
       className='ExitFromAlbum' 
       onClick={onClick}      
     >
-      <div>{title}</div>  
+      <div className='title'>{title}</div>  
     </div>
   );
 

@@ -6,6 +6,7 @@ import { Welcome } from './Welcome';
 import { Help } from './Help';
 import { ExitFromAlbum } from './ExitFromAlbum';
 import { SelectAlbum } from './SelectAlbum';
+import { OnePhoto } from './OnePhoto';
 
 export { ControlPanel } from './ControlPanel';
 export { AdditionalPanel} from './AdditionalPanel';
@@ -21,6 +22,7 @@ export const Views = {
   Browse,
   Print, 
   Help,
+  OnePhoto,
   default: Welcome,
 };
 

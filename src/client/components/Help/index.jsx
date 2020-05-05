@@ -3,9 +3,9 @@ import React from 'react';
 import './styles.css';
 
 export function Help(props) {  
-  const { states } = props;
+  const { doNeedHelp, dispatch } = props;
 
-  if (states.appState.doNeedHelp === false) return null;
+  if (doNeedHelp === false) return null;
 
   return (
     <dialog className="Help fontSize20">
@@ -25,10 +25,6 @@ export function Help(props) {
 
   // -------------------------------------------------------------------
   function onClickGotIt() {
-    const appStateUpd = { 
-      ...appState,
-      doNeedHelp: false, 
-    };
-    props.dispatch.setAppState(appStateUpd);
+    dispatch.setAppState({ doNeedHelp: false });
   }
 }

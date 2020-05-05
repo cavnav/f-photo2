@@ -36,12 +36,12 @@ export function PhotoStatuses(props) {
 
   function onRender() {
     onRenderCb({
-      addPhotoPrint,
+      changeStatusPhotoPrint,
     });  
   }
 
-  function addPhotoPrint() {    
-    // Изменяю объект, чтобы не было рендера.
+  function changeStatusPhotoPrint() {    
+    // Изменяю объект, чтобы не было рендера родителей.
     let printStateUpd = printState;
     const path = [curDate, curPhoto];
     const statusUpd = _get(printStateUpd, path, new PhotoStatusIcons());

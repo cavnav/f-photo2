@@ -15,6 +15,8 @@ export function Browse(props) {
 
   const [state, setState] = useReducer(tempReducer(), stateInit);
   
+  const { doNeedHelp } = appState;
+  
   useEffect(appServerAPI.toward, []);
 
   return getRender();
@@ -30,7 +32,7 @@ export function Browse(props) {
 
         <Help
           toRender={toRenderHelp()}
-          {...props}
+          {...{doNeedHelp}}
         />
       </div>
     );

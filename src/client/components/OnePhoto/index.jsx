@@ -3,23 +3,27 @@ import { PhotoStatuses } from '..';
 import { Help } from '..';
 
 import './styles.css';
+import { tempReducer } from '../../functions';
 
 export function OnePhoto(props) {
   const { dispatch, states } = props;
-  const { appServerAPI } = dispatch;
-  const { browseState, photosState } = states;
+  const { browseState, photosState, printState, appState } = states;
   const { files } = photosState;
   const { curPhotoInd } = browseState;
+  const { doNeedHelp } = appState;
 
-  const [state, setState] = React.useState({
+  const [state, setState] = React.useReducer(tempReducer(), {
     ...stateInit,
     curPhotoInd,
     curPhoto: files[curPhotoInd],
   });
 
+  const { curDate, curPhoto } = state;
+  const imgRef = React.useRef(null);
+
   let photoStatusesApi;
 
-  React.useEffect(onRender);
+  React.useEffect(addKeyDownListener);
   React.useEffect(fitCurPhotoSize, [state.curPhotoInd]);
 
   return getRender();
@@ -31,22 +35,20 @@ export function OnePhoto(props) {
         className="OnePhoto fitScreen"
       >
         <img 
-          key={state.curPhoto} 
+          ref={imgRef}
           src={state.curPhoto}        
           style={{
-            transform: `rotate(${state.curPhotoRotateDeg}deg)`,
             width: state.curPhotoWidth,
             height: state.curPhotoHeight,
           }} 
         />
         <PhotoStatuses 
-          {...state}
-          {...props}
+          {...{curDate, curPhoto, printState}}
           onRenderCb={onRenderPhotoStatuses}
         /> 
         <Help
           toRender={toRenderHelp()}
-          {...props}
+          {...{doNeedHelp}}
         />
       </div>
     );
@@ -69,7 +71,7 @@ export function OnePhoto(props) {
     photoStatusesApi = api;
   }
 
-  function onRender() {
+  function addKeyDownListener() {
     document.addEventListener('keydown', onKeyDown);
 
     return () => {
@@ -78,7 +80,7 @@ export function OnePhoto(props) {
   }
 
   function fitCurPhotoSize() {
-    const photoEl = document.querySelector(`[src='${state.curPhoto}']`);    
+    const photoEl = imgRef.current;    
     const { width: curPhotoWidth, height: curPhotoHeight } = getFitSize(photoEl.getBoundingClientRect());
 
     setState({
@@ -90,20 +92,20 @@ export function OnePhoto(props) {
 
   function onKeyDown(e) {
     const prevPhotoInd = state.curPhotoInd > 0 ? state.curPhotoInd - 1 : 0;
-    const nextPhotoInd = state.curPhotoInd < photos.length - 1 ? (state.curPhotoInd + 1) : (photos.length - 1);
+    const nextPhotoInd = state.curPhotoInd < files.length - 1 ? (state.curPhotoInd + 1) : (files.length - 1);
 
-    const stateUpd = { ...state };
+    const stateUpd = {};
 
     switch (e.which) {
-      case 49:  photoStatusesApi.addPhotoPrint(); 
+      case 49:  photoStatusesApi.changeStatusPhotoPrint(); 
                 break; 
 
       case 37:  stateUpd.curPhotoInd = prevPhotoInd;
-                stateUpd.curPhoto = photos[prevPhotoInd];
+                stateUpd.curPhoto = files[prevPhotoInd];
                 break; // prev
 
       case 39:  stateUpd.curPhotoInd = nextPhotoInd; 
-                stateUpd.curPhoto = photos[nextPhotoInd];
+                stateUpd.curPhoto = files[nextPhotoInd];
                 break; // next
       case 38: stateUpd.curPhotoRotateDeg = stateUpd.curPhotoRotateDeg + 90; break; // rotate right
       case 40: stateUpd.curPhotoRotateDeg = stateUpd.curPhotoRotateDeg - 90; break; // rotate left
