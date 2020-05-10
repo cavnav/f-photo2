@@ -76,7 +76,6 @@ export function Copy(props) {
       }, {
         trigger: () => {
           props.dispatch.setAppState({
-            ...props.appState,
             view: Views.Welcome,
           });
         } 

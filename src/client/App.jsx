@@ -3,19 +3,27 @@ import { ControlPanel, MyView, AdditionalPanel} from './components';
 import { tempReducer } from './functions';
 import { serverApi } from './serverApi';
 import { Views } from './components';
+import { additionalActions } from './constants';
 
 import './app.css';
 
 export function App(props) {
   const d = {}; // dispatch.
   const s = {}; // states.
-  d.appServerAPI = new AppServerAPI({ dispatch: d, states: s });
 
-  [s.printState, d.setPrintState] = useState(printInit);
   [s.appState, d.setAppState] = useReducer(tempReducer(), appStateInit);
+  [s.printState, d.setPrintState] = useReducer(tempReducer(), printInit);
   [s.photosState, d.setPhotosState] = useReducer(tempReducer(), photosStateInit);
   [s.browseState, d.setBrowseState] = useReducer(tempReducer(), browseStateInit);
+  [s.ignored, d.forceUpdate] = useReducer(x => !x, true);
 
+  d.appServerAPI = new AppServerAPI({ dispatch: d, states: s });
+  d.toggleAddActions = toggleAddActions(s);
+
+  const st = {
+    additionalActions,
+  }
+  
   const { view, actions, } = s.appState;
 
   return (    
@@ -33,6 +41,7 @@ export function App(props) {
         target={view} 
         states={s}
         dispatch={d}
+        myStore={st}
       />
     </div>
   );
@@ -56,7 +65,16 @@ const appStateInit = {
     Browse: {
       title: 'Смотреть',
       isActive: true,
-      additionalActions: ['ExitFromAlbum', 'SelectAlbum'],
+      additionalActions: [
+        additionalActions.ExitFromAlbum, 
+        additionalActions.SelectAlbum
+      ],
+    },
+    OnePhoto: {
+      additionalActions: [       
+        additionalActions.ExitFromOnePhoto,
+      ],
+      isActive: false,
     },
     Print: {
       title: 'Печатать',
@@ -70,20 +88,6 @@ const appStateInit = {
       title: '?',
       isActive: true,
     }
-  },
-  additionalActions: {
-    ExitFromAlbum: {
-      title: 'Закрыть альбом',
-      isActive: true,
-    },
-    ExitFromOnePhoto: {
-      title: 'Вернуть фото',
-      isActive: false,
-    },
-    SelectAlbum: {
-      title: 'Выбрать альбом',
-      isActive: false,
-    },
   },
 };
 
@@ -135,6 +139,14 @@ class AppServerAPI {
         dirs,
       });    
     });
+  }
+}
+
+function toggleAddActions({ appState }) {
+  return function ({ component: { name: compName }, action: { name: actionName }, isActive }) {
+    const action = appState.actions[compName].additionalActions.find(a => a.name === actionName);
+    action.isActive = isActive;
+    this.forceUpdate();
   }
 }
 

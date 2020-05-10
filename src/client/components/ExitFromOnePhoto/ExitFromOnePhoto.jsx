@@ -1,18 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Views } from './';
+import { Views } from '..';
 import './styles.css';
 
 export function ExitFromOnePhoto(props) {
   const { dispatch, states } = props;  
   const [state, setState] = useState(stateInit);
 
-  const { appServerAPI } = dispatch;
-  const { browseState } = states;
+  const { appServerAPI, setAppState } = dispatch;
 
-  const [albumName] = browseState.path.slice(-1);
-  const title = `Вернуть фото`;
-
-  if (!albumName) return null;
+  const title = `Вернуться к списку фото`;
 
   return (
     <div 

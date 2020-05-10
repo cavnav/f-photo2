@@ -112,6 +112,7 @@ export function OnePhoto(props) {
     }
 
     setState(stateUpd);
+    browseState.curPhotoInd = stateUpd.curPhotoInd;
   }
 }
 

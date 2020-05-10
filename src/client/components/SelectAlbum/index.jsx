@@ -21,7 +21,6 @@ export function SelectAlbum(props) {
     const actionId = e.target.getAttribute('data-id');
 
     props.dispatch.setAppState({
-      ...props.appState,
       additionalActionId: actionId,
     });
   };

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { CompsAddPanel } from '../';
+import { CompsAddPanel } from '..';
 import { get as _get } from 'lodash';
 
 import './styles.css';
@@ -10,21 +10,17 @@ export function AdditionalPanel(props) {
   const { appState } = states;
   const stateInit = {};
   const [state, setState] = useState(stateInit);
-
-  const customAdditionalActions = _get(appState, ['actions', appState.view, 'additionalActions'], []);
+  const customAdditionalActions = _get(appState, ['actions', appState.view.name, 'additionalActions'], []);
   
   if (customAdditionalActions.length === 0) return null;
-
-  const { additionalActions } = appState;
 
   return (
     <div 
       className='AdditionalPanel'       
     >{
       customAdditionalActions
-        .map(actionName => {
-          const action = additionalActions[actionName];
-          const Target = action.isActive ? CompsAddPanel[actionName] : CompsAddPanel.Default;
+        .map(action => {
+          const Target = action.isActive ? CompsAddPanel[action.name] : CompsAddPanel.Default;
           return (
             <Target 
               {...props}

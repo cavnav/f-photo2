@@ -26,3 +26,7 @@
 .Browse .dir {
   min-width: 100px;
 }
+
+.Browse .curFile {
+  margin: 50px;
+}

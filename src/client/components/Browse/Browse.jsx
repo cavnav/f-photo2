@@ -1,23 +1,27 @@
-import React, { useState, useEffect, useReducer } from 'react';
-import { Help, Views } from '../';
+import React, { useState, useEffect, useReducer, useRef } from 'react';
+import { Help, Views } from '..';
 import { tempReducer } from '../../functions';
 
 import './styles.css';
 
 export function Browse(props) {
-  const { dispatch, states } = props;
+  const { dispatch, states, myStore } = props;
   const { appServerAPI, setBrowseState, setAppState, } = dispatch;
-  const { appState, photosState } = states;
+  const { appState, photosState, browseState } = states;
   const {
     files,
     dirs
   } = photosState;
 
+  const { additionalActions } = myStore;
+  
   const [state, setState] = useReducer(tempReducer(), stateInit);
   
   const { doNeedHelp } = appState;
 
-  useEffect(appServerAPI.toward, []);
+  const { curPhotoInd } = browseState;
+
+  useEffect(onRender, []);
 
   return getRender();
 
@@ -36,6 +40,16 @@ export function Browse(props) {
         />
       </div>
     );
+  }
+
+  function onRender() {
+    appServerAPI.toward();
+    const curPhotoEl = document.querySelector(`.Browse .file[ind='${curPhotoInd}']`);
+    if (curPhotoEl) {
+      curPhotoEl.scrollIntoView();
+      curPhotoEl.classList.add('curFile');
+    }
+
   }
 
   function toRenderHelp() {
