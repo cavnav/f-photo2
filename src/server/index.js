@@ -69,6 +69,7 @@ app.get('/api/getNewPhotos', async (req, res) => {
   }
 
   findFiles({
+    doNeedTopLevelSearch: false,
     doNeedFullPath: true,
     onResolve({ files }) {
       setState({
@@ -91,6 +92,8 @@ app.get('/api/browseFiles', (req, res) => {
         dirs,
       });
     
+      saveToFile({ content: files });
+
       res.send({
         files,
         dirs,
@@ -228,9 +231,18 @@ function getBackwardPath() {
   return state.curDir.slice(0, state.curDir.lastIndexOf('\\'));
 }
 
+function saveToFile({ 
+  path = './src/server/log.txt', 
+  content, 
+}) {
+  const contentStr = JSON.stringify(content)
+  fs.writeFileSync(path, contentStr);
+}
+
 function findFiles({ 
   path = state.curDir,
 
+  doNeedTopLevelSearch = true,
   doNeedDirs = false,
   doNeedFullPath = false,
   onResolve = () => {} 
@@ -238,18 +250,18 @@ function findFiles({
   console.log(state.curDir);
   
   find.file('', path, (files) => {
-    const browseFiles = doNeedFullPath ? files : files.map((file) => {
+    let browseFiles = files;
+    
+    if (doNeedTopLevelSearch) browseFiles = browseFiles.filter(isTopLevelFile);
+    if (!doNeedFullPath) browseFiles = browseFiles.map((file) => {
       const fileUpd = getFileName({ file });
       return `${fileUpd}`;
     });  
 
-    if (doNeedDirs === false) {
-      onResolve({ files: browseFiles, dirs: [] });
-      return;
-    }
+    if (!doNeedDirs) return onResolve({ files: browseFiles, dirs: [] });
 
     find.dir('', path, (dirs) => {
-      const browseDirs = dirs.filter(isTopLevelDir).map((dir) => {
+      const browseDirs = dirs.filter(isTopLevelFile).map((dir) => {
         return getFileName({ file: dir });
       });  
       console.log('browseDirs', browseDirs);
@@ -258,8 +270,8 @@ function findFiles({
   });
 
   // ------------------------------------------- 
-  function isTopLevelDir(dir) {
-    return path.length === dir.lastIndexOf('\\');
+  function isTopLevelFile(file) {
+    return path.length === file.lastIndexOf('\\');
   }
 }
 

@@ -12,6 +12,8 @@ export function OnePhoto(props) {
   const { curPhotoInd } = browseState;
   const { doNeedHelp } = appState;
 
+  const { setBrowseState } = dispatch;
+
   const [state, setState] = React.useReducer(tempReducer(), {
     ...stateInit,
     curPhotoInd,
@@ -112,7 +114,9 @@ export function OnePhoto(props) {
     }
 
     setState(stateUpd);
-    browseState.curPhotoInd = stateUpd.curPhotoInd;
+    setBrowseState({
+      setItSilent: function () { this.curPhotoInd = stateUpd.curPhotoInd; }
+    });
   }
 }
 
