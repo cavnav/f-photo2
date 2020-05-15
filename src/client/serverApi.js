@@ -30,6 +30,10 @@ export const serverApi = ({ props }) => {
     case 'getUsbDevices':
       return fetch(fullUrl);
 
+    case 'imgRotate':
+      const params = { props };
+      return fetch(`${fullUrl}?${params}`);
+
     default: return undefined;
   }
 };

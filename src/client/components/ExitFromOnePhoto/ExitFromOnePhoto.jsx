@@ -1,14 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Views } from '..';
 import './styles.css';
 
-export function ExitFromOnePhoto(props) {
-  const { dispatch, states } = props;  
+export function ExitFromOnePhoto({
+  setAppState,
+  Views,
+}) {
   const [state, setState] = useState(stateInit);
-
-  const { appServerAPI, setAppState } = dispatch;
-
-  const title = `Вернуться к списку фото`;
+  const { title } = state;
 
   return (
     <div 
@@ -28,5 +26,15 @@ export function ExitFromOnePhoto(props) {
 
 }
 
+ExitFromOnePhoto.getReqProps = ({
+  d: { setAppState },
+  API: { Views },
+}) => ({
+  setAppState,
+  Views,
+});
+
 const stateInit = {
+  title: `Вернуться к списку фото`,
 };
+

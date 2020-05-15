@@ -12,9 +12,7 @@ export function Browse(props) {
     files,
     dirs
   } = photosState;
-
-  const { additionalActions } = myStore;
-  
+ 
   const [state, setState] = useReducer(tempReducer(), stateInit);
   
   const { doNeedHelp } = appState;

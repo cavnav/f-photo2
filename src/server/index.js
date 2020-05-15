@@ -9,6 +9,8 @@ const usbDetect = require('usb-detection');
 const drivelist = require('drivelist');
 const find = require('find');
 
+const Jimp = require('jimp');
+
 const app = express();
 
 let state = {
@@ -23,6 +25,7 @@ let state = {
   usbDriveLetter: undefined,
 };
 
+let timeoutIdImg
 console.log('state', state);
 
 // ------------------------------------------------------------------------------------------------
@@ -129,6 +132,25 @@ app.get('/api/checkCopyProgress', (req, res) => {
   });
 });
 
+app.get('/api/imgRotate', (req, res) => {
+  console.log('query', (new Date).getTime());
+  let { img, deg = 0, path } = req.query;
+console.log(img, '---', deg);
+  Jimp.read(img)
+  .then(img => {
+    return img
+      .rotate(-deg)
+      .write(path); // save
+  })
+  .then(res => console.log('query', (new Date).getTime()))
+  .catch(console.error);
+
+  res.send({
+    img,
+    deg,
+  });
+});
+
 app.post('/api/copyPhotos', (req, res) => {
   console.log('req.body', getCurMoment());
   // const { userDirName } = req.body;
@@ -151,8 +173,6 @@ app.post('/api/copyPhotos', (req, res) => {
   });
 
   startCopy({ photos: state.newPhotos, destDir });
-
-  
 
   function startCopy({ photos, destDir }) {
     photos.length && setTimeout(() => {

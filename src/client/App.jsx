@@ -3,13 +3,15 @@ import { ControlPanel, MyView, AdditionalPanel} from './components';
 import { tempReducer } from './functions';
 import { serverApi } from './serverApi';
 import { Views } from './components';
-import { additionalActions } from './constants';
+import { additionalActions,  changeAction } from './constants';
+import { get as _get } from 'lodash';
 
 import './app.css';
 
 export function App(props) {
   const d = {}; // dispatch.
   const s = {}; // states.
+  const channel = new Channel({ s, d });
 
   [s.appState, d.setAppState] = useReducer(tempReducer(), appStateInit);
   [s.printState, d.setPrintState] = useReducer(tempReducer(), printInit);
@@ -18,11 +20,7 @@ export function App(props) {
   [s.ignored, d.forceUpdate] = useReducer(x => !x, true);
 
   d.appServerAPI = new AppServerAPI({ dispatch: d, states: s });
-  d.toggleAddActions = toggleAddActions(s);
-
-  const st = {
-    additionalActions,
-  }
+  channel.addAPI({ name: 'server', methods: new AppServerAPI({ dispatch: d, states: s }) });
   
   const { view, actions, } = s.appState;
 
@@ -33,15 +31,14 @@ export function App(props) {
         actions={actions} 
         states={s}
       />
-      <AdditionalPanel 
-        dispatch={d} 
-        states={s}
+      <AdditionalPanel
+        {...channel.essentials(AdditionalPanel)}
       />
       <MyView 
         target={view} 
         states={s}
         dispatch={d}
-        myStore={st}
+        channel={channel}
       />
     </div>
   );
@@ -51,8 +48,7 @@ export function App(props) {
 
 const appStateInit = {
   view: Views.Welcome,
-  doNeedHelp: false,
-  additionalActionId: undefined,
+  doNeedHelp: false, // move to Help module.
   actions: {
     Tune: {
       title: 'Настроить',
@@ -67,12 +63,12 @@ const appStateInit = {
       isActive: true,
       additionalActions: [
         additionalActions.ExitFromAlbum, 
-        additionalActions.SelectAlbum
       ],
     },
     OnePhoto: {
       additionalActions: [       
         additionalActions.ExitFromOnePhoto,
+        additionalActions.SaveChanges,
       ],
       isActive: false,
     },
@@ -110,11 +106,13 @@ const browseStateInit = {
   curPhotoInd: -1,
   scrollY: 0,
 };
-
 class AppServerAPI {
   constructor({ dispatch, states }) {
     this.dispatch = dispatch;
     this.states = states;
+  }
+  saveChanges = () => {
+
   }
   backward = () => {
     this.navigate({ direction: 'backward' });
@@ -142,11 +140,34 @@ class AppServerAPI {
   }
 }
 
-function toggleAddActions({ appState }) {
-  return function ({ component: { name: compName }, action: { name: actionName }, isActive }) {
-    const action = appState.actions[compName].additionalActions.find(a => a.name === actionName);
-    action.isActive = isActive;
-    this.forceUpdate();
+class Channel {
+  API = {
+    Views,
+    _get,
+  };
+
+  props = {};
+
+  constructor(props) {
+    this.props = { 
+      ...props,
+      API: this.API,
+    };
+    // Object.entries(props).map((p, v) => this[p] = v);
+  }
+  addAPI = ({ name, methods }) => {
+    this.API[name] = methods;
+  }
+  essentials = (component) => {
+    if (component.API) this.addAPI({
+      channel: this,
+      tempReducer,
+      ...component.API(this.props)});
+    if (component.getReqProps) return {
+      channel: this,
+      tempReducer,
+      ...component.getReqProps(this.props),
+    };
   }
 }
 
@@ -154,5 +175,5 @@ const navLink = [
   appStateInit, 
   photosStateInit, 
   browseStateInit,
-
+  Channel,
 ];

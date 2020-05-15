@@ -4,8 +4,9 @@ import { Browse } from './Browse/Browse';
 import { Print } from './Print';
 import { Welcome } from './Welcome';
 import { Help } from './Help';
-import { ExitFromAlbum } from './ExitFromAlbum';
+import { ExitFromAlbum } from './ExitFromAlbum/ExitFromAlbum';
 import { ExitFromOnePhoto } from './ExitFromOnePhoto/ExitFromOnePhoto';
+import { SaveChanges } from './SaveChanges/SaveChanges';
 import { SelectAlbum } from './SelectAlbum';
 import { OnePhoto } from './OnePhoto/OnePhoto';
 
@@ -31,5 +32,6 @@ export const CompsAddPanel = {
   ExitFromAlbum,
   ExitFromOnePhoto,
   SelectAlbum,
+  SaveChanges,
   Default: () => null,
 };

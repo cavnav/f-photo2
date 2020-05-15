@@ -4,9 +4,11 @@ import { Help } from '..';
 
 import './styles.css';
 import { tempReducer } from '../../functions';
+import { serverApi } from '../../serverApi';
+import { additionalActions } from '../../constants';
 
 export function OnePhoto(props) {
-  const { dispatch, states } = props;
+  const { dispatch, states, channel } = props;
   const { browseState, photosState, printState, appState } = states;
   const { files } = photosState;
   const { curPhotoInd } = browseState;
@@ -40,6 +42,7 @@ export function OnePhoto(props) {
           ref={imgRef}
           src={state.curPhoto}        
           style={{
+            transform: `rotate(${state.curPhotoRotateDeg}deg)`,
             width: state.curPhotoWidth,
             height: state.curPhotoHeight,
           }} 
@@ -65,6 +68,7 @@ export function OnePhoto(props) {
       Цифра 1 - добавить фото к списку "Печатать".<br></br>
       Цифра 2 - добавить фото к списку "Отправить".<br></br>
       Цифра 0 - удалить фото.<br></br>
+      Пробел - сохранить изменения.<br></br>
 
     </div>
   }
@@ -109,14 +113,35 @@ export function OnePhoto(props) {
       case 39:  stateUpd.curPhotoInd = nextPhotoInd; 
                 stateUpd.curPhoto = files[nextPhotoInd];
                 break; // next
-      case 38: stateUpd.curPhotoRotateDeg = stateUpd.curPhotoRotateDeg + 90; break; // rotate right
-      case 40: stateUpd.curPhotoRotateDeg = stateUpd.curPhotoRotateDeg - 90; break; // rotate left
+
+      case 38: stateUpd.curPhotoRotateDeg = state.curPhotoRotateDeg + 90; 
+              break; // rotate right
+      case 40: stateUpd.curPhotoRotateDeg = state.curPhotoRotateDeg - 90; 
+              break; // rotate left
     }
 
     setState(stateUpd);
     setBrowseState({
       setItSilent: function () { this.curPhotoInd = stateUpd.curPhotoInd; }
     });
+
+    changeAddActions();
+
+    // ---------------------------
+    function changeAddActions() {
+      channel.API.AdditionalPanel.changeAction({
+        action: additionalActions.SaveChanges,
+        set: {
+          isActive: stateUpd.curPhotoRotateDeg !== 0,
+        }
+      });
+      // toggleAddActions({
+      //   component: OnePhoto,
+      //   action: additionalActions.SaveChanges,
+      //   isActive: state.curPhotoRotateDeg !== 0,
+      //   fn: serverApi.imgRotate({}),
+      // });
+    }
   }
 }
 
@@ -140,9 +165,9 @@ function getFitSize({ width, height }) {
 const stateInit = {
   curPhoto: undefined,
   curPhotoInd: -1,
-  curPhotoRotateDeg: 0,
   curPhotoWidth: undefined,
   curPhotoHeight: undefined,
+  curPhotoRotateDeg: 0,
   curDate: getCurDate(),
   forceRender: false,
 };
