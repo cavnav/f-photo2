@@ -9,8 +9,10 @@ export function AdditionalPanel({
   tempReducer,
   activeComponentActions,
 }) {
-  const [state, setState] = useReducer(tempReducer(), stateInit);
-  // const [ignored, forceUpdate] = userReducer(x => !x, false);
+  const [state, setState] = useReducer(tempReducer, stateInit);
+  const [ignored, forceUpdate] = useReducer(x => !x, false);
+
+  AdditionalPanel.forceUpdate = forceUpdate;
 
   if (activeComponentActions.length === 0) return null;
 
@@ -36,13 +38,13 @@ export function AdditionalPanel({
 }
 
 AdditionalPanel.getReqProps = ({ 
-  API: { _get }, 
-  s: { appState }
-}) => ({
-  activeComponentActions: _get(appState, ['actions', appState.view.name, 'additionalActions'], []),
-});
+    API: { _get }, 
+    s: { appState }
+  }) => ({
+    activeComponentActions: _get(appState, ['actions', appState.view.name, 'additionalActions'], []),
+  });
 
-AdditionalPanel.API = (requiredProps) => {
+AdditionalPanel.getAPI = () => {
   return {
     name: AdditionalPanel.name,
     methods: {
@@ -53,7 +55,7 @@ AdditionalPanel.API = (requiredProps) => {
         const actionUpd = additionalActions[action.name];
         Object.entries(set).map(([p, v]) => actionUpd[p] = v);
 
-        AdditionalPanel(AdditionalPanel.getReqProps(requiredProps));
+        if (AdditionalPanel.forceUpdate) AdditionalPanel.forceUpdate();
       },
     }
   };

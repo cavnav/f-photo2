@@ -31,7 +31,7 @@ export const serverApi = ({ props }) => {
       return fetch(fullUrl);
 
     case 'imgRotate':
-      const params = { props };
+      const { params } = props;
       return fetch(`${fullUrl}?${params}`);
 
     default: return undefined;

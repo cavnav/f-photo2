@@ -114,9 +114,9 @@ export function OnePhoto(props) {
                 stateUpd.curPhoto = files[nextPhotoInd];
                 break; // next
 
-      case 38: stateUpd.curPhotoRotateDeg = state.curPhotoRotateDeg + 90; 
+      case 38: stateUpd.curPhotoRotateDeg = checkRotate({ deg: state.curPhotoRotateDeg + 90 }); 
               break; // rotate right
-      case 40: stateUpd.curPhotoRotateDeg = state.curPhotoRotateDeg - 90; 
+      case 40: stateUpd.curPhotoRotateDeg = checkRotate({ deg: state.curPhotoRotateDeg - 90 }); 
               break; // rotate left
     }
 
@@ -128,13 +128,35 @@ export function OnePhoto(props) {
     changeAddActions();
 
     // ---------------------------
+    function checkRotate({ deg }) {
+      return Math.abs(deg) === 360 ? 0 : deg;
+    }
+
     function changeAddActions() {
-      channel.API.AdditionalPanel.changeAction({
-        action: additionalActions.SaveChanges,
-        set: {
-          isActive: stateUpd.curPhotoRotateDeg !== 0,
-        }
-      });
+      Object.keys(stateUpd).map(prop => trigger(prop));
+
+      // ---------------------------------------
+
+      function trigger(tName) {
+        const triggers = {
+          [tName]: () => {},
+          curPhotoRotateDeg: onRotate,
+        };
+
+        triggers[tName]();
+      }
+    
+      function onRotate() {
+        channel.API.AdditionalPanel.changeAction({
+          action: additionalActions.SaveChanges,
+          set: {
+            isActive: stateUpd.curPhotoRotateDeg !== 0,
+          },
+          onAction: {
+            
+          }
+        });
+      }
       // toggleAddActions({
       //   component: OnePhoto,
       //   action: additionalActions.SaveChanges,

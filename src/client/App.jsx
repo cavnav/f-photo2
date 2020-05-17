@@ -111,8 +111,15 @@ class AppServerAPI {
     this.dispatch = dispatch;
     this.states = states;
   }
-  saveChanges = () => {
-
+  saveChanges = ({ }) => {
+    serverApi({
+      props: {
+        url: 'save',
+        params,
+      }
+    })
+    .then(res => res.json())
+    .then((res) => {});
   }
   backward = () => {
     this.navigate({ direction: 'backward' });
@@ -146,6 +153,11 @@ class Channel {
     _get,
   };
 
+  chunkProps = {
+    tempReducer, 
+    channel: this,
+  };
+
   props = {};
 
   constructor(props) {
@@ -159,13 +171,9 @@ class Channel {
     this.API[name] = methods;
   }
   essentials = (component) => {
-    if (component.API) this.addAPI({
-      channel: this,
-      tempReducer,
-      ...component.API(this.props)});
+    if (component.getAPI) this.addAPI(component.getAPI());
     if (component.getReqProps) return {
-      channel: this,
-      tempReducer,
+      ...this.chunkProps,
       ...component.getReqProps(this.props),
     };
   }

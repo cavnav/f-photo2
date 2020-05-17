@@ -10,6 +10,7 @@ const additionalActionsInit = {
   SaveChanges: {
     title: 'Сохранить изменения',
     isActive: false,
+    onAction: undefined,
   },
   // selectAlbum: {
   //   title: 'Выбрать альбом',

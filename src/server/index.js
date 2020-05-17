@@ -132,10 +132,15 @@ app.get('/api/checkCopyProgress', (req, res) => {
   });
 });
 
+app.get('/api/saveChanges', (req, res) => {
+  let { action } = req.query;
+  res.redirect(action);
+});
+
 app.get('/api/imgRotate', (req, res) => {
   console.log('query', (new Date).getTime());
   let { img, deg = 0, path } = req.query;
-console.log(img, '---', deg);
+
   Jimp.read(img)
   .then(img => {
     return img
