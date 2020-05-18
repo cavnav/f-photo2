@@ -3,24 +3,19 @@ export const changesToSave = {
     isActive,
     params,
   }) {
-    channel.API.AdditionalPanel.changeAction({
-      action: additionalActions.SaveChanges,
-      set: {
-        isActive,
-        params,
-      },
-      
-    });
+
+    () => changesToSave.imgRotate({
   },
   imgDelete() {
 
   },
 }
 export const additionalActions = {
-  ExitFromAlbum: {
-    title: 'Закрыть альбом',
-    isActive: true,
-  },
+  ExitFromAlbum() { 
+    return {
+      title: 'Закрыть альбом',
+      isActive: true,
+    };
   ExitFromOnePhoto: {
     title: 'Вернуть фото',
     isActive: true,
@@ -30,6 +25,13 @@ export const additionalActions = {
     isActive: false,
     onAction: appServerAPI.saveChanges,
     params: {},
+  }
+
+  changeAction({
+    actionUpd,
+    set,
+  }) {
+    Object.entries(set).map(([p, v]) => actionUpd[p] = v);
   }
 };
 

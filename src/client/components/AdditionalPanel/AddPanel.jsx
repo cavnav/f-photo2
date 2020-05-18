@@ -49,15 +49,7 @@ AdditionalPanel.getAPI = () => {
   return {
     name: AdditionalPanel.name,
     methods: {
-      changeAction({
-        action,
-        set,
-      }) {
-        const actionUpd = additionalActions[action.name];
-        Object.entries(set).map(([p, v]) => actionUpd[p] = v);
-
-        AdditionalPanel.forceUpdate();
-      },
+      forceUpdate: AdditionalPanel.forceUpdate,
     }
   };
 };

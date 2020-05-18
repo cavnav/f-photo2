@@ -5,7 +5,7 @@ import { Help } from '..';
 import './styles.css';
 import { tempReducer } from '../../functions';
 import { serverApi } from '../../ServerAPI';
-import { additionalActions } from '../../constants';
+import { additionalActions, changesToSave } from '../../constants';
 
 export function OnePhoto(props) {
   const { dispatch, states, channel } = props;
@@ -140,14 +140,21 @@ export function OnePhoto(props) {
       function trigger(tName) {
         const triggers = {
           [tName]: () => {},
-          curPhotoRotateDeg: () => changesToSave.imgRotate({
-            isActive: stateUpd.curPhotoRotateDeg !== 0,
-            params: {
-              deg: stateUpd.curPhotoRotateDeg,
-              img: state.curPhoto,
-              path: img,
-            },
-          }),
+          curPhotoRotateDeg: () => {
+            channel.API.additionalActions.changeAction({ 
+              actionUpd: additionalActions.SaveChanges,
+              set: {                                 
+                isActive: stateUpd.curPhotoRotateDeg !== 0,
+                params: {
+                  deg: stateUpd.curPhotoRotateDeg,
+                  img: state.curPhoto,
+                  path: img,
+                  changesType: changesToSave.imgRotate,
+                },
+              }
+            });
+
+            channel.API.AdditionalPanel.forceUpdate();
         };
 
         triggers[tName]();

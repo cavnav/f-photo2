@@ -5,6 +5,7 @@ import { tempReducer } from '../../functions';
 
 export function SaveChanges({
   apiSaveChanges,
+  action,
 }) {
   const [state, setState] = useReducer(tempReducer, stateInit);
   const { title } = state;
@@ -12,7 +13,7 @@ export function SaveChanges({
   return (
     <div 
       className='SaveChanges' 
-      onClick={apiSaveChanges}      
+      onClick={() => apiSaveChanges({ action })}      
     >
       <div className='title'>{title}</div>  
     </div>
@@ -26,7 +27,7 @@ SaveChanges.getReqProps = ({
   API: { server: { saveChanges: apiSaveChanges } },
 }) => ({
   apiSaveChanges,
-
+  action,
 });
 
 const stateInit = {

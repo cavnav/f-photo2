@@ -2,21 +2,38 @@ export class AppServerAPI {
   constructor({ dispatch, states }) {
     this.dispatch = dispatch;
     this.states = states;
+
+    this.saveChanges.imgRotate = '';
+    this.saveChanges.imgDelete = '';
   }
 
   getFullUrl({ url }) {
     return `/api/${url}`;
   }
 
-  saveChanges = () => {
+  saveChanges = ({ action }) => {
+    const { params } = props;
+    const route = getRouter();
+    return fetch(`${fullUrl}?${params}`);
+
     serverApi({
       props: {
-        url: serverApi.saveChanges,
+        url: route,
         params,
       }
     })
     .then(res => res.json())
     .then((res) => {});
+
+
+    //--------------------------
+    function getRouter() {
+
+      
+      return {
+        
+      }
+    }
   }
   backward = () => {
     this.navigate({ direction: 'backward' });
@@ -70,9 +87,5 @@ export class AppServerAPI {
   }
   getUsbDevices = () => {
     return fetch(fullUrl);
-  }
-  saveChanges = () => {
-    const { params } = props;
-    return fetch(`${fullUrl}?${params}`);
   }
 }
