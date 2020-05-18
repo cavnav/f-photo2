@@ -1,5 +1,5 @@
 import React from 'react';
-import { serverApi } from '../../serverApi';
+import { serverApi } from '../../ServerAPI';
 
 import './styles.css';
 

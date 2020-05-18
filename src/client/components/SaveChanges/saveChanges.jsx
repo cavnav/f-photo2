@@ -12,16 +12,13 @@ export function SaveChanges({
   return (
     <div 
       className='SaveChanges' 
-      onClick={onClick}      
+      onClick={apiSaveChanges}      
     >
       <div className='title'>{title}</div>  
     </div>
   );
 
   // -----------------------------------------------------------------------
-  function onClick(e) {
-    apiSaveChanges();
-  };
 
 }
 
@@ -29,7 +26,7 @@ SaveChanges.getReqProps = ({
   API: { server: { saveChanges: apiSaveChanges } },
 }) => ({
   apiSaveChanges,
-  
+
 });
 
 const stateInit = {

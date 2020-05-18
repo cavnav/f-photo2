@@ -1,4 +1,22 @@
-const additionalActionsInit = {
+export const changesToSave = {
+  imgRotate({ 
+    isActive,
+    params,
+  }) {
+    channel.API.AdditionalPanel.changeAction({
+      action: additionalActions.SaveChanges,
+      set: {
+        isActive,
+        params,
+      },
+      
+    });
+  },
+  imgDelete() {
+
+  },
+}
+export const additionalActions = {
   ExitFromAlbum: {
     title: 'Закрыть альбом',
     isActive: true,
@@ -10,16 +28,14 @@ const additionalActionsInit = {
   SaveChanges: {
     title: 'Сохранить изменения',
     isActive: false,
-    onAction: undefined,
-  },
+    onAction: appServerAPI.saveChanges,
+    params: {},
+  }
+};
+
   // selectAlbum: {
   //   title: 'Выбрать альбом',
   //   isActive: false,
   // },
-};
 
-export const additionalActions = Object.entries(additionalActionsInit).reduce((res, [actionName, action]) => ({ ...res, [actionName]: { name: actionName, ...action }}), {});
-
-export function changeAction({ action, props }) {
-  Object.entries(props).map((p, v) => action[p] = v);
-}
+Object.keys(additionalActionsInit).map(name => additionalActionsInit[name].name = name);

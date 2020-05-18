@@ -36,6 +36,7 @@ export function AdditionalPanel({
   // -----------------------------------------------------------------------
 
 }
+AdditionalPanel.forceUpdate = () => {};
 
 AdditionalPanel.getReqProps = ({ 
     API: { _get }, 
@@ -55,7 +56,7 @@ AdditionalPanel.getAPI = () => {
         const actionUpd = additionalActions[action.name];
         Object.entries(set).map(([p, v]) => actionUpd[p] = v);
 
-        if (AdditionalPanel.forceUpdate) AdditionalPanel.forceUpdate();
+        AdditionalPanel.forceUpdate();
       },
     }
   };

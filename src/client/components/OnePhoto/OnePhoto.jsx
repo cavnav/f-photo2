@@ -4,7 +4,7 @@ import { Help } from '..';
 
 import './styles.css';
 import { tempReducer } from '../../functions';
-import { serverApi } from '../../serverApi';
+import { serverApi } from '../../ServerAPI';
 import { additionalActions } from '../../constants';
 
 export function OnePhoto(props) {
@@ -140,23 +140,20 @@ export function OnePhoto(props) {
       function trigger(tName) {
         const triggers = {
           [tName]: () => {},
-          curPhotoRotateDeg: onRotate,
+          curPhotoRotateDeg: () => changesToSave.imgRotate({
+            isActive: stateUpd.curPhotoRotateDeg !== 0,
+            params: {
+              deg: stateUpd.curPhotoRotateDeg,
+              img: state.curPhoto,
+              path: img,
+            },
+          }),
         };
 
         triggers[tName]();
       }
     
-      function onRotate() {
-        channel.API.AdditionalPanel.changeAction({
-          action: additionalActions.SaveChanges,
-          set: {
-            isActive: stateUpd.curPhotoRotateDeg !== 0,
-          },
-          onAction: {
-            
-          }
-        });
-      }
+      
       // toggleAddActions({
       //   component: OnePhoto,
       //   action: additionalActions.SaveChanges,

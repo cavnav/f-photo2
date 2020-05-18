@@ -1,10 +1,11 @@
 import React, { useState, useReducer } from 'react';
 import { ControlPanel, MyView, AdditionalPanel} from './components';
 import { tempReducer } from './functions';
-import { serverApi } from './serverApi';
 import { Views } from './components';
 import { additionalActions,  changeAction } from './constants';
 import { get as _get } from 'lodash';
+import { Channel } from './Channel';
+import { ServerAPI } from './ServerAPI';
 
 import './app.css';
 
@@ -106,78 +107,6 @@ const browseStateInit = {
   curPhotoInd: -1,
   scrollY: 0,
 };
-class AppServerAPI {
-  constructor({ dispatch, states }) {
-    this.dispatch = dispatch;
-    this.states = states;
-  }
-  saveChanges = ({ }) => {
-    serverApi({
-      props: {
-        url: 'save',
-        params,
-      }
-    })
-    .then(res => res.json())
-    .then((res) => {});
-  }
-  backward = () => {
-    this.navigate({ direction: 'backward' });
-    this.states.browseState.path = this.states.browseState.path.slice(0, -1);
-  }
-  toward = ({ subdir } = {}) => {
-    this.navigate({ direction: 'toward', params: { subdir } });
-    this.states.browseState.path.push(subdir);
-  }
-  navigate = ({ direction, params = {} }) => {
-    serverApi({
-      props: {
-        url: direction,
-        params,
-      }
-    })
-    .then(res => res.json())
-    .then((res) => {
-      const { files, dirs } = res;
-      this.dispatch.setPhotosState({
-        files,
-        dirs,
-      });    
-    });
-  }
-}
-
-class Channel {
-  API = {
-    Views,
-    _get,
-  };
-
-  chunkProps = {
-    tempReducer, 
-    channel: this,
-  };
-
-  props = {};
-
-  constructor(props) {
-    this.props = { 
-      ...props,
-      API: this.API,
-    };
-    // Object.entries(props).map((p, v) => this[p] = v);
-  }
-  addAPI = ({ name, methods }) => {
-    this.API[name] = methods;
-  }
-  essentials = (component) => {
-    if (component.getAPI) this.addAPI(component.getAPI());
-    if (component.getReqProps) return {
-      ...this.chunkProps,
-      ...component.getReqProps(this.props),
-    };
-  }
-}
 
 const navLink = [
   appStateInit, 

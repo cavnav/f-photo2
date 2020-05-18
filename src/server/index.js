@@ -137,6 +137,16 @@ app.get('/api/saveChanges', (req, res) => {
   res.redirect(action);
 });
 
+app.get('/api/imgRemove', (req, res) => {
+  const { file } = req.query;
+  removeFile({ file, resolve });
+  
+
+  function resolve() {
+    res.send()
+  }
+});
+
 app.get('/api/imgRotate', (req, res) => {
   console.log('query', (new Date).getTime());
   let { img, deg = 0, path } = req.query;
@@ -318,6 +328,20 @@ function getRootDir() {
   }
 
   return rootDir;
+}
+
+function removeFile({ 
+  file, 
+  resolve, 
+  err = () => {} 
+}) {
+  return fs.remove(file)
+  .then(() => {
+    rs();
+  })
+  .catch(err => {
+    rr();
+  });
 }
 
 function clearUpUSB() {
