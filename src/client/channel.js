@@ -1,31 +1,27 @@
+import { AppServerAPI } from './ServerApi';
 export class Channel {
+
+  channel = this;
+  tempReducer = tempReducer;
+  sd = {}; // states & dispatches.
   API = {
     Views,
     _get,
   };
 
-  chunkProps = {
-    tempReducer, 
-    channel: this,
-  };
-
-  props = {};
-
-  constructor(props) {
-    this.props = { 
-      ...props,
-      API: this.API,
-    };
-    // Object.entries(props).map((p, v) => this[p] = v);
+  constructor(sd) {
+    this.sd = sd;
+    this.addAPI(new AppServerAPI(sd));
   }
-  addAPI = ({ name, methods }) => {
-    this.API[name] = methods;
+  addAPI = ({ api }) => {
+    const name = api.name || api.constructor.name;
+    this.API[name] = api;
   }
   essentials = (component) => {
     if (component.getAPI) this.addAPI(component.getAPI());
     if (component.getReqProps) return {
       ...this.chunkProps,
-      ...component.getReqProps(this.props),
+      ...component.getReqProps(this),
     };
   }
 }

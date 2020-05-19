@@ -1,15 +1,3 @@
-export const changesToSave = {
-  imgRotate({ 
-    isActive,
-    params,
-  }) {
-
-    () => changesToSave.imgRotate({
-  },
-  imgDelete() {
-
-  },
-}
 export const additionalActions = {
   ExitFromAlbum() { 
     return {
@@ -23,8 +11,10 @@ export const additionalActions = {
   SaveChanges: {
     title: 'Сохранить изменения',
     isActive: false,
-    onAction: appServerAPI.saveChanges,
-    params: {},
+    onAction: {
+      api: undefined,
+      params: undefined,
+    }
   }
 
   changeAction({

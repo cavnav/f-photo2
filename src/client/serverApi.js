@@ -1,14 +1,24 @@
 export class AppServerAPI {
-  constructor({ dispatch, states }) {
-    this.dispatch = dispatch;
-    this.states = states;
-
-    this.saveChanges.imgRotate = '';
-    this.saveChanges.imgDelete = '';
+  constructor({ d, s }) {
+    this.d = d;
+    this.s = s;
   }
 
   getFullUrl({ url }) {
     return `/api/${url}`;
+  }
+
+  imgRotate({ params }) {
+    this.saveChanges({
+      url: 'imgRotate',
+      params,
+    });
+  }
+
+  imgDelete() {
+    this.saveChanges({
+
+    });
   }
 
   saveChanges = ({ action }) => {
@@ -24,16 +34,6 @@ export class AppServerAPI {
     })
     .then(res => res.json())
     .then((res) => {});
-
-
-    //--------------------------
-    function getRouter() {
-
-      
-      return {
-        
-      }
-    }
   }
   backward = () => {
     this.navigate({ direction: 'backward' });
@@ -53,7 +53,7 @@ export class AppServerAPI {
     .then(res => res.json())
     .then((res) => {
       const { files, dirs } = res;
-      this.dispatch.setPhotosState({
+      this.d.setPhotosState({
         files,
         dirs,
       });    

@@ -5,7 +5,7 @@ import { Views } from './components';
 import { additionalActions,  changeAction } from './constants';
 import { get as _get } from 'lodash';
 import { Channel } from './Channel';
-import { ServerAPI } from './ServerAPI';
+import { ServerAPI } from './ServerApi';
 
 import './app.css';
 
@@ -19,9 +19,6 @@ export function App(props) {
   [s.photosState, d.setPhotosState] = useReducer(tempReducer(), photosStateInit);
   [s.browseState, d.setBrowseState] = useReducer(tempReducer(), browseStateInit);
   [s.ignored, d.forceUpdate] = useReducer(x => !x, true);
-
-  d.appServerAPI = new AppServerAPI({ dispatch: d, states: s });
-  channel.addAPI({ name: 'server', methods: new AppServerAPI({ dispatch: d, states: s }) });
   
   const { view, actions, } = s.appState;
 

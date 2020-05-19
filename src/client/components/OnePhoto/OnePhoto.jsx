@@ -4,7 +4,7 @@ import { Help } from '..';
 
 import './styles.css';
 import { tempReducer } from '../../functions';
-import { serverApi } from '../../ServerAPI';
+import { serverApi } from '../../ServerApi';
 import { additionalActions, changesToSave } from '../../constants';
 
 export function OnePhoto(props) {
@@ -133,40 +133,28 @@ export function OnePhoto(props) {
     }
 
     function changeAddActions() {
-      Object.keys(stateUpd).map(prop => trigger(prop));
+      const context = getContext();
+      Object.keys(stateUpd).map(prop => getTrigger(prop).bind(context)());
 
       // ---------------------------------------
 
-      function trigger(tName) {
-        const triggers = {
+      function getTrigger(tName) {
+        return {
           [tName]: () => {},
-          curPhotoRotateDeg: () => {
-            channel.API.additionalActions.changeAction({ 
-              actionUpd: additionalActions.SaveChanges,
-              set: {                                 
-                isActive: stateUpd.curPhotoRotateDeg !== 0,
-                params: {
-                  deg: stateUpd.curPhotoRotateDeg,
-                  img: state.curPhoto,
-                  path: img,
-                  changesType: changesToSave.imgRotate,
-                },
-              }
-            });
-
-            channel.API.AdditionalPanel.forceUpdate();
+          curPhotoRotateDeg: onImgRotate,
+          curPhotoRemove: onImgRemove,
         };
-
-        triggers[tName]();
       }
-    
-      
-      // toggleAddActions({
-      //   component: OnePhoto,
-      //   action: additionalActions.SaveChanges,
-      //   isActive: state.curPhotoRotateDeg !== 0,
-      //   fn: serverApi.imgRotate({}),
-      // });
+
+      function getContext() {
+        return {
+          AdditionalActions,
+          AdditionalPanel,
+          server,
+          state,
+          stateUpd,
+        };
+      }
     }
   }
 }
@@ -186,6 +174,30 @@ function getFitSize({ width, height }) {
     res.height = '100%';
   }
   return res;
+}
+
+function onImgRotate({
+  AdditionalActions,
+  AdditionalPanel,
+  server,
+  state,
+  stateUpd,
+}) {
+  AdditionalActions.changeAction({ 
+    actionUpd: additionalActions.SaveChanges,
+    set: {                                 
+      isActive: stateUpd.curPhotoRotateDeg !== 0,
+      onAction: {
+        api: () => server.imgRotate({
+          deg: stateUpd.curPhotoRotateDeg,
+          img: state.curPhoto,
+          path: img,
+        })                  
+      },
+    }
+  });
+
+  AdditionalPanel.forceUpdate();
 }
 
 const stateInit = {
