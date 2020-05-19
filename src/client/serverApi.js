@@ -2,6 +2,8 @@ export class AppServerAPI {
   constructor({ d, s }) {
     this.d = d;
     this.s = s;
+
+    [function backward() {}, function forward() {}].map(({name}) => this.navigate[n] = n);
   }
 
   getFullUrl({ url }) {
@@ -36,7 +38,7 @@ export class AppServerAPI {
     .then((res) => {});
   }
   backward = () => {
-    this.navigate({ direction: 'backward' });
+    this.navigate({ direction: this.backward.name });
     this.states.browseState.path = this.states.browseState.path.slice(0, -1);
   }
   toward = ({ subdir } = {}) => {
