@@ -2,8 +2,6 @@ export class AppServerAPI {
   constructor({ d, s }) {
     this.d = d;
     this.s = s;
-
-    [function backward() {}, function forward() {}].map(({name}) => this.navigate[n] = n);
   }
 
   getFullUrl({ url }) {
@@ -11,10 +9,10 @@ export class AppServerAPI {
   }
 
   imgRotate({ params }) {
-    this.saveChanges({
-      url: 'imgRotate',
-      params,
-    });
+    const url = this.getUrlWithParams({ method: this.imgRotate, params });
+    fetch(url)
+    .then(res => res.json())
+    .then(res => {});
   }
 
   imgDelete() {
@@ -23,20 +21,21 @@ export class AppServerAPI {
     });
   }
 
-  saveChanges = ({ action }) => {
-    const { params } = props;
-    const route = getRouter();
-    return fetch(`${fullUrl}?${params}`);
-
-    serverApi({
-      props: {
-        url: route,
-        params,
-      }
-    })
-    .then(res => res.json())
-    .then((res) => {});
+  getUrlWithParams({
+    method,
+    params,
+  }) {
+    const url = this.getFullUrl({ url: method.name });
+    const params = this.getParams({ params });
+    return `${url}${params}`;
   }
+  
+  getParams({ params }) {
+    const arr = [];
+    Object.entries(params).map((name, val) => arr[`${name}=${val}`]);
+    return `?${arr.join('&')}`;
+  }
+
   backward = () => {
     this.navigate({ direction: this.backward.name });
     this.states.browseState.path = this.states.browseState.path.slice(0, -1);

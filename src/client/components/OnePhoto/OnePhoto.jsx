@@ -20,9 +20,12 @@ export function OnePhoto(props) {
     ...stateInit,
     curPhotoInd,
     curPhoto: files[curPhotoInd],
+    curPhotoWithTime: `${files[curPhotoInd]}?${new Date().getTime()}`,
   });
 
-  const { curDate, curPhoto } = state;
+  const [ignored, forceUpdate] = React.userReducer(x => !x, false);
+
+  const { curDate, curPhoto, curPhotoWithTime } = state;
   const imgRef = React.useRef(null);
 
   let photoStatusesApi;
@@ -40,7 +43,7 @@ export function OnePhoto(props) {
       >
         <img 
           ref={imgRef}
-          src={state.curPhoto}        
+          src={state.curPhotoWithTime}        
           style={{
             transform: `rotate(${state.curPhotoRotateDeg}deg)`,
             width: state.curPhotoWidth,
@@ -153,6 +156,7 @@ export function OnePhoto(props) {
           server,
           state,
           stateUpd,
+          forceUpdate,
         };
       }
     }
@@ -182,6 +186,7 @@ function onImgRotate({
   server,
   state,
   stateUpd,
+  forceUpdate,
 }) {
   AdditionalActions.changeAction({ 
     actionUpd: additionalActions.SaveChanges,
@@ -192,7 +197,8 @@ function onImgRotate({
           deg: stateUpd.curPhotoRotateDeg,
           img: state.curPhoto,
           path: img,
-        })                  
+        }),
+        onResolve: () => forceUpdate(),                  
       },
     }
   });
@@ -202,6 +208,7 @@ function onImgRotate({
 
 const stateInit = {
   curPhoto: undefined,
+  curPhotoWithTime: undefined,
   curPhotoInd: -1,
   curPhotoWidth: undefined,
   curPhotoHeight: undefined,
