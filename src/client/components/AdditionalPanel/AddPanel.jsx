@@ -1,6 +1,4 @@
 import React, { useState, useEffect, useReducer } from 'react';
-import { CompsAddPanel } from '..';
-import { additionalActions } from '../../constants';
 
 import './styles.css';
 
@@ -22,7 +20,7 @@ export function AdditionalPanel({
     >{
       activeComponentActions
         .map(action => {
-          const Target = action.isActive ? CompsAddPanel[action.name] : CompsAddPanel.Default;
+          const Target = action.isActive ? action.component : () => null;
           return (
             <Target 
               {...channel.essentials(Target)}

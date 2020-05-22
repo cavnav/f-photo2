@@ -1,6 +1,5 @@
 import { AppServerAPI } from './ServerApi';
 export class Channel {
-
   channel = this;
   tempReducer = tempReducer;
   sd = {}; // states & dispatches.
@@ -11,10 +10,13 @@ export class Channel {
 
   constructor(sd) {
     this.sd = sd;
-    this.addAPI(new AppServerAPI(sd));
+    this.addAPI({ 
+      api: new AppServerAPI(sd),
+      apiName: 'server',
+    });
   }
-  addAPI = ({ api }) => {
-    const name = api.name || api.constructor.name;
+  addAPI = ({ api, apiName }) => {
+    const name = apiName || api.name || api.constructor.name;
     this.API[name] = api;
   }
   essentials = (component) => {
@@ -23,5 +25,10 @@ export class Channel {
       ...this.chunkProps,
       ...component.getReqProps(this),
     };
+  }
+  crop(props) {
+    // Позволяет в методе Component.getReqProps перечислять названия требуемых свойств и методов один раз.
+    const propsCropped = {};
+    return propsCropped;
   }
 }

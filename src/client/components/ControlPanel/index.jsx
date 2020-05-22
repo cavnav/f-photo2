@@ -1,20 +1,22 @@
-import React, { useState, useEffect } from 'react';
+import React, { useReducer, } from 'react';
 
 import './styles.css';
 import { Views } from '..';
 
-export function ControlPanel(props) {
-  const { dispatch, states } = props;
-  const { setAppState } = dispatch;
-  const { appState } = states;
-  const stateInit = {};
-  const [state, setState] = useState(stateInit);
-
-  const isWelcome = appState.view === Views.Welcome;
+export function ControlPanel({
+  tempReducer,
+  actions,
+  isWelcome,
+  setAppState,
+}) {
+  const [state, setState] = useReducer(tempReducer, stateInit);
 
   return (
-    <div className={`controlPanel flex ${isWelcome ? 'attention' : ''}`} onClick={onClickAction}>
-      {Object.entries(props.actions)
+    <div 
+      className={`controlPanel flex ${isWelcome ? 'attention' : ''}`} 
+      onClick={onClickAction}
+    >
+      {Object.entries(actions)
         .filter(([action, actionProps]) => actionProps.isActive)
         .map(([action, actionProps]) => (
           <div key={action} className="action" data-id={action}>
@@ -34,3 +36,13 @@ export function ControlPanel(props) {
   };
 
 }
+
+ControlPanel.getReqProps = ({ 
+  s: { appState: { actions, view } }
+}) => ({
+  isWelcome: view === Views.Welcome,
+  actions,
+  setAppState,
+});
+
+const stateInit = {};

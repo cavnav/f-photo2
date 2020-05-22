@@ -4,20 +4,13 @@ import { tempReducer } from '../../functions';
 
 import './styles.css';
 
-export function Browse(props) {
-  const { dispatch, states, myStore } = props;
-  const { appServerAPI, setBrowseState, setAppState, } = dispatch;
-  const { appState, photosState, browseState } = states;
-  const {
-    files,
-    dirs
-  } = photosState;
- 
-  const [state, setState] = useReducer(tempReducer(), stateInit);
+export function Browse({
+  doNeedHelp,
+  curPhotoInd,
   
-  const { doNeedHelp } = appState;
-
-  const { curPhotoInd } = browseState;
+  tempReducer,
+}) {
+  const [state, setState] = useReducer(tempReducer(), stateInit);
 
   useEffect(onRender, []);
 
@@ -41,7 +34,7 @@ export function Browse(props) {
   }
 
   function onRender() {
-    appServerAPI.toward();
+    setServerToward();
     const curPhotoEl = document.querySelector(`.Browse .file[ind='${curPhotoInd}']`);
     if (curPhotoEl) {
       curPhotoEl.scrollIntoView();
@@ -75,7 +68,7 @@ export function Browse(props) {
 
   function onClickDir(e) {
     const subdir = e.target.getAttribute('name');
-    appServerAPI.toward({ subdir });
+    setServerToward({ subdir });
   }
 
   function onClickFile(e) {
@@ -104,6 +97,58 @@ export function Browse(props) {
     });
   }  
 }
+
+/*
+
+Browse.getReqProps = (channel) {
+  return channel.crop({
+    s: { 
+      appState: { 
+        doNeedHelp, 
+      },
+      photosState: { 
+        files,
+        dirs,
+      },
+      browseState: {
+        curPhotoInd,
+      },
+    }
+  })
+
+
+
+*/
+Browse.getReqProps = ({ 
+  s: { 
+    appState: { 
+      doNeedHelp, 
+    },
+    photosState: { 
+      files,
+      dirs,
+    },
+    browseState: {
+      curPhotoInd,
+    },
+  },
+  d: {
+    setAppState,
+    setBrowseState,
+  },
+  server: {
+    toward: setServerToward,
+  }
+}) => ({
+  files,
+  dirs,
+  curPhotoInd,
+
+  setServerToward,
+  setAppState,
+  setBrowseState,
+});
+
 
 const stateInit = {
   previewWidth: 100,

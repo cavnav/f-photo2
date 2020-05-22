@@ -8,7 +8,7 @@ export class AppServerAPI {
     return `/api/${url}`;
   }
 
-  imgRotate({ params }) {
+  imgRotate(params) {
     const url = this.getUrlWithParams({ method: this.imgRotate, params });
     fetch(url)
     .then(res => res.json())
@@ -29,7 +29,7 @@ export class AppServerAPI {
     const params = this.getParams({ params });
     return `${url}${params}`;
   }
-  
+
   getParams({ params }) {
     const arr = [];
     Object.entries(params).map((name, val) => arr[`${name}=${val}`]);

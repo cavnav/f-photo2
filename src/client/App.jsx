@@ -2,10 +2,9 @@ import React, { useState, useReducer } from 'react';
 import { ControlPanel, MyView, AdditionalPanel} from './components';
 import { tempReducer } from './functions';
 import { Views } from './components';
-import { additionalActions,  changeAction } from './constants';
+import { additionalActions } from './constants';
 import { get as _get } from 'lodash';
 import { Channel } from './Channel';
-import { ServerAPI } from './ServerApi';
 
 import './app.css';
 
@@ -20,23 +19,16 @@ export function App(props) {
   [s.browseState, d.setBrowseState] = useReducer(tempReducer(), browseStateInit);
   [s.ignored, d.forceUpdate] = useReducer(x => !x, true);
   
-  const { view, actions, } = s.appState;
-
   return (    
     <div className="f-photo">     
       <ControlPanel 
-        dispatch={d} 
-        actions={actions} 
-        states={s}
+        {...chanel.essentials(ControlPanel)}
       />
       <AdditionalPanel
         {...channel.essentials(AdditionalPanel)}
       />
       <MyView 
-        target={view} 
-        states={s}
-        dispatch={d}
-        channel={channel}
+        {...channel.essentials(MyView)}
       />
     </div>
   );
@@ -109,5 +101,4 @@ const navLink = [
   appStateInit, 
   photosStateInit, 
   browseStateInit,
-  Channel,
 ];

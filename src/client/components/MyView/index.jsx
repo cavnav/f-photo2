@@ -1,15 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { Views } from '../';
 
 import './styles.css';
 
-export function MyView(props) {  
-  const { target: Target } = props;
+export function MyView({
+  View,
+}) {  
   return (
     <div className="MyView">
-      <Target 
-        {...props} 
+      <View 
+        {...channel.essentials(View)} 
       />
     </div>
   );
 }
+
+MyView.getReqProps = ({ 
+  s: { appState: { view: View } }
+}) => ({
+  View,
+});

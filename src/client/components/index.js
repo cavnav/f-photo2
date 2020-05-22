@@ -4,10 +4,10 @@ import { Browse } from './Browse/Browse';
 import { Print } from './Print';
 import { Welcome } from './Welcome';
 import { Help } from './Help';
-import { ExitFromAlbum } from './ExitFromAlbum/ExitFromAlbum';
-import { ExitFromOnePhoto } from './ExitFromOnePhoto/ExitFromOnePhoto';
-import { SaveChanges } from './SaveChanges/SaveChanges';
-import { SelectAlbum } from './SelectAlbum';
+export { ExitFromAlbum } from './ExitFromAlbum/ExitFromAlbum';
+export { ExitFromOnePhoto } from './ExitFromOnePhoto/ExitFromOnePhoto';
+export { SaveChanges } from './SaveChanges/SaveChanges';
+export { SelectAlbum } from './SelectAlbum';
 import { OnePhoto } from './OnePhoto/OnePhoto';
 
 export { ControlPanel } from './ControlPanel';
@@ -26,12 +26,4 @@ export const Views = {
   Help,
   OnePhoto,
   Welcome,
-};
-
-export const CompsAddPanel = {
-  ExitFromAlbum,
-  ExitFromOnePhoto,
-  SelectAlbum,
-  SaveChanges,
-  Default: () => null,
 };

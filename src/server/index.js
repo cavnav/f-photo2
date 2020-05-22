@@ -141,15 +141,15 @@ app.get('/api/imgRemove', (req, res) => {
   const { file } = req.query;
   removeFile({ file, resolve });
   
-
   function resolve() {
     res.send()
   }
 });
 
 app.get('/api/imgRotate', (req, res) => {
-  console.log('query', (new Date).getTime());
   let { img, deg = 0, path } = req.query;
+
+  console.log('imgRotate', Object.entries(req.query).map((p, val) => [p, val]));
 
   Jimp.read(img)
   .then(img => {

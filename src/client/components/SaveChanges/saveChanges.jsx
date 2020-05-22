@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useReducer } from 'react';
-
+import { additionalActions } from '../../constants';
 import './styles.css';
-import { tempReducer } from '../../functions';
 
 export function SaveChanges({
+  tempReducer,
   onAction,
 }) {
   const [state, setState] = useReducer(tempReducer, stateInit);
@@ -23,10 +23,16 @@ export function SaveChanges({
 }
 
 SaveChanges.getReqProps = ({
-  API: { server: { saveChanges: apiSaveChanges } },
+  API: { additionalActions: { onAction } },
 }) => ({
-  onAction: action.api
+  onAction,
 });
+
+SaveChanges.getAPI = () => {
+  return {
+    additionalActions,
+  }
+};
 
 const stateInit = {
   title: `Сохранить изменения`,

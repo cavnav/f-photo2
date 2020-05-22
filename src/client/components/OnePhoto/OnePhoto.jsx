@@ -151,7 +151,6 @@ export function OnePhoto(props) {
 
       function getContext() {
         return {
-          AdditionalActions,
           AdditionalPanel,
           server,
           state,
@@ -181,14 +180,13 @@ function getFitSize({ width, height }) {
 }
 
 function onImgRotate({
-  AdditionalActions,
   AdditionalPanel,
   server,
   state,
   stateUpd,
   forceUpdate,
 }) {
-  AdditionalActions.changeAction({ 
+  additionalActions.changeAction({ 
     actionUpd: additionalActions.SaveChanges,
     set: {                                 
       isActive: stateUpd.curPhotoRotateDeg !== 0,
@@ -196,7 +194,7 @@ function onImgRotate({
         api: () => server.imgRotate({
           deg: stateUpd.curPhotoRotateDeg,
           img: state.curPhoto,
-          path: img,
+          path: state.curPhoto,
         }),
         onResolve: () => forceUpdate(),                  
       },
