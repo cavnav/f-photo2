@@ -37,12 +37,22 @@ export function ControlPanel({
 
 }
 
-ControlPanel.getReqProps = ({ 
-  s: { appState: { actions, view } }
-}) => ({
-  isWelcome: view === Views.Welcome,
-  actions,
-  setAppState,
-});
+ControlPanel.getReqProps = (channel) => {
+  const cropped = channel.crop({
+    path: {
+      s: { 
+        appState: { actions: 1, view: 1 } 
+      },      
+      d: {
+        setAppState: 1,
+      },
+    }
+  });
+  
+  return {
+    ...cropped,
+    isWelcome: cropped.view === Views.Welcome,
+  };
+};
 
 const stateInit = {};

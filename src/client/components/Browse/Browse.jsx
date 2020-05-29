@@ -1,13 +1,18 @@
 import React, { useState, useEffect, useReducer, useRef } from 'react';
 import { Help, Views } from '..';
-import { tempReducer } from '../../functions';
+import { getTempReducer } from '../../functions';
 
 import './styles.css';
 
 export function Browse({
   doNeedHelp,
   curPhotoInd,
-  
+  files,
+  dirs,
+
+  setAppState,
+  setBrowseState,
+  setServerToward,
   tempReducer,
 }) {
   const [state, setState] = useReducer(tempReducer(), stateInit);
@@ -98,56 +103,33 @@ export function Browse({
   }  
 }
 
-/*
+// -------------------------------------------------------
 
-Browse.getReqProps = (channel) {
+Browse.getReqProps = (channel) => {
   return channel.crop({
-    s: { 
-      appState: { 
-        doNeedHelp, 
+    path: {
+      s: { 
+        appState: { 
+          doNeedHelp: 1, 
+        },
+        photosState: { 
+          files: 1,
+          dirs: 1,
+        },
+        browseState: {
+          curPhotoInd: 1,
+        },
       },
-      photosState: { 
-        files,
-        dirs,
+      d: {
+        setAppState: 1,
+        setBrowseState: 1,
       },
-      browseState: {
-        curPhotoInd,
+      server: {
+        toward: 'setServerToward',
       },
     }
-  })
-
-
-
-*/
-Browse.getReqProps = ({ 
-  s: { 
-    appState: { 
-      doNeedHelp, 
-    },
-    photosState: { 
-      files,
-      dirs,
-    },
-    browseState: {
-      curPhotoInd,
-    },
-  },
-  d: {
-    setAppState,
-    setBrowseState,
-  },
-  server: {
-    toward: setServerToward,
-  }
-}) => ({
-  files,
-  dirs,
-  curPhotoInd,
-
-  setServerToward,
-  setAppState,
-  setBrowseState,
-});
+  });
+};
 
 
 const stateInit = {

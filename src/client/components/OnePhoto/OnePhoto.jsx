@@ -3,8 +3,7 @@ import { PhotoStatuses } from '..';
 import { Help } from '..';
 
 import './styles.css';
-import { tempReducer } from '../../functions';
-import { serverApi } from '../../ServerApi';
+import { getTempReducer } from '../../functions';
 import { additionalActions, changesToSave } from '../../constants';
 
 export function OnePhoto(props) {
@@ -16,7 +15,7 @@ export function OnePhoto(props) {
 
   const { setBrowseState } = dispatch;
 
-  const [state, setState] = React.useReducer(tempReducer(), {
+  const [state, setState] = React.useReducer(getTempReducer(), {
     ...stateInit,
     curPhotoInd,
     curPhoto: files[curPhotoInd],

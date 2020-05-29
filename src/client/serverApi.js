@@ -26,8 +26,8 @@ export class AppServerAPI {
     params,
   }) {
     const url = this.getFullUrl({ url: method.name });
-    const params = this.getParams({ params });
-    return `${url}${params}`;
+    const paramsUpd = this.getParams({ params });
+    return `${url}${paramsUpd}`;
   }
 
   getParams({ params }) {

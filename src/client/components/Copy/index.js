@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Progress, } from 'antd';
-import { serverApi } from '../../ServerApi';
 import { Stepper, Views } from '../';
 
 import 'antd/dist/antd.css';

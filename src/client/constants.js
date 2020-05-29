@@ -32,4 +32,6 @@ export const additionalActions = {
   }
 };
 
-Object.keys(additionalActionsInit).map(name => additionalActionsInit[name].name = name);
+Object.keys(additionalActions)
+  .filter(k => k.constructor === Object)
+  .map(name => additionalActions[name].name = name);

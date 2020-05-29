@@ -1,6 +1,6 @@
 import React, { useState, useReducer } from 'react';
 import { ControlPanel, MyView, AdditionalPanel} from './components';
-import { tempReducer } from './functions';
+import { getTempReducer } from './functions';
 import { Views } from './components';
 import { additionalActions } from './constants';
 import { get as _get } from 'lodash';
@@ -13,16 +13,16 @@ export function App(props) {
   const s = {}; // states.
   const channel = new Channel({ s, d });
 
-  [s.appState, d.setAppState] = useReducer(tempReducer(), appStateInit);
-  [s.printState, d.setPrintState] = useReducer(tempReducer(), printInit);
-  [s.photosState, d.setPhotosState] = useReducer(tempReducer(), photosStateInit);
-  [s.browseState, d.setBrowseState] = useReducer(tempReducer(), browseStateInit);
+  [s.appState, d.setAppState] = useReducer(getTempReducer(), appStateInit);
+  [s.printState, d.setPrintState] = useReducer(getTempReducer(), printInit);
+  [s.photosState, d.setPhotosState] = useReducer(getTempReducer(), photosStateInit);
+  [s.browseState, d.setBrowseState] = useReducer(getTempReducer(), browseStateInit);
   [s.ignored, d.forceUpdate] = useReducer(x => !x, true);
   
   return (    
     <div className="f-photo">     
       <ControlPanel 
-        {...chanel.essentials(ControlPanel)}
+        {...channel.essentials(ControlPanel)}
       />
       <AdditionalPanel
         {...channel.essentials(AdditionalPanel)}
