@@ -45,10 +45,7 @@ AdditionalPanel.getReqProps = ({
 
 AdditionalPanel.getAPI = () => {
   return {
-    name: AdditionalPanel.name,
-    methods: {
-      forceUpdate: AdditionalPanel.forceUpdate,
-    }
+    forceUpdate: AdditionalPanel.forceUpdate,
   };
 };
 

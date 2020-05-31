@@ -4,7 +4,7 @@ import './styles.css';
 
 export function ExitFromAlbum({
   browsePath,
-  apiBackward,
+  setServerBackward,
 }) {
   const [state, setState] = useState({
     ...stateInit,
@@ -27,18 +27,19 @@ export function ExitFromAlbum({
 
   // -----------------------------------------------------------------------
   function onClick(e) {
-    apiBackward();
+    setServerBackward();
   };
 
 }
 
-ExitFromAlbum.getReqProps = ({
-  s: { browseState: { path: browsePath }},
-  API: { server: { backward: apiBackward } },
-}) => ({
-  browsePath,
-  apiBackward,
-});
+ExitFromAlbum.getReqProps = function (channel) {
+  return channel.crop({
+    path: {
+      s: { browseState: { path: 'browsePath' } },
+      API: { server: { backward: 'setServerBackward' } },
+    }
+  });
+}
 
 const stateInit = {
   title: 'Закрыть альбом',

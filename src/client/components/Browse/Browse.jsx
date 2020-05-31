@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useReducer, useRef } from 'react';
 import { Help, Views } from '..';
-import { getTempReducer } from '../../functions';
+import { tempReducer } from '../../functions';
 
 import './styles.css';
 
@@ -15,7 +15,7 @@ export function Browse({
   setServerToward,
   tempReducer,
 }) {
-  const [state, setState] = useReducer(tempReducer(), stateInit);
+  const [state, setState] = useReducer(tempReducer, stateInit);
 
   useEffect(onRender, []);
 
@@ -124,8 +124,10 @@ Browse.getReqProps = (channel) => {
         setAppState: 1,
         setBrowseState: 1,
       },
-      server: {
-        toward: 'setServerToward',
+      API: {
+        server: {
+          toward: 'setServerToward',
+        },
       },
     }
   });

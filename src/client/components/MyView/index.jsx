@@ -4,6 +4,7 @@ import './styles.css';
 
 export function MyView({
   View,
+  channel,
 }) {  
   return (
     <div className="MyView">
@@ -14,8 +15,10 @@ export function MyView({
   );
 }
 
-MyView.getReqProps = ({ 
-  s: { appState: { view: View } }
-}) => ({
-  View,
-});
+MyView.getReqProps = function (channel) {
+  return channel.crop({
+    path: {
+      s: { appState: { view: 'View' } },
+    }
+  });
+};
