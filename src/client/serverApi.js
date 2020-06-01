@@ -9,7 +9,7 @@ export class AppServerAPI {
   }
 
   imgRotate(params) {
-    const url = this.getUrlWithParams({ method: this.imgRotate, params });
+    const url = this.getUrlWithParams({ url: this.imgRotate.name, params });
     fetch(url)
     .then(res => res.json())
     .then(res => {});
@@ -22,12 +22,12 @@ export class AppServerAPI {
   }
 
   getUrlWithParams({
-    method,
+    url,
     params,
   }) {
-    const url = this.getFullUrl({ url: method.name });
+    const urlUpd = this.getFullUrl({ url });
     const paramsUpd = this.getParams({ params });
-    return `${url}${paramsUpd}`;
+    return `${urlUpd}${paramsUpd}`;
   }
 
   getParams({ params }) {
@@ -37,20 +37,15 @@ export class AppServerAPI {
   }
 
   backward = () => {
-    this.navigate({ direction: this.backward.name });
-    this.states.browseState.path = this.states.browseState.path.slice(0, -1);
+    this.navigate({ url: 'backward' });
+    this.s.browseState.path = this.s.browseState.path.slice(0, -1);
   }
   toward = ({ subdir } = {}) => {
-    this.navigate({ direction: 'toward', params: { subdir } });
-    this.states.browseState.path.push(subdir);
+    this.navigate({ url: 'toward', params: { subdir } });
+    this.s.browseState.path.push(subdir);
   }
-  navigate = ({ direction, params = {} }) => {
-    serverApi({
-      props: {
-        url: direction,
-        params,
-      }
-    })
+  navigate = ({ url, params = {} }) => {
+    fetch(this.getUrlWithParams({ url, params }))
     .then(res => res.json())
     .then((res) => {
       const { files, dirs } = res;
@@ -59,14 +54,6 @@ export class AppServerAPI {
         dirs,
       });    
     });
-  }
-  toward = () => { 
-    let { subdir } = props.params;
-    subdir = subdir ? `?subdir=${subdir}` : '';
-    return fetch(`${fullUrl}${subdir}`);
-  }
-  backward = () => {
-    return fetch(fullUrl);
   }
   copyPhotos = () => {
     return fetch(fullUrl, {
