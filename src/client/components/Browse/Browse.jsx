@@ -18,6 +18,7 @@ export function Browse({
   const [state, setState] = useReducer(tempReducer, stateInit);
 
   useEffect(onRender, []);
+  useEffect(boostPerfImgRender, [files]);
 
   return getRender();
 
@@ -25,7 +26,7 @@ export function Browse({
   function getRender() {
     return (
       <div 
-          className='Browse' 
+          className={`${Browse.name}`}
         >
         { getDirsToRender() }
         { getFilesToRender() }   
@@ -40,7 +41,7 @@ export function Browse({
 
   function onRender() {
     setServerToward();
-    const curPhotoEl = document.querySelector(`.Browse .file[ind='${curPhotoInd}']`);
+    const curPhotoEl = document.querySelector(`.${Browse.name} .file[ind='${curPhotoInd}']`);
     if (curPhotoEl) {
       curPhotoEl.scrollIntoView();
       curPhotoEl.classList.add('curFile');
@@ -91,7 +92,7 @@ export function Browse({
       return (
         <div 
           key={file}
-          className='fitPreview100 file'
+          className='fitPreview100 file scrollwait'
           style={{ 'backgroundImage': `url(${file})` }}
           ind={ind} 
           src={file}
@@ -101,6 +102,22 @@ export function Browse({
       );
     });
   }  
+}
+
+function boostPerfImgRender() {
+  const observer = new IntersectionObserver(cb, { threshold: [1] });
+  const elements = document.querySelectorAll(`.${Browse.name} .scrollwait`);
+  if (elements) observer.observe(elements);
+
+  return () => { observer.disconnect(); }
+
+  // ------
+  function cb(entries) {
+    entries.map(e => {
+      const action = e.target.classList.contains('scrollwait') ? 'remove':'add';
+      e.target.classList[action]('scrollwait');
+    });
+  }
 }
 
 // -------------------------------------------------------
