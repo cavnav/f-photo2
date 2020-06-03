@@ -31,8 +31,7 @@ export class AppServerAPI {
   }
 
   getParams({ params }) {
-    const arr = [];
-    Object.entries(params).map((name, val) => arr[`${name}=${val}`]);
+    const arr = Object.entries(params).map(([name, val]) => `${name}=${val}`);
     return `?${arr.join('&')}`;
   }
 

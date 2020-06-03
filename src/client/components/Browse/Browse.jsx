@@ -126,29 +126,27 @@ function boostPerfImgRender() {
 
 Browse.getReqProps = (channel) => {
   return channel.crop({
-    path: {
-      s: { 
-        appState: { 
-          doNeedHelp: 1, 
-        },
-        photosState: { 
-          files: 1,
-          dirs: 1,
-        },
-        browseState: {
-          curPhotoInd: 1,
-        },
+    s: { 
+      appState: { 
+        doNeedHelp: 1, 
       },
-      d: {
-        setAppState: 1,
-        setBrowseState: 1,
+      photosState: { 
+        files: 1,
+        dirs: 1,
       },
-      API: {
-        server: {
-          toward: 'setServerToward',
-        },
+      browseState: {
+        curPhotoInd: 1,
       },
-    }
+    },
+    d: {
+      setAppState: 1,
+      setBrowseState: 1,
+    },
+    API: {
+      server: {
+        toward: 'setServerToward',
+      },
+    },
   });
 };
 

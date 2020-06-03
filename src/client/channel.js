@@ -29,14 +29,14 @@ export class Channel {
       ...component.getReqProps(this),
     };
   }
-  crop({ path, stack, res = {} }) {
+  crop(source, { stack, res = {} } = {}) {
   // По заданному пути возвращает соответствующие значения this.
     if (stack && stack.length === 0) return res;
-    if (!stack) stack = Object.entries(path).map(e => push(e, this[e[0]])); // add link to source val.
+    if (!stack) stack = Object.entries(source).map(e => push(e, this[e[0]])); // add link to source val.
     let [[propName, prop, sourceVal, alias = prop]] = stack;
     if (prop.constructor !== Object) res[prop === 1 ? propName : alias] = sourceVal;
     else stack.push(...Object.entries(prop).map(e => push(e, sourceVal[e[0]])));
-    return this.crop({ path: prop, stack: stack.slice(1), res });
+    return this.crop(source, { stack: stack.slice(1), res });
   }
 }
 
