@@ -105,17 +105,19 @@ export function Browse({
 }
 
 function boostPerfImgRender() {
-  const observer = new IntersectionObserver(cb, { threshold: [1] });
-  const elements = document.querySelectorAll(`.${Browse.name} .scrollwait`);
-  if (elements) observer.observe(elements);
+  const observer = new IntersectionObserver(cb, { threshold: 1 });
+  const elements = [...(document.querySelectorAll(`.${Browse.name} .scrollwait`) || [])];
+  const observe = observer.observe.bind(observer);
+  elements.map(observe);
 
   return () => { observer.disconnect(); }
 
   // ------
   function cb(entries) {
+    const unobserve = observer.unobserve.bind(observer);
     entries.map(e => {
-      const action = e.target.classList.contains('scrollwait') ? 'remove':'add';
-      e.target.classList[action]('scrollwait');
+      e.target.classList.remove('scrollwait');
+      unobserve(e.target);
     });
   }
 }
