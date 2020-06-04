@@ -6,15 +6,14 @@ export function ExitFromAlbum({
   browsePath,
   setServerBackward,
 }) {
-  const [state, setState] = useState({
-    ...stateInit,
-    title: `${stateInit.title} ${albumName}`,
-  });
-
   const [albumName] = browsePath.slice(-1);
   if (!albumName) return null;
 
-  const { title } = state;
+  const title = `Закрыть альбом ${albumName}`;
+
+  const [state, setState] = useState({
+    ...stateInit,
+  });
 
   return (
     <div 
@@ -40,6 +39,5 @@ ExitFromAlbum.getReqProps = function (channel) {
 }
 
 const stateInit = {
-  title: 'Закрыть альбом',
 };
 

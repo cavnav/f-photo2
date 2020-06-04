@@ -31,7 +31,9 @@ export class AppServerAPI {
   }
 
   getParams({ params }) {
-    const arr = Object.entries(params).map(([name, val]) => `${name}=${val}`);
+    const arr = Object.entries(params)
+      .filter(([name, val]) => val !== undefined)
+      .map(([name, val]) => `${name}=${val}`);
     return `?${arr.join('&')}`;
   }
 
@@ -39,10 +41,12 @@ export class AppServerAPI {
     this.navigate({ url: 'backward' });
     this.s.browseState.path = this.s.browseState.path.slice(0, -1);
   }
+
   toward = ({ subdir } = {}) => {
     this.navigate({ url: 'toward', params: { subdir } });
     this.s.browseState.path.push(subdir);
   }
+
   navigate = ({ url, params = {} }) => {
     fetch(this.getUrlWithParams({ url, params }))
     .then(res => res.json())
@@ -54,6 +58,7 @@ export class AppServerAPI {
       });    
     });
   }
+
   copyPhotos = () => {
     return fetch(fullUrl, {
       method: 'POST',
@@ -63,15 +68,19 @@ export class AppServerAPI {
       body: JSON.stringify({ userDirName })
     });
   }
+
   getNewPhotos = () => {
     return fetch(fullUrl);
   }
+
   checkCopyProgress = () => {
     return fetch(fullUrl);
   }
+
   browsePhotos = () => {
     return fetch(fullUrl);
   }
+
   getUsbDevices = () => {
     return fetch(fullUrl);
   }
