@@ -6,15 +6,14 @@ import './styles.css';
 import { tempReducer } from '../../functions';
 import { additionalActions, changesToSave } from '../../constants';
 
-export function OnePhoto(props) {
-  const { dispatch, states, channel } = props;
-  const { browseState, photosState, printState, appState } = states;
-  const { files } = photosState;
-  const { curPhotoInd } = browseState;
-  const { doNeedHelp } = appState;
+export function OnePhoto({
+  doNeedHelp, 
+  files,
+  curPhotoInd,
 
-  const { setBrowseState } = dispatch;
-
+  setBrowseState,
+}) {
+  
   const [state, setState] = React.useReducer(tempReducer(), {
     ...stateInit,
     curPhotoInd,
@@ -49,10 +48,10 @@ export function OnePhoto(props) {
             height: state.curPhotoHeight,
           }} 
         />
-        <PhotoStatuses 
+        {/*<PhotoStatuses 
           {...{curDate, curPhoto, printState}}
           onRenderCb={onRenderPhotoStatuses}
-        /> 
+        /> */}
         <Help
           toRender={toRenderHelp()}
           {...{doNeedHelp}}
@@ -136,16 +135,16 @@ export function OnePhoto(props) {
 
     function changeAddActions() {
       const context = getContext();
-      Object.keys(stateUpd).map(prop => getTrigger(prop).bind(context)());
+      Object.keys(stateUpd).map(prop => runTrigger({ prop, context }));
 
       // ---------------------------------------
 
-      function getTrigger(tName) {
+      function runTrigger({ prop, context }) {
         return {
-          [tName]: () => {},
+          [prop]: () => {},
           curPhotoRotateDeg: onImgRotate,
           curPhotoRemove: onImgRemove,
-        };
+        }[prop](context); 
       }
 
       function getContext() {
@@ -202,6 +201,30 @@ function onImgRotate({
 
   AdditionalPanel.forceUpdate();
 }
+
+OnePhoto.getReqProps = (channel) => { 
+  return {
+    ...channel.crop({
+      s: {
+        appState: { doNeedHelp: 1 },
+        photosState: {
+          files: 1,
+        },
+        browseState: {
+          curPhotoInd: 1,
+        },
+      },
+      d: {
+        setBrowseState: 1,
+      },
+    }),
+  };  
+};
+
+OnePhoto.getAPI = () => {
+  return {
+  };
+};
 
 const stateInit = {
   curPhoto: undefined,

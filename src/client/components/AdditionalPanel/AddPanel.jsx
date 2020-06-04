@@ -30,18 +30,20 @@ export function AdditionalPanel({
     }
     </div>
   );
-
-  // -----------------------------------------------------------------------
-
 }
+
 AdditionalPanel.forceUpdate = () => {};
 
-AdditionalPanel.getReqProps = ({ 
+AdditionalPanel.getReqProps = (channel) => { 
+  const {
     API: { _get }, 
     s: { appState }
-  }) => ({
+  } = channel;
+  
+  return {
     activeComponentActions: _get(appState, ['actions', appState.view.name, 'additionalActions'], []),
-  });
+  };
+}
 
 AdditionalPanel.getAPI = () => {
   return {
