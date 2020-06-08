@@ -1,7 +1,7 @@
 import { 
   ExitFromAlbum,
   ExitFromOnePhoto,
-  SaveChanges
+  SaveChanges,
 } from "./components/index";
 
 export const additionalActions = {
@@ -17,6 +17,7 @@ export const additionalActions = {
   },
   SaveChanges: {
     title: 'Сохранить изменения',
+    className: 'SaveChanges',
     isActive: false,
     onAction: {
       api: undefined,

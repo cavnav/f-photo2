@@ -4,24 +4,30 @@ import { Help } from '..';
 
 import './styles.css';
 import { tempReducer } from '../../functions';
-import { additionalActions, changesToSave } from '../../constants';
+import { additionalActions, } from '../../constants';
 
 export function OnePhoto({
   doNeedHelp, 
   files,
   curPhotoInd,
+  AdditionalPanel,
+  server,
 
   setBrowseState,
 }) {
   
-  const [state, setState] = React.useReducer(tempReducer(), {
+  const [state, setState] = React.useReducer(
+    tempReducer({ 
+      selfReducer: selfReducer({
+        files, 
+      })
+    }), {
     ...stateInit,
     curPhotoInd,
     curPhoto: files[curPhotoInd],
-    curPhotoWithTime: `${files[curPhotoInd]}?${new Date().getTime()}`,
   });
 
-  const [ignored, forceUpdate] = React.userReducer(x => !x, false);
+  const [ignored, forceUpdate] = React.useReducer(x => !x, false);
 
   const { curDate, curPhoto, curPhotoWithTime } = state;
   const imgRef = React.useRef(null);
@@ -177,6 +183,10 @@ function getFitSize({ width, height }) {
   return res;
 }
 
+function onImgRemove({}) {
+
+}
+
 function onImgRotate({
   AdditionalPanel,
   server,
@@ -202,6 +212,16 @@ function onImgRotate({
   AdditionalPanel.forceUpdate();
 }
 
+function selfReducer({
+  files,
+}) {
+  return ({
+    curPhotoInd,
+  }) => ({
+    curPhotoWithTime: `${files[curPhotoInd]}?${new Date().getTime()}`,
+  });
+}
+
 OnePhoto.getReqProps = (channel) => { 
   return {
     ...channel.crop({
@@ -217,6 +237,10 @@ OnePhoto.getReqProps = (channel) => {
       d: {
         setBrowseState: 1,
       },
+      API: {
+        AdditionalPanel: 1,
+        server: 1,
+      }
     }),
   };  
 };
@@ -237,4 +261,4 @@ const stateInit = {
   forceRender: false,
 };
 
-const navLink = [stateInit,];
+const navLink = [stateInit, OnePhoto.getReqProps, OnePhoto.getAPI];

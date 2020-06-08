@@ -1,17 +1,18 @@
 import React, { useState, useEffect, useReducer } from 'react';
-import { additionalActions } from '../../constants';
 import './styles.css';
 
 export function SaveChanges({
+  title,
+  className,
+
   tempReducer,
   onAction,
 }) {
-  const [state, setState] = useReducer(tempReducer, stateInit);
-  const { title } = state;
+  const [state, setState] = useReducer(tempReducer(), stateInit);
 
   return (
     <div 
-      className='SaveChanges' 
+      className={className} 
       onClick={onAction}      
     >
       <div className='title'>{title}</div>  
@@ -23,17 +24,22 @@ export function SaveChanges({
 }
 
 SaveChanges.getReqProps = ({
-  API: { additionalActions: { onAction } },
-}) => ({
-  onAction,
-});
+  channel,
+  parentProps,
+}) => channel.crop({
+    parentProps: { 
+      title: 1,
+      onAction: 1,
+      className: 1,
+    },
+  },
+  { parentProps, },
+);
 
 SaveChanges.getAPI = () => {
   return {
-    additionalActions,
   }
 };
 
 const stateInit = {
-  title: `Сохранить изменения`,
 };

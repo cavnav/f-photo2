@@ -13,10 +13,10 @@ export function App(props) {
   const s = {}; // states.
   const channel = new Channel({ s, d });
 
-  [s.appState, d.setAppState] = useReducer(tempReducer, appStateInit);
-  [s.printState, d.setPrintState] = useReducer(tempReducer, printInit);
-  [s.photosState, d.setPhotosState] = useReducer(tempReducer, photosStateInit);
-  [s.browseState, d.setBrowseState] = useReducer(tempReducer, browseStateInit);
+  [s.appState, d.setAppState] = useReducer(tempReducer(), appStateInit);
+  [s.printState, d.setPrintState] = useReducer(tempReducer(), printInit);
+  [s.photosState, d.setPhotosState] = useReducer(tempReducer(), photosStateInit);
+  [s.browseState, d.setBrowseState] = useReducer(tempReducer(), browseStateInit);
   [s.ignored, d.forceUpdate] = useReducer(x => !x, true);
   
   return (    

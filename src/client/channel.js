@@ -4,6 +4,8 @@ import { get as _get } from 'lodash';
 
 export class Channel {
   channel = this;
+  s; // states;
+  d; // dispatches;
   API = {
     _get,
   };

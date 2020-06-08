@@ -15,7 +15,7 @@ export function Browse({
   setServerToward,
   tempReducer,
 }) {
-  const [state, setState] = useReducer(tempReducer, stateInit);
+  const [state, setState] = useReducer(tempReducer(), stateInit);
 
   useEffect(onRender, []);
   useEffect(boostPerfImgRender, [files]);

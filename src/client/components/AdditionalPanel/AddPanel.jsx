@@ -7,7 +7,7 @@ export function AdditionalPanel({
   tempReducer,
   activeComponentActions,
 }) {
-  const [state, setState] = useReducer(tempReducer, stateInit);
+  const [state, setState] = useReducer(tempReducer(), stateInit);
   const [ignored, forceUpdate] = useReducer(x => !x, false);
 
   AdditionalPanel.forceUpdate = forceUpdate;
@@ -17,19 +17,25 @@ export function AdditionalPanel({
   return (
     <div 
       className='AdditionalPanel'       
-    >{
-      activeComponentActions
-        .map(action => {
-          const Target = action.isActive ? action.component : () => null;
-          return (
-            <Target 
-              {...channel.essentials(Target)}
-            />
-          );
-        })
-    }
+    >
+      { getItems() }
     </div>
   );
+
+  // ----------------
+
+  function getItems() {
+    return activeComponentActions
+      .map(action => {
+        const Action = action.isActive ? action.component : () => null;
+      
+        return (
+          <Action 
+            {...channel.essentials({ component: Action, parentProps: action })}
+          />
+        );
+      });
+  }
 }
 
 AdditionalPanel.forceUpdate = () => {};
