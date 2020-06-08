@@ -146,24 +146,21 @@ app.get('/api/imgRemove', (req, res) => {
   }
 });
 
-app.get('/api/imgRotate', (req, res) => {
+app.get('/api/imgRotate', (req, response) => {
   let { img, deg = 0, path } = req.query;
+  const imgUpd = state.curDir.concat('\\', img);
+  const pathUpd = state.curDir.concat('\\', path);
 
-  console.log('imgRotate', Object.entries(req.query).map((p, val) => [p, val]));
+  console.log('imgRotate', [imgUpd, deg, pathUpd]);
 
-  Jimp.read(img)
-  .then(img => {
-    return img
+  Jimp.read(imgUpd)
+  .then(imgUpd => {
+    return imgUpd
       .rotate(-deg)
-      .write(path); // save
+      .write(pathUpd); // save
   })
-  .then(res => console.log('query', (new Date).getTime()))
+  .then(res => response.send(req))
   .catch(console.error);
-
-  res.send({
-    img,
-    deg,
-  });
 });
 
 app.post('/api/copyPhotos', (req, res) => {
@@ -345,7 +342,7 @@ function removeFile({
 }
 
 function clearUpUSB() {
-  return fs.remove('F://')
+  return fs.remove('F:\\')
   .then(() => {
   })
   .catch(err => {

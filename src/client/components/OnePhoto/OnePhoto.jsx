@@ -199,12 +199,12 @@ function onImgRotate({
     set: {                                 
       isActive: stateUpd.curPhotoRotateDeg !== 0,
       onAction: {
-        api: () => server.imgRotate({
+        API: () => server.imgRotate({
           deg: stateUpd.curPhotoRotateDeg,
           img: state.curPhoto,
           path: state.curPhoto,
-        }),
-        onResolve: () => forceUpdate(),                  
+        })
+        .then(res => forceUpdate())                 
       },
     }
   });
@@ -222,7 +222,7 @@ function selfReducer({
   });
 }
 
-OnePhoto.getReqProps = (channel) => { 
+OnePhoto.getReqProps = ({ channel }) => { 
   return {
     ...channel.crop({
       s: {

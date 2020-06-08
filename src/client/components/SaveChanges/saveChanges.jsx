@@ -6,14 +6,14 @@ export function SaveChanges({
   className,
 
   tempReducer,
-  onAction,
+  onActionAPI,
 }) {
   const [state, setState] = useReducer(tempReducer(), stateInit);
 
   return (
     <div 
       className={className} 
-      onClick={onAction}      
+      onClick={onActionAPI}      
     >
       <div className='title'>{title}</div>  
     </div>
@@ -29,7 +29,7 @@ SaveChanges.getReqProps = ({
 }) => channel.crop({
     parentProps: { 
       title: 1,
-      onAction: 1,
+      onAction: { API: 'onActionAPI' },
       className: 1,
     },
   },

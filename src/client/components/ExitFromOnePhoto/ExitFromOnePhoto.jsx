@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Views } from '../';
 import './styles.css';
 
 export function ExitFromOnePhoto({
@@ -6,14 +7,13 @@ export function ExitFromOnePhoto({
   Views,
 }) {
   const [state, setState] = useState(stateInit);
-  const { title } = state;
 
   return (
     <div 
       className='ExitFromAlbum' 
       onClick={onClick}      
     >
-      <div className='title'>{title}</div>  
+      <div className='title'>Вернуться к списку фото</div>  
     </div>
   );
 
@@ -26,15 +26,13 @@ export function ExitFromOnePhoto({
 
 }
 
-ExitFromOnePhoto.getReqProps = ({
-  d: { setAppState },
-  API: { Views },
-}) => ({
-  setAppState,
-  Views,
-});
+ExitFromOnePhoto.getReqProps = ({ channel }) => {
+  return channel.crop({
+    d: { setAppState: 1 },
+  });
+};
 
 const stateInit = {
-  title: `Вернуться к списку фото`,
+  
 };
 

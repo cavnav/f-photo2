@@ -21,24 +21,27 @@ export class Channel {
     const API = this.API;
     Object.entries(props).map(([p, val]) => API[p] = val);
   }
-  essentials = (component) => {
+  essentials = (component, { parentProps = {} } = {}) => {
     if (component.getAPI) this.addAPI({
       [component.name]: component.getAPI(), 
     });
     if (component.getReqProps) return {
       channel: this,
       tempReducer,
-      ...component.getReqProps(this),
+      ...component.getReqProps({ channel: this, parentProps }),
     };
   }
-  crop(source, { stack, res = {} } = {}) {
+  crop(source, context, { stack, res = {} } = {}) {
   // По заданному пути возвращает соответствующие значения this.
     if (stack && stack.length === 0) return res;
-    if (!stack) stack = Object.entries(source).map(e => push(e, this[e[0]])); // add link to source val.
+    if (!stack) {
+      const contextUpd = context ? { channel: this, ...context } : this;
+      stack = Object.entries(source).map(e => push(e, contextUpd[e[0]])); // add link to source val.
+    }
     let [[propName, prop, sourceVal, alias = prop]] = stack;
     if (prop.constructor !== Object) res[prop === 1 ? propName : alias] = sourceVal;
     else stack.push(...Object.entries(prop).map(e => push(e, sourceVal[e[0]])));
-    return this.crop(source, { stack: stack.slice(1), res });
+    return this.crop(null, null, { stack: stack.slice(1), res });
   }
 }
 

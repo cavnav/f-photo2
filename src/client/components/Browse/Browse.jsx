@@ -124,7 +124,7 @@ function boostPerfImgRender() {
 
 // -------------------------------------------------------
 
-Browse.getReqProps = (channel) => {
+Browse.getReqProps = ({ channel }) => {
   return channel.crop({
     s: { 
       appState: { 

@@ -37,7 +37,7 @@ export function ControlPanel({
 
 }
 
-ControlPanel.getReqProps = (channel) => {
+ControlPanel.getReqProps = ({ channel }) => {
   const cropped = channel.crop({
     s: { 
       appState: { actions: 1, view: 1 } 

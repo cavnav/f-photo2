@@ -10,9 +10,8 @@ export class AppServerAPI {
 
   imgRotate(params) {
     const url = this.getUrlWithParams({ url: this.imgRotate.name, params });
-    fetch(url)
+    return fetch(url)
     .then(res => res.json())
-    .then(res => {});
   }
 
   imgDelete() {

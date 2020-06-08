@@ -31,7 +31,7 @@ export function AdditionalPanel({
       
         return (
           <Action 
-            {...channel.essentials({ component: Action, parentProps: action })}
+            {...channel.essentials(Action, { parentProps: action })}
           />
         );
       });
@@ -40,7 +40,7 @@ export function AdditionalPanel({
 
 AdditionalPanel.forceUpdate = () => {};
 
-AdditionalPanel.getReqProps = (channel) => { 
+AdditionalPanel.getReqProps = ({ channel }) => { 
   const {
     API: { _get }, 
     s: { appState }

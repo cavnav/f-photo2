@@ -31,7 +31,7 @@ export function ExitFromAlbum({
 
 }
 
-ExitFromAlbum.getReqProps = function (channel) {
+ExitFromAlbum.getReqProps = function ({ channel }) {
   return channel.crop({
     s: { browseState: { path: 'browsePath' } },
     API: { server: { backward: 'setServerBackward' } },
