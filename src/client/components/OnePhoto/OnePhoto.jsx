@@ -188,14 +188,12 @@ function onImgRemove({}) {
 }
 
 function onImgRotate({
-  AdditionalPanel,
   server,
   state,
   stateUpd,
   forceUpdate,
 }) {
-  additionalActions.changeAction({ 
-    actionUpd: additionalActions.SaveChanges,
+  additionalActions.SaveChanges.change({ 
     set: {                                 
       isActive: stateUpd.curPhotoRotateDeg !== 0,
       onAction: {
@@ -204,12 +202,13 @@ function onImgRotate({
           img: state.curPhoto,
           path: state.curPhoto,
         })
-        .then(res => forceUpdate())                 
+        .then(res => {
+          forceUpdate();
+          additionalActions.SaveChanges.reset();
+        })                 
       },
-    }
+    },
   });
-
-  AdditionalPanel.forceUpdate();
 }
 
 function selfReducer({

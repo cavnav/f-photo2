@@ -159,7 +159,7 @@ app.get('/api/imgRotate', (req, response) => {
       .rotate(-deg)
       .write(pathUpd); // save
   })
-  .then(res => response.send(req))
+  .then(res => response.send(req.query))
   .catch(console.error);
 });
 
