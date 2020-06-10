@@ -3,10 +3,10 @@ import { PhotoStatuses } from '..';
 import { Help } from '..';
 
 import './styles.css';
-import { tempReducer } from '../../functions';
 import { additionalActions, } from '../../constants';
 
 export function OnePhoto({
+  tempReducer,
   doNeedHelp, 
   files,
   curPhotoInd,
@@ -17,19 +17,17 @@ export function OnePhoto({
 }) {
   
   const [state, setState] = React.useReducer(
-    tempReducer({ 
-      selfReducer: selfReducer({
-        files, 
-      })
-    }), {
-    ...stateInit,
-    curPhotoInd,
-    curPhoto: files[curPhotoInd],
-  });
+    tempReducer, {
+      ...stateInit,
+      curPhotoInd,
+      curPhoto: files[curPhotoInd],
+    }, 
+  );
+
+  Object.assign(state, selfReducer(state, { files }));
 
   const [ignored, forceUpdate] = React.useReducer(x => !x, false);
 
-  const { curDate, curPhoto, curPhotoWithTime } = state;
   const imgRef = React.useRef(null);
 
   let photoStatusesApi;
@@ -211,14 +209,17 @@ function onImgRotate({
   });
 }
 
-function selfReducer({
-  files,
-}) {
-  return ({
+function selfReducer(
+  {
     curPhotoInd,
-  }) => ({
+  }, 
+  {
+    files,
+  }
+) {
+  return {
     curPhotoWithTime: `${files[curPhotoInd]}?${new Date().getTime()}`,
-  });
+  };
 }
 
 OnePhoto.getReqProps = ({ channel }) => { 

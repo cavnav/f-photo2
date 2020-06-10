@@ -8,7 +8,7 @@ export function SaveChanges({
   tempReducer,
   onActionAPI,
 }) {
-  const [state, setState] = useReducer(tempReducer(), stateInit);
+  const [state, setState] = useReducer(tempReducer, stateInit);
 
   return (
     <div 

@@ -7,7 +7,7 @@ export function AdditionalPanel({
   tempReducer,
   activeComponentActions,
 }) {
-  const [state, setState] = useReducer(tempReducer(), stateInit);
+  const [state, setState] = useReducer(tempReducer, stateInit);
   const [ignored, forceUpdate] = useReducer(x => !x, false);
 
   AdditionalPanel.forceUpdate = forceUpdate;

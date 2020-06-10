@@ -9,7 +9,7 @@ export function ControlPanel({
   isWelcome,
   setAppState,
 }) {
-  const [state, setState] = useReducer(tempReducer(), stateInit);
+  const [state, setState] = useReducer(tempReducer, stateInit);
 
   return (
     <div 
