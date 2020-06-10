@@ -6,6 +6,11 @@ import {
 } from "./components/index";
 
 class Action {
+  constructor(props) {
+    Object.entries(props).map(([propName, prop]) => {
+      this[propName] = prop;
+    });
+  }
   change({    
     set,
     needApply = true,
@@ -22,17 +27,15 @@ class Action {
       },
     };
     Object.assign(this, defaultStruct);
+    AdditionalPanel.forceUpdate();
   }
 }
-class AdditionalActions extends Action {
+class AdditionalActions {
   constructor() {
-    super();
-    
-    Object.keys(this)
-    .filter(k => k.constructor === Object)
-    .map(name => {
-      this[name].name = name;
-      this.onAction = {
+    Object.entries(this)
+    .map(([actionName, action]) => {
+      action.name = actionName;
+      action.onAction = {
        API: undefined,
       };
     });
