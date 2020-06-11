@@ -10,7 +10,6 @@ export function OnePhoto({
   doNeedHelp, 
   files,
   curPhotoInd,
-  AdditionalPanel,
   server,
 
   setBrowseState,
@@ -21,10 +20,15 @@ export function OnePhoto({
       ...stateInit,
       curPhotoInd,
       curPhoto: files[curPhotoInd],
+      curPhotoWithTime: files[curPhotoInd],
     }, 
   );
 
-  Object.assign(state, selfReducer(state, { files }));
+  Object.assign(state, selfReducer({ 
+      state, 
+      props: { files },
+    })
+  );
 
   const [ignored, forceUpdate] = React.useReducer(x => !x, false);
 
@@ -113,10 +117,12 @@ export function OnePhoto({
 
       case 37:  stateUpd.curPhotoInd = prevPhotoInd;
                 stateUpd.curPhoto = files[prevPhotoInd];
+                stateUpd.curPhotoRotateDeg = 0;
                 break; // prev
 
       case 39:  stateUpd.curPhotoInd = nextPhotoInd; 
                 stateUpd.curPhoto = files[nextPhotoInd];
+                stateUpd.curPhotoRotateDeg = 0;
                 break; // next
 
       case 38: stateUpd.curPhotoRotateDeg = checkRotate({ deg: state.curPhotoRotateDeg + 90 }); 
@@ -139,21 +145,22 @@ export function OnePhoto({
 
     function changeAddActions() {
       const context = getContext();
-      Object.keys(stateUpd).map(prop => runTrigger({ prop, context }));
+      const [updatedProp] = Object.keys(stateUpd);
+      if (updatedProp) runTrigger({ updatedProp, context });
 
       // ---------------------------------------
 
-      function runTrigger({ prop, context }) {
+      function runTrigger({ updatedProp, context }) {
         return {
-          [prop]: () => {},
+          [updatedProp]: () => {},
+          curPhotoInd: onChangePhoto,
           curPhotoRotateDeg: onImgRotate,
           curPhotoRemove: onImgRemove,
-        }[prop](context); 
+        }[updatedProp](context); 
       }
 
       function getContext() {
         return {
-          AdditionalPanel,
           server,
           state,
           stateUpd,
@@ -181,6 +188,9 @@ function getFitSize({ width, height }) {
   return res;
 }
 
+function onChangePhoto({}) {
+  additionalActions.SaveChanges.reset();
+}
 function onImgRemove({}) {
 
 }
@@ -201,7 +211,7 @@ function onImgRotate({
           path: state.curPhoto,
         })
         .then(res => {
-          forceUpdate();
+          forceUpdate({ onImgRotate });
           additionalActions.SaveChanges.reset();
         })                 
       },
@@ -211,15 +221,17 @@ function onImgRotate({
 
 function selfReducer(
   {
-    curPhotoInd,
-  }, 
-  {
-    files,
+    action,
+    state: { curPhotoInd, },
+    props: { files, }
   }
 ) {
   return {
-    curPhotoWithTime: `${files[curPhotoInd]}?${new Date().getTime()}`,
-  };
+    [action]: {},
+    onImageRotate: {
+      curPhotoWithTime: `${files[curPhotoInd]}?${new Date().getTime()}`,
+    },
+  }[action];
 }
 
 OnePhoto.getReqProps = ({ channel }) => { 
@@ -238,7 +250,6 @@ OnePhoto.getReqProps = ({ channel }) => {
         setBrowseState: 1,
       },
       API: {
-        AdditionalPanel: 1,
         server: 1,
       }
     }),
