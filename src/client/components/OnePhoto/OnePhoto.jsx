@@ -6,7 +6,6 @@ import './styles.css';
 import { additionalActions, } from '../../constants';
 
 export function OnePhoto({
-  tempReducer,
   doNeedHelp, 
   files,
   curPhotoInd,
@@ -16,7 +15,9 @@ export function OnePhoto({
 }) {
   
   const [state, setState] = React.useReducer(
-    tempReducer, {
+    getSelfReducer({
+      files,
+    }), {
       ...stateInit,
       curPhotoInd,
       curPhoto: files[curPhotoInd],
@@ -24,17 +25,7 @@ export function OnePhoto({
     }, 
   );
 
-  const [getActionName, forceUpdate] = React.useReducer((state, action = {}) => () => {
-    state = {};
-    return action.name;
-  }, () => {});
-
-  Object.assign(state, selfReducer({ 
-      actionName: getActionName(),
-      state, 
-      props: { files },
-    })
-  );
+  const [forceUpdated, forceUpdate] = React.useReducer(x => !x);
 
   const imgRef = React.useRef(null);
 
@@ -42,6 +33,17 @@ export function OnePhoto({
 
   React.useEffect(addKeyDownListener);
   React.useEffect(fitCurPhotoSize, [state.curPhotoInd]);
+  React.useEffect(() => {
+    if ({
+      onTogglePhoto: 1, 
+      onImgServerRotate: 1
+    }[state.action.name] === undefined) return;
+
+    setTimeout(() => {
+      imgRef.current.style.visibility = 'visible';
+      imgRef.current.style.opacity = '1';
+    }, 1000);
+  });
 
   return getRender();
 
@@ -58,6 +60,8 @@ export function OnePhoto({
             transform: `rotate(${state.curPhotoRotateDeg}deg)`,
             width: state.curPhotoWidth,
             height: state.curPhotoHeight,
+            opacity: state.opacity,
+            visibility: state.visibility,
           }} 
         />
         {/*<PhotoStatuses 
@@ -116,23 +120,36 @@ export function OnePhoto({
     const stateUpd = {};
 
     switch (e.which) {
-      case 49:  photoStatusesApi.changeStatusPhotoPrint(); 
-                break; 
+      case 49:  
+        photoStatusesApi.changeStatusPhotoPrint(); 
 
-      case 37:  stateUpd.curPhotoInd = prevPhotoInd;
-                stateUpd.curPhoto = files[prevPhotoInd];
-                stateUpd.curPhotoRotateDeg = 0;
-                break; // prev
+        break; 
 
-      case 39:  stateUpd.curPhotoInd = nextPhotoInd; 
-                stateUpd.curPhoto = files[nextPhotoInd];
-                stateUpd.curPhotoRotateDeg = 0;
-                break; // next
+      case 37:  
+        stateUpd.curPhotoInd = prevPhotoInd;
+        stateUpd.curPhoto = files[prevPhotoInd];
+        stateUpd.curPhotoRotateDeg = 0;
+        stateUpd.action = onTogglePhoto;
 
-      case 38: stateUpd.curPhotoRotateDeg = checkRotate({ deg: state.curPhotoRotateDeg + 90 }); 
-              break; // rotate right
-      case 40: stateUpd.curPhotoRotateDeg = checkRotate({ deg: state.curPhotoRotateDeg - 90 }); 
-              break; // rotate left
+        break; // prev
+
+      case 39: 
+        stateUpd.curPhotoInd = nextPhotoInd; 
+        stateUpd.curPhoto = files[nextPhotoInd];
+        stateUpd.curPhotoRotateDeg = 0;
+        stateUpd.action = onTogglePhoto;
+
+        break; // next
+
+      case 38: 
+        stateUpd.curPhotoRotateDeg = checkRotate({ deg: state.curPhotoRotateDeg + 90 }); 
+
+        break; // rotate right
+
+      case 40: 
+        stateUpd.curPhotoRotateDeg = checkRotate({ deg: state.curPhotoRotateDeg - 90 });              
+        
+        break; // rotate left
     }
 
     setState(stateUpd);
@@ -148,31 +165,64 @@ export function OnePhoto({
     }
 
     function changeAddActions() {
-      const context = getContext();
       const [updatedProp] = Object.keys(stateUpd);
-      if (updatedProp) runTrigger({ updatedProp, context });
+      if (updatedProp) runTrigger({ updatedProp, });
 
       // ---------------------------------------
 
-      function runTrigger({ updatedProp, context }) {
+      function runTrigger({ updatedProp, }) {
         return {
           [updatedProp]: () => {},
-          curPhotoInd: onChangePhoto,
-          curPhotoRotateDeg: onImgRotate,
-          curPhotoRemove: onImgRemove,
-        }[updatedProp](context); 
-      }
-
-      function getContext() {
-        return {
-          server,
-          state,
-          stateUpd,
-          forceUpdate,
-        };
+          curPhotoInd: onTogglePhoto,
+          curPhotoRotateDeg: onImgServerRotate,
+          curPhotoRemove: onImgServerRemove,
+        }[updatedProp]({
+            server,
+            state,
+            stateUpd,
+            setState,
+          }
+        ); 
       }
     }
   }
+}
+
+function getSelfReducer({
+  files,
+}) {
+  return (
+    state,
+    newState,
+  ) => {
+    const stateUpd = { 
+      ...state,
+      ...newState,
+    };
+    const {
+      action: {
+        name: actionName,
+      },
+      curPhoto,
+      curPhotoInd,
+    } = stateUpd;
+
+    return Object.assign(stateUpd, {
+        [actionName]: {},
+        onTogglePhoto: {
+          curPhotoWithTime: curPhoto,
+          opacity: '0',
+          visibility: 'hidden',
+        },
+        onImgServerRotate: {
+          curPhotoRotateDeg: 0,
+          curPhotoWithTime: `${files[curPhotoInd]}?${new Date().getTime()}`,
+          opacity: '0',
+          visibility: 'hidden',
+        },
+      }[actionName],
+    )
+  };
 }
 
 function getCurDate() {
@@ -192,53 +242,41 @@ function getFitSize({ width, height }) {
   return res;
 }
 
-function onChangePhoto({}) {
+function onTogglePhoto() {
   additionalActions.SaveChanges.reset();
 }
-function onImgRemove({}) {
+function onImgServerRemove({}) {
 
 }
 
-function onImgRotate({
+function onImgServerRotate({
   server,
-  state,
-  stateUpd,
-  forceUpdate,
+  state: { 
+    curPhoto,
+  },
+  stateUpd: {
+    curPhotoRotateDeg,
+  },
+  setState,
 }) {
   additionalActions.SaveChanges.change({ 
     set: {                                 
-      isActive: stateUpd.curPhotoRotateDeg !== 0,
+      isActive: curPhotoRotateDeg !== 0,
       onAction: {
         API: () => server.imgRotate({
-          deg: stateUpd.curPhotoRotateDeg,
-          img: state.curPhoto,
-          path: state.curPhoto,
+          deg: curPhotoRotateDeg,
+          img: curPhoto,
+          path: curPhoto,
         })
         .then(res => {
-          forceUpdate(onImgRotate);
+          setState({
+            action: onImgServerRotate,
+          });
           additionalActions.SaveChanges.reset();
         })                 
       },
     },
   });
-}
-
-function selfReducer(
-  {
-    actionName,
-    state: { curPhotoInd, curPhoto },
-    props: { files, }
-  }
-) {
-  return {
-    [actionName]: { 
-      curPhotoWithTime: curPhoto 
-    },
-    onImgRotate: {
-      curPhotoRotateDeg: 0,
-      curPhotoWithTime: `${files[curPhotoInd]}?${new Date().getTime()}`,
-    },
-  }[actionName];
 }
 
 OnePhoto.getReqProps = ({ channel }) => { 
@@ -276,7 +314,9 @@ const stateInit = {
   curPhotoHeight: undefined,
   curPhotoRotateDeg: 0,
   curDate: getCurDate(),
-  forceRender: false,
+  opacity: '1',
+  visibility: 'visible',
+  action: {},
 };
 
 const navLink = [stateInit, OnePhoto.getReqProps, OnePhoto.getAPI];
