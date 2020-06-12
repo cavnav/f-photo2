@@ -24,13 +24,17 @@ export function OnePhoto({
     }, 
   );
 
+  const [getActionName, forceUpdate] = React.useReducer((state, action = {}) => () => {
+    state = {};
+    return action.name;
+  }, () => {});
+
   Object.assign(state, selfReducer({ 
+      actionName: getActionName(),
       state, 
       props: { files },
     })
   );
-
-  const [ignored, forceUpdate] = React.useReducer(x => !x, false);
 
   const imgRef = React.useRef(null);
 
@@ -211,7 +215,7 @@ function onImgRotate({
           path: state.curPhoto,
         })
         .then(res => {
-          forceUpdate({ onImgRotate });
+          forceUpdate(onImgRotate);
           additionalActions.SaveChanges.reset();
         })                 
       },
@@ -221,17 +225,20 @@ function onImgRotate({
 
 function selfReducer(
   {
-    action,
-    state: { curPhotoInd, },
+    actionName,
+    state: { curPhotoInd, curPhoto },
     props: { files, }
   }
 ) {
   return {
-    [action]: {},
-    onImageRotate: {
+    [actionName]: { 
+      curPhotoWithTime: curPhoto 
+    },
+    onImgRotate: {
+      curPhotoRotateDeg: 0,
       curPhotoWithTime: `${files[curPhotoInd]}?${new Date().getTime()}`,
     },
-  }[action];
+  }[actionName];
 }
 
 OnePhoto.getReqProps = ({ channel }) => { 
