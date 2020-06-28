@@ -9,6 +9,7 @@ export { Stepper } from './Stepper';
 export { Help } from './Help';
 export { PhotoStatuses } from './PhotoStatuses';
 export { OnePhoto } from './OnePhoto/OnePhoto';
+export { Dialog } from './Dialog/Dialog';
 
 import { OnePhoto } from './OnePhoto/OnePhoto';
 import { Tune } from './Tune';

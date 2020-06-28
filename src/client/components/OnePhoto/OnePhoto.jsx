@@ -4,8 +4,10 @@ import { Help } from '..';
 
 import './styles.css';
 import { additionalActions, } from '../../constants';
+import { Dialog } from '../';
 
 export function OnePhoto({
+  channel,
   doNeedHelp, 
   files,
   curPhotoInd,
@@ -72,8 +74,20 @@ export function OnePhoto({
           toRender={toRenderHelp()}
           {...{doNeedHelp}}
         />
+        <Dialog 
+          isEnanled={state.isDialogRemove}
+          onCancel={onCancelRemove}
+        >
+          <div>Удалить фото? Нажмите еще раз.</div>
+        </Dialog>
       </div>
     );
+  }
+
+  function onCancelRemove() {
+    setState({
+      isDialogRemove: false,
+    });
   }
 
   function toRenderHelp() {
@@ -120,7 +134,19 @@ export function OnePhoto({
     const stateUpd = {};
 
     switch (e.which) {
-      case 49:  
+      case 48: // 0
+        if (state.isDialogRemove) {
+          stateUpd.curPhotoRemove = state.curPhoto;
+          stateUpd.isDialogRemove = false;
+
+          onToggleNextPhoto();
+
+          break;
+        }  
+        stateUpd.isDialogRemove = true;
+        break;
+
+      case 32:  // Space
         photoStatusesApi.changeStatusPhotoPrint(); 
 
         break; 
@@ -133,12 +159,7 @@ export function OnePhoto({
 
         break; // prev
 
-      case 39: 
-        stateUpd.curPhotoInd = nextPhotoInd; 
-        stateUpd.curPhoto = files[nextPhotoInd];
-        stateUpd.curPhotoRotateDeg = 0;
-        stateUpd.action = onTogglePhoto;
-
+      case 39: onToggleNextPhoto();
         break; // next
 
       case 38: 
@@ -160,6 +181,13 @@ export function OnePhoto({
     changeAddActions();
 
     // ---------------------------
+    function onToggleNextPhoto() {
+      stateUpd.curPhotoInd = nextPhotoInd; 
+      stateUpd.curPhoto = files[nextPhotoInd];
+      stateUpd.curPhotoRotateDeg = 0;
+      stateUpd.action = onTogglePhoto;
+    }
+
     function checkRotate({ deg }) {
       return Math.abs(deg) === 360 ? 0 : deg;
     }
@@ -213,6 +241,8 @@ function getSelfReducer({
           curPhotoWithTime: curPhoto,
           opacity: '0',
           visibility: 'hidden',
+          curPhotoRemove: undefined,
+          isDialogRemove: false,
         },
         onImgServerRotate: {
           curPhotoRotateDeg: 0,
@@ -245,8 +275,22 @@ function getFitSize({ width, height }) {
 function onTogglePhoto() {
   additionalActions.SaveChanges.reset();
 }
-function onImgServerRemove({}) {
-
+function onImgServerRemove({
+  server,
+  stateUpd: { 
+    curPhotoRemove,
+  },
+  setState,
+}) {
+  server.imgRemove({
+    file: curPhotoRemove,
+  })
+  .then(res => {
+    setState({
+      action: onImgServerRemove,
+    });
+    additionalActions.SaveChanges.reset();
+  }) 
 }
 
 function onImgServerRotate({
@@ -313,6 +357,8 @@ const stateInit = {
   curPhotoWidth: undefined,
   curPhotoHeight: undefined,
   curPhotoRotateDeg: 0,
+  curPhotoRemove: undefined,
+  isDialogRemove: false,
   curDate: getCurDate(),
   opacity: '1',
   visibility: 'visible',

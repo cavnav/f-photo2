@@ -137,12 +137,15 @@ app.get('/api/saveChanges', (req, res) => {
   res.redirect(action);
 });
 
-app.get('/api/imgRemove', (req, res) => {
+app.get('/api/imgRemove', async (req, res) => {
   const { file } = req.query;
-  removeFile({ file, resolve });
+  const fileUpd = state.curDir.concat('\\', file);
+  console.log('server', [file, fileUpd]);
+  removeFile({ file: fileUpd, resolve });
   
   function resolve() {
-    res.send()
+    console.log('remove file', fileUpd);
+    res.send(req.query);
   }
 });
 
@@ -331,13 +334,13 @@ function removeFile({
   file, 
   resolve, 
   err = () => {} 
-}) {
+}) {  
   return fs.remove(file)
   .then(() => {
-    rs();
+    resolve();
   })
   .catch(err => {
-    rr();
+    err();
   });
 }
 

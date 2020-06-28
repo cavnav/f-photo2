@@ -11,13 +11,13 @@ export class AppServerAPI {
   imgRotate(params) {
     const url = this.getUrlWithParams({ url: this.imgRotate.name, params });
     return fetch(url)
-    .then(res => res.json())
+    .then(res => res.json());
   }
 
-  imgDelete() {
-    this.saveChanges({
-
-    });
+  imgRemove(params) {
+    const url = this.getUrlWithParams({ url: this.imgRemove.name, params });
+    return fetch(url)
+    .then(res => res.json());
   }
 
   getUrlWithParams({
