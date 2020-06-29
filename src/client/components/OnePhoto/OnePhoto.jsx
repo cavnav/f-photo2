@@ -75,7 +75,7 @@ export function OnePhoto({
           {...{doNeedHelp}}
         />
         <Dialog 
-          isEnanled={state.isDialogRemove}
+          isEnabled={state.isDialogRemove}
           onCancel={onCancelRemove}
         >
           <div>Удалить фото? Нажмите еще раз.</div>
