@@ -66,10 +66,12 @@ export function OnePhoto({
             visibility: state.visibility,
           }} 
         />
-        {/*<PhotoStatuses 
-          {...{curDate, curPhoto, printState}}
+        <PhotoStatuses 
+          { ...channel.essentials(PhotoStatuses) }
+          curDate={state.curDate}
+          curPhoto={state.curPhoto}
           onRenderCb={onRenderPhotoStatuses}
-        /> */}
+        />
         <Help
           toRender={toRenderHelp()}
           {...{doNeedHelp}}

@@ -7,7 +7,7 @@ export { AdditionalPanel} from './AdditionalPanel/AddPanel';
 export { MyView } from './MyView';
 export { Stepper } from './Stepper';
 export { Help } from './Help';
-export { PhotoStatuses } from './PhotoStatuses';
+export { PhotoStatuses } from './PhotoStatuses/PhotoStatuses';
 export { OnePhoto } from './OnePhoto/OnePhoto';
 export { Dialog } from './Dialog/Dialog';
 

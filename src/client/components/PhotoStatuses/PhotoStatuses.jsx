@@ -10,6 +10,7 @@ export function PhotoStatuses(props) {
     curDate,
     curPhoto, 
     printState,
+    setPrintState,
     onRenderCb,
   } = props;
 
@@ -27,7 +28,7 @@ export function PhotoStatuses(props) {
         { Object.entries(statuses)
           .filter(([status, count]) => count)
           .map(([status]) => (
-            <img key={status} width="32" height="32" src={`public/${status}.png`} />
+            <img key={status} width="32" height="32" src={`${status}.png`} />
           )) 
         }
       </div>
@@ -46,8 +47,27 @@ export function PhotoStatuses(props) {
     const path = [curDate, curPhoto];
     const statusUpd = _get(printStateUpd, path, new PhotoStatusIcons());
     statusUpd.toPrint = statusUpd.toPrint === 0 ? 1 : 0;
-    _set(printStateUpd, path, statusUpd);
+    setPrintState({
+      setItSilent,
+    });
 
     forceUpdate();
+
+    // ------------------------------
+    
+    function setItSilent() {
+      _set(this, path, statusUpd);
+    }
   }
 }
+
+PhotoStatuses.getReqProps = ({ channel }) => {
+  return channel.crop({
+    s: {
+      printState: 1,
+    },
+    d: {
+      setPrintState: 1,
+    },
+  });
+};
