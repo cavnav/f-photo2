@@ -2,22 +2,21 @@ import React from 'react';
 
 import './styles.css';
 
-export function Print(props) {
+export function Print({
+  printState,
+}) {
 
   const stateInit = {
     activeInput: undefined,
   };
 
-  const {
-    printState: propPrintState,
-  } = props;
-
   const [state, setState] = React.useState(stateInit);
 
   const [ignored, forceUpdate] = React.useReducer(x => !x, false);
 
+  React.useEffect(addKeyDownListener);
   React.useEffect(() => {
-    const input = document.querySelector(`input[keyid='${state.activeInput}']`);
+    const input = getActiveInput();
     input && input.focus();
   });
 
@@ -28,12 +27,37 @@ export function Print(props) {
   );
 
   // --------------------------------------------------------------------
+  function getActiveInput() {
+    document.querySelector(`input[keyid='${state.activeInput}']`);
+  }
+  
+  function addKeyDownListener() {
+    document.addEventListener('keydown', onKeyDown);
+
+    return () => {
+      document.removeEventListener('keydown', onKeyDown);
+    };    
+  }
+
+  function onKeyDown(e) {
+    const incre = state.curPhotoInd > 0 ? state.curPhotoInd - 1 : 0;
+    const down = state.curPhotoInd < files.length - 1 ? (state.curPhotoInd + 1) : (files.length - 1);
+
+    switch (e.which) {
+      case 38: // +1
+        onChangePhotoCount();
+        break;
+
+      case 40: // -1
+        onChangePhotoCount();
+        break;
+    }
+  }  
+
   function renderPrintState() {
-    const toRender = Object.entries(propPrintState).map(([date, photo]) => {
+    const toRender = Object.entries(printState).map(([date, photo]) => {
       return <div className="dateForPrintPage">
         {date} <br/>
-        <input type="button" value="Задать количество копий для всех фото" /><br/>
-        <input type="button" value="Отменить печать всех фото за эту дату" /><br/>
         
         <button>Записать фото и их количество на флешку</button>
 
@@ -47,7 +71,7 @@ export function Print(props) {
               photosrc={photoSrc}
             >
               <div
-                className='fitPreview100 marginRight10'
+                className='fitPreview100 file marginRight10'
                 style={{ 'backgroundImage': `url(${photoSrc})` }}
               >
               </div>              
@@ -71,7 +95,7 @@ export function Print(props) {
   function onClickErasePhotoCount(e) {
     const {date, photoSrc} = getDataPrint({e});
 
-    propPrintState[date][photoSrc].toPrint = "";
+    printState[date][photoSrc].toPrint = "";
 
     setState({
       ...state, 
@@ -81,14 +105,17 @@ export function Print(props) {
 
   function onChangePhotoCount(e) {
     const input = e.target;
-    const {date, photoSrc} = getDataPrint({e});
+    const {date, photoSrc} = getDataPrint({ e });
 
-    propPrintState[date][photoSrc].toPrint = input.value; 
+    printState[date][photoSrc].toPrint = input.value; 
 
-    forceUpdate();
+    setState({
+      ...state, 
+      activeInput: getPhotoDataKey({date, photoSrc}),
+    });
   }
 
-  function getDataPrint({e}) {
+  function getDataPrint({ e }) {
     const parentElement = e.target.parentElement;
     const date = parentElement.getAttribute('date');
     const photoSrc = parentElement.getAttribute('photosrc');
@@ -103,3 +130,11 @@ export function Print(props) {
     return `${date}-${photoSrc}`;
   }
 }
+
+Print.getReqProps = ({ channel }) => {
+  return channel.crop({
+    s: { 
+      printState: 1,
+    }
+  });
+};

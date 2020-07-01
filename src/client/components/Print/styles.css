@@ -17,3 +17,7 @@
   font-weight: 800;
   border: none;
 }
+
+.Print .file {
+  width: 100px;
+}

@@ -326,25 +326,23 @@ function onImgServerRotate({
 }
 
 OnePhoto.getReqProps = ({ channel }) => { 
-  return {
-    ...channel.crop({
-      s: {
-        appState: { doNeedHelp: 1 },
-        photosState: {
-          files: 1,
-        },
-        browseState: {
-          curPhotoInd: 1,
-        },
+  return channel.crop({
+    s: {
+      appState: { doNeedHelp: 1 },
+      photosState: {
+        files: 1,
       },
-      d: {
-        setBrowseState: 1,
+      browseState: {
+        curPhotoInd: 1,
       },
-      API: {
-        server: 1,
-      }
-    }),
-  };  
+    },
+    d: {
+      setBrowseState: 1,
+    },
+    API: {
+      server: 1,
+    }
+  });  
 };
 
 OnePhoto.getAPI = () => {

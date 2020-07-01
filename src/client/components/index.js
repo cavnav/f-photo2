@@ -15,7 +15,7 @@ import { OnePhoto } from './OnePhoto/OnePhoto';
 import { Tune } from './Tune';
 import { Copy } from './Copy';
 import { Browse } from './Browse/Browse';
-import { Print } from './Print';
+import { Print } from './Print/Print';
 import { Welcome } from './Welcome';
 import { Help } from './Help';
 
