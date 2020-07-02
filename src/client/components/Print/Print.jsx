@@ -28,7 +28,7 @@ export function Print({
 
   // --------------------------------------------------------------------
   function getActiveInput() {
-    document.querySelector(`input[keyid='${state.activeInput}']`);
+    document.querySelector(`input[keyid=\'${state.activeInput}\']`);
   }
   
   function addKeyDownListener() {
@@ -39,19 +39,31 @@ export function Print({
     };    
   }
 
-  function onKeyDown(e) {
-    const incre = state.curPhotoInd > 0 ? state.curPhotoInd - 1 : 0;
-    const down = state.curPhotoInd < files.length - 1 ? (state.curPhotoInd + 1) : (files.length - 1);
+  function onKeyDown(e) {     
+    const input = document.activeElement;
+
+    if (input === undefined) return;
+
+    const cntSource = Number(input.value);
+    let cntUpd = cntSource;
 
     switch (e.which) {
       case 38: // +1
-        onChangePhotoCount();
+        cntUpd = cntSource + 1;
         break;
 
       case 40: // -1
-        onChangePhotoCount();
+        cntUpd = cntSource > 0 ? cntSource - 1 : cntSource;
         break;
+      default: return;
     }
+
+    const { date, photoSrc } = getDataPrint({ element: input.parentElement });
+    printState[date][photoSrc].toPrint = cntUpd; 
+
+    setState({
+      ...state,
+    });
   }  
 
   function renderPrintState() {
@@ -59,7 +71,7 @@ export function Print({
       return <div className="dateForPrintPage">
         {date} <br/>
         
-        <button>Записать фото и их количество на флешку</button>
+        <button>Записать фото на флешку</button>
 
         {
           Object.entries(photo).map(([photoSrc, status]) => { 
@@ -93,7 +105,7 @@ export function Print({
   }
 
   function onClickErasePhotoCount(e) {
-    const {date, photoSrc} = getDataPrint({e});
+    const {date, photoSrc} = getDataPrint({ element: e.target.parentElement });
 
     printState[date][photoSrc].toPrint = "";
 
@@ -105,7 +117,7 @@ export function Print({
 
   function onChangePhotoCount(e) {
     const input = e.target;
-    const {date, photoSrc} = getDataPrint({ e });
+    const {date, photoSrc} = getDataPrint({ element: input.parentElement });
 
     printState[date][photoSrc].toPrint = input.value; 
 
@@ -115,10 +127,9 @@ export function Print({
     });
   }
 
-  function getDataPrint({ e }) {
-    const parentElement = e.target.parentElement;
-    const date = parentElement.getAttribute('date');
-    const photoSrc = parentElement.getAttribute('photosrc');
+  function getDataPrint({ element }) {
+    const date = element.getAttribute('date');
+    const photoSrc = element.getAttribute('photosrc');
 
     return {
       date,
