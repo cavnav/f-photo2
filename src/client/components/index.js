@@ -2,6 +2,8 @@ export { ExitFromAlbum } from './ExitFromAlbum/ExitFromAlbum';
 export { ExitFromOnePhoto } from './ExitFromOnePhoto/ExitFromOnePhoto';
 export { SaveChanges } from './SaveChanges/SaveChanges';
 export { SelectAlbum } from './SelectAlbum';
+export { SavePhotosToFlash } from './SavePhotosToFlash/SavePhotosToFlash';
+
 export { ControlPanel } from './ControlPanel';
 export { AdditionalPanel} from './AdditionalPanel/AddPanel';
 export { MyView } from './MyView';

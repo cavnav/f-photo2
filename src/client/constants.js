@@ -3,6 +3,7 @@ import {
   ExitFromOnePhoto,
   SaveChanges,
   AdditionalPanel,
+  SavePhotosToFlash,
 } from "./components/index";
 
 class Action {
@@ -56,6 +57,12 @@ class AdditionalActions {
     className: 'SaveChanges',
     isActive: false,
     component: SaveChanges,
+  });
+  SavePhotosToFlash = new Action({
+    title: 'Записать фото на флешку',
+    className: 'SaveFotosToFlash',
+    isActive: true,
+    component: SavePhotosToFlash,
   });
 }
 

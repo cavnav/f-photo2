@@ -65,6 +65,9 @@ const appStateInit = {
     Print: {
       title: 'Печатать',
       isActive: true,
+      additionalActions: [
+        additionalActions.SavePhotosToFlash,
+      ],
     },
     Share: {
       title: 'Отправить',

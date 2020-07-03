@@ -70,9 +70,6 @@ export function Print({
     const toRender = Object.entries(printState).map(([date, photo]) => {
       return <div className="dateForPrintPage">
         {date} <br/>
-        
-        <button>Записать фото на флешку</button>
-
         {
           Object.entries(photo).map(([photoSrc, status]) => { 
             const key = getPhotoDataKey({date, photoSrc});         
