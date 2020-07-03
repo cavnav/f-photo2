@@ -29,12 +29,32 @@ SavePhotosToFlash.getReqProps = ({
 }) => channel.crop({
     parentProps: { 
       title: 1,
-      onAction: { API: 'onActionAPI' },
+      onAction: { 
+        API: 'onActionAPI' 
+      },
       className: 1,
     },
   },
   { parentProps, },
 );
 
+SavePhotosToFlash.getAPI = ({
+
+}) => {
+
+  return {
+    setPhotos({ 
+      photos,
+    }) {
+      setState({
+        setItSilent() {
+          this.photos = photos;
+        },
+      })
+    },
+  };
+};
+
 const stateInit = {
+  photos: [],
 };

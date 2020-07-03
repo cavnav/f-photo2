@@ -36,9 +36,11 @@ class AdditionalActions {
     Object.entries(this)
     .map(([actionName, action]) => {
       action.name = actionName;
-      action.onAction = {
-       API: undefined,
-      };
+      if (action.onAction === undefined) {
+        action.onAction = {
+          API: undefined,
+        };
+      }
     });
   }
 
@@ -63,6 +65,19 @@ class AdditionalActions {
     className: 'SaveFotosToFlash',
     isActive: true,
     component: SavePhotosToFlash,
+    onAction: {
+      API: ({
+        photos,
+      }) => server.savePhotosToFlash({
+        photos,
+      })
+      .then(res => {
+        setState({
+          action: onImgServerRotate,
+        });
+        additionalActions.SaveChanges.reset();
+      })                 
+    },
   });
 }
 
