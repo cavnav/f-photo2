@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useReducer } from 'react';
+import { additionalActions } from '../../constants';
 import './styles.css';
 
 export function SavePhotosToFlash({
@@ -14,7 +15,7 @@ export function SavePhotosToFlash({
   return (
     <div 
       className={className} 
-      onClick={() => onActionAPI({ photos: printState })}      
+      onClick={onActionAPI({ photos: printState })}      
     >
       <div className='title'>{title}</div>  
     </div>
@@ -32,9 +33,6 @@ SavePhotosToFlash.getReqProps = ({
     ...channel.crop({
         parentProps: { 
           title: 1,
-          onAction: { 
-            API: 'onActionAPI' 
-          },
           className: 1,
         },
         channel: {
@@ -45,7 +43,8 @@ SavePhotosToFlash.getReqProps = ({
       },
       { parentProps, }
     ),
-    additionalActions.SavePhotosToFlash
+    onActionAPI: additionalActions.SavePhotosToFlash.onAction.API,
+  };
 }
 
 const stateInit = {

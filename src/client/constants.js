@@ -2,9 +2,8 @@ import {
   ExitFromAlbum,
   ExitFromOnePhoto,
   SaveChanges,
-  AdditionalPanel,
   SavePhotosToFlash,
-  serverAPI,
+  AdditionalPanel,
 } from "./components/index";
 
 class Action {
