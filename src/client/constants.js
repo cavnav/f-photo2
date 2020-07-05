@@ -4,6 +4,7 @@ import {
   SaveChanges,
   AdditionalPanel,
   SavePhotosToFlash,
+  serverAPI,
 } from "./components/index";
 
 class Action {
@@ -68,7 +69,7 @@ class AdditionalActions {
     onAction: {
       API: ({
         photos,
-      }) => server.savePhotosToFlash({
+      }) => serverAPI.savePhotosToFlash({
         photos,
       })
       .then(res => {

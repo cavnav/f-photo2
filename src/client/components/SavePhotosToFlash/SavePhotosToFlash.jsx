@@ -4,6 +4,7 @@ import './styles.css';
 export function SavePhotosToFlash({
   title,
   className,
+  printState,
 
   tempReducer,
   onActionAPI,
@@ -13,7 +14,7 @@ export function SavePhotosToFlash({
   return (
     <div 
       className={className} 
-      onClick={onActionAPI}      
+      onClick={() => onActionAPI({ photos: printState })}      
     >
       <div className='title'>{title}</div>  
     </div>
@@ -26,34 +27,26 @@ export function SavePhotosToFlash({
 SavePhotosToFlash.getReqProps = ({
   channel,
   parentProps,
-}) => channel.crop({
-    parentProps: { 
-      title: 1,
-      onAction: { 
-        API: 'onActionAPI' 
-      },
-      className: 1,
-    },
-  },
-  { parentProps, },
-);
-
-SavePhotosToFlash.getAPI = ({
-
 }) => {
-
   return {
-    setPhotos({ 
-      photos,
-    }) {
-      setState({
-        setItSilent() {
-          this.photos = photos;
+    ...channel.crop({
+        parentProps: { 
+          title: 1,
+          onAction: { 
+            API: 'onActionAPI' 
+          },
+          className: 1,
         },
-      })
-    },
-  };
-};
+        channel: {
+          s: {
+            printState: 1,
+          },
+        },
+      },
+      { parentProps, }
+    ),
+    additionalActions.SavePhotosToFlash
+}
 
 const stateInit = {
   photos: [],

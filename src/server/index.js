@@ -166,6 +166,10 @@ app.get('/api/imgRotate', (req, response) => {
   .catch(console.error);
 });
 
+app.post('/api/savePhotosToFlash', (req, res) => {
+  console.log('req.body', getCurMoment());  
+});
+
 app.post('/api/copyPhotos', (req, res) => {
   console.log('req.body', getCurMoment());
   // const { userDirName } = req.body;

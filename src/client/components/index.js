@@ -1,3 +1,4 @@
+export { serverAPI } from '../serverApi';
 export { ExitFromAlbum } from './ExitFromAlbum/ExitFromAlbum';
 export { ExitFromOnePhoto } from './ExitFromOnePhoto/ExitFromOnePhoto';
 export { SaveChanges } from './SaveChanges/SaveChanges';

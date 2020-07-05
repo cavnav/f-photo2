@@ -8,6 +8,12 @@ export class AppServerAPI {
     return `/api/${url}`;
   }
 
+  savePhotosToFlash(params) {
+    const url = this.getUrlWithParams({ url: this.savePhotosToFlash.name, params });
+    return fetch(url)
+    .then(res => res.json());
+  }
+
   imgRotate(params) {
     const url = this.getUrlWithParams({ url: this.imgRotate.name, params });
     return fetch(url)
