@@ -1,9 +1,10 @@
 .Stepper {
+  position: absolute;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: -webkit-fill-available;
+  height: 100%;
 }
 
 .Stepper .title {
@@ -15,7 +16,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: -webkit-fill-available;
+  height: 100%;
   overflow: hidden;
 }
 

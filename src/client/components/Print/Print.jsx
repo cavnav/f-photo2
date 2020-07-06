@@ -20,15 +20,75 @@ export function Print({
     input && input.focus();
   });
 
+  const steps = createSteps();
+
   return (
     <div className="Print">
       { renderPrintState() }
+
+      <Stepper 
+        steps={steps}
+      />
     </div>    
   );
 
   // --------------------------------------------------------------------
   function getActiveInput() {
     document.querySelector(`input[keyid=\'${state.activeInput}\']`);
+  }
+
+  function createSteps() {
+    return [
+      {
+        photoSrc: 'public/wizardCopy/004_plugInPC.jpg',
+        desc: 'Вставь флешку в системный блок, как показано ниже, чтобы совпал ключ.',
+      }, {    
+        desc: 'Ищу карту памяти...',
+        trigger: ({ setStepNum }) => {
+          setTimeout(async () => {
+            let stepNum = await $waitUSBconnect() ? +2 : +1; 
+    
+            setStepNum({
+              val: stepNum,
+            });
+          }, 1000);
+        },  
+        isNextBtn: false,
+      }, {    
+        type: 'reject',
+        desc: 'Что-то пошло не так... Попробуй еще раз',
+        stepNumDelta: -2,
+      }, {
+        toRender: getCopyingContent,
+        trigger: $getNewPhotos,
+        isNextBtn: state.isCopyCompleted,
+      }, {
+        photoSrc: 'public/wizardCopy/005_returnMemCardInPhoto.jpg',
+        desc: 'Вытащи флешку',
+      }, {
+        desc: 'Проверяю, что флешка извлечена...',
+        trigger: ({ setStepNum }) => {
+          setTimeout(async () => {
+            let stepNum = await $waitUSBconnect() ? +1 : +2; 
+    
+            setStepNum({
+              val: stepNum,
+            });
+          }, 1000);
+        },  
+        isNextBtn: false,
+      }, {    
+        type: 'reject',
+        desc: 'Что-то пошло не так... Попробуй еще раз',
+        stepNumDelta: -2,
+      }, {
+        trigger: () => {
+          props.dispatch.setAppState({
+            view: Views.Welcome,
+          });
+        } 
+      }
+    ];
   }
   
   function addKeyDownListener() {

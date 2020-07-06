@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useReducer } from 'react';
-import { additionalActions } from '../../constants';
 import './styles.css';
 
 export function SavePhotosToFlash({
@@ -29,22 +28,48 @@ SavePhotosToFlash.getReqProps = ({
   channel,
   parentProps,
 }) => {
-  return {
-    ...channel.crop({
-        parentProps: { 
-          title: 1,
-          className: 1,
+
+  const props = channel.crop({
+      parentProps: { 
+        title: 1,
+        className: 1,
+      },
+      channel: {
+        s: {
+          printState: 1,
         },
-        channel: {
-          s: {
-            printState: 1,
-          },
+        server: {
+          savePhotosToFlash: 1,
         },
       },
-      { parentProps, }
-    ),
-    onActionAPI: additionalActions.SavePhotosToFlash.onAction.API,
-  };
+    },
+    { parentProps, }
+  );
+  
+  return Object.assign(
+    props, 
+    {
+      onActionAPI: props.savePhotosToFlash(
+        { 
+          photos,
+        }
+      )
+      .then(res => onActionAPI(
+        {
+
+        }
+      )),  
+    },
+  );
+};
+
+function onActionAPI({
+  res,
+}) {
+  setState({
+    action: onImgServerRotate,
+  });
+  additionalActions.SaveChanges.reset();
 }
 
 const stateInit = {

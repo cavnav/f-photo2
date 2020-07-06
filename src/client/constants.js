@@ -65,19 +65,6 @@ class AdditionalActions {
     className: 'SaveFotosToFlash',
     isActive: true,
     component: SavePhotosToFlash,
-    onAction: {
-      API: ({
-        photos,
-      }) => serverAPI.savePhotosToFlash({
-        photos,
-      })
-      .then(res => {
-        setState({
-          action: onImgServerRotate,
-        });
-        additionalActions.SaveChanges.reset();
-      })                 
-    },
   });
 }
 
