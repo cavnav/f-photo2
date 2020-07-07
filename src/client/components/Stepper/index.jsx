@@ -72,14 +72,20 @@ export function Stepper(props) {
           step, 
         });
       });
-  
-      // Добавить кнопку Дальше.
-      if (step.isNextBtn !== false) {
-        content = [
-          ...content,
-          getNextBtn(),
-        ];
+
+      const additionalContent = {
+        isNextBtn: getNextBtn,
+        isDialog: getDialogBtns,
+      };
+
+      const handler = {
+        get: (target, prop) => {
+          return target[prop] || (() => []);
+        },
       }
+      const proxyAdditionalContent = new Proxy(additionalContent, handler);
+
+      content.push(...Object.keys(proxyAdditionalContent).map(item => proxyAdditionalContent[step[item]]()));
       
       return content;
 
@@ -91,6 +97,25 @@ export function Stepper(props) {
           onClick={() => onClickNextStep({stepNumDelta: step.stepNumDelta})} 
           value="Далее" 
         />;
+      }
+
+      function getDialogBtns({
+        
+      }) {
+        return <div>
+          <input 
+            className="marginBottom10" 
+            type="button" 
+            onClick={() => onClickNextStep({stepNumDelta: step.stepNumDelta})} 
+            value="confirmDesc" 
+          />;
+          <input 
+            className="marginBottom10" 
+            type="button" 
+            onClick={() => onClickNextStep({stepNumDelta: step.stepNumDelta})} 
+            value="cancelDesc" 
+          />;
+        </div>
       }
     }
   }
@@ -108,6 +133,7 @@ const stepStruct = {
       <img className="copyWizardImg" src={step.photoSrc} />
     </div>,
   toRender:  ({key, step}) => step.toRender({key, step}),
+  isDialog
 };
 
 const initState = {
