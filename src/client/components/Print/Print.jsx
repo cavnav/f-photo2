@@ -63,14 +63,13 @@ export function Print({
         stepNumDelta: -2,
       }, 
       {                
-        trigger: $getNewPhotos,
-        isDialog: {
-          co
+        desc: 'Внимание! Все файлы на флешке будут удалены',
+        dialog: {
+
         },
       }, 
       {
-        photoSrc: 'public/wizardCopy/005_returnMemCardInPhoto.jpg',
-        desc: 'Вытащи флешку',
+        desc: 'Копирую...',
       }, 
       {
         desc: 'Проверяю, что флешка извлечена...',
@@ -92,8 +91,8 @@ export function Print({
       }, 
       {
         trigger: () => {
-          props.dispatch.setAppState({
-            view: Views.Welcome,
+          setState({
+            view: Print.archive,
           });
         } 
       }

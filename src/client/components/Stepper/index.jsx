@@ -73,23 +73,28 @@ export function Stepper(props) {
         });
       });
 
-      const additionalContent = {
-        isNextBtn: getNextBtn,
-        isDialog: getDialogBtns,
-      };
-
-      const handler = {
-        get: (target, prop) => {
-          return target[prop] || (() => []);
-        },
-      }
-      const proxyAdditionalContent = new Proxy(additionalContent, handler);
-
-      content.push(...Object.keys(proxyAdditionalContent).map(item => proxyAdditionalContent[step[item]]()));
+      content.push(...getAdditionalContent());
       
       return content;
 
       // -----------------------------------------
+
+      function getAdditionalContent() {
+        const additionalContent = {
+          isNextBtn: getNextBtn,
+          dialog: getDialogBtns,
+        };
+  
+        const handler = {
+          get: (target, prop) => {
+            return target[prop] || (() => []);
+          },
+        }
+        const proxyAdditionalContent = new Proxy(additionalContent, handler);
+
+        return Object.keys(proxyAdditionalContent).map(item => proxyAdditionalContent[step[item]]());
+      }
+
       function getNextBtn() {
         return <input 
           className="attention marginBottom10" 
@@ -102,18 +107,24 @@ export function Stepper(props) {
       function getDialogBtns({
         
       }) {
-        return <div>
+        const dialog = step.dialog;
+        const confirmDesc = dialog.confirmDesc || 'Ок';
+        const cancelDesc = dialog.cancelDesc || 'Отменить';
+        const nextOnConfirm = dialog.nextOnConfirm || +1;
+        const nextOnCancel = dialog.nextOnCancel || +2
+
+        return <div>          
           <input 
             className="marginBottom10" 
             type="button" 
-            onClick={() => onClickNextStep({stepNumDelta: step.stepNumDelta})} 
-            value="confirmDesc" 
+            onClick={() => onClickNextStep({ stepNumDelta: nextOnConfirm })} 
+            value={confirmDesc} 
           />;
           <input 
             className="marginBottom10" 
             type="button" 
-            onClick={() => onClickNextStep({stepNumDelta: step.stepNumDelta})} 
-            value="cancelDesc" 
+            onClick={() => onClickNextStep({ stepNumDelta: nextOnCancel })} 
+            value={cancelDesc}
           />;
         </div>
       }
