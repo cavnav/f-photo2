@@ -1,6 +1,7 @@
 import React from 'react';
 
 import './styles.css';
+import { Copying } from '../Copying/Copying';
 
 export function Print({
   printState,
@@ -63,13 +64,14 @@ export function Print({
         stepNumDelta: -2,
       }, 
       {                
-        desc: 'Внимание! Все файлы на флешке будут удалены',
-        dialog: {
-
-        },
+        toRender: <Copying 
+          
+        >
+        </Copying>
       }, 
       {
-        desc: 'Копирую...',
+        photoSrc: 'public/wizardCopy/005_returnMemCardInPhoto.jpg',
+        desc: 'Вытащи флешку',
       }, 
       {
         desc: 'Проверяю, что флешка извлечена...',
