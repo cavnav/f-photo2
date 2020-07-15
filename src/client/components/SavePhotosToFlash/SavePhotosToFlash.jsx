@@ -38,8 +38,10 @@ SavePhotosToFlash.getReqProps = ({
         s: {
           printState: 1,
         },
-        server: {
-          savePhotosToFlash: 1,
+        API: {
+          server: {
+            savePhotosToFlash: 1,
+          },
         },
       },
     },
@@ -49,7 +51,7 @@ SavePhotosToFlash.getReqProps = ({
   return Object.assign(
     props, 
     {
-      onActionAPI: props.savePhotosToFlash(
+      onActionAPI: ({ photos }) => props.savePhotosToFlash(
         { 
           photos,
         }

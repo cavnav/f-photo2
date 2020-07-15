@@ -144,7 +144,6 @@ const stepStruct = {
       <img className="copyWizardImg" src={step.photoSrc} />
     </div>,
   toRender:  ({key, step}) => step.toRender({key, step}),
-  isDialog
 };
 
 const initState = {
