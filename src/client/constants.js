@@ -63,7 +63,7 @@ class AdditionalActions {
   SavePhotosToFlash = new Action({
     title: 'Записать фото на флешку',
     className: 'SaveFotosToFlash',
-    isActive: true,
+    isActive: false,
     component: SavePhotosToFlash,
   });
 }

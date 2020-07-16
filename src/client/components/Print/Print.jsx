@@ -14,6 +14,7 @@ export function Print({
 
   const stateInit = {
     activeInput: undefined,
+    isSavePhotosToFlash: false,
   };
 
   const [state, setState] = React.useState(stateInit);
@@ -32,9 +33,12 @@ export function Print({
     <div className="Print">
       { renderPrintState() }
 
-      <Stepper 
-        steps={steps}
-      />
+      { 
+        state.isSavePhotosToFlash && 
+        <Stepper 
+          steps={steps}
+        />
+      }
     </div>    
   );
 

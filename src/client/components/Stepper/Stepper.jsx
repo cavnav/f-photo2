@@ -11,7 +11,7 @@ export function Stepper(props) {
   );
 
   let stateFinal = state;
-  if  (state.steps !== props.steps) {
+  if  (state.steps.length === 0) {
     stateFinal = stateReducer(state, {steps: props.steps});
   };
 
