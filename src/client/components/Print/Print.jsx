@@ -1,7 +1,11 @@
 import React from 'react';
 
 import './styles.css';
-import { Copying } from '../Copying/Copying';
+import { 
+  Copying,
+  Stepper,
+} from '../';
+
 
 export function Print({
   printState,
@@ -214,8 +218,10 @@ Print.getReqProps = ({ channel }) => {
     s: { 
       printState: 1,
     },
-    server: {
-      getUsbDevices: '$getUsbDevices',
+    API: {
+      server: {
+        getUsbDevices: '$getUsbDevices',
+      },
     },
   });
 };

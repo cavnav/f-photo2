@@ -3,11 +3,11 @@ export { ExitFromOnePhoto } from './ExitFromOnePhoto/ExitFromOnePhoto';
 export { SaveChanges } from './SaveChanges/SaveChanges';
 export { SelectAlbum } from './SelectAlbum';
 export { SavePhotosToFlash } from './SavePhotosToFlash/SavePhotosToFlash';
-
+export { Copying } from './Copying/Copying';
 export { ControlPanel } from './ControlPanel';
 export { AdditionalPanel} from './AdditionalPanel/AddPanel';
 export { MyView } from './MyView';
-export { Stepper } from './Stepper';
+export { Stepper } from './Stepper/Stepper';
 export { Help } from './Help';
 export { PhotoStatuses } from './PhotoStatuses/PhotoStatuses';
 export { OnePhoto } from './OnePhoto/OnePhoto';
