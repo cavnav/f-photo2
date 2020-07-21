@@ -1,24 +1,23 @@
 import React from 'react';
 
-import './styles.css';
 import { 
-  Copying,
   Stepper,
 } from '../';
+import { createSteps } from './createSteps';
+
+import './styles.css';
 
 
 export function Print({
   printState,
+  tempReducer,
   $getUsbDevices,
 }) {
 
-  const stateInit = {
-    activeInput: undefined,
-    isSavePhotosToFlash: false,
-  };
+  const [state, setState] = React.useReducer(tempReducer, stateInit);
 
-  const [state, setState] = React.useState(stateInit);
-
+  Print.setState = setState;
+  
   const [ignored, forceUpdate] = React.useReducer(x => !x, false);
 
   React.useEffect(addKeyDownListener);
@@ -27,7 +26,9 @@ export function Print({
     input && input.focus();
   });
 
-  const steps = createSteps();
+  const steps = createSteps({
+    $getUsbDevices,
+  });
 
   return (
     <div className="Print">
@@ -45,68 +46,6 @@ export function Print({
   // --------------------------------------------------------------------
   function getActiveInput() {
     document.querySelector(`input[keyid=\'${state.activeInput}\']`);
-  }
-
-  function createSteps() {
-    return [
-      {
-        photoSrc: 'public/wizardCopy/004_plugInPC.jpg',
-        desc: 'Вставь флешку в системный блок, как показано ниже, чтобы совпал ключ.',
-      }, 
-      {    
-        desc: 'Ищу карту памяти...',
-        trigger: ({ setStepNum }) => {
-          setTimeout(async () => {
-            let stepNum = await $getUsbDevices() ? +2 : +1; 
-    
-            setStepNum({
-              val: stepNum,
-            });
-          }, 1000);
-        },  
-        isNextBtn: false,
-      }, 
-      {    
-        type: 'reject',
-        desc: 'Что-то пошло не так... Попробуй еще раз',
-        stepNumDelta: -2,
-      }, 
-      {                
-        toRender: <Copying 
-          
-        >
-        </Copying>
-      }, 
-      {
-        photoSrc: 'public/wizardCopy/005_returnMemCardInPhoto.jpg',
-        desc: 'Вытащи флешку',
-      }, 
-      {
-        desc: 'Проверяю, что флешка извлечена...',
-        trigger: ({ setStepNum }) => {
-          setTimeout(async () => {
-            let stepNum = await $getUsbDevices() ? +1 : +2; 
-    
-            setStepNum({
-              val: stepNum,
-            });
-          }, 1000);
-        },  
-        isNextBtn: false,
-      }, 
-      {    
-        type: 'reject',
-        desc: 'Что-то пошло не так... Попробуй еще раз',
-        stepNumDelta: -2,
-      }, 
-      {
-        trigger: () => {
-          setState({
-            view: Print.archive,
-          });
-        } 
-      }
-    ];
   }
   
   function addKeyDownListener() {
@@ -228,4 +167,20 @@ Print.getReqProps = ({ channel }) => {
       },
     },
   });
+};
+
+Print.getAPI = function (
+) {
+  return {
+    saveToFlash() {
+      Print.setState({
+        isSavePhotosToFlash: true,
+      });
+    }
+  };
+}
+
+const stateInit = {
+  activeInput: undefined,
+  isSavePhotosToFlash: false,
 };

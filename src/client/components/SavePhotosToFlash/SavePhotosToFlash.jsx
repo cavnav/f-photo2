@@ -7,14 +7,14 @@ export function SavePhotosToFlash({
   printState,
 
   tempReducer,
-  onActionAPI,
+  onAction,
 }) {
   const [state, setState] = useReducer(tempReducer, stateInit);
 
   return (
     <div 
       className={className} 
-      onClick={onActionAPI({ photos: printState })}      
+      onClick={onAction}      
     >
       <div className='title'>{title}</div>  
     </div>
@@ -42,37 +42,19 @@ SavePhotosToFlash.getReqProps = ({
           server: {
             savePhotosToFlash: 1,
           },
+          Print: {
+            saveToFlash: 1,
+          },
         },
       },
     },
     { parentProps, }
   );
-  
-  return Object.assign(
-    props, 
-    {
-      onActionAPI: ({ photos }) => props.savePhotosToFlash(
-        { 
-          photos,
-        }
-      )
-      .then(res => onActionAPI(
-        {
 
-        }
-      )),  
-    },
-  );
-};
-
-function onActionAPI({
-  res,
-}) {
-  setState({
-    action: onImgServerRotate,
+  return Object.assign(props, {
+    onAction: props.Print.saveToFlash,
   });
-  additionalActions.SaveChanges.reset();
-}
+};
 
 const stateInit = {
   photos: [],
