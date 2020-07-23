@@ -8,6 +8,11 @@ export class Channel {
   d; // dispatches;
   API = {
     _get,
+    comps: new Proxy({}, {
+      get(target, prop) {
+        return _get(target, [prop], {});
+      },
+    }),
   };
 
   constructor({ s, d }) {
@@ -18,8 +23,8 @@ export class Channel {
     });
   }
   addAPI = (props) => {
-    const API = this.API;
-    Object.entries(props).map(([p, val]) => API[p] = val);
+    const comps = this.API.comps;
+    Object.entries(props).map(([p, val]) => comps[p] = val);
   }
   essentials = (component, { parentProps = {} } = {}) => {
     if (component.getAPI) this.addAPI({

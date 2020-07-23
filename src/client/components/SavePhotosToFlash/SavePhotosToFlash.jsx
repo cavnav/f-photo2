@@ -7,14 +7,16 @@ export function SavePhotosToFlash({
   printState,
 
   tempReducer,
-  onAction,
+  compsAPI,
 }) {
   const [state, setState] = useReducer(tempReducer, stateInit);
+
+  const { saveToFlash } = compsAPI.Print;
 
   return (
     <div 
       className={className} 
-      onClick={onAction}      
+      onClick={saveToFlash}      
     >
       <div className='title'>{title}</div>  
     </div>
@@ -42,9 +44,7 @@ SavePhotosToFlash.getReqProps = ({
           server: {
             savePhotosToFlash: 1,
           },
-          Print: {
-            saveToFlash: 1,
-          },
+          comps: 1,
         },
       },
     },
@@ -52,7 +52,7 @@ SavePhotosToFlash.getReqProps = ({
   );
 
   return Object.assign(props, {
-    onAction: props.Print.saveToFlash,
+    compsAPI: props.comps,
   });
 };
 
