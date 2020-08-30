@@ -26,11 +26,10 @@ let state = {
 };
 
 let timeoutIdImg
-console.log('state', state);
 
 // ------------------------------------------------------------------------------------------------
 
-app.use(express.static('E:/f-photo'));
+app.use(express.static(getRootDir()));
 app.use(express.static('public'));
 app.use(express.static('dist'));
 
@@ -90,6 +89,7 @@ app.get('/api/browseFiles', (req, res) => {
   findFiles({ 
     doNeedDirs: true,
     onResolve({ files, dirs }) {
+
       setState({
         files,
         dirs,
@@ -140,11 +140,9 @@ app.get('/api/saveChanges', (req, res) => {
 app.get('/api/imgRemove', async (req, res) => {
   const { file } = req.query;
   const fileUpd = state.curDir.concat('\\', file);
-  console.log('server', [file, fileUpd]);
   removeFile({ file: fileUpd, resolve });
   
   function resolve() {
-    console.log('remove file', fileUpd);
     res.send(req.query);
   }
 });
@@ -153,8 +151,6 @@ app.get('/api/imgRotate', (req, response) => {
   let { img, deg = 0, path } = req.query;
   const imgUpd = state.curDir.concat('\\', img);
   const pathUpd = state.curDir.concat('\\', path);
-
-  console.log('imgRotate', [imgUpd, deg, pathUpd]);
 
   Jimp.read(imgUpd)
   .then(imgUpd => {
@@ -167,18 +163,14 @@ app.get('/api/imgRotate', (req, response) => {
 });
 
 app.post('/api/savePhotosToFlash', (req, res) => {
-  console.log('req.body', getCurMoment());  
 });
 
 app.post('/api/copyPhotos', (req, res) => {
-  console.log('req.body', getCurMoment());
   // const { userDirName } = req.body;
   const userDirName = getCurMoment();
   const destDir = `${state.rootDir}${userDirName}/`;
 
   res.send(req.body);
-
-  console.log('destDir', destDir)
 
   if (fs.existsSync(destDir)) {
     return;
@@ -286,24 +278,23 @@ function findFiles({
   doNeedFullPath = false,
   onResolve = () => {} 
 }) {
-  console.log(state.curDir);
   
   find.file('', path, (files) => {
     let browseFiles = files;
-    
+
     if (doNeedTopLevelSearch) browseFiles = browseFiles.filter(isTopLevelFile);
+
     if (!doNeedFullPath) browseFiles = browseFiles.map((file) => {
       const fileUpd = getFileName({ file });
       return `${fileUpd}`;
     });  
 
     if (!doNeedDirs) return onResolve({ files: browseFiles, dirs: [] });
-
+    
     find.dir('', path, (dirs) => {
       const browseDirs = dirs.filter(isTopLevelFile).map((dir) => {
         return getFileName({ file: dir });
       });  
-      console.log('browseDirs', browseDirs);
       onResolve({ files: browseFiles, dirs: browseDirs });
     });  
   });
@@ -328,7 +319,7 @@ function getRootDir() {
   if(process.env.NODE_ENV === 'production') {
     rootDir = '..\\f-photo';
   } else  {
-    rootDir = 'E:\\f-photo';
+    rootDir = 'C:\\Users\\shelm\\Pictures';
   }
 
   return rootDir;

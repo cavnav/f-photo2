@@ -143,8 +143,10 @@ Browse.getReqProps = ({ channel }) => {
       setBrowseState: 1,
     },
     API: {
-      server: {
-        toward: 'setServerToward',
+      comps: {
+        server: {
+          toward: 'setServerToward',
+        },
       },
     },
   });
