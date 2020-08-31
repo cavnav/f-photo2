@@ -7,16 +7,14 @@ export function SavePhotosToFlash({
   printState,
 
   tempReducer,
-  compsAPI,
+  savePhotosToFlash,
 }) {
   const [state, setState] = useReducer(tempReducer, stateInit);
-
-  const { saveToFlash } = compsAPI.Print;
 
   return (
     <div 
       className={className} 
-      onClick={saveToFlash}      
+      onClick={savePhotosToFlash}      
     >
       <div className='title'>{title}</div>  
     </div>
@@ -31,7 +29,7 @@ SavePhotosToFlash.getReqProps = ({
   parentProps,
 }) => {
 
-  const props = channel.crop({
+  return channel.crop({
       parentProps: { 
         title: 1,
         className: 1,
@@ -41,19 +39,16 @@ SavePhotosToFlash.getReqProps = ({
           printState: 1,
         },
         API: {
-          server: {
-            savePhotosToFlash: 1,
-          },
-          comps: 1,
+          comps: {
+            server: {
+              savePhotosToFlash: 1,
+            },
+          }
         },
       },
     },
     { parentProps, }
   );
-
-  return Object.assign(props, {
-    compsAPI: props.comps,
-  });
 };
 
 const stateInit = {

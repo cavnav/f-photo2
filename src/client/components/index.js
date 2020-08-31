@@ -15,7 +15,7 @@ export { Dialog } from './Dialog/Dialog';
 
 import { OnePhoto } from './OnePhoto/OnePhoto';
 import { Tune } from './Tune';
-import { Copy } from './Copy';
+import { Copy } from './Copy/Copy';
 import { Browse } from './Browse/Browse';
 import { Print } from './Print/Print';
 import { Welcome } from './Welcome';

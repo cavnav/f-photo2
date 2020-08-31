@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Progress, } from 'antd';
-import { Stepper, Views } from '../';
+import { Stepper, Views } from '..';
 
 import 'antd/dist/antd.css';
 import './styles.css';
@@ -25,13 +25,13 @@ export function Copy(props) {
   function createSteps() {
     return [
       {
-        photoSrc: 'public/wizardCopy/001_getOutMemCard.jpg',
+        photoSrc: 'wizardCopy/001_getOutMemCard.jpg',
         desc: 'нажми пальцем на синюю карту памяти, и, вдавив внутрь, отпусти.',
       }, {
-        photoSrc: 'public/wizardCopy/002_insertIntoCardReader.jpg',
+        photoSrc: 'wizardCopy/002_insertIntoCardReader.jpg',
         desc: 'Вставь карту памяти в кардРидер, как показано ниже:',
       }, {
-        photoSrc: 'public/wizardCopy/004_plugInPC.jpg',
+        photoSrc: 'wizardCopy/004_plugInPC.jpg',
         desc: 'Вставь кардРидер в системный блок, как показано ниже, чтобы совпал ключ.',
       }, {    
         desc: 'Ищу карту памяти...',
@@ -54,7 +54,7 @@ export function Copy(props) {
         trigger: $getNewPhotos,
         isNextBtn: state.isCopyCompleted,
       }, {
-        photoSrc: 'public/wizardCopy/005_returnMemCardInPhoto.jpg',
+        photoSrc: 'wizardCopy/005_returnMemCardInPhoto.jpg',
         desc: 'Вытащи карту памяти из кардРидера и вставь обратно в фотоаппарат до щелчка, как показано ниже:',
       }, {
         desc: 'Проверяю, что карта памяти извлечена...',

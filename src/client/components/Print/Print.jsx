@@ -162,8 +162,10 @@ Print.getReqProps = ({ channel }) => {
       printState: 1,
     },
     API: {
-      server: {
-        getUsbDevices: '$getUsbDevices',
+      comps: {
+        server: {
+          getUsbDevices: '$getUsbDevices',
+        },
       },
     },
   });
