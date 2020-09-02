@@ -23,7 +23,7 @@ export function Stepper(props) {
     </div>
   );
 
-  // ------------------------------------------------------------------
+// ------------------------------------------------------------------
 
   function fireTrigger() {
     const { step: { trigger = () => {} }} = stateFinal;
@@ -57,12 +57,12 @@ export function Stepper(props) {
      
     return (
       <div className="step">
-        { getContent() }
+        { getContent(step) }
       </div>
     );
 
     // -----------------------------------------------------------------
-    function getContent() {
+    function getContent(step) {
       const items = Object.keys(stepStruct); 
       let content;
   
@@ -73,26 +73,33 @@ export function Stepper(props) {
         });
       });
 
-      content.push(...getAdditionalContent());
+      content.push(...getAdditionalContent(step));
       
       return content;
 
       // -----------------------------------------
 
-      function getAdditionalContent() {
+      function getAdditionalContent(step) {
         const additionalContent = {
           isNextBtn: getNextBtn,
           dialog: getDialogBtns,
         };
   
-        const handler = {
-          get: (target, prop) => {
-            return target[prop] || (() => []);
-          },
-        }
-        const proxyAdditionalContent = new Proxy(additionalContent, handler);
+        const proxyAdditionalContent = new Proxy(step, getHandler());
 
-        return Object.keys(proxyAdditionalContent).map(item => proxyAdditionalContent[step[item]]());
+        return Object.keys(proxyAdditionalContent).map(item => {
+          return proxyAdditionalContent[item];
+        });
+
+        function getHandler() {
+          return {
+            get: (target, prop) => {
+              if (target[prop] || target[prop] === undefined) {
+                return additionalContent[prop]();
+              }
+            },
+          };
+        }
       }
 
       function getNextBtn() {
