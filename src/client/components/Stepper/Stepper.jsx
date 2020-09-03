@@ -85,24 +85,16 @@ export function Stepper(props) {
           dialog: getDialogBtns,
         };
   
-        const proxyAdditionalContent = new Proxy(step, getHandler());
-
-        return Object.keys(proxyAdditionalContent).map(item => {
-          return proxyAdditionalContent[item];
-        });
-
-        function getHandler() {
-          return {
-            get: (target, prop) => {
-              if (target[prop] || target[prop] === undefined) {
-                return additionalContent[prop]();
-              }
-            },
-          };
-        }
+        return Object.keys(additionalContent).map(item => {
+          if (item === 'isNextBtn' && step[item] === undefined) return additionalContent[item](step);
+          if (step[item]) {
+            return additionalContent[item](step);
+          }
+          return [];
+        })
       }
 
-      function getNextBtn() {
+      function getNextBtn(step) {
         return <input 
           className="attention marginBottom10" 
           type="button" 
@@ -111,9 +103,7 @@ export function Stepper(props) {
         />;
       }
 
-      function getDialogBtns({
-        
-      }) {
+      function getDialogBtns(step) {
         const dialog = step.dialog;
         const confirmDesc = dialog.confirmDesc || 'Ок';
         const cancelDesc = dialog.cancelDesc || 'Отменить';

@@ -5,7 +5,13 @@ import { Stepper, Views } from '..';
 import 'antd/dist/antd.css';
 import './styles.css';
 
-export function Copy(props) {
+export function Copy({
+  setAppState,
+  
+  $getUsbDevices,
+  $copyPhotos,
+  $getNewPhotos,
+}) {
   
   const [state, setState] = useState(stateInit);
 
@@ -74,7 +80,7 @@ export function Copy(props) {
         stepNumDelta: -2,
       }, {
         trigger: () => {
-          props.dispatch.setAppState({
+          setAppState({
             view: Views.Welcome,
           });
         } 
@@ -96,21 +102,13 @@ export function Copy(props) {
   }
 
   function $waitUSBconnect() {
-    return serverApi({
-      props: {
-        url: 'getUsbDevices'
-      }
-    })
+    return $getUsbDevices()
     .then(res => res.json())
     .then(res => res.driveLetter);
   }
 
   function $getNewPhotos() {
-    return serverApi({
-      props: {
-        url: 'getNewPhotos'
-      }
-    })
+    return $getNewPhotos()
       .then(res => res.json())
       .then((res) => {
         setState({
@@ -121,22 +119,15 @@ export function Copy(props) {
   }
 
   function onCopy() {
-    return serverApi({
-      props: {
-        url: 'copyPhotos',
-        userDirName: '',
-      }
+    return $copyPhotos({
+      userDirName: '',
     }).then((res) => {
       checkCopyProgress();
     });
   }
 
   function checkCopyProgress() {
-    serverApi({
-      props: {
-        url: 'checkCopyProgress',
-      }
-    })
+    $checkCopyProgress()
       .then(res => res.json())
       .then((res) => {
         const isCopyCompleted = res.copyProgress === 100;
@@ -148,6 +139,23 @@ export function Copy(props) {
         });
       });
   }
+}
+
+Copy.getReqProps = ({ channel }) => {
+  return channel.crop({
+    d: {
+      setAppState: 1,
+    },
+    API: {
+      comps: {
+        server: {
+          getUsbDevices: '$getUsbDevices',
+          copyPhotos: '$copyPhotos',
+          getNewPhotos: '$getNewPhotos',
+        }
+      }
+    }
+  })
 }
 
 const stateInit = {

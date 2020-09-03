@@ -86,8 +86,8 @@ export class AppServerAPI {
     return fetch(fullUrl);
   }
 
-  getUsbDevices = (params) => {
-    const url = this.getUrlWithParams({ url: this.getUsbDevices.name, params });
+  getUsbDevices = (params = {}) => {
+    const url = this.getUrlWithParams({ url: 'getUsbDevices', params });
     return fetch(url)
       .then(res => res.json());
   }
