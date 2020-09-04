@@ -71,19 +71,19 @@ export class AppServerAPI {
         'Content-Type': 'application/json;charset=utf-8'
       },
       body: JSON.stringify({ userDirName })
-    });
+    }).then(res => res.json());
   }
 
   getNewPhotos = () => {
-    return fetch(fullUrl);
+    return fetch(this.getFullUrl({ url: 'getNewPhotos' })).then(res => res.json());
   }
 
   checkCopyProgress = () => {
-    return fetch(fullUrl);
+    return fetch(fullUrl).then(res => res.json());
   }
 
   browsePhotos = () => {
-    return fetch(fullUrl);
+    return fetch(fullUrl).then(res => res.json());
   }
 
   getUsbDevices = (params = {}) => {

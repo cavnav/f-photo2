@@ -43,7 +43,7 @@ export function Copy({
         desc: 'Ищу карту памяти...',
         trigger: ({ setStepNum }) => {
           setTimeout(async () => {
-            let stepNum = await $waitUSBconnect() ? +2 : +1; 
+            let stepNum = await $waitUSBconnectWrap() ? +2 : +1; 
     
             setStepNum({
               val: stepNum,
@@ -57,7 +57,7 @@ export function Copy({
         stepNumDelta: -2,
       }, {
         toRender: getCopyingContent,
-        trigger: $getNewPhotos,
+        trigger: $getNewPhotosWrap,
         isNextBtn: state.isCopyCompleted,
       }, {
         photoSrc: 'wizardCopy/005_returnMemCardInPhoto.jpg',
@@ -66,7 +66,7 @@ export function Copy({
         desc: 'Проверяю, что карта памяти извлечена...',
         trigger: ({ setStepNum }) => {
           setTimeout(async () => {
-            let stepNum = await $waitUSBconnect() ? +1 : +2; 
+            let stepNum = await $waitUSBconnectWrap() ? +1 : +2; 
     
             setStepNum({
               val: stepNum,
@@ -92,7 +92,7 @@ export function Copy({
     const started = <div className="flex flexDirColumn" key={key}>
       Количество новых фото:
       { state.countNewPhotos }
-      <div><input type="button" onClick={onCopy} value="Копировать" /></div>
+      <div><input type="button" onClick={$onCopyWrap} value="Копировать" /></div>
       <div>* Внимание! После копирования карта памяти будет очищена.</div>
       <Progress type="circle" percent={state.copyProgress} />      
     </div>;    
@@ -101,15 +101,13 @@ export function Copy({
     return state.isCopyCompleted ? finished : started;
   }
 
-  function $waitUSBconnect() {
+  function $waitUSBconnectWrap() {
     return $getUsbDevices()
-    .then(res => res.json())
     .then(res => res.driveLetter);
   }
 
-  function $getNewPhotos() {
+  function $getNewPhotosWrap() {
     return $getNewPhotos()
-      .then(res => res.json())
       .then((res) => {
         setState({
           ...state,
@@ -118,7 +116,7 @@ export function Copy({
       });
   }
 
-  function onCopy() {
+  function $onCopyWrap() {
     return $copyPhotos({
       userDirName: '',
     }).then((res) => {
@@ -126,9 +124,8 @@ export function Copy({
     });
   }
 
-  function checkCopyProgress() {
+  function $checkCopyProgressWrap() {
     $checkCopyProgress()
-      .then(res => res.json())
       .then((res) => {
         const isCopyCompleted = res.copyProgress === 100;
         setTimeout(() => (isCopyCompleted ? null : checkCopyProgress()), 500);
