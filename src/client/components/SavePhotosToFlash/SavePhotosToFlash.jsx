@@ -7,14 +7,15 @@ export function SavePhotosToFlash({
   printState,
 
   tempReducer,
-  savePhotosToFlash,
+  saveToFlash,
 }) {
   const [state, setState] = useReducer(tempReducer, stateInit);
 
+  const onClick = React.useCallback(() => saveToFlash(), []);
   return (
     <div 
       className={className} 
-      onClick={savePhotosToFlash}      
+      onClick={onClick}      
     >
       <div className='title'>{title}</div>  
     </div>
@@ -40,8 +41,8 @@ SavePhotosToFlash.getReqProps = ({
         },
         API: {
           comps: {
-            server: {
-              savePhotosToFlash: 1,
+            Print: {
+              saveToFlash: 1,
             },
           }
         },

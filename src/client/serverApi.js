@@ -35,7 +35,7 @@ export class AppServerAPI {
     return `${urlUpd}${paramsUpd}`;
   }
 
-  getParams({ params }) {
+  getParams({ params = {} }) {
     const arr = Object.entries(params)
       .filter(([name, val]) => val !== undefined)
       .map(([name, val]) => `${name}=${val}`);
