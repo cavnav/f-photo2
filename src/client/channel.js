@@ -41,12 +41,20 @@ export class Channel {
     if (stack && stack.length === 0) return res;
     if (!stack) {
       const contextUpd = context ? { channel: this, ...context } : this;
-      stack = Object.entries(source).map(e => push(e, contextUpd[e[0]])); // add link to source val.
+      stack = Object.entries(source).map(e => push(e, contextUpd[e[0]])); // add link to sourceVal.
     }
     let [[propName, prop, sourceVal, alias = prop]] = stack;
-    if (prop.constructor !== Object) res[prop === 1 ? propName : alias] = sourceVal;
+    // 
+    if (prop.constructor !== Object) res[prop === 1 ? propName : alias] = subscribe({ propName, sourceVal });
     else stack.push(...Object.entries(prop).map(e => push(e, sourceVal[e[0]])));
     return this.crop(null, null, { stack: stack.slice(1), res });
+
+    function subscribe({ propName, sourceVal }) {
+      if (sourceVal !== undefined) return sourceVal;
+      return (...props) => { 
+        sourceVal(...props);
+      }
+    }
   }
 }
 
