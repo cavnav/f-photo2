@@ -120,7 +120,7 @@ export function Copy({
     return $copyPhotos({
       userDirName: '',
     }).then((res) => {
-      checkCopyProgress();
+      $checkCopyProgressWrap();
     });
   }
 

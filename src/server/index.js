@@ -49,7 +49,8 @@ app.get('/api/getUsbDevices', (req, res) => {
     setState({
       usbDriveLetter,
     });
-    
+    console.log('usbDriveLetter', usbDriveLetter)
+
     res.send({
       driveLetter: usbDriveLetter,
     });

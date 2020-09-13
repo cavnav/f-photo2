@@ -9,7 +9,7 @@ export function createSteps({
 } = {}) {
   return [
     {
-      photoSrc: 'public/wizardCopy/004_plugInPC.jpg',
+      photoSrc: 'wizardCopy/004_plugInPC.jpg',
       desc: 'Вставь флешку в системный блок, как показано ниже, чтобы совпал ключ.',
     }, 
     {    
@@ -31,13 +31,10 @@ export function createSteps({
       stepNumDelta: -2,
     }, 
     {                
-      toRender: <Copying 
-        
-      >
-      </Copying>
+      toRender: Copying,
     }, 
     {
-      photoSrc: 'public/wizardCopy/005_returnMemCardInPhoto.jpg',
+      photoSrc: 'wizardCopy/005_returnMemCardInPhoto.jpg',
       desc: 'Вытащи флешку',
     }, 
     {

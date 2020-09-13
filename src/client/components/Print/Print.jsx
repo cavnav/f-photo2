@@ -32,13 +32,9 @@ export function Print({
 
   return (
     <div className="Print">
-      { renderPrintState() }
-
-      { 
-        state.isSavePhotosToFlash && 
-        <Stepper 
+      { state.isSavePhotosToFlash ? <Stepper 
           steps={steps}
-        />
+        /> : renderPrintState() 
       }
     </div>    
   );
