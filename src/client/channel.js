@@ -8,11 +8,7 @@ export class Channel {
   d; // dispatches;
   API = {
     _get,
-    comps: new Proxy({}, {
-      get(target, prop) {
-        return _get(target, [prop], {});
-      },
-    }),
+    comps: {},
   };
 
   constructor({ s, d }) {
@@ -24,7 +20,7 @@ export class Channel {
   }
   addAPI = (props) => {
     const comps = this.API.comps;
-    Object.entries(props).map(([p, val]) => comps[p] = val);
+    Object.entries(props).map(([p, val]) => Object.assign(comps[p] || (comps[p] = {}), val));
   }
   essentials = (component, { parentProps = {} } = {}) => {
     if (component.getAPI) this.addAPI({
@@ -37,7 +33,7 @@ export class Channel {
     };
   }
   crop(source, context, { stack, res = {} } = {}) {
-  // По заданному пути возвращает соответствующие значения this.
+  // По заданному пути возвращает соответствующие значения this.    
     if (stack && stack.length === 0) return res;
     if (!stack) {
       const contextUpd = context ? { channel: this, ...context } : this;
@@ -45,17 +41,23 @@ export class Channel {
     }
     let [[propName, prop, sourceVal, alias = prop]] = stack;
     // 
-    if (prop.constructor !== Object) res[prop === 1 ? propName : alias] = subscribe({ propName, sourceVal });
-    else stack.push(...Object.entries(prop).map(e => push(e, sourceVal[e[0]])));
+    if (prop.constructor !== Object) res[prop === 1 ? propName : alias] = sourceVal;
+    else stack.push(...Object.entries(prop).map(e => push(e, subscribe.call(this, { comp: e, propName, sourceVal: sourceVal[e[0]] }))));
     return this.crop(null, null, { stack: stack.slice(1), res });
 
-    function subscribe({ propName, sourceVal }) {
+    // ------------------------
+    function subscribe({ comp: [compName, compAPI], propName, sourceVal }) {
       if (sourceVal !== undefined) return sourceVal;
-      return (...props) => { 
-        sourceVal(...props);
-      }
+      if (propName !== 'comps') return sourceVal;
+
+      const compAPIupd = {};
+      Object.keys(compAPI).forEach(APIname => compAPIupd[APIname] = (...args) => compAPIupd[APIname](...args));
+      this.API.comps[compName] = compAPIupd;
+      
+      return compAPIupd;
     }
+
+    function push(a, v) { a.push(v); return a; }
+
   }
 }
-
-function push(a, v) { a.push(v); return a; }
