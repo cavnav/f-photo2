@@ -32,6 +32,7 @@ export function Print({
 
   return (
     <div className="Print">
+      <div>2020-09-29</div>
       { state.isSavePhotosToFlash ? <Stepper 
           steps={steps}
         /> : renderPrintState() 
@@ -81,34 +82,36 @@ export function Print({
 
   function renderPrintState() {
     const toRender = Object.entries(printState).map(([date, photo]) => {
-      return <div className="dateForPrintPage">
-        {date} <br/>
-        {
-          Object.entries(photo).map(([photoSrc, status]) => { 
-            const key = getPhotoDataKey({date, photoSrc});         
-            return <div 
-              className="rowDataForPrint"
-              key={key}
-              date={date}
-              photosrc={photoSrc}
-            >
-              <div
-                className='fitPreview100 file marginRight10'
-                style={{ 'backgroundImage': `url(${photoSrc})` }}
-              >
-              </div>              
-              <input 
-                className="changePhotoCount marginRight10" 
-                keyid={key}
-                value={status.toPrint} 
-                onChange={onChangePhotoCount} 
-              />
-              <input type="button" className="marginRight10" onClick={onClickErasePhotoCount} value="Стереть" />
-            </div>
-          })
-        }
-
-      </div>
+      return (
+        <>
+          <div className="PrintItems">
+            {
+              Object.entries(photo).map(([photoSrc, status]) => { 
+                const key = getPhotoDataKey({date, photoSrc});         
+                return <div 
+                  className="rowData"
+                  key={key}
+                  date={date}
+                  photosrc={photoSrc}
+                >
+                  <div
+                    className='fitPreview100 file marginRight10'
+                    style={{ 'backgroundImage': `url(${photoSrc})` }}
+                  >
+                  </div>              
+                  <input 
+                    className="changePhotoCount marginRight10" 
+                    keyid={key}
+                    value={status.toPrint} 
+                    onChange={onChangePhotoCount} 
+                  />
+                  <input type="button" className="marginRight10" onClick={onClickErasePhotoCount} value="Стереть" />
+                </div>
+              })
+            }
+          </div>
+        </>
+      );
     });
 
     return toRender;

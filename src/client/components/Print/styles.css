@@ -1,13 +1,16 @@
 .Print {
   display: flex;
+  flex-direction: column;
   height: 100%;
   overflow-y: scroll;
 }
 
-.rowDataForPrint {
+.PrintItems {
   display: flex;
-  justify-content: flex-start;
-  align-items: center;
+  flex-flow: wrap;
+}
+
+.rowData {
 }
 
 .changePhotoCount {
