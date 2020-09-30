@@ -1,11 +1,6 @@
-import React from 'react';
-
-import {
-  Copying
-} from '../Copying/Copying';
-
 export function createSteps({
   $getUsbDevices,
+  Copying,
 } = {}) {
   return [
     {
@@ -16,8 +11,8 @@ export function createSteps({
       desc: 'Ищу карту памяти...',
       trigger: ({ setStepNum }) => {
         setTimeout(async () => {
-          let stepNum = await $getUsbDevices() ? +2 : +1; 
-  
+          let usbDevice = await $getUsbDevices();
+          const stepNum = (usbDevice.driveLetter) ? +2 : +1; 
           setStepNum({
             val: stepNum,
           });
@@ -30,12 +25,12 @@ export function createSteps({
       desc: 'Что-то пошло не так... Попробуй еще раз',
       stepNumDelta: -2,
     }, 
-    {                
+    {
       toRender: Copying,
     }, 
     {
       photoSrc: 'wizardCopy/005_returnMemCardInPhoto.jpg',
-      desc: 'Вытащи флешку',
+      desc: 'Все файлы успешно записаны. Вытащи флешку',
     }, 
     {
       desc: 'Проверяю, что флешка извлечена...',

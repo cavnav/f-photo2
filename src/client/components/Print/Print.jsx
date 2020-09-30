@@ -1,17 +1,69 @@
 import React from 'react';
 
+import { Progress, } from 'antd';
 import { 
   Stepper,
 } from '../';
+import { tempReducer } from '../../functions';
 import { createSteps } from './createSteps';
 
 import './styles.css';
 
+const Copying = React.memo(function ({
+  $checkCopyProgress,
+}) {
+  const [state, setState] = React.useReducer(tempReducer, getStateInit());
+  const onAcceptCb = React.useCallback(() => onAccept(), []);
+  
+  React.useEffect((val) => timer(val),[state.timer]);
+  return (
+    <div className="flex flexDirColumn">
+      <div>Внимание! Флешка будет очищена перед копированием</div>
+      <div>{ state.timer }</div>
+      <input type="button" value="ok" onClick={onAcceptCb}/>
+      <Progress type="circle" percent={state.copyProgress} />      
+    </div>
+  );  
+
+  function timer(val) {    
+    if (val === 0) return;
+    
+    setTimeout(() => 
+      setState({
+        timer: val - 1,
+      })
+      ,1000
+    );
+  }
+
+  function getStateInit() {
+    return {
+      copyProgress: 0,
+      isCopyCompleted: false,
+      timer: 10,
+    };
+  }
+
+  function onAccept() {
+    $checkCopyProgress()
+      .then((res) => {
+        const isCopyCompleted = res.copyProgress === 100;
+        setTimeout(() => (isCopyCompleted ? null : $checkCopyProgress()), 500);
+        setState(() => {
+          return {
+            copyProgress: res.copyProgress,
+            isCopyCompleted,
+          };
+        });
+      });
+  }
+});
 
 export function Print({
   printState,
   tempReducer,
   $getUsbDevices,
+  $checkCopyProgress,
 }) {
 
   const [state, setState] = React.useReducer(tempReducer, stateInit);
@@ -20,14 +72,15 @@ export function Print({
   
   const [ignored, forceUpdate] = React.useReducer(x => !x, false);
 
+  const steps = createSteps({
+    $getUsbDevices,
+    Copying: () => <Copying $checkCopyProgress={$checkCopyProgress} />,
+  });
+
   React.useEffect(addKeyDownListener);
   React.useEffect(() => {
     const input = getActiveInput();
     input && input.focus();
-  });
-
-  const steps = createSteps({
-    $getUsbDevices,
   });
 
   return (
@@ -41,6 +94,8 @@ export function Print({
   );
 
   // --------------------------------------------------------------------
+
+
   function getActiveInput() {
     document.querySelector(`input[keyid=\'${state.activeInput}\']`);
   }
@@ -163,7 +218,8 @@ Print.getReqProps = ({ channel }) => {
     API: {
       comps: {
         server: {
-          getUsbDevices: '$getUsbDevices',
+          $getUsbDevices: 1,
+          $checkCopyProgress: 1,
         },
       },
     },
@@ -184,4 +240,9 @@ Print.getAPI = function (
 const stateInit = {
   activeInput: undefined,
   isSavePhotosToFlash: false,
+  countNewPhotos: 0,
+  copyProgress: 0,
+  isCopyCompleted: false,
 };
+
+

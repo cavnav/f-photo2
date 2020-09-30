@@ -74,11 +74,11 @@ export class AppServerAPI {
     }).then(res => res.json());
   }
 
-  getNewPhotos = () => {
+  $getNewPhotos = () => {
     return fetch(this.getFullUrl({ url: 'getNewPhotos' })).then(res => res.json());
   }
 
-  checkCopyProgress = () => {
+  $checkCopyProgress = () => {
     return fetch(fullUrl).then(res => res.json());
   }
 
@@ -86,7 +86,7 @@ export class AppServerAPI {
     return fetch(fullUrl).then(res => res.json());
   }
 
-  getUsbDevices = (params = {}) => {
+  $getUsbDevices = (params = {}) => {
     const url = this.getUrlWithParams({ url: 'getUsbDevices', params });
     return fetch(url)
       .then(res => res.json()).then(res => { console.log('usbDevices', res); return res; });

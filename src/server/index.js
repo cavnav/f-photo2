@@ -46,10 +46,11 @@ app.get('/api/getUsbDevices', (req, res) => {
         return mountpoint.path;
       });
 
+    const usbDriveLetterUpd = (usbDriveLetter) ? `${usbDriveLetter}\\` : usbDriveLetter;
     setState({
-      usbDriveLetter,
+      usbDriveLetter: usbDriveLetterUpd,
     });
-    console.log('usbDriveLetter', usbDriveLetter)
+    console.log('usbDriveLetter', usbDriveLetterUpd)
 
     res.send({
       driveLetter: usbDriveLetter,
@@ -346,7 +347,7 @@ function removeFile({
 }
 
 function clearUpUSB() {
-  return fs.remove('F:\\')
+  return fs.remove(state.usbDriveLetter)
   .then(() => {
   })
   .catch(err => {
