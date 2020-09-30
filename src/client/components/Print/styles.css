@@ -28,3 +28,11 @@
 .Print .file {
   width: 100px;
 }
+
+.acceptBtn {
+  padding: 10px 20px;
+}
+
+.copyProgress {
+  padding: 20px;
+}

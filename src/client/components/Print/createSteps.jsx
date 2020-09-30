@@ -1,4 +1,5 @@
 export function createSteps({
+  isCopyCompleted,
   $getUsbDevices,
   Copying,
 } = {}) {
@@ -27,6 +28,7 @@ export function createSteps({
     }, 
     {
       toRender: Copying,
+      isNextBtn: isCopyCompleted,
     }, 
     {
       photoSrc: 'wizardCopy/005_returnMemCardInPhoto.jpg',

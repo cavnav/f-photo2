@@ -10,23 +10,28 @@ import { createSteps } from './createSteps';
 import './styles.css';
 
 const Copying = React.memo(function ({
+  onCopyCompleted = () => {},
+  onCopyCanceled = () => {},
   $checkCopyProgress,
 }) {
   const [state, setState] = React.useReducer(tempReducer, getStateInit());
   const onAcceptCb = React.useCallback(() => onAccept(), []);
   
-  React.useEffect((val) => timer(val),[state.timer]);
+  React.useEffect(() => timer(state.timer), [state.timer]);
+  React.useEffect(() => { if (state.isCopyCompleted === true) onCopyCompleted() }, [state.isCopyCompleted]);
   return (
-    <div className="flex flexDirColumn">
-      <div>Внимание! Флешка будет очищена перед копированием</div>
-      <div>{ state.timer }</div>
-      <input type="button" value="ok" onClick={onAcceptCb}/>
-      <Progress type="circle" percent={state.copyProgress} />      
+    <div className="flexCenter flexDirColumn">
+      <div>Внимание! Флешка будет очищена перед копированием, <span style={{fontSize: '30px'}}>{state.timer}</span></div>
+      <input className="acceptBtn" type="button" value="ok" onClick={onAcceptCb}/>
+      <Progress className="copyProgress" type="circle" percent={state.copyProgress} />      
     </div>
   );  
 
   function timer(val) {    
-    if (val === 0) return;
+    if (val === 0) {
+      onCopyCanceled();
+      return;
+    }
     
     setTimeout(() => 
       setState({
@@ -72,9 +77,22 @@ export function Print({
   
   const [ignored, forceUpdate] = React.useReducer(x => !x, false);
 
+  const onCopyCompleted = React.useCallback(() => setState({
+    isCopyCompleted: true,
+  }), []);
+
+  const onCopyCanceled = React.useCallback(() => setState({ 
+    isSavePhotosToFlash: false 
+  }), []);
+
   const steps = createSteps({
     $getUsbDevices,
-    Copying: () => <Copying $checkCopyProgress={$checkCopyProgress} />,
+    isCopyCompleted: state.isCopyCompleted,
+    Copying: () => <Copying 
+        onCopyCompleted={onCopyCompleted} 
+        onCopyCanceled={onCopyCanceled}
+        $checkCopyProgress={$checkCopyProgress} 
+      />,
   });
 
   React.useEffect(addKeyDownListener);
@@ -240,8 +258,6 @@ Print.getAPI = function (
 const stateInit = {
   activeInput: undefined,
   isSavePhotosToFlash: false,
-  countNewPhotos: 0,
-  copyProgress: 0,
   isCopyCompleted: false,
 };
 
