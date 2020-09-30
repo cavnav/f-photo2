@@ -13,9 +13,10 @@ const Copying = React.memo(function ({
   onCopyCompleted = () => {},
   onCopyCanceled = () => {},
   $checkCopyProgress,
+  $saveFilesToFlash,
 }) {
   const [state, setState] = React.useReducer(tempReducer, getStateInit());
-  const onAcceptCb = React.useCallback(() => onAccept(), []);
+  const onAcceptCb = React.useCallback(() => onAccept(), [state.timer]);
   
   React.useEffect(() => timer(state.timer), [state.timer]);
   React.useEffect(() => { if (state.isCopyCompleted === true) onCopyCompleted() }, [state.isCopyCompleted]);
@@ -50,17 +51,23 @@ const Copying = React.memo(function ({
   }
 
   function onAccept() {
-    $checkCopyProgress()
-      .then((res) => {
-        const isCopyCompleted = res.copyProgress === 100;
-        setTimeout(() => (isCopyCompleted ? null : $checkCopyProgress()), 500);
-        setState(() => {
-          return {
-            copyProgress: res.copyProgress,
-            isCopyCompleted,
-          };
+    setState({
+      timer: 0
+    });
+    $saveFilesToFlash()
+    .then(res => {
+      $checkCopyProgress()
+        .then((res) => {
+          const isCopyCompleted = res.copyProgress === 100;
+          setTimeout(() => { if (!isCopyCompleted) { $checkCopyProgress(); } }, 500);
+          setState(() => {
+            return {
+              copyProgress: res.copyProgress,
+              isCopyCompleted,
+            };
+          });
         });
-      });
+    });
   }
 });
 
@@ -69,6 +76,7 @@ export function Print({
   tempReducer,
   $getUsbDevices,
   $checkCopyProgress,
+  $saveFilesToFlash
 }) {
 
   const [state, setState] = React.useReducer(tempReducer, stateInit);
@@ -91,6 +99,7 @@ export function Print({
     Copying: () => <Copying 
         onCopyCompleted={onCopyCompleted} 
         onCopyCanceled={onCopyCanceled}
+        $saveFilesToFlash={$saveFilesToFlash}
         $checkCopyProgress={$checkCopyProgress} 
       />,
   });
@@ -238,6 +247,7 @@ Print.getReqProps = ({ channel }) => {
         server: {
           $getUsbDevices: 1,
           $checkCopyProgress: 1,
+          $saveFilesToFlash: 1,
         },
       },
     },

@@ -1,3 +1,15 @@
+class PostObjTmp {
+  constructor({ body = {} } = {}) {
+    Object.assign(this, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json;charset=utf-8'
+      },
+      body: JSON.stringify(body),
+    });
+  }  
+};
+
 export class AppServerAPI {
   constructor({ d, s }) {
     this.d = d;
@@ -8,9 +20,9 @@ export class AppServerAPI {
     return `/api/${url}`;
   }
 
-  savePhotosToFlash = (params) => {
-    const url = this.getUrlWithParams({ url: this.savePhotosToFlash.name, params });
-    return fetch(url)
+  $saveFilesToFlash = (params) => {
+    const url = this.getUrlWithParams({ url: 'saveFilesToFlash', params });
+    return fetch(url, new PostObjTmp())
     .then(res => res.json());
   };
 
@@ -79,7 +91,7 @@ export class AppServerAPI {
   }
 
   $checkCopyProgress = () => {
-    return fetch(fullUrl).then(res => res.json());
+    return fetch(this.getFullUrl({ url: 'checkCopyProgress' })).then(res => res.json());
   }
 
   browsePhotos = () => {

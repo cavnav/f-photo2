@@ -164,10 +164,13 @@ app.get('/api/imgRotate', (req, response) => {
   .catch(console.error);
 });
 
-app.post('/api/savePhotosToFlash', (req, res) => {
-  // Проверить подключение флешки
-  // Если нет, подключить
-  // Вывести предупреждение, что все имеющиеся данные будут удалены
+app.post('/api/saveFilesToFlash', async (req, response) => {
+  response.send(req.body);
+  clearUpUSB()
+  .then(res => setState({
+    copyProgress: 100, 
+  }))
+  .catch(console.error);
   // Создать папки по количеству и скопировать соответственно файлы.
   // Извлечь флешку.
 });
@@ -347,6 +350,7 @@ function removeFile({
 }
 
 function clearUpUSB() {
+  console.log('clearUSB', state.usbDriveLetter);
   return fs.remove(state.usbDriveLetter)
   .then(() => {
   })
