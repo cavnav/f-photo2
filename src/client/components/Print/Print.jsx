@@ -18,7 +18,9 @@ const Copying = React.memo(function ({
   const [state, setState] = React.useReducer(tempReducer, getStateInit());
   const onAcceptCb = React.useCallback(() => onAccept(), [state.timer]);
   
-  React.useEffect(() => timer(state.timer), [state.timer]);
+  React.useEffect(() => {
+    timer(state.timer)
+  }, [state.timer]);
   React.useEffect(() => { if (state.isCopyCompleted === true) onCopyCompleted() }, [state.isCopyCompleted]);
   return (
     <div className="flexCenter flexDirColumn">
@@ -28,18 +30,20 @@ const Copying = React.memo(function ({
     </div>
   );  
 
-  function timer(val) {    
+  function timer(val) { 
     if (val === 0) {
       onCopyCanceled();
       return;
     }
+
+    console.log('curTimerId', state.timerId);
+    if (state.clearTimerId) return;
+    const timerId = setTimeout(() => setState({ timer: val - 1 }), 1000);
+    console.log('setTimerId', timerId);
     
-    setTimeout(() => 
-      setState({
-        timer: val - 1,
-      })
-      ,1000
-    );
+    setState( {
+      timerId,
+    });
   }
 
   function getStateInit() {
@@ -47,27 +51,33 @@ const Copying = React.memo(function ({
       copyProgress: 0,
       isCopyCompleted: false,
       timer: 10,
+      timerId: 0,
+      clearTimerId: 0,
     };
   }
 
   function onAccept() {
+    console.log('clearTimerId', state.timerId);
     setState({
-      timer: 0
+      clearTimerId: state.timerId
     });
+    
     $saveFilesToFlash()
-    .then(res => {
+    .then(checkCopyProgress);
+
+    function checkCopyProgress() {
       $checkCopyProgress()
-        .then((res) => {
-          const isCopyCompleted = res.copyProgress === 100;
-          setTimeout(() => { if (!isCopyCompleted) { $checkCopyProgress(); } }, 500);
-          setState(() => {
-            return {
-              copyProgress: res.copyProgress,
-              isCopyCompleted,
-            };
-          });
+      .then((res1) => {
+        const isCopyCompleted = res1.copyProgress === 100;
+        if (isCopyCompleted === false) {
+          setTimeout(() => checkCopyProgress(), 500);
+        }
+        setState({
+          copyProgress: res1.copyProgress,
+          isCopyCompleted,
         });
-    });
+      });
+    }
   }
 });
 
