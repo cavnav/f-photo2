@@ -18,15 +18,20 @@ const Copying = React.memo(function ({
   const [state, setState] = React.useReducer(tempReducer, getStateInit());
   const onAcceptCb = React.useCallback(() => onAccept(), [state.timer]);
   
-  React.useEffect(() => {
-    timer(state.timer)
-  }, [state.timer]);
+  React.useEffect(() => timer(state.timer), [state.timer]);
   React.useEffect(() => { if (state.isCopyCompleted === true) onCopyCompleted() }, [state.isCopyCompleted]);
+
   return (
     <div className="flexCenter flexDirColumn">
-      <div>Внимание! Флешка будет очищена перед копированием, <span style={{fontSize: '30px'}}>{state.timer}</span></div>
-      <input className="acceptBtn" type="button" value="ok" onClick={onAcceptCb}/>
-      <Progress className="copyProgress" type="circle" percent={state.copyProgress} />      
+      { (state.copyProgress === 0) && (
+          <>
+            <div>Внимание! Флешка будет очищена перед копированием, <span style={{fontSize: '30px'}}>{state.timer}</span></div> 
+            <input className="acceptBtn" type="button" value="ok" onClick={onAcceptCb}/>
+          </>
+        )
+      }
+      <Progress className="copyProgress" type="circle" percent={state.copyProgress} />  
+      { (state.isCopyCompleted) && <div>Все файлы успешно скопированы</div> }    
     </div>
   );  
 
@@ -36,10 +41,8 @@ const Copying = React.memo(function ({
       return;
     }
 
-    console.log('curTimerId', state.timerId);
     if (state.clearTimerId) return;
     const timerId = setTimeout(() => setState({ timer: val - 1 }), 1000);
-    console.log('setTimerId', timerId);
     
     setState( {
       timerId,
@@ -57,7 +60,6 @@ const Copying = React.memo(function ({
   }
 
   function onAccept() {
-    console.log('clearTimerId', state.timerId);
     setState({
       clearTimerId: state.timerId
     });
@@ -101,7 +103,11 @@ export function Print({
 
   const onCopyCanceled = React.useCallback(() => setState({ 
     isSavePhotosToFlash: false 
-  }), []);
+  }), [state.isSavePhotosToFlash]);
+
+  const onAllStepsPassed = React.useCallback(() => setState({
+    isSavePhotosToFlash: false 
+  }), [state.isSavePhotosToFlash]);
 
   const steps = createSteps({
     $getUsbDevices,
@@ -109,6 +115,7 @@ export function Print({
     Copying: () => <Copying 
         onCopyCompleted={onCopyCompleted} 
         onCopyCanceled={onCopyCanceled}
+        onAllStepsPassed={onAllStepsPassed}
         $saveFilesToFlash={$saveFilesToFlash}
         $checkCopyProgress={$checkCopyProgress} 
       />,

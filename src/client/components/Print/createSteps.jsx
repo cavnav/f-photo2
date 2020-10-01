@@ -1,7 +1,8 @@
 export function createSteps({
   isCopyCompleted,
-  $getUsbDevices,
+  onAllStepsPassed,
   Copying,
+  $getUsbDevices,
 } = {}) {
   return [
     {
@@ -32,19 +33,19 @@ export function createSteps({
     }, 
     {
       photoSrc: 'wizardCopy/005_returnMemCardInPhoto.jpg',
-      desc: 'Все файлы успешно записаны. Вытащи флешку',
+      desc: 'Вытащи флешку',
     }, 
     {
       desc: 'Проверяю, что флешка извлечена...',
       trigger: ({ setStepNum }) => {
         setTimeout(async () => {
-          let stepNum = await $getUsbDevices() ? +1 : +2; 
-  
+          let usbDevice = await $getUsbDevices();
+          const stepNum = (usbDevice.driveLetter) ? +1 : +2; 
           setStepNum({
             val: stepNum,
           });
         }, 1000);
-      },  
+      },
       isNextBtn: false,
     }, 
     {    
@@ -53,11 +54,7 @@ export function createSteps({
       stepNumDelta: -2,
     }, 
     {
-      trigger: () => {
-        setState({
-          view: Print.archive,
-        });
-      } 
+      trigger: onAllStepsPassed
     }
   ];
 }
