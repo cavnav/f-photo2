@@ -173,6 +173,7 @@ export function Print({
 
     const { date, photoSrc } = getDataPrint({ element: input.parentElement });
     printState[date][photoSrc].toPrint = cntUpd; 
+    printState.uniqCopyNumbersRef[photoSrc] = printState[date][photoSrc];
 
     setState({
       ...state,
@@ -180,7 +181,9 @@ export function Print({
   }  
 
   function renderPrintState() {
-    const toRender = Object.entries(printState).map(([date, photo]) => {
+    const toRender = Object.entries(printState)
+      .filter(([itemName]) => itemName !== 'uniqCopyNumbersRef')
+      .map(([date, photo]) => {
       return (
         <>
           <div className="PrintItems">

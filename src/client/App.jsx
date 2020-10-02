@@ -81,6 +81,7 @@ const appStateInit = {
 };
 
 const printInit = {
+  uniqCopyNumbersRef: {},
   // "2020-02-21": {
   //   "br/20170107_112131.jpg": {
   //     toPrint: 1,

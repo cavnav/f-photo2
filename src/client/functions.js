@@ -1,6 +1,6 @@
 export function tempReducer (
   prevState, 
-  newState = {}
+  newState = {},
 ) {
   if (newState.setItSilent) {
     newState.setItSilent.apply(prevState);
