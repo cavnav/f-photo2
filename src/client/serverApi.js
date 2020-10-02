@@ -21,8 +21,7 @@ export class AppServerAPI {
   }
 
   $saveFilesToFlash = (params) => {
-    const url = this.getUrlWithParams({ url: 'saveFilesToFlash', params });
-    return fetch(url, new PostObjTmp())
+    return fetch(this.getFullUrl({ url: 'saveFilesToFlash' }), new PostObjTmp({ body: params }))
     .then(res => res.json());
   };
 

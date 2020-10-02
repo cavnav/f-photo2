@@ -10,6 +10,7 @@ import { createSteps } from './createSteps';
 import './styles.css';
 
 const Copying = React.memo(function ({
+  printState,
   onCopyCompleted = () => {},
   onCopyCanceled = () => {},
   $checkCopyProgress,
@@ -59,12 +60,22 @@ const Copying = React.memo(function ({
     };
   }
 
+  function getFoldersFromCopyNumbers() {
+    return new Set(
+      Object.values(printState)
+      .map((filesByDate) => Object.values(filesByDate))
+      .map((file) => file.toPrint)
+    );
+  };
+
   function onAccept() {
     setState({
       clearTimerId: state.timerId
     });
     
-    $saveFilesToFlash()
+    $saveFilesToFlash({
+      folders: getFoldersFromCopyNumbers(printState),
+    })
     .then(checkCopyProgress);
 
     function checkCopyProgress() {
@@ -114,6 +125,7 @@ export function Print({
     isCopyCompleted: state.isCopyCompleted,
     onAllStepsPassed,
     Copying: () => <Copying 
+        printState={printState}
         onCopyCompleted={onCopyCompleted} 
         onCopyCanceled={onCopyCanceled}
         $saveFilesToFlash={$saveFilesToFlash}
@@ -173,7 +185,6 @@ export function Print({
 
     const { date, photoSrc } = getDataPrint({ element: input.parentElement });
     printState[date][photoSrc].toPrint = cntUpd; 
-    printState.uniqCopyNumbersRef[photoSrc] = printState[date][photoSrc];
 
     setState({
       ...state,
@@ -182,7 +193,6 @@ export function Print({
 
   function renderPrintState() {
     const toRender = Object.entries(printState)
-      .filter(([itemName]) => itemName !== 'uniqCopyNumbersRef')
       .map(([date, photo]) => {
       return (
         <>

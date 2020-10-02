@@ -166,6 +166,7 @@ app.get('/api/imgRotate', (req, response) => {
 
 app.post('/api/saveFilesToFlash', async (req, response) => {
   response.send(req.body);
+  console.log('saveFilesToFlash', req.body);
   clearUpUSB()
   .then(res => setState({
     copyProgress: 100, 
