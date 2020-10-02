@@ -112,10 +112,10 @@ export function Print({
   const steps = createSteps({
     $getUsbDevices,
     isCopyCompleted: state.isCopyCompleted,
+    onAllStepsPassed,
     Copying: () => <Copying 
         onCopyCompleted={onCopyCompleted} 
         onCopyCanceled={onCopyCanceled}
-        onAllStepsPassed={onAllStepsPassed}
         $saveFilesToFlash={$saveFilesToFlash}
         $checkCopyProgress={$checkCopyProgress} 
       />,
