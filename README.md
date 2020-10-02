@@ -1,3 +1,3 @@
-Менеджер фотографий. 
-Проект создан с целью профессионального развития, а также помощи своему папе в работе с комьютером.
-Доступ к файловой системе через node.js. Веб-интерфейс. Работает под windows.
+Photo manager.
+The project was created for the purpose of professional development, as well as helping my dad in working with a computer.
+Accessing the filesystem via node.js. Web interface. Works under windows.
