@@ -60,12 +60,10 @@ const Copying = React.memo(function ({
     };
   }
 
-  function getFoldersFromCopyNumbers() {
-    return new Set(
-      Object.values(printState)
-      .map((filesByDate) => Object.values(filesByDate))
-      .map((file) => file.toPrint)
-    );
+  function getFoldersFromCopyNumbers(printState) {
+    const [filesByDate] = Object.values(printState)
+    .map((filesByDate) => Object.values(filesByDate));
+    return new Set(filesByDate.map((file) => file.toPrint));
   };
 
   function onAccept() {
