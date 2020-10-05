@@ -166,8 +166,19 @@ app.get('/api/imgRotate', (req, response) => {
 
 app.post('/api/saveFilesToFlash', async (req, response) => {
   response.send(req.body);
-  console.log('saveFilesToFlash', req.body);
   clearUpUSB()
+  .then(async (res) => {
+    const { folders, files } = req.body;
+    console.log('saveFilesToFlash', folders, files);
+    const filesList = Object.keys(files);
+    const srcRoot = 'e:\\projects\\docsF-photo2\\root\\';
+    const destRoot = state.usbDriveLetter;
+    for (let index = 0; index < filesList.length; index++) {
+      const file = filesList[index]
+      const folder = files[file].toPrint;
+      await fs.copy(`${srcRoot}\\${file}`, `${destRoot}\\${folder}\\${file}`);
+    }
+  })
   .then(res => setState({
     copyProgress: 100, 
   }))

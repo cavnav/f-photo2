@@ -60,10 +60,13 @@ const Copying = React.memo(function ({
     };
   }
 
-  function getFoldersFromCopyNumbers(printState) {
+  function getDataForCopyFiles(printState) {
     const [filesByDate] = Object.values(printState)
     .map((filesByDate) => Object.values(filesByDate));
-    return new Set(filesByDate.map((file) => file.toPrint));
+    return {
+      folders: new Set(filesByDate.map((file) => file.toPrint)),
+      files: Object.values(printState)[0],
+    };
   };
 
   function onAccept() {
@@ -71,9 +74,10 @@ const Copying = React.memo(function ({
       clearTimerId: state.timerId
     });
     
-    $saveFilesToFlash({
-      folders: getFoldersFromCopyNumbers(printState),
-    })
+
+    $saveFilesToFlash(
+      getDataForCopyFiles(printState)    
+    )
     .then(checkCopyProgress);
 
     function checkCopyProgress() {
