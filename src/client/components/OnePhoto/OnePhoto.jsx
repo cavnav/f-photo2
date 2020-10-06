@@ -284,7 +284,7 @@ function onImgServerRemove({
   },
   setState,
 }) {
-  server.imgRemove({
+  server.$remove({
     file: curPhotoRemove,
   })
   .then(res => {
@@ -340,7 +340,9 @@ OnePhoto.getReqProps = ({ channel }) => {
       setBrowseState: 1,
     },
     API: {
-      server: 1,
+      comps: {
+        server: 1,
+      }
     }
   });  
 };

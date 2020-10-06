@@ -139,7 +139,7 @@ app.get('/api/saveChanges', (req, res) => {
   res.redirect(action);
 });
 
-app.get('/api/imgRemove', async (req, res) => {
+app.get('/api/remove', async (req, res) => {
   const { file } = req.query;
   const fileUpd = state.curDir.concat('\\', file);
   removeFile({ file: fileUpd, resolve });
@@ -354,6 +354,7 @@ function removeFile({
 }) {  
   return fs.remove(file)
   .then(() => {
+
     resolve();
   })
   .catch(err => {
