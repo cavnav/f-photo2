@@ -9,10 +9,30 @@ body {
   margin: auto;
 }
 
+#root {
+  width: 100%;
+}
+
 .f-photo {
   display: flex;
   flex-direction: column;
   font-size: 24px;
+}
+
+#explorer {
+  display: flex;
+  height: 100%;
+}
+
+#rightSideWindow {
+  width: 100%;
+}
+
+#rightSideWindow iframe {
+  height: 100%;
+  width: 100%;
+  border: none;
+  border-left: 1px solid;
 }
 
 .flex {

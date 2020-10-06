@@ -5,7 +5,7 @@ import './styles.css';
 export function Welcome(props) {  
   return (
    <div className="welcome textCenter">
-      Выбери одно из действий в верхней строке.
+      Выбери действие в верхней строке.
     </div>
   );
 
