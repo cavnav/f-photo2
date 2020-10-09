@@ -80,7 +80,7 @@ export function OnePhoto({
           isEnabled={state.isDialogRemove}
           onCancel={onCancelRemove}
         >
-          <div>Удалить фото? Нажмите еще раз.</div>
+          <div>Удалить фото? Нажми еще раз.</div>
         </Dialog>
       </div>
     );
@@ -326,9 +326,12 @@ function onImgServerRotate({
 }
 
 OnePhoto.getReqProps = ({ channel }) => { 
-  return channel.crop({
+
+  const ch = channel.crop({
     s: {
-      appState: { doNeedHelp: 1 },
+      appState: { 
+        doNeedHelp: 1 
+      },
       photosState: {
         files: 1,
       },
@@ -344,7 +347,8 @@ OnePhoto.getReqProps = ({ channel }) => {
         server: 1,
       }
     }
-  });  
+  }); 
+  return ch;
 };
 
 OnePhoto.getAPI = () => {

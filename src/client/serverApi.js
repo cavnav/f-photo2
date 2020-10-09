@@ -31,8 +31,8 @@ export class AppServerAPI {
     .then(res => res.json());
   }
 
-  $remove(params) {
-    const url = this.getUrlWithParams({ url: this.$remove.name, params });
+  $remove = (params) => {
+    const url = this.getUrlWithParams({ url: 'remove', params });
     return fetch(url)
     .then(res => res.json());
   }
