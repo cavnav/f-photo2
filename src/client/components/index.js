@@ -13,6 +13,7 @@ export { PhotoStatuses } from './PhotoStatuses/PhotoStatuses';
 export { OnePhoto } from './OnePhoto/OnePhoto';
 export { Dialog } from './Dialog/Dialog';
 
+import { Share } from './Share/Share';
 import { OnePhoto } from './OnePhoto/OnePhoto';
 import { Tune } from './Tune';
 import { Copy } from './Copy/Copy';
@@ -29,4 +30,5 @@ export const Views = {
   Help,
   OnePhoto,
   Welcome,
+  Share,
 };

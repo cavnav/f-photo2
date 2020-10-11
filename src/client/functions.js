@@ -11,3 +11,7 @@ export function tempReducer (
     ...newState,
   };
 };
+
+export function getPhotoDataKey({date, photoSrc}) {
+  return `${date}-${photoSrc}`;
+}
