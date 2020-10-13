@@ -1,5 +1,6 @@
 export { ExitFromAlbum } from './ExitFromAlbum/ExitFromAlbum';
 export { ExitFromOnePhoto } from './ExitFromOnePhoto/ExitFromOnePhoto';
+export { ActionSharePhotos } from './ActionSharePhotos/ActionSharePhotos';
 export { SaveChanges } from './SaveChanges/SaveChanges';
 export { SelectAlbum } from './SelectAlbum';
 export { SavePhotosToFlash } from './SavePhotosToFlash/SavePhotosToFlash';
@@ -12,6 +13,7 @@ export { Help } from './Help';
 export { PhotoStatuses } from './PhotoStatuses/PhotoStatuses';
 export { OnePhoto } from './OnePhoto/OnePhoto';
 export { Dialog } from './Dialog/Dialog';
+export { Selector } from './Selector/Selector';
 
 import { Share } from './Share/Share';
 import { OnePhoto } from './OnePhoto/OnePhoto';

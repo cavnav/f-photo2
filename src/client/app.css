@@ -19,6 +19,11 @@ body {
   font-size: 24px;
 }
 
+.Print .file,
+.Share .file {
+  width: 100px;
+}
+
 #explorer {
   display: flex;
   height: 100%;

@@ -1,5 +1,8 @@
 import React from 'react';
 import { getPhotoDataKey } from '../../functions';
+import { Selector } from '../';
+
+const ADDRESSEES = ['Apples', 'Nails', 'Bananas', 'Helicopters'];
 
 export function Share({
   printState,
@@ -7,11 +10,14 @@ export function Share({
   return (
     <div className="Share">
       <div>2020-10-11</div>
-      { render() }
+      <Selector
+        options={ADDRESSEES}
+      ></Selector>
+      { renderItems() }
     </div>
   );
 
-  function render() {
+  function renderItems() {
     const toRender = Object.entries(printState)
       .map(([date, photo]) => {
       return (

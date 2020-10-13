@@ -4,6 +4,7 @@ import {
   SaveChanges,
   SavePhotosToFlash,
   AdditionalPanel,
+  ActionSharePhotos,
 } from "./components/index";
 
 class Action {
@@ -65,6 +66,12 @@ class AdditionalActions {
     className: 'SaveFotosToFlash',
     isActive: true,
     component: SavePhotosToFlash,
+  });
+  SharePhotos = new Action({
+    title: 'Послать',
+    className: 'ActionSharePhotos',
+    isActive: true,
+    component: ActionSharePhotos,
   });
 }
 

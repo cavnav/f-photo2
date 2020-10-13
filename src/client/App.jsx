@@ -6,6 +6,7 @@ import { additionalActions } from './constants';
 import { get as _get } from 'lodash';
 import { Channel } from './Channel';
 
+import 'antd/dist/antd.css';
 import './app.css';
 
 export function App(props) {
@@ -72,6 +73,9 @@ const appStateInit = {
     Share: {
       title: 'Отправить',
       isActive: true,
+      additionalActions: [
+        additionalActions.SharePhotos,
+      ],
     },
     Help: {
       title: '?',
