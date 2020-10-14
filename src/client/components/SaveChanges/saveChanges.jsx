@@ -36,10 +36,5 @@ SaveChanges.getReqProps = ({
   { parentProps, },
 );
 
-SaveChanges.getAPI = () => {
-  return {
-  }
-};
-
 const stateInit = {
 };

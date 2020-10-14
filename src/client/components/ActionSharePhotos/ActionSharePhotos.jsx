@@ -2,22 +2,21 @@ import React, { useState, useEffect, useReducer } from 'react';
 import './styles.css';
 
 export function ActionSharePhotos({
-  title,
-  className,
-  printState,
+  getItems,
 
   tempReducer,
-  saveToFlash,
+  $share,
 }) {
   const [state, setState] = useReducer(tempReducer, stateInit);
 
-  const onClick = React.useCallback(() => saveToFlash(), []);
+  const onClick = React.useCallback(() => $share(getItems()), []);
+
   return (
     <div 
       className={className} 
       onClick={onClick}      
     >
-      <div className='title'>{title}</div>  
+      <div className="ActionSharePhotos">Послать</div>  
     </div>
   );
 
@@ -26,30 +25,23 @@ export function ActionSharePhotos({
 }
 
 ActionSharePhotos.getReqProps = ({
-  channel,
-  parentProps,
+  crop,
 }) => {
 
-  return channel.crop({
-      parentProps: { 
-        title: 1,
-        className: 1,
-      },
-      channel: {
-        s: {
-          printState: 1,
-        },
-        API: {
-          comps: {
-            Print: {
-              saveToFlash: 1,
-            },
-          }
-        },
+  return crop({      
+    channel: {
+      API: {
+        comps: {
+          server: {
+            $share: 1,
+          },
+          Share: {
+            getItems: 1,
+          },
+        }
       },
     },
-    { parentProps, }
-  );
+  });
 };
 
 const stateInit = {

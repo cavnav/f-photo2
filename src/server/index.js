@@ -164,6 +164,10 @@ app.get('/api/imgRotate', (req, response) => {
   .catch(console.error);
 });
 
+app.post('/api/share', async(req, response) => {
+  console.log('share', req.body);
+});
+
 app.post('/api/saveFilesToFlash', async (req, response) => {
   response.send(req.body);
   clearUpUSB()

@@ -29,13 +29,17 @@ export class Channel {
     if (component.getReqProps) return {
       channel: this,
       tempReducer,
-      ...component.getReqProps({ channel: this, parentProps }),
+      ...component.getReqProps({ 
+          channel: this, 
+          crop: this.channel.crop.bind({ channel: this, parentProps }), 
+        }),
     };
   }
   crop(source, context, { stack, res = {} } = {}) {
   // По заданному пути возвращает соответствующие значения this.    
     if (stack && stack.length === 0) return res;
     if (!stack) {
+      // TODO убрать контекст из параметров, связав в .essentials с this.
       const contextUpd = context ? { channel: this, ...context } : this;
       stack = Object.entries(source).map(e => push(e, contextUpd[e[0]])); // add link to sourceVal.
     }

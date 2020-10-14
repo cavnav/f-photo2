@@ -2,7 +2,18 @@ import React from 'react';
 import { getPhotoDataKey } from '../../functions';
 import { Selector } from '../';
 
-const ADDRESSEES = ['Apples', 'Nails', 'Bananas', 'Helicopters'];
+const ADDRESSEES = [
+  'Мамао', 
+  'Мама', 
+  'Минаев', 
+  'Феликс',
+  'Любимая',
+  'Лариса',
+  'Вика',
+  'Женя',
+  'Эля',
+  'Польза',
+];
 
 export function Share({
   printState,
@@ -63,3 +74,27 @@ Share.getReqProps = ({
     }
   });
 }
+
+Share.getAPI = () => ({
+  getItems: () => ({
+    names: [
+      {
+        name: 'Любимая',
+        title: 'извини, тест!'
+      }, 
+      {
+        name: 'Мама',
+        title: 'тест, извини!'
+      },
+      {
+        name: 'Мамао',
+        title: 'тест, не обращай!'
+      },
+      {
+        name: 'Минаев',
+        title: 'тестирую!'
+      }
+    ],
+    sharedFolder: 'E:\\projects\\docsF-photo2\\shared',
+  }),
+});

@@ -20,8 +20,20 @@ export class AppServerAPI {
     return `/api/${url}`;
   }
 
+  // нельзя использовать function - declaration. В channel.addAPI контекст теряется.
+  $share = (params) => {
+    return fetch(
+      this.getFullUrl({ url: 'share' }),
+      new PostObjTmp({
+        body: params,
+      }),
+    );
+  }
+
   $saveFilesToFlash = (params) => {
-    return fetch(this.getFullUrl({ url: 'saveFilesToFlash' }), new PostObjTmp({ body: params }))
+    return fetch(
+      this.getFullUrl({ url: 'saveFilesToFlash' }), 
+      new PostObjTmp({ body: params }))
     .then(res => res.json());
   };
 

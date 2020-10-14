@@ -68,8 +68,6 @@ class AdditionalActions {
     component: SavePhotosToFlash,
   });
   SharePhotos = new Action({
-    title: 'Послать',
-    className: 'ActionSharePhotos',
     isActive: true,
     component: ActionSharePhotos,
   });
