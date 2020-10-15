@@ -30,9 +30,9 @@ export class Channel {
       channel: this,
       tempReducer,
       ...component.getReqProps({ 
-          channel: this, 
-          crop: this.channel.crop.bind({ channel: this, parentProps }), 
-        }),
+        channel: this, 
+        parentProps,
+      }),
     };
   }
   crop(source, context, { stack, res = {} } = {}) {

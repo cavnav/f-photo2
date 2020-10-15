@@ -10,7 +10,7 @@ export function ExitFromOnePhoto({
 
   return (
     <div 
-      className='ExitFromAlbum' 
+      className='ExitFromAlbum action' 
       onClick={onClick}      
     >
       <div className='title'>Вернуться к списку фото</div>  

@@ -13,10 +13,10 @@ export function ActionSharePhotos({
 
   return (
     <div 
-      className={className} 
+      className="ActionSharePhotos action" 
       onClick={onClick}      
     >
-      <div className="ActionSharePhotos">Послать</div>  
+      <div class="title">Послать</div>  
     </div>
   );
 
@@ -25,10 +25,10 @@ export function ActionSharePhotos({
 }
 
 ActionSharePhotos.getReqProps = ({
-  crop,
+  channel,
 }) => {
 
-  return crop({      
+  return channel.crop({      
     channel: {
       API: {
         comps: {

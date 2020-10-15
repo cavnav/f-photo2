@@ -10,6 +10,7 @@ const drivelist = require('drivelist');
 const find = require('find');
 
 const Jimp = require('jimp');
+const WhatsappBot = require('./scriptWhatsappBot');
 
 const app = express();
 
@@ -165,6 +166,12 @@ app.get('/api/imgRotate', (req, response) => {
 });
 
 app.post('/api/share', async(req, response) => {
+  response.send(req.body);
+  const whatsappBot = new WhatsappBot({
+    botParams: req.body,
+    onClose: () => { console.log('onClose') },
+  });
+  whatsappBot.run();
   console.log('share', req.body);
 });
 
