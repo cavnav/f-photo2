@@ -1,4 +1,5 @@
 const { fork } = require('child_process');
+const path = require('path');
 
 module.exports = class WhatsappBot {
   constructor({ botParams, ...controls }) {
@@ -7,18 +8,17 @@ module.exports = class WhatsappBot {
   }
 
   run() {
-
-    const child = fork('../../../whatsappBot/index.js', null, { silent: true });
-
+    const child = fork(path.resolve(__dirname, '../../../whatsappBot/index.js'));
 
     child.send(this.botParams); 
-      
+
+    return;
     child.stderr.on('data', (data) => console.log('err1: ', data));
 
     child.on('close', (code) => {
       console.log(`close, child process close all stdio with code ${code}`);
       child.unref();
-      this.onClose();
+      //this.onClose && this.onClose();
     });
 
     child.on('exit', (code, signal) => {

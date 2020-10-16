@@ -12,6 +12,31 @@ const find = require('find');
 const Jimp = require('jimp');
 const WhatsappBot = require('./scriptWhatsappBot');
 
+const n = new WhatsappBot({
+  botParams: {
+  names: [
+    {
+      name: 'Любимая',
+      title: 'извини, тест!'
+    }, 
+    {
+      name: 'Мама',
+      title: 'тест, извини!'
+    },
+    {
+      name: 'Мамао',
+      title: 'тест, не обращай!'
+    },
+    {
+      name: 'Минаев',
+      title: 'тестирую!'
+    }
+  ],
+  sharedFolder: 'E:\\projects\\docsF-photo2\\shared',
+}});
+
+n.run();
+
 const app = express();
 
 let state = {
