@@ -8,17 +8,23 @@ module.exports = class WhatsappBot {
   }
 
   run() {
-    const child = fork(path.resolve(__dirname, '../../../whatsappBot/index.js'));
+    const scriptPath = path.resolve(__dirname, '../../../whatsappBot/');
+    const child = fork(
+      `${scriptPath}\\index.js`,
+      null,
+      {
+        cwd: scriptPath,
+      }
+    );
 
     child.send(this.botParams); 
 
-    return;
-    child.stderr.on('data', (data) => console.log('err1: ', data));
+    child.on('error', (data) => console.log('err1: ', data));
 
     child.on('close', (code) => {
       console.log(`close, child process close all stdio with code ${code}`);
       child.unref();
-      //this.onClose && this.onClose();
+      this.onClose && this.onClose();
     });
 
     child.on('exit', (code, signal) => {
