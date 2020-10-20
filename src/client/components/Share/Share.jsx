@@ -18,10 +18,13 @@ const ADDRESSEES = [
 export function Share({
   printState,
 }) {
+  Share.selectedAddresses = React.useRef([]);
+
   return (
     <div className="Share">
       <div>2020-10-11</div>
       <Selector
+        selectedAddresses={Share.selectedAddresses.current}
         options={ADDRESSEES}
       ></Selector>
       { renderItems() }
@@ -77,24 +80,7 @@ Share.getReqProps = ({
 
 Share.getAPI = () => ({
   getItems: () => ({
-    names: [
-      {
-        name: 'Любимая',
-        title: 'извини, тест!'
-      }, 
-      {
-        name: 'Мама',
-        title: 'тест, извини!'
-      },
-      {
-        name: 'Мамао',
-        title: 'тест, не обращай!'
-      },
-      {
-        name: 'Минаев',
-        title: 'тестирую!'
-      }
-    ],
-    sharedFolder: 'E:\\projects\\docsF-photo2\\shared',
+    names: Share.selectedAddresses.current,
+    files: Share.files,
   }),
 });

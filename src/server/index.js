@@ -166,7 +166,10 @@ app.get('/api/imgRotate', (req, response) => {
 });
 
 app.post('/api/share', async(req, response) => {
+  console.log('dg', req.body);
   response.send(req.body);
+  return;
+  // copy all files in new folder.
   const whatsappBot = new WhatsappBot({
     botParams: req.body,
     onClose: () => { console.log('onClose') },

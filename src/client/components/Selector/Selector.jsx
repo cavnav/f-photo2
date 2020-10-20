@@ -9,6 +9,7 @@ export const Selector = React.memo(function ({
   hideOptions = true,
   options = [],
   placeHolder = 'Нажми, чтобы выбрать',
+  selectedAddresses,
 }) {
 
   const [state, setState] = React.useReducer(tempReducer, {
@@ -20,7 +21,11 @@ export const Selector = React.memo(function ({
   }, []);
   const onSelectAll = React.useCallback(() => setState({
     selectedItems: options,
-  }))
+  }));
+
+  React.useEffect(() => {
+    Object.assign(selectedAddresses, state.selectedItems);
+  }, [state.selectedItems]);
 
   const { selectedItems } = state;
   const filteredOptions = hideOptions ? options.filter(o => !selectedItems.includes(o)) : [];
