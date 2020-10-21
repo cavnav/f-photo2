@@ -15,10 +15,13 @@ const ADDRESSEES = [
   'Польза',
 ];
 
+// export const Share = React.memo(ShareFn);
+
 export function Share({
   printState,
 }) {
   Share.selectedAddresses = React.useRef([]);
+  Share.printState = printState;
 
   return (
     <div className="Share">
@@ -81,6 +84,6 @@ Share.getReqProps = ({
 Share.getAPI = () => ({
   getItems: () => ({
     names: Share.selectedAddresses.current,
-    files: Share.files,
+    printState: JSON.stringify(Share.printState),
   }),
 });

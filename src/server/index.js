@@ -4,7 +4,7 @@ const bodyParser = require('body-parser');
 
 const fs = require('fs-extra');
 
-const { Worker } = require('worker_threads');
+const path = require('path');
 const usbDetect = require('usb-detection');
 const drivelist = require('drivelist');
 const find = require('find');
@@ -35,6 +35,36 @@ app.use(express.static('public'));
 app.use(express.static('dist'));
 
 app.use(bodyParser.json());
+
+app.post('/api/share', async(req, response) => {
+  console.log('dg', req.body);
+  response.send(req.body);
+  
+  (async (res) => {
+    const { printState } = req.body;
+    const printStateParsed = JSON.parse(printState);
+    const [[ byDate, filesByDate ]] = Object.entries(printState);
+    console.log(Object.entries(printStateParsed));
+    const files = Object.keys(filesByDate);
+    const destFolder = path.resolve(__dirname, '../../../shared/', byDate);
+    for (let index = 0; index < files.length; index++) {
+      const fileFrom = `${state.rootDir}\\${files[index]}`;
+      const fileTo = `${destFolder}\\${path.basename(fileFrom)}`;
+      await fs.copy(fileFrom, fileTo);
+    }
+  })()
+  .then(res => setState({
+    copyProgress: 100, 
+  }))
+
+  return;
+
+  const whatsappBot = new WhatsappBot({
+    botParams: req.body,
+    onClose: () => { console.log('onClose') },
+  });
+  whatsappBot.run();
+});
 
 app.get('/api/getUsbDevices', (req, res) => {
   (async () => {
@@ -165,18 +195,6 @@ app.get('/api/imgRotate', (req, response) => {
   .catch(console.error);
 });
 
-app.post('/api/share', async(req, response) => {
-  console.log('dg', req.body);
-  response.send(req.body);
-  return;
-  // copy all files in new folder.
-  const whatsappBot = new WhatsappBot({
-    botParams: req.body,
-    onClose: () => { console.log('onClose') },
-  });
-  whatsappBot.run();
-});
-
 app.post('/api/saveFilesToFlash', async (req, response) => {
   response.send(req.body);
   clearUpUSB()
@@ -196,8 +214,6 @@ app.post('/api/saveFilesToFlash', async (req, response) => {
     copyProgress: 100, 
   }))
   .catch(console.error);
-  // Создать папки по количеству и скопировать соответственно файлы.
-  // Извлечь флешку.
 });
 
 app.post('/api/copyPhotos', (req, res) => {
