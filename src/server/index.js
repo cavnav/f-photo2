@@ -40,13 +40,11 @@ app.post('/api/share', async(req, response) => {
   console.log('dg', req.body);
   response.send(req.body);
   
-  (async (res) => {
-    const { printState } = req.body;
-    const printStateParsed = JSON.parse(printState);
-    const [[ byDate, filesByDate ]] = Object.entries(printState);
-    console.log(Object.entries(printStateParsed));
-    const files = Object.keys(filesByDate);
-    const destFolder = path.resolve(__dirname, '../../../shared/', byDate);
+  (async () => {
+    const { filesMeta, date } = req.body;
+    console.log(1111, filesMeta);
+    const files = Object.keys(filesMeta);
+    const destFolder = path.resolve(__dirname, '../../../shared/', date);
     for (let index = 0; index < files.length; index++) {
       const fileFrom = `${state.rootDir}\\${files[index]}`;
       const fileTo = `${destFolder}\\${path.basename(fileFrom)}`;

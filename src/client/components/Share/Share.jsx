@@ -82,8 +82,26 @@ Share.getReqProps = ({
 }
 
 Share.getAPI = () => ({
-  getItems: () => ({
-    names: Share.selectedAddresses.current,
-    printState: JSON.stringify(Share.printState),
-  }),
+  getItems: () => {
+    const {
+      date,
+      filesMeta,
+    } = flatPrintState(Share);
+
+    return {
+      names: Share.selectedAddresses.current,
+      filesMeta,
+      date,
+    };
+  }
 });
+
+function flatPrintState({
+  printState,
+}) {
+  const [[date, filesMeta]] = Object.entries(printState);
+  return {
+    date,
+    filesMeta,
+  };
+}
