@@ -4,6 +4,7 @@ const path = require('path');
 module.exports = class WhatsappBot {
   constructor({ botParams, ...controls }) {
     this.botParams = botParams;
+    console.log('botParams', this.botParams);
     Object.assign(this, controls);
   }
 

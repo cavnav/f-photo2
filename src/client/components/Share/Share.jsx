@@ -1,6 +1,7 @@
 import React from 'react';
-import { getPhotoDataKey } from '../../functions';
+import { getPhotoDataKey, tempReducer } from '../../functions';
 import { Selector } from '../';
+import { Input } from 'antd';
 
 const ADDRESSEES = [
   'Мамао', 
@@ -8,7 +9,7 @@ const ADDRESSEES = [
   'Минаев', 
   'Феликс',
   'Любимая',
-  'Лариса',
+  'ГорячеваЛариса',
   'Вика',
   'Женя',
   'Эля',
@@ -23,13 +24,31 @@ export function Share({
   Share.selectedAddresses = React.useRef([]);
   Share.printState = printState;
 
+  const [state, setState] = React.useReducer(tempReducer, getInitState());
+
+  const onChangeShareTitle = React.useCallback((shareTitle) => {
+    setState({
+      shareTitle,
+    });
+  }, []);
+
   return (
     <div className="Share">
       <div>2020-10-11</div>
+      <div>Кому</div>
       <Selector
         selectedAddresses={Share.selectedAddresses.current}
         options={ADDRESSEES}
       ></Selector>
+      <div>Сообщение</div>
+      <div>
+        <Input 
+          placeholder="подпиши фото"
+          allowClear
+          onChange={onChangeShareTitle}
+          value={state.shareTitle}
+        ></Input>
+      </div>
       { renderItems() }
     </div>
   );
@@ -82,18 +101,13 @@ Share.getReqProps = ({
 }
 
 Share.getAPI = () => ({
-  getItems: () => {
-    const {
-      date,
-      filesMeta,
-    } = flatPrintState(Share);
-
-    return {
-      names: Share.selectedAddresses.current,
-      filesMeta,
-      date,
-    };
-  }
+  getItems: () => ({
+    names: Share.selectedAddresses.current.map((item) => ({
+      name: item,
+      title: 'Извини, тест',
+    })),
+    ...flatPrintState(Share),
+  })
 });
 
 function flatPrintState({
@@ -102,6 +116,12 @@ function flatPrintState({
   const [[date, filesMeta]] = Object.entries(printState);
   return {
     date,
-    filesMeta,
+    files: Object.keys(filesMeta),
+  };
+}
+
+function getInitState() {
+  return {
+    shareTitle: '',
   };
 }

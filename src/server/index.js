@@ -40,25 +40,26 @@ app.post('/api/share', async(req, response) => {
   console.log('dg', req.body);
   response.send(req.body);
   
-  (async () => {
-    const { filesMeta, date } = req.body;
-    console.log(1111, filesMeta);
-    const files = Object.keys(filesMeta);
-    const destFolder = path.resolve(__dirname, '../../../shared/', date);
+  const sharedFolder = path.resolve(__dirname, '../../../shared/', req.body.date);
+  await (async () => {
+    const { files } = req.body;
+    console.log(1111, files);    
     for (let index = 0; index < files.length; index++) {
       const fileFrom = `${state.rootDir}\\${files[index]}`;
-      const fileTo = `${destFolder}\\${path.basename(fileFrom)}`;
+      const fileTo = `${sharedFolder}\\${path.basename(fileFrom)}`;
       await fs.copy(fileFrom, fileTo);
     }
-  })()
-  .then(res => setState({
+  })();
+  
+  setState({
     copyProgress: 100, 
-  }))
-
-  return;
+  });
 
   const whatsappBot = new WhatsappBot({
-    botParams: req.body,
+    botParams: {
+      names: req.body.names,
+      sharedFolder,
+    },
     onClose: () => { console.log('onClose') },
   });
   whatsappBot.run();
