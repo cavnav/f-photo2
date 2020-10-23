@@ -21,14 +21,23 @@ const ADDRESSEES = [
 export function Share({
   printState,
 }) {
-  Share.selectedAddresses = React.useRef([]);
-  Share.printState = printState;
+  const [state, setState] = React.useReducer(tempReducer, getInitState({
+    printState,
+  }));
 
-  const [state, setState] = React.useReducer(tempReducer, getInitState());
+  Share.state = state;
 
-  const onChangeShareTitle = React.useCallback((shareTitle) => {
+  const onChangeFilesTitle = React.useCallback((e) => {
     setState({
-      shareTitle,
+      filesTitle: e.target.value,
+    });
+  }, []);
+
+  const onChangeAddresses = React.useCallback(({
+    selectedItems,
+  }) => {
+    setState({
+      addresses: selectedItems,
     });
   }, []);
 
@@ -37,7 +46,7 @@ export function Share({
       <div>2020-10-11</div>
       <div>Кому</div>
       <Selector
-        selectedAddresses={Share.selectedAddresses.current}
+        onChange={onChangeAddresses}
         options={ADDRESSEES}
       ></Selector>
       <div>Сообщение</div>
@@ -45,8 +54,8 @@ export function Share({
         <Input 
           placeholder="подпиши фото"
           allowClear
-          onChange={onChangeShareTitle}
-          value={state.shareTitle}
+          onChange={onChangeFilesTitle}
+          value={state.filesTitle}
         ></Input>
       </div>
       { renderItems() }
@@ -54,7 +63,7 @@ export function Share({
   );
 
   function renderItems() {
-    const toRender = Object.entries(printState)
+    const toRender = Object.entries(state.printState)
       .map(([date, photo]) => {
       return (
         <>
@@ -102,11 +111,11 @@ Share.getReqProps = ({
 
 Share.getAPI = () => ({
   getItems: () => ({
-    names: Share.selectedAddresses.current.map((item) => ({
+    names: Share.state.addresses.map((item) => ({
       name: item,
-      title: 'Извини, тест',
+      title: Share.state.filesTitle,
     })),
-    ...flatPrintState(Share),
+    ...flatPrintState(Share.state),
   })
 });
 
@@ -120,8 +129,11 @@ function flatPrintState({
   };
 }
 
-function getInitState() {
+function getInitState({
+  printState,
+}) {
   return {
-    shareTitle: '',
+    printState: { ...printState },
+    filesTitle: '',
   };
 }

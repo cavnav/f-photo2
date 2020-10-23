@@ -9,7 +9,7 @@ export const Selector = React.memo(function ({
   hideOptions = true,
   options = [],
   placeHolder = 'Нажми, чтобы выбрать',
-  selectedAddresses,
+  onChange = () => {},
 }) {
 
   const [state, setState] = React.useReducer(tempReducer, {
@@ -24,7 +24,9 @@ export const Selector = React.memo(function ({
   }));
 
   React.useEffect(() => {
-    Object.assign(selectedAddresses, state.selectedItems);
+    onChange({
+      selectedItems: state.selectedItems,
+    });
   }, [state.selectedItems]);
 
   const { selectedItems } = state;
