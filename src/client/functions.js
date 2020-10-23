@@ -19,6 +19,6 @@ export function tempReducer (
   };
 };
 
-export function getPhotoDataKey({date, photoSrc}) {
-  return `${date}-${photoSrc}`;
+export function getFileDateSrcKey({date, fileSrc}) {
+  return `${date}-${fileSrc}`;
 }

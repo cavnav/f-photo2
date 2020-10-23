@@ -1,5 +1,5 @@
 import React from 'react';
-import { getPhotoDataKey, tempReducer } from '../../functions';
+import { getFileDateSrcKey, tempReducer } from '../../functions';
 import { Selector } from '../';
 import { Input } from 'antd';
 
@@ -16,8 +16,6 @@ const ADDRESSEES = [
   'Польза',
 ];
 
-// export const Share = React.memo(ShareFn);
-
 export function Share({
   printState,
 }) {
@@ -26,6 +24,14 @@ export function Share({
   }));
 
   Share.state = state;
+
+  const onRemoveFile = React.useCallback((e) => {
+    const fileElement = e.target;
+    const printStateUpd = state.printState.
+    setState({
+      printState: printStateUpd,
+    })
+  }, []);
 
   const onChangeFilesTitle = React.useCallback((e) => {
     setState({
@@ -69,23 +75,24 @@ export function Share({
         <>
           <div className="PrintItems">
             {
-              Object.entries(photo).map(([photoSrc, status]) => { 
-                const key = getPhotoDataKey({date, photoSrc});         
+              Object.entries(photo).map(([fileSrc, status]) => { 
+                const key = getFileDateSrcKey({date, fileSrc});         
                 return <div 
                   className="rowData"
                   key={key}
                   date={date}
-                  photosrc={photoSrc}
+                  photosrc={fileSrc}
                 >
                   <div
                     className='fitPreview100 file marginRight10'
-                    style={{ 'backgroundImage': `url(${photoSrc})` }}
+                    style={{ 'backgroundImage': `url(${fileSrc})` }}
                   >
                   </div>              
                   <input 
                     type="button" 
+                    keyid={key}
                     className="marginRight10" 
-                    onClick={() => {}} 
+                    onClick={onRemoveFile} 
                     value="Удалить" />
                 </div>
               })
@@ -122,18 +129,18 @@ Share.getAPI = () => ({
 function flatPrintState({
   printState,
 }) {
-  const [[date, filesMeta]] = Object.entries(printState);
   return {
     date,
-    files: Object.keys(filesMeta),
+    files: Object.keys(printState),
   };
 }
 
 function getInitState({
   printState,
 }) {
+  const [[date, filesMeta]] = Object.entries(printState);
   return {
-    printState: { ...printState },
+    printState: { ...filesMeta },
     filesTitle: '',
   };
 }
