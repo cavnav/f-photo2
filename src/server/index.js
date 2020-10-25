@@ -39,13 +39,14 @@ app.use(bodyParser.json());
 app.post('/api/share', async(req, response) => {
   console.log('dg', req.body);
   response.send(req.body);
+  const date = getCurMoment();
   
-  const sharedFolder = path.resolve(__dirname, '../../../shared/', req.body.date);
+  const sharedFolder = path.resolve(__dirname, '../../../shared/', date);
   await (async () => {
-    const { files } = req.body;
-    console.log(1111, files);    
+    const { filesSrc } = req.body;
+    console.log(1111, filesSrc);    
     for (let index = 0; index < files.length; index++) {
-      const fileFrom = `${state.rootDir}\\${files[index]}`;
+      const fileFrom = `${state.rootDir}\\${filesSrc[index]}`;
       const fileTo = `${sharedFolder}\\${path.basename(fileFrom)}`;
       await fs.copy(fileFrom, fileTo);
     }

@@ -17,20 +17,29 @@ const ADDRESSEES = [
 ];
 
 export function Share({
-  printState,
+  PhotoStatusesAPI,
 }) {
   const [state, setState] = React.useReducer(tempReducer, getInitState({
-    printState,
+    filesWithStatuses: PhotoStatusesAPI.getFilesWithStatuses(),
   }));
 
-  Share.state = state;
+  Object.assign(
+    Share,
+    getFilesSrc,
+    getFilesTitle,
+    getAdresses,
+  );
 
-  const onRemoveFile = React.useCallback((e) => {
+  const onCancelShare = React.useCallback((e) => {
     const fileElement = e.target;
-    const printStateUpd = state.printState.
+    const fileSrc = fileElement.getAttribute('keyid');
+    const file = state.files[fileSrc];
+    file.setToShare({
+      flag: false,
+    });
     setState({
-      printState: printStateUpd,
-    })
+      forceUpdate: !state.forceUpdate,
+    });
   }, []);
 
   const onChangeFilesTitle = React.useCallback((e) => {
@@ -69,40 +78,47 @@ export function Share({
   );
 
   function renderItems() {
-    const toRender = Object.entries(state.printState)
-      .map(([date, photo]) => {
-      return (
-        <>
-          <div className="PrintItems">
-            {
-              Object.entries(photo).map(([fileSrc, status]) => { 
-                const key = getFileDateSrcKey({date, fileSrc});         
-                return <div 
-                  className="rowData"
-                  key={key}
-                  date={date}
-                  photosrc={fileSrc}
+    return (
+      <div className="PrintItems">
+        {
+          Object.entries(state.files)
+          .map(([fileSrc, { toShare }]) => {
+            return (          
+              <div 
+                className="rowData"
+                key={fileSrc}
+                photosrc={fileSrc}
+              >
+                <div
+                  className='fitPreview100 file marginRight10'
+                  style={{ 
+                    'backgroundImage': `url(${fileSrc})`,
+                    'opactity': toShare === true ? 1 : 0.3, 
+                  }}
                 >
-                  <div
-                    className='fitPreview100 file marginRight10'
-                    style={{ 'backgroundImage': `url(${fileSrc})` }}
-                  >
-                  </div>              
-                  <input 
-                    type="button" 
-                    keyid={key}
-                    className="marginRight10" 
-                    onClick={onRemoveFile} 
-                    value="Удалить" />
-                </div>
-              })
-            }
-          </div>
-        </>
-      );
-    });
+                </div>              
+                <input 
+                  type="button" 
+                  keyid={fileSrc}
+                  className="marginRight10" 
+                  onClick={onRemoveFile} 
+                  value={toShare === true ? "Отменить" : "Подтвердить"} />
+              </div>
+            )
+          })
+        }
+      </div>
+    );
+  }
 
-    return toRender;
+  function getFilesSrc() {
+    return Object.keys(state.filesWithStatuses);
+  } 
+  function getFilesTitle() {
+    return state.filesTitle;
+  }
+  function getAdresses() {
+    return state.addresses;
   }
 }
 
@@ -110,37 +126,31 @@ Share.getReqProps = ({
   channel,
 }) => {
   return channel.crop({
-    s: {
-      printState: 1,
-    }
+    API: {
+      comps: {
+        PhotoStatuses: 'PhotoStatusesAPI',
+      },
+    },
   });
 }
 
 Share.getAPI = () => ({
   getItems: () => ({
-    names: Share.state.addresses.map((item) => ({
+    names: Share.getAddresses().map((item) => ({
       name: item,
-      title: Share.state.filesTitle,
+      title: Share.getFilesTitle(),
     })),
-    ...flatPrintState(Share.state),
+    files: Share.getFilesSrc(),
   })
 });
 
-function flatPrintState({
-  printState,
-}) {
-  return {
-    date,
-    files: Object.keys(printState),
-  };
-}
-
 function getInitState({
-  printState,
+  filesWithStatuses,
 }) {
-  const [[date, filesMeta]] = Object.entries(printState);
   return {
-    printState: { ...filesMeta },
+    filesWithStatuses,
     filesTitle: '',
+    addresses: [],
+    forceUpdate: false,
   };
 }

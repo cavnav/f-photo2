@@ -1,73 +1,73 @@
 import React from 'react';
-import { PhotoStatusIcons } from './constants';
+import { 
+  PhotoStatusIcons,
+  photoStatusIconsEntity, 
+} from './constants';
 
 import { set as _set, get as _get } from 'lodash';
 
 import './styles.css';
+refimport { tempReducer } from '../../functions';
 
 export function PhotoStatuses(props) {
   const { 
-    curDate,
     curPhoto, 
-    printState,
-    setPrintState,
-    onRenderCb,
   } = props;
 
-  const [ignored, forceUpdate] = React.useReducer(x => !x, false);
+  Object.assign(PhotoStatuses, {
+    changeStatus,
+    getFilesWithStatuses,
+  });
 
-  React.useEffect(onRender);
+  const [state, setState] = React.useReducer(tempReducer, getStateInit());
 
-  return getRender();
+  const statuses = _get(state.filesWithStatuses, [curPhoto]);
 
-  //--------------------------------------------------------------------------
-  function getRender() {
-    const statuses = _get(printState, [curDate, curPhoto]);
-    return (statuses === undefined) ? null : (
-      <div className="PhotoStatusIcons">
-        { Object.entries(statuses)
-          .filter(([status, count]) => count)
-          .map(([status]) => (
-            <img key={status} width="32" height="32" src={`${status}.png`} />
-          )) 
-        }
-      </div>
-    );
-  }
+  return (statuses === undefined) ? null : (
+    <div className="PhotoStatusIcons">
+      { Object.entries(statuses)
+        .filter(([status, flag]) => flag)
+        .map(([status]) => (
+          <img key={status} width="32" height="32" src={`${status}.png`} />
+        )) 
+      }
+    </div>
+  );
 
-  function onRender() {
-    onRenderCb({
-      changeStatusPhotoPrint,
-    });  
-  }
+  function changeStatus({
+    actionName,
+  }) {    
+    const path = [curPhoto];
+    const statusUpd = _get(state.filesWithStatuses, path, new PhotoStatusIcons());
+    statusUpd[actionName]();
 
-  function changeStatusPhotoPrint() {    
-    // Изменяю объект, чтобы не было рендера родителей.
-    let printStateUpd = printState;
-    const path = [curDate, curPhoto];
-    const statusUpd = _get(printStateUpd, path, new PhotoStatusIcons());
-    statusUpd.toPrint = statusUpd.toPrint === 0 ? 1 : 0;
-    setPrintState({
-      setItSilent,
+    setState({
+      forceUpdate: !state.forceUpdate,
     });
+  }
 
-    forceUpdate();
+  function getStateInit() {
+    return {
+      forceUpdate: false,
+      filesWithStatuses: {},
+    };
+  }
 
-    // ------------------------------
-    
-    function setItSilent() {
-      _set(this, path, statusUpd);
-    }
+  function getFilesWithStatuses() {
+    return state.filesWithStatuses;
   }
 }
 
-PhotoStatuses.getReqProps = ({ channel }) => {
-  return channel.crop({
-    s: {
-      printState: 1,
+PhotoStatuses.getAPI = () => {
+  return {
+    changeShareStatus: () => PhotoStatuses.changeStatus({
+      actionName: photoStatusIconsEntity.setToShare.name,
+    }), 
+    changePrintStatus: () => PhotoStatuses.changeStatus({
+      actionName: photoStatusIconsEntity.setToPrint.name,
+    }), 
+    getFilesWithStatuses: () => {
+      return PhotoStatuses.getFilesWithStatuses();
     },
-    d: {
-      setPrintState: 1,
-    },
-  });
+  }
 };

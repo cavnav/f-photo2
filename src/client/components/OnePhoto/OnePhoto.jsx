@@ -12,7 +12,7 @@ export function OnePhoto({
   files,
   curPhotoInd,
   server,
-
+  PhotoStatusesAPI,
   setBrowseState,
 }) {
   
@@ -30,8 +30,6 @@ export function OnePhoto({
   const [forceUpdated, forceUpdate] = React.useReducer(x => !x);
 
   const imgRef = React.useRef(null);
-
-  let photoStatusesApi;
 
   React.useEffect(addKeyDownListener);
   React.useEffect(fitCurPhotoSize, [state.curPhotoInd]);
@@ -68,9 +66,7 @@ export function OnePhoto({
         />
         <PhotoStatuses 
           { ...channel.essentials(PhotoStatuses) }
-          curDate={state.curDate}
           curPhoto={state.curPhoto}
-          onRenderCb={onRenderPhotoStatuses}
         />
         <Help
           toRender={toRenderHelp()}
@@ -104,10 +100,6 @@ export function OnePhoto({
       Пробел - сохранить изменения.<br></br>
 
     </div>
-  }
-
-  function onRenderPhotoStatuses(api) {
-    photoStatusesApi = api;
   }
 
   function addKeyDownListener() {
@@ -148,8 +140,12 @@ export function OnePhoto({
         stateUpd.isDialogRemove = true;
         break;
 
+      case 13: // enter.
+        PhotoStatusesAPI.changeShareStatus();
+        break;
+
       case 32:  // Space
-        photoStatusesApi.changeStatusPhotoPrint(); 
+        PhotoStatusesAPI.changePrintStatus(); 
 
         break; 
 
@@ -345,7 +341,8 @@ OnePhoto.getReqProps = ({ channel }) => {
     API: {
       comps: {
         server: 1,
-      }
+        PhotoStatuses: 'PhotoStatusesAPI',
+      },
     }
   }); 
   return ch;

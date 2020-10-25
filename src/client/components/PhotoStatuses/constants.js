@@ -1,11 +1,13 @@
 export class PhotoStatusIcons {  
-  toPrint = 0;
-  toShare = 0;
+  toPrint = false;
+  toShare = false;
   
-  setToPrint({flag}) {
-    this.toPrint = flag;
+  setToPrint({ flag }) {
+    this.toPrint = flag === false ? true : false;
   }
-  setToShare({flag}) {
-    this.toShare = flag;
+  setToShare({ flag }) {
+    this.toShare = flag === false ? true : false;
   }
  };
+
+ export const photoStatusIconsEntity = new PhotoStatusIcons();

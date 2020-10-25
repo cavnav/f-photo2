@@ -15,7 +15,6 @@ export function App(props) {
   const channel = React.useMemo(() => new Channel({ s, d }, []));
 
   [s.appState, d.setAppState] = useReducer(tempReducer, appStateInit);
-  [s.printState, d.setPrintState] = useReducer(tempReducer, printInit);
   [s.photosState, d.setPhotosState] = useReducer(tempReducer, photosStateInit);
   [s.browseState, d.setBrowseState] = useReducer(tempReducer, browseStateInit);
   [s.ignored, d.forceUpdate] = useReducer(x => !x, true);
@@ -82,15 +81,6 @@ const appStateInit = {
       isActive: true,
     }
   },
-};
-
-const printInit = {
-  // "2020-02-21": {
-  //   "br/20170107_112131.jpg": {
-  //     toPrint: 1,
-  //     toShare: 0,
-  //   }
-  // }
 };
 
 const photosStateInit = {

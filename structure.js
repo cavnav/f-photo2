@@ -22,6 +22,15 @@ app = {
 
     },
     Share: {
+      state: {
+        forceUpdate: false,
+        printState: {
+          "br/20170107_112131.jpg": { // путь до файла.
+            toPrint: 1, // запросы.
+            toShare: 0,
+          },
+        },
+      },
       API: {
         getItems: {
           names: [
@@ -37,12 +46,10 @@ app = {
       }
 
     },
-    printState: {
-      "2020-02-21": { // дата создания списка печати.
-        "br/20170107_112131.jpg": { // путь до файла.
-          toPrint: 1, // запросы.
-          toShare: 0,
-        }
+    FileStatuses: {
+      "br/20170107_112131.jpg": { // путь до файла.
+        toPrint: false, 
+        toShare: false,
       }
     },
     photoState: {
