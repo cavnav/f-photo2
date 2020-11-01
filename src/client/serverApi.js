@@ -87,13 +87,15 @@ export class AppServerAPI {
     });
   }
 
-  copyPhotos = () => {
-    return fetch(fullUrl, {
+  $copyPhotos = () => {
+    return fetch(this.getFullUrl({
+      url: 'copyPhotos',
+    }), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json;charset=utf-8'
       },
-      body: JSON.stringify({ userDirName })
+      body: JSON.stringify({})
     }).then(res => res.json());
   }
 

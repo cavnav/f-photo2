@@ -7,10 +7,7 @@ import './styles.css';
 
 export function Copy({
   setAppState,
-  
-  $getUsbDevices,
-  $copyPhotos,
-  $getNewPhotos,
+  serverAPI,
 }) {
   
   const [state, setState] = useState(stateInit);
@@ -102,12 +99,12 @@ export function Copy({
   }
 
   function $waitUSBconnectWrap() {
-    return $getUsbDevices()
+    return serverAPI.$getUsbDevices()
     .then(res => res.driveLetter);
   }
 
   function $getNewPhotosWrap() {
-    return $getNewPhotos()
+    return serverAPI.$getNewPhotos()
       .then((res) => {
         setState({
           ...state,
@@ -117,7 +114,7 @@ export function Copy({
   }
 
   function $onCopyWrap() {
-    return $copyPhotos({
+    return serverAPI.$copyPhotos({
       userDirName: '',
     }).then((res) => {
       $checkCopyProgressWrap();
@@ -125,10 +122,10 @@ export function Copy({
   }
 
   function $checkCopyProgressWrap() {
-    $checkCopyProgress()
+    serverAPI.$checkCopyProgress()
       .then((res) => {
         const isCopyCompleted = res.copyProgress === 100;
-        setTimeout(() => (isCopyCompleted ? null : checkCopyProgress()), 500);
+        setTimeout(() => (isCopyCompleted ? null : serverAPI.$checkCopyProgress()), 500);
         setState({
           ...state,
           copyProgress: res.copyProgress,
@@ -145,11 +142,7 @@ Copy.getReqProps = ({ channel }) => {
     },
     API: {
       comps: {
-        server: {
-          getUsbDevices: '$getUsbDevices',
-          copyPhotos: '$copyPhotos',
-          getNewPhotos: '$getNewPhotos',
-        }
+        server: 'serverAPI',
       }
     }
   })

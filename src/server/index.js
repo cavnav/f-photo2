@@ -24,6 +24,7 @@ let state = {
   rootDir: getRootDir(),
   curDir: getRootDir(),
   usbDriveLetter: undefined,
+
 };
 
 let timeoutIdImg
@@ -104,9 +105,12 @@ app.get('/api/getNewPhotos', async (req, res) => {
   }
 
   findFiles({
+    path: state.usbDriveLetter,
     doNeedTopLevelSearch: false,
     doNeedFullPath: true,
     onResolve({ files }) {
+
+      console.log(111, files);
       setState({
         newPhotos: [...files],
         countNewPhotos: files.length,
@@ -217,17 +221,14 @@ app.post('/api/saveFilesToFlash', async (req, response) => {
 });
 
 app.post('/api/copyPhotos', (req, res) => {
-  // const { userDirName } = req.body;
   const userDirName = getCurMoment();
-  const destDir = `${state.rootDir}${userDirName}/`;
+  const destDir = `${state.rootDir}\\unparsed\\${userDirName}\\`;
 
   res.send(req.body);
 
   if (fs.existsSync(destDir)) {
     return;
   }
-
-  fs.mkdirSync(destDir);
 
   setState({
     copyProgress: 0,
@@ -237,35 +238,27 @@ app.post('/api/copyPhotos', (req, res) => {
   startCopy({ photos: state.newPhotos, destDir });
 
   function startCopy({ photos, destDir }) {
-    photos.length && setTimeout(() => {
+    photos.length && setTimeout(async () => {
       const [photo] = photos;
       const photoName = getFileName({ file: photo });
       const destPath = `${destDir}${photoName}`;
 
-      fs.copyFile(photo, destPath, (err) => {
-        if (err) throw err;
+      await fs.copy(photo, destPath);
 
-        const countCopiedPhotosUpd = state.countCopiedPhotos + 1;
+      const countCopiedPhotosUpd = state.countCopiedPhotos + 1;
         
-        const copyProgress = calcCopyProgress({ countCopiedPhotos: countCopiedPhotosUpd });
-        
-        if (copyProgress === 100) {
-          setTimeout(() => clearUpUSB.then(res => {
-            setState({
-              copyProgress,
-              countCopiedPhotos: countCopiedPhotosUpd,
-            });
-          }));
-          return;
-        }
+      const copyProgress = calcCopyProgress({ countCopiedPhotos: countCopiedPhotosUpd });
 
-        setState({
-          copyProgress,
-          countCopiedPhotos: countCopiedPhotosUpd,
-        });
-
-        startCopy({ photos: photos.slice(1), destDir });
+      setState({
+        copyProgress,
+        countCopiedPhotos: countCopiedPhotosUpd,
       });
+
+      if (copyProgress !== 100) {
+        startCopy({ photos: photos.slice(1), destDir });
+      } else {
+        await clearUpUSB();
+      }      
     });
   }
 });
@@ -366,6 +359,7 @@ function getFileName({ file }) {
 }
 
 function getRootDir() {
+  console.log(222, path.resolve(__dirname, '../../'));
   let rootDir;
   if(process.env.NODE_ENV === 'production') {
     rootDir = '..\\f-photo';
