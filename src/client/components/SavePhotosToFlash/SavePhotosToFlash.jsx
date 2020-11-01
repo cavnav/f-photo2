@@ -4,14 +4,13 @@ import './styles.css';
 export function SavePhotosToFlash({
   title,
   className,
-  printState,
 
   tempReducer,
-  saveToFlash,
+  PrintAPI,
 }) {
   const [state, setState] = useReducer(tempReducer, stateInit);
 
-  const onClick = React.useCallback(() => saveToFlash(), []);
+  const onClick = React.useCallback(() => PrintAPI.saveToFlash(), []);
   return (
     <div 
       className={className} 
@@ -36,14 +35,9 @@ SavePhotosToFlash.getReqProps = ({
         className: 1,
       },
       channel: {
-        s: {
-          printState: 1,
-        },
         API: {
           comps: {
-            Print: {
-              saveToFlash: 1,
-            },
+            Print: 'PrintAPI',
           }
         },
       },

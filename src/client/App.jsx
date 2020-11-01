@@ -10,9 +10,9 @@ import 'antd/dist/antd.css';
 import './app.css';
 
 export function App(props) {
-  const d = {}; // dispatch.
-  const s = {}; // states.
-  const channel = React.useMemo(() => new Channel({ s, d }, []));
+  const [d] = React.useState({}); // dispatch.
+  const [s] = React.useState({}); // states.
+  const channel = React.useMemo(() => new Channel({ s, d }), []);
 
   [s.appState, d.setAppState] = useReducer(tempReducer, appStateInit);
   [s.photosState, d.setPhotosState] = useReducer(tempReducer, photosStateInit);

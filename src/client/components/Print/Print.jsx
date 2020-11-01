@@ -8,9 +8,10 @@ import { tempReducer } from '../../functions';
 import { createSteps } from './createSteps';
 
 import './styles.css';
+import { PhotoStatuses } from '../PhotoStatuses/PhotoStatuses';
 
 const Copying = React.memo(function ({
-  printState,
+  filesToPrint,
   onCopyCompleted = () => {},
   onCopyCanceled = () => {},
   $checkCopyProgress,
@@ -60,12 +61,17 @@ const Copying = React.memo(function ({
     };
   }
 
-  function getDataForCopyFiles(printState) {
-    const [filesByDate] = Object.values(printState)
-    .map((filesByDate) => Object.values(filesByDate));
+  function getDataForCopyFiles({
+    filesToPrint,
+  }) {
     return {
-      folders: new Set(filesByDate.map((file) => file.toPrint)),
-      files: Object.values(printState)[0],
+      files: Object.entries(filesToPrint)
+      .reduce((res, [fileSrc, cntCopies]) => { 
+          res[fileSrc] = cntCopies;
+          return res; 
+        }, 
+        {}
+      ),
     };
   };
 
@@ -76,7 +82,9 @@ const Copying = React.memo(function ({
     
 
     $saveFilesToFlash(
-      getDataForCopyFiles(printState)    
+      getDataForCopyFiles({
+        filesToPrint,
+      })    
     )
     .then(checkCopyProgress);
 
@@ -97,14 +105,24 @@ const Copying = React.memo(function ({
 });
 
 export function Print({
-  printState,
+  PhotoStatusesAPI,
   tempReducer,
   $getUsbDevices,
   $checkCopyProgress,
   $saveFilesToFlash
 }) {
 
-  const [state, setState] = React.useReducer(tempReducer, stateInit);
+  const filesToPrint = React.useMemo(() => {
+    return Object.entries(PhotoStatusesAPI.getFilesWithStatuses())
+    .reduce((res, [key, val]) => {
+      res[key] = val.toPrint ? 1 : 0;
+      return res;
+    }, {});
+  }, []);
+
+  const [state, setState] = React.useReducer(tempReducer, getStateInit({
+    filesToPrint,
+  }));
 
   Print.setState = setState;
   
@@ -127,7 +145,7 @@ export function Print({
     isCopyCompleted: state.isCopyCompleted,
     onAllStepsPassed,
     Copying: () => <Copying 
-        printState={printState}
+        filesToPrint={filesToPrint}
         onCopyCompleted={onCopyCompleted} 
         onCopyCanceled={onCopyCanceled}
         $saveFilesToFlash={$saveFilesToFlash}
@@ -146,7 +164,9 @@ export function Print({
       <div>2020-09-29</div>
       { state.isSavePhotosToFlash ? <Stepper 
           steps={steps}
-        /> : renderPrintState() 
+        /> : renderPrintState({ 
+            filesToPrint: state.filesToPrint,
+          }) 
       }
     </div>    
   );
@@ -171,6 +191,7 @@ export function Print({
 
     if (input === undefined) return;
 
+    const photoSrc = input.getAttribute('keyid');
     const cntSource = Number(input.value);
     let cntUpd = cntSource;
 
@@ -185,95 +206,80 @@ export function Print({
       default: return;
     }
 
-    const { date, photoSrc } = getDataPrint({ element: input.parentElement });
-    printState[date][photoSrc].toPrint = cntUpd; 
+    state.filesToPrint[photoSrc] = cntUpd; 
 
     setState({
-      ...state,
+      forceUpdate: !state.forceUpdate,
     });
   }  
 
-  function renderPrintState() {
-    const toRender = Object.entries(printState)
-      .map(([date, photo]) => {
-      return (
-        <>
-          <div className="PrintItems">
-            {
-              Object.entries(photo).map(([photoSrc, status]) => { 
-                const key = getPhotoDataKey({date, photoSrc});         
-                return <div 
-                  className="rowData"
-                  key={key}
-                  date={date}
-                  photosrc={photoSrc}
+  function renderPrintState({
+    filesToPrint,
+  }) {
+    return (
+      <>
+        <div className="PrintItems">
+          {
+            Object.keys(filesToPrint).map((photoSrc) => { 
+              const key = photoSrc;         
+              return <div 
+                className="rowData"
+                key={key}
+                photosrc={photoSrc}
+              >
+                <div
+                  className='fitPreview100 file marginRight10'
+                  style={{ 'backgroundImage': `url(${photoSrc})` }}
                 >
-                  <div
-                    className='fitPreview100 file marginRight10'
-                    style={{ 'backgroundImage': `url(${photoSrc})` }}
-                  >
-                  </div>              
-                  <input 
-                    className="changePhotoCount marginRight10" 
-                    keyid={key}
-                    value={status.toPrint} 
-                    onChange={onChangePhotoCount} 
-                  />
-                  <input type="button" className="marginRight10" onClick={onClickErasePhotoCount} value="Стереть" />
-                </div>
-              })
-            }
-          </div>
-        </>
-      );
-    });
-
-    return toRender;
+                </div>              
+                <input 
+                  className="changePhotoCount marginRight10" 
+                  keyid={key}
+                  value={filesToPrint[photoSrc]} 
+                  onChange={onChangePhotoCount} 
+                />
+                <input type="button" className="marginRight10" onClick={onClickErasePhotoCount} value="Стереть" />
+              </div>
+            })
+          }
+        </div>
+      </>
+    );
   }
 
   function onClickErasePhotoCount(e) {
-    const {date, photoSrc} = getDataPrint({ element: e.target.parentElement });
+    const { photoSrc } = getDataPrint({ element: e.target.parentElement });
 
-    printState[date][photoSrc].toPrint = "";
+    state.filesToPrint[photoSrc] = 0;
 
     setState({
-      ...state, 
-      activeInput: getPhotoDataKey({date, photoSrc}),
+      activeInput: photoSrc,
     });
   }
 
   function onChangePhotoCount(e) {
     const input = e.target;
-    const {date, photoSrc} = getDataPrint({ element: input.parentElement });
+    const { photoSrc } = getDataPrint({ element: input.parentElement });
 
-    printState[date][photoSrc].toPrint = input.value; 
+    state.filesToPrint[photoSrc] = input.value; 
 
     setState({
-      ...state, 
-      activeInput: getPhotoDataKey({date, photoSrc}),
+      activeInput: photoSrc,
     });
   }
 
   function getDataPrint({ element }) {
-    const date = element.getAttribute('date');
     const photoSrc = element.getAttribute('photosrc');
 
     return {
-      date,
       photoSrc,
     };
   }
 
-  function getPhotoDataKey({date, photoSrc}) {
-    return `${date}-${photoSrc}`;
-  }
 }
 
 Print.getReqProps = ({ channel }) => {
   return channel.crop({
-    s: { 
-      printState: 1,
-    },
     API: {
       comps: {
         server: {
@@ -281,6 +287,7 @@ Print.getReqProps = ({ channel }) => {
           $checkCopyProgress: 1,
           $saveFilesToFlash: 1,
         },
+        PhotoStatuses: 'PhotoStatusesAPI',
       },
     },
   });
@@ -297,10 +304,16 @@ Print.getAPI = function (
   };
 }
 
-const stateInit = {
-  activeInput: undefined,
-  isSavePhotosToFlash: false,
-  isCopyCompleted: false,
-};
+function getStateInit({
+  filesToPrint,
+}) {
+  return {
+    activeInput: undefined,
+    isSavePhotosToFlash: false,
+    isCopyCompleted: false,
+    filesToPrint,
+    forceUpdate: false,
+  };
+}
 
 

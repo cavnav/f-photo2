@@ -18,10 +18,11 @@ export class Channel {
       server: new AppServerAPI({ s, d }),
     });
   }
-  addAPI = (props) => {
+  addAPI = (compAPI) => {
     const comps = this.API.comps;
-    Object.entries(props).map(([p, val]) => Object.assign(comps[p] || (comps[p] = {}), val));
+    Object.entries(compAPI).map(([newComp, api]) => Object.assign(comps[newComp] || (comps[newComp] = {}), api));
   }
+
   essentials = (component, { parentProps = {} } = {}) => {
     if (component.getAPI) this.addAPI({
       [component.name]: component.getAPI(), 
@@ -46,19 +47,25 @@ export class Channel {
     let [[propName, prop, sourceVal, alias = prop]] = stack;
     // 
     if (prop.constructor !== Object) res[prop === 1 ? propName : alias] = sourceVal;
-    else stack.push(...Object.entries(prop).map(e => push(e, subscribe.call(this, { comp: e, propName, sourceVal: sourceVal[e[0]] }))));
+    else stack.push(...Object.entries(prop).map((e) => {
+      if (
+        sourceVal[e[0]] !== undefined ||
+        propName !== 'comps'
+      ) return push(e, sourceVal[e[0]]);
+      
+      return push(e, subscribe.call(this, { compName: e[0] }));
+    }));
+
     return this.crop(null, null, { stack: stack.slice(1), res });
 
     // ------------------------
-    function subscribe({ comp: [compName, compAPI], propName, sourceVal }) {
-      if (sourceVal !== undefined) return sourceVal;
-      if (propName !== 'comps') return sourceVal;
-
-      const compAPIupd = {};
-      Object.keys(compAPI).forEach(APIname => compAPIupd[APIname] = (...args) => compAPIupd[APIname](...args));
-      this.API.comps[compName] = compAPIupd;
+    function subscribe({ compName }) {
+      // Create object with methods wrapper which will be rewriten with real API methods.    
+      const compAPI = {};
+      // Object.keys(compAPI).forEach(methodName => compAPI[methodName] = (...args) => compAPI[methodName](...args));
+      this.API.comps[compName] = compAPI;
       
-      return compAPIupd;
+      return compAPI;
     }
 
     function push(a, v) { a.push(v); return a; }

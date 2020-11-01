@@ -46,6 +46,9 @@ app = {
       }
 
     },
+    Print: {
+      
+    },
     FileStatuses: {
       "br/20170107_112131.jpg": { // путь до файла.
         toPrint: false, 

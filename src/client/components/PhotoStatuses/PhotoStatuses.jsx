@@ -7,7 +7,7 @@ import {
 import { set as _set, get as _get } from 'lodash';
 
 import './styles.css';
-refimport { tempReducer } from '../../functions';
+import { tempReducer } from '../../functions';
 
 export function PhotoStatuses(props) {
   const { 
@@ -39,7 +39,8 @@ export function PhotoStatuses(props) {
   }) {    
     const path = [curPhoto];
     const statusUpd = _get(state.filesWithStatuses, path, new PhotoStatusIcons());
-    statusUpd[actionName]();
+    _set(state.filesWithStatuses, path, statusUpd);
+    statusUpd[actionName]({});
 
     setState({
       forceUpdate: !state.forceUpdate,

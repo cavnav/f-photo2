@@ -17,6 +17,10 @@ export function MyView({
 
 MyView.getReqProps = function ({ channel }) {
   return channel.crop({
-    s: { appState: { view: 'View' } },
+    s: { 
+      appState: { 
+        view: 'View' 
+      } 
+    },
   });
 };
