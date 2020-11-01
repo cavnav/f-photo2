@@ -40,10 +40,6 @@ const appStateInit = {
   view: Views.Welcome,
   doNeedHelp: false, // move to Help module.
   actions: {
-    Tune: {
-      title: 'Настроить',
-      isActive: true
-    },
     Copy: {
       title: 'Копировать',
       isActive: true
@@ -76,10 +72,10 @@ const appStateInit = {
         additionalActions.SharePhotos,
       ],
     },
-    Help: {
-      title: '?',
-      isActive: true,
-    }
+    // Help: {
+    //   title: '?',
+    //   isActive: true,
+    // }
   },
 };
 

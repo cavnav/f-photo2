@@ -300,7 +300,7 @@ function onImgServerRotate({
     curPhotoRotateDeg,
   },
   setState,
-}) {
+}) { return;
   additionalActions.SaveChanges.change({ 
     set: {                                 
       isActive: curPhotoRotateDeg !== 0,
