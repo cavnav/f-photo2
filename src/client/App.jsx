@@ -37,6 +37,8 @@ export function App(props) {
 }
 
 const appStateInit = {
+  forceUpdate: false,
+  browserCount: 0,
   view: Views.Welcome,
   doNeedHelp: false, // move to Help module.
   actions: {
@@ -49,6 +51,7 @@ const appStateInit = {
       isActive: true,
       additionalActions: [
         additionalActions.ExitFromAlbum, 
+        additionalActions.ToggleRightWindow,
       ],
     },
     OnePhoto: {

@@ -15,8 +15,12 @@
   </div>
 </body>
 <script>
-  window.onload = () => { return;
-    if (window.self === window.top) {
+  window.onload = () => { 
+    const browserCount = sessionStorage.getItem('browserCount');
+    if (
+      window.self === window.top && 
+      browserCount === "2"
+    ) {
       const container = document.createElement('div');
       container.id = "rightSideWindow";
       const iframe = document.createElement("iframe");
@@ -26,5 +30,4 @@
     }
   }
 </script>
-
 </html>

@@ -71,6 +71,9 @@ class AdditionalActions {
     isActive: true,
     component: ActionSharePhotos,
   });
+  ToggleRightWindow = new Action({
+    isActive: true,
+  });
 }
 
 export const additionalActions = new AdditionalActions();

@@ -5,7 +5,7 @@ import { tempReducer } from '../../functions';
 import './styles.css';
 
 export function Browse({
-  doNeedHelp,
+  appState,
   curPhotoInd,
   files,
   dirs,
@@ -33,7 +33,7 @@ export function Browse({
 
         <Help
           toRender={toRenderHelp()}
-          {...{doNeedHelp}}
+          {...{ doNeedHelp: appState.doNeedHelp }}
         />
       </div>
     );
@@ -46,7 +46,6 @@ export function Browse({
       curPhotoEl.scrollIntoView();
       curPhotoEl.classList.add('curFile');
     }
-
   }
 
   function toRenderHelp() {
@@ -127,9 +126,7 @@ function boostPerfImgRender() {
 Browse.getReqProps = ({ channel }) => {
   return channel.crop({
     s: { 
-      appState: { 
-        doNeedHelp: 1, 
-      },
+      appState: 1,
       photosState: { 
         files: 1,
         dirs: 1,
@@ -152,6 +149,32 @@ Browse.getReqProps = ({ channel }) => {
   });
 };
 
+Browse.getAPI = () => {
+  return {
+    toggleRigthWindow() {
+        const browserCount = {
+          states: {
+            0: 1,
+            1: 2,
+            2: 1,
+          },
+          set(val) {
+            const count = this.states[val];
+            sessionStorage.setItem('browserCount', count);  
+            setAppState({
+              setItSilent: function() { Object.assign(this, { browserCount: count }) },
+            })
+            if (val > 0) {
+              window.location.reload();
+            }
+          }
+        };
+            
+        browserCount.set(appState.browserCount);
+      }
+    }
+  };
+};
 
 const stateInit = {
   previewWidth: 100,

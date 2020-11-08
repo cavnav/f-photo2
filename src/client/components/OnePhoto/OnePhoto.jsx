@@ -348,7 +348,7 @@ OnePhoto.getReqProps = ({ channel }) => {
   return ch;
 };
 
-OnePhoto.getAPI = () => {
+OnePhoto  = () => {
   return {
   };
 };

@@ -5,7 +5,7 @@ import { Views } from '..';
 
 export function ControlPanel({
   tempReducer,
-  actions,
+  appState,
   isWelcome,
   setAppState,
 }) {
@@ -16,7 +16,7 @@ export function ControlPanel({
       className={`controlPanel flex ${isWelcome ? 'attention' : ''}`} 
       onClick={onClickAction}
     >
-      {Object.entries(actions)
+      {Object.entries(appState.actions)
         .filter(([action, actionProps]) => actionProps.isActive)
         .map(([action, actionProps]) => (
           <div key={action} className="action" data-id={action}>
@@ -32,6 +32,7 @@ export function ControlPanel({
 
     setAppState({
       view: Views[actionId],
+      forceUpdate: !appState.forceUpdate,
     });
   };
 
@@ -40,7 +41,7 @@ export function ControlPanel({
 ControlPanel.getReqProps = ({ channel }) => {
   const cropped = channel.crop({
     s: { 
-      appState: { actions: 1, view: 1 } 
+      appState: 1,  
     },      
     d: {
       setAppState: 1,
