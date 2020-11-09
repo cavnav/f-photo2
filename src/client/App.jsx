@@ -1,6 +1,6 @@
 import React, { useState, useReducer } from 'react';
 import { ControlPanel, MyView, AdditionalPanel} from './components';
-import { tempReducer } from './functions';
+import { getResumeObj, tempReducer } from './functions';
 import { Views } from './components';
 import { additionalActions } from './constants';
 import { get as _get } from 'lodash';
@@ -8,8 +8,10 @@ import { Channel } from './Channel';
 
 import 'antd/dist/antd.css';
 import './app.css';
+import { useEffect } from 'react';
 
 export function App(props) {
+  const [resumeObj] = React.useState(getResumeObj());
   const [d] = React.useState({}); // dispatch.
   const [s] = React.useState({}); // states.
   const channel = React.useMemo(() => new Channel({ s, d }), []);
@@ -19,6 +21,12 @@ export function App(props) {
   [s.browseState, d.setBrowseState] = useReducer(tempReducer, browseStateInit);
   [s.ignored, d.forceUpdate] = useReducer(x => !x, true);
   
+  useEffect(() => {
+    resumeObj.save({
+      action: s.appState.view,
+    });
+  }, [s.appState.view]);
+
   return (    
     <div className="f-photo">     
       <ControlPanel 

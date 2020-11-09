@@ -19,6 +19,25 @@ export function tempReducer (
   };
 };
 
+export function getResumeObj() {
+  return {
+    save({
+      action,
+    }) {
+      const resume = JSON.parse(localStorage.getItem('resume') || '{}');
+      const resumeUpd = Object.assign(resume, {
+        leftWindow: {
+          action: action.name,
+        },
+      });
+      localStorage.setItem('resume', JSON.stringify(resumeUpd));
+    },
+    load() {
+
+    },
+  };
+}
+
 export function getFileDateSrcKey({date, fileSrc}) {
   return `${date}-${fileSrc}`;
 }
