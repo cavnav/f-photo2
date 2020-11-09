@@ -5,6 +5,7 @@ import {
   SavePhotosToFlash,
   AdditionalPanel,
   ActionSharePhotos,
+  ToggleRightWindow,
 } from "./components/index";
 
 class Action {
@@ -73,6 +74,7 @@ class AdditionalActions {
   });
   ToggleRightWindow = new Action({
     isActive: true,
+    component: ToggleRightWindow,
   });
 }
 

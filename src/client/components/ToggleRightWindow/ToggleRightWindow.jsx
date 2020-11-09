@@ -1,19 +1,21 @@
 import React, { useState, useEffect, useReducer } from 'react';
 import './styles.css';
 
-export function ToggleRightWindows({
+export function ToggleRightWindow({
   tempReducer,
   BrowseAPI,
 }) {
   const [state, setState] = useReducer(tempReducer, stateInit);
 
-  const onClick = React.useCallback(() => PrintAPI.saveToFlash(), []);
+  const onClick = React.useCallback(() => BrowseAPI.toggleRightWindow(), []);
+
+  if (window.self !== window.top) return null;
   return (
     <div 
       className="ToggleRightWindow" 
       onClick={onClick}      
     >
-      <div className='title'>{Отобразить второе окно}</div>  
+      <div className='title'>Отобразить второе окно</div>  
     </div>
   );
 
@@ -21,7 +23,7 @@ export function ToggleRightWindows({
 
 }
 
-SavePhotosToFlash.getReqProps = ({
+ToggleRightWindow.getReqProps = ({
   channel,
 }) => {
 

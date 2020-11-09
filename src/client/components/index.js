@@ -1,3 +1,4 @@
+export { ToggleRightWindow } from './ToggleRightWindow/ToggleRightWindow';
 export { ExitFromAlbum } from './ExitFromAlbum/ExitFromAlbum';
 export { ExitFromOnePhoto } from './ExitFromOnePhoto/ExitFromOnePhoto';
 export { ActionSharePhotos } from './ActionSharePhotos/ActionSharePhotos';

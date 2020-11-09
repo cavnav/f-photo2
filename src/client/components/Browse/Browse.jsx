@@ -151,26 +151,19 @@ Browse.getReqProps = ({ channel }) => {
 
 Browse.getAPI = () => {
   return {
-    toggleRigthWindow() {
-        const browserCount = {
-          states: {
-            0: 1,
-            1: 2,
-            2: 1,
-          },
-          set(val) {
-            const count = this.states[val];
-            sessionStorage.setItem('browserCount', count);  
-            setAppState({
-              setItSilent: function() { Object.assign(this, { browserCount: count }) },
-            })
-            if (val > 0) {
-              window.location.reload();
-            }
-          }
-        };
-            
-        browserCount.set(appState.browserCount);
+    toggleRightWindow() {            
+      const states = {
+        0: 1,
+        1: 2,
+        2: 1,
+      };
+      
+      const storageItem = 'browserCount';
+      const count = sessionStorage.getItem(storageItem) || '0';
+      const countUpd = states[count];
+      sessionStorage.setItem(storageItem, countUpd);  
+      if (count > 0) {
+        window.location.reload();
       }
     }
   };

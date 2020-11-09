@@ -32,7 +32,6 @@ export function ControlPanel({
 
     setAppState({
       view: Views[actionId],
-      forceUpdate: !appState.forceUpdate,
     });
   };
 
