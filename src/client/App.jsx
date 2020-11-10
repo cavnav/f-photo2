@@ -16,7 +16,9 @@ export function App(props) {
   const [s] = React.useState({}); // states.
   const channel = React.useMemo(() => new Channel({ s, d }), []);
 
-  [s.appState, d.setAppState] = useReducer(tempReducer, appStateInit);
+  [s.appState, d.setAppState] = useReducer(tempReducer, getAppStateInit({
+    resumeObj,
+  }));
   [s.photosState, d.setPhotosState] = useReducer(tempReducer, photosStateInit);
   [s.browseState, d.setBrowseState] = useReducer(tempReducer, browseStateInit);
   [s.ignored, d.forceUpdate] = useReducer(x => !x, true);
@@ -44,49 +46,54 @@ export function App(props) {
   //--------------------------------------------------------------------------
 }
 
-const appStateInit = {
-  forceUpdate: false,
-  view: Views.Welcome.name,
-  doNeedHelp: false, // move to Help module.
-  actions: {
-    Copy: {
-      title: 'Копировать',
-      isActive: true
+function getAppStateInit({
+  resumeObj,
+}) {
+  const resumeView = resumeObj.load().leftWindow.action;
+  return {
+    forceUpdate: false,
+    view: resumeView || Views.Welcome.name,
+    doNeedHelp: false, // move to Help module.
+    actions: {
+      Copy: {
+        title: 'Копировать',
+        isActive: true
+      },
+      Browse: {
+        title: 'Смотреть',
+        isActive: true,
+        additionalActions: [
+          additionalActions.ExitFromAlbum, 
+          additionalActions.ToggleRightWindow,
+        ],
+      },
+      OnePhoto: {
+        additionalActions: [       
+          additionalActions.ExitFromOnePhoto,
+          additionalActions.SaveChanges,
+        ],
+        isActive: false,
+      },
+      Print: {
+        title: 'Печатать',
+        isActive: true,
+        additionalActions: [
+          additionalActions.SavePhotosToFlash,
+        ],
+      },
+      Share: {
+        title: 'Отправить',
+        isActive: true,
+        additionalActions: [
+          additionalActions.SharePhotos,
+        ],
+      },
+      // Help: {
+      //   title: '?',
+      //   isActive: true,
+      // }
     },
-    Browse: {
-      title: 'Смотреть',
-      isActive: true,
-      additionalActions: [
-        additionalActions.ExitFromAlbum, 
-        additionalActions.ToggleRightWindow,
-      ],
-    },
-    OnePhoto: {
-      additionalActions: [       
-        additionalActions.ExitFromOnePhoto,
-        additionalActions.SaveChanges,
-      ],
-      isActive: false,
-    },
-    Print: {
-      title: 'Печатать',
-      isActive: true,
-      additionalActions: [
-        additionalActions.SavePhotosToFlash,
-      ],
-    },
-    Share: {
-      title: 'Отправить',
-      isActive: true,
-      additionalActions: [
-        additionalActions.SharePhotos,
-      ],
-    },
-    // Help: {
-    //   title: '?',
-    //   isActive: true,
-    // }
-  },
+  };
 };
 
 const photosStateInit = {
@@ -99,9 +106,3 @@ const browseStateInit = {
   curPhotoInd: -1,
   scrollY: 0,
 };
-
-const navLink = [
-  appStateInit, 
-  photosStateInit, 
-  browseStateInit,
-];

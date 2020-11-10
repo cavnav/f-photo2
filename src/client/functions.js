@@ -21,19 +21,31 @@ export function tempReducer (
 
 export function getResumeObj() {
   return {
+    appState: {
+      leftWindow: {
+
+      },
+      rightWindow: {
+
+      },
+      browserCount: 0,
+      toPrint: {},
+      toShare: {},
+    },
+    storageItemName: 'resume',
     save({
       action,
     }) {
-      const resume = JSON.parse(localStorage.getItem('resume') || '{}');
+      const resume = JSON.parse(localStorage.getItem(this.storageItemName));
       const resumeUpd = Object.assign(resume, {
         leftWindow: {
-          action: action.name,
+          action,
         },
       });
-      localStorage.setItem('resume', JSON.stringify(resumeUpd));
+      localStorage.setItem(this.storageItemName, JSON.stringify(resumeUpd));
     },
     load() {
-
+      return JSON.parse(localStorage.getItem(this.storageItemName) || this.appState);
     },
   };
 }
