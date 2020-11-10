@@ -59,6 +59,17 @@ app = {
       files: [],
       dirs: [],
     },
+    resume: {
+      leftWindow: {
+
+      },
+      rightWindow: {
+
+      },
+      browserCount: 0,
+      toPrint: {},
+      toShare: {},
+    }
   },
   server: {
     rootDir: 'C:\\Users\\shelm\\Pictures',    

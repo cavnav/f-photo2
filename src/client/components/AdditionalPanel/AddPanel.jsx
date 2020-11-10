@@ -47,7 +47,7 @@ AdditionalPanel.getReqProps = ({ channel }) => {
   } = channel;
   
   return {
-    activeComponentActions: _get(appState, ['actions', appState.view.name, 'additionalActions'], []),
+    activeComponentActions: _get(appState, ['actions', appState.view, 'additionalActions'], []),
   };
 }
 

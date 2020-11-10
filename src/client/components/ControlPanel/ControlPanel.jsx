@@ -31,7 +31,7 @@ export function ControlPanel({
     const actionId = e.target.getAttribute('data-id');
 
     setAppState({
-      view: Views[actionId],
+      view: actionId,
     });
   };
 

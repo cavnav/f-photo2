@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-
+import { Views } from '../';
 import './styles.css';
 
 export function MyView({
-  View,
+  view,
   channel,
 }) {  
+  const View = Views[view];
   return (
     <div className="MyView">
       <View 
@@ -19,7 +20,7 @@ MyView.getReqProps = function ({ channel }) {
   return channel.crop({
     s: { 
       appState: { 
-        view: 'View' 
+        view: 1, 
       } 
     },
   });

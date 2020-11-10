@@ -46,7 +46,7 @@ export function App(props) {
 
 const appStateInit = {
   forceUpdate: false,
-  view: Views.Welcome,
+  view: Views.Welcome.name,
   doNeedHelp: false, // move to Help module.
   actions: {
     Copy: {
