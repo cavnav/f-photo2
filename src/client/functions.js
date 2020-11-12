@@ -19,37 +19,6 @@ export function tempReducer (
   };
 };
 
-export function getResumeObj() {
-  return {
-    appState: {
-      leftWindow: {
-
-      },
-      rightWindow: {
-
-      },
-      browserCount: 0,
-      toPrint: {},
-      toShare: {},
-    },
-    storageItemName: 'resume',
-    save({
-      action,
-    }) {
-      const resume = JSON.parse(localStorage.getItem(this.storageItemName));
-      const resumeUpd = Object.assign(resume, {
-        leftWindow: {
-          action,
-        },
-      });
-      localStorage.setItem(this.storageItemName, JSON.stringify(resumeUpd));
-    },
-    load() {
-      return JSON.parse(localStorage.getItem(this.storageItemName) || this.appState);
-    },
-  };
-}
-
 export function getFileDateSrcKey({date, fileSrc}) {
   return `${date}-${fileSrc}`;
 }

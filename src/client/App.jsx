@@ -1,6 +1,6 @@
 import React, { useState, useReducer } from 'react';
 import { ControlPanel, MyView, AdditionalPanel} from './components';
-import { getResumeObj, tempReducer } from './functions';
+import { tempReducer } from './functions';
 import { Views } from './components';
 import { additionalActions } from './constants';
 import { get as _get } from 'lodash';
@@ -9,20 +9,22 @@ import { Channel } from './Channel';
 import 'antd/dist/antd.css';
 import './app.css';
 import { useEffect } from 'react';
+import { getResumeObj } from './resumeObj';
 
 export function App(props) {
-  const [resumeObj] = React.useState(getResumeObj());
   const [d] = React.useState({}); // dispatch.
   const [s] = React.useState({}); // states.
   const channel = React.useMemo(() => new Channel({ s, d }), []);
 
-  [s.appState, d.setAppState] = useReducer(tempReducer, getAppStateInit({
+  const resumeObj = React.useMemo(() => getResumeObj(), []);
+  const appStateInit = React.useMemo(() => getAppStateInit({
     resumeObj,
-  }));
+  }), []);
+  [s.appState, d.setAppState] = useReducer(tempReducer, appStateInit);
   [s.photosState, d.setPhotosState] = useReducer(tempReducer, photosStateInit);
   [s.browseState, d.setBrowseState] = useReducer(tempReducer, browseStateInit);
   [s.ignored, d.forceUpdate] = useReducer(x => !x, true);
-  
+
   useEffect(() => {
     resumeObj.save({
       action: s.appState.view,
@@ -49,7 +51,7 @@ export function App(props) {
 function getAppStateInit({
   resumeObj,
 }) {
-  const resumeView = resumeObj.load().leftWindow.action;
+  const resumeView = resumeObj.load().action;
   return {
     forceUpdate: false,
     view: resumeView || Views.Welcome.name,

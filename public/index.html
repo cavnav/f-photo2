@@ -7,6 +7,14 @@
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <link rel="icon" type="favicon.png" />
   <title>F-PHOTO</title>
+  <script>
+    if (window.self === window.top) {
+      window.name = 'leftWindow';
+    }
+    else {
+      window.name = 'rightWindow';
+    }
+  </script>
 </head>
 
 <body>
@@ -14,9 +22,10 @@
     <div id="root"></div>
   </div>
 </body>
-<script>
+<script>  
   window.onload = () => { 
     const browserCount = sessionStorage.getItem('browserCount');
+    
     if (
       window.self === window.top && 
       browserCount === "2"
