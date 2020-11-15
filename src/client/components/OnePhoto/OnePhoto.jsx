@@ -348,11 +348,6 @@ OnePhoto.getReqProps = ({ channel }) => {
   return ch;
 };
 
-OnePhoto  = () => {
-  return {
-  };
-};
-
 const stateInit = {
   curPhoto: undefined,
   curPhotoWithTime: undefined,

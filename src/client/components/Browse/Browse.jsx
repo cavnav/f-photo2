@@ -82,7 +82,7 @@ export function Browse({
     });
 
     setAppState({
-      view: Views.OnePhoto,
+      view: Views.OnePhoto.name,
     })
   }
 
