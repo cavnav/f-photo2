@@ -13,6 +13,7 @@ const Jimp = require('jimp');
 const WhatsappBot = require('./scriptWhatsappBot');
 
 const app = express();
+const albumDir = path.resolve('e:\\projects\\album\\');
 
 let state = {
   newPhotos: [],
@@ -21,8 +22,9 @@ let state = {
   countNewPhotos: 0,
   copyProgress: 0,
   countCopiedPhotos: 0,
-  rootDir: getRootDir(),
-  curDir: getRootDir(),
+  albumDir,
+  projectDir: path.resolve(__dirname, '../../../'),
+  curDir: albumDir,
   usbDriveLetter: undefined,
 
 };
@@ -31,24 +33,24 @@ let timeoutIdImg
 
 // ------------------------------------------------------------------------------------------------
 
-app.use(express.static(getRootDir()));
+app.use(express.static(albumDir));
 app.use(express.static('public'));
 app.use(express.static('dist'));
-
 app.use(bodyParser.json());
+
+app.listen(process.env.PORT || 8080, () => console.log(`Listening on port ${process.env.PORT || 8080}!`));
 
 app.post('/api/share', async(req, response) => {
   console.log('dg', req.body);
   response.send(req.body);
   const date = getCurMoment();
   
-  const sharedFolder = path.resolve(__dirname, '../../../shared/', date);
+  const sharedFolder = path.resolve(state.albumDir, date);
   await (async () => {
     const { filesSrc } = req.body;
-    console.log(1111, filesSrc);    
     for (let index = 0; index < files.length; index++) {
-      const fileFrom = `${state.rootDir}\\${filesSrc[index]}`;
-      const fileTo = `${sharedFolder}\\${path.basename(fileFrom)}`;
+      const fileFrom = path.resolve(state.albumDir, filesSrc[index]);
+      const fileTo = path.resolve(sharedFolder, path.basename(fileFrom));
       await fs.copy(fileFrom, fileTo);
     }
   })();
@@ -221,8 +223,8 @@ app.post('/api/saveFilesToFlash', async (req, response) => {
 });
 
 app.post('/api/copyPhotos', (req, res) => {
-  const userDirName = getCurMoment();
-  const destDir = `${state.rootDir}\\unparsed\\${userDirName}\\`;
+  const curMoment = getCurMoment();
+  const destDir = path.resolve(state.albumDir, curMoment);
 
   res.send(req.body);
 
@@ -241,7 +243,7 @@ app.post('/api/copyPhotos', (req, res) => {
     photos.length && setTimeout(async () => {
       const [photo] = photos;
       const photoName = getFileName({ file: photo });
-      const destPath = `${destDir}${photoName}`;
+      const destPath = path.resolve(destDir, photoName);
 
       await fs.copy(photo, destPath);
 
@@ -258,6 +260,9 @@ app.post('/api/copyPhotos', (req, res) => {
         startCopy({ photos: photos.slice(1), destDir });
       } else {
         await clearUpUSB();
+        setState({
+          curDir: destDir,
+        });
       }      
     });
   }
@@ -294,15 +299,13 @@ app.post('/api/saveSettings', (req, res) => {
     });
 });
 
-app.listen(process.env.PORT || 8080, () => console.log(`Listening on port ${process.env.PORT || 8080}!`));
-
 function calcCopyProgress({ countCopiedPhotos }) {
   const { countNewPhotos, } = state;
   return Math.floor(countCopiedPhotos * 100 / countNewPhotos);
 }
 
 function getBackwardPath() {
-  if (state.rootDir === state.curDir) return state.curDir;
+  if (state.albumDir === state.curDir) return state.curDir;
   return state.curDir.slice(0, state.curDir.lastIndexOf('\\'));
 }
 
@@ -356,18 +359,6 @@ function getCurMoment() {
 
 function getFileName({ file }) {
   return file.slice(file.lastIndexOf('\\') + 1);
-}
-
-function getRootDir() {
-  console.log(222, path.resolve(__dirname, '../../'));
-  let rootDir;
-  if(process.env.NODE_ENV === 'production') {
-    rootDir = '..\\f-photo';
-  } else  {
-    rootDir = 'C:\\Users\\shelm\\Pictures';
-  }
-
-  return rootDir;
 }
 
 function removeFile({ 

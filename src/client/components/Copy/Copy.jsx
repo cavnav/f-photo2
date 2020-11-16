@@ -78,7 +78,7 @@ export function Copy({
       }, {
         trigger: () => {
           setAppState({
-            view: Views.Welcome,
+            view: Views.Browse.name,            
           });
         } 
       }
