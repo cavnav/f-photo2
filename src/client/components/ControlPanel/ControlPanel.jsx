@@ -1,8 +1,7 @@
 import React, { useReducer, } from 'react';
 
 import './styles.css';
-import { Views } from '..';
-
+import { Actions } from '../';
 export function ControlPanel({
   tempReducer,
   appState,
@@ -31,7 +30,7 @@ export function ControlPanel({
     const actionId = e.target.getAttribute('data-id');
 
     setAppState({
-      view: actionId,
+      action: actionId,
     });
   };
 
@@ -49,7 +48,7 @@ ControlPanel.getReqProps = ({ channel }) => {
   
   return {
     ...cropped,
-    isWelcome: cropped.view === Views.Welcome,
+    isWelcome: cropped.appState.action === Actions.Welcome.name,
   };
 };
 

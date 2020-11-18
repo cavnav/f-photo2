@@ -1,7 +1,7 @@
 import React, { useState, useReducer } from 'react';
-import { ControlPanel, MyView, AdditionalPanel} from './components';
+import { ControlPanel, Action, AdditionalPanel} from './components';
 import { tempReducer } from './functions';
-import { Views } from './components';
+import { Actions } from './components';
 import { additionalActions } from './constants';
 import { get as _get } from 'lodash';
 import { Channel } from './Channel';
@@ -27,9 +27,9 @@ export function App(props) {
 
   useEffect(() => {
     resumeObj.save({
-      action: s.appState.view,
+      action: s.appState.action,
     });
-  }, [s.appState.view]);
+  }, [s.appState.action]);
 
   return (    
     <div className="f-photo">     
@@ -39,8 +39,8 @@ export function App(props) {
       <AdditionalPanel
         {...channel.essentials(AdditionalPanel)}
       />
-      <MyView 
-        {...channel.essentials(MyView)}
+      <Action 
+        {...channel.essentials(Action)}
       />
     </div>
   );
@@ -51,10 +51,9 @@ export function App(props) {
 function getAppStateInit({
   resumeObj,
 }) {
-  const resumeView = resumeObj.load().action;
-  return {
+  return resumeObj.load({
+    action: Actions.Welcome.name,
     forceUpdate: false,
-    view: resumeView || Views.Welcome.name,
     doNeedHelp: false, // move to Help module.
     actions: {
       Copy: {
@@ -95,7 +94,7 @@ function getAppStateInit({
       //   isActive: true,
       // }
     },
-  };
+  });
 };
 
 const photosStateInit = {

@@ -2,30 +2,29 @@ export function getResumeObj() {
   return {
     appState: {
       leftWindow: {
-
       },
       rightWindow: {
-
       },
       browserCount: 0,
       toPrint: {},
       toShare: {},
     },
     storageItemName: 'resume',
-    save({
-      action,
-    }) {
+    save(props) {
       const appState = JSON.parse(localStorage.getItem(this.storageItemName));
       Object.assign(appState[window.name], {
-        action,
+        ...props,
       });      
       localStorage.setItem(this.storageItemName, JSON.stringify(appState));
     },
-    load() {
+    load(props) {
       const appState = localStorage.getItem(this.storageItemName);      
       if (appState) return JSON.parse(appState)[window.name];
-      localStorage.setItem(this.storageItemName, JSON.stringify(this.appState));
-      return this.appState[window.name];
+      
+      localStorage.setItem(this.storageItemName, JSON.stringify(Object.assign(this.appState, {
+        [window.name]: props
+      })));
+      return props;
     },
   };
 }

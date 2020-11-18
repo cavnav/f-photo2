@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Progress, } from 'antd';
-import { Stepper, Views } from '..';
+import { Stepper, Actions } from '../';
 
 import 'antd/dist/antd.css';
 import './styles.css';
@@ -78,7 +78,7 @@ export function Copy({
       }, {
         trigger: () => {
           setAppState({
-            view: Views.Browse.name,            
+            action: Actions.Browse.name,            
           });
         } 
       }

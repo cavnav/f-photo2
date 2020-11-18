@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useReducer, useRef } from 'react';
-import { Help, Views } from '..';
+import { Help, Actions } from '../';
 import { tempReducer } from '../../functions';
 
 import './styles.css';
@@ -82,7 +82,7 @@ export function Browse({
     });
 
     setAppState({
-      view: Views.OnePhoto.name,
+      action: Actions.OnePhoto.name,
     })
   }
 

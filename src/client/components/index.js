@@ -8,7 +8,7 @@ export { SavePhotosToFlash } from './SavePhotosToFlash/SavePhotosToFlash';
 export { Copying } from './Copying/Copying';
 export { ControlPanel } from './ControlPanel/ControlPanel';
 export { AdditionalPanel} from './AdditionalPanel/AddPanel';
-export { MyView } from './MyView/MyView';
+export { Action } from './Action/Action';
 export { Stepper } from './Stepper/Stepper';
 export { Help } from './Help';
 export { PhotoStatuses } from './PhotoStatuses/PhotoStatuses';
@@ -25,7 +25,7 @@ import { Print } from './Print/Print';
 import { Welcome } from './Welcome';
 import { Help } from './Help';
 
-export const Views = {
+export const Actions = {
   Tune, 
   Copy, 
   Browse,
