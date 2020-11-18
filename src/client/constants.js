@@ -1,13 +1,16 @@
 import { 
+  AdditionalPanel,
+  AdditionalActionsComps,
+} from "./components/";
+
+const {
   ExitFromAlbum,
-  ExitFromOnePhoto,
+  ToggleRightWindow,
   SaveChanges,
   SavePhotosToFlash,
-  AdditionalPanel,
   ActionSharePhotos,
-  ToggleRightWindow,
-} from "./components/index";
-
+  ExitFromOnePhoto,
+} = AdditionalActionsComps;
 class Action {
   constructor(props) {
     Object.entries(props).map(([propName, prop]) => {
@@ -40,7 +43,6 @@ class AdditionalActions {
       action.name = actionName;
       if (action.onAction === undefined) {
         action.onAction = {
-          API: undefined,
         };
       }
     });
@@ -49,32 +51,32 @@ class AdditionalActions {
   ExitFromAlbum = new Action({ 
     title: 'Закрыть альбом',
     isActive: true,
-    component: ExitFromAlbum,    
+    componentName: ExitFromAlbum.name,    
   });
   ExitFromOnePhoto = new Action({
     title: 'Вернуть фото',
     isActive: true,
-    component: ExitFromOnePhoto,
+    componentName: ExitFromOnePhoto.name,
   });  
   SaveChanges = new Action({
     title: 'Сохранить изменения',
     className: 'SaveChanges',
     isActive: false,
-    component: SaveChanges,
+    componentName: SaveChanges.name,
   });
   SavePhotosToFlash = new Action({
     title: 'Записать фото на флешку',
     className: 'SaveFotosToFlash',
     isActive: true,
-    component: SavePhotosToFlash,
+    componentName: SavePhotosToFlash.name,
   });
   SharePhotos = new Action({
     isActive: true,
-    component: ActionSharePhotos,
+    componentName: ActionSharePhotos.name,
   });
   ToggleRightWindow = new Action({
     isActive: true,
-    component: ToggleRightWindow,
+    componentName: ToggleRightWindow.name,
   });
 }
 

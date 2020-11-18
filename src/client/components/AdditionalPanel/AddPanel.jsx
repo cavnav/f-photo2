@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useReducer } from 'react';
+import { AdditionalActionsComps } from '../';
 
 import './styles.css';
 
@@ -27,7 +28,7 @@ export function AdditionalPanel({
   function getItems() {
     return activeComponentActions
       .map(action => {
-        const Action = action.isActive ? action.component : () => null;
+        const Action = action.isActive ? AdditionalActionsComps[action.componentName] : () => null;
       
         return (
           <Action 
@@ -47,7 +48,7 @@ AdditionalPanel.getReqProps = ({ channel }) => {
   } = channel;
   
   return {
-    activeComponentActions: _get(appState, ['actions', appState.view, 'additionalActions'], []),
+    activeComponentActions: _get(appState, ['actions', appState.action, 'additionalActions'], []),
   };
 }
 

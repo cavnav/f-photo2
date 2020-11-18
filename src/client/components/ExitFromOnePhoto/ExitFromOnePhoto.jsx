@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Views } from '../';
+import { Actions } from '../';
 import './styles.css';
 
 export function ExitFromOnePhoto({
   setAppState,
-  Views,
 }) {
   const [state, setState] = useState(stateInit);
 
@@ -20,7 +19,7 @@ export function ExitFromOnePhoto({
   // -----------------------------------------------------------------------
   function onClick(e) {
     setAppState({
-      view: Views.Browse,
+      action: Actions.Browse.name,
     })
   };
 

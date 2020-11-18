@@ -1,10 +1,20 @@
-export { ToggleRightWindow } from './ToggleRightWindow/ToggleRightWindow';
-export { ExitFromAlbum } from './ExitFromAlbum/ExitFromAlbum';
-export { ExitFromOnePhoto } from './ExitFromOnePhoto/ExitFromOnePhoto';
-export { ActionSharePhotos } from './ActionSharePhotos/ActionSharePhotos';
-export { SaveChanges } from './SaveChanges/SaveChanges';
+import { ExitFromAlbum } from './ExitFromAlbum/ExitFromAlbum';
+import { ToggleRightWindow } from './ToggleRightWindow/ToggleRightWindow';
+import { ExitFromOnePhoto } from './ExitFromOnePhoto/ExitFromOnePhoto';
+import { ActionSharePhotos } from './ActionSharePhotos/ActionSharePhotos';
+import { SaveChanges } from './SaveChanges/SaveChanges';
+import { SavePhotosToFlash } from './SavePhotosToFlash/SavePhotosToFlash';
+
+export const AdditionalActionsComps = {
+  ExitFromAlbum,
+  ToggleRightWindow,
+  SaveChanges,
+  SavePhotosToFlash,
+  ActionSharePhotos,
+  ExitFromOnePhoto
+};
+
 export { SelectAlbum } from './SelectAlbum';
-export { SavePhotosToFlash } from './SavePhotosToFlash/SavePhotosToFlash';
 export { Copying } from './Copying/Copying';
 export { ControlPanel } from './ControlPanel/ControlPanel';
 export { AdditionalPanel} from './AdditionalPanel/AddPanel';

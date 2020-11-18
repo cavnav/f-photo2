@@ -2,9 +2,16 @@ import React from 'react';
 import { PhotoStatuses } from '..';
 import { Help } from '..';
 
-import './styles.css';
 import { additionalActions, } from '../../constants';
 import { Dialog } from '../';
+import { ResumeObj } from '../../resumeObj';
+import { useMyReducerWithPropsUpdated } from '../../functions';
+
+import './styles.css';
+
+const resumeObj = new ResumeObj({
+  compName: OnePhoto.name,
+});
 
 export function OnePhoto({
   channel,
@@ -15,19 +22,29 @@ export function OnePhoto({
   PhotoStatusesAPI,
   setBrowseState,
 }) {
-  
-  const [state, setState] = React.useReducer(
-    getSelfReducer({
+
+  const selfReducer = React.useMemo(
+    () => getSelfReducer({
       files,
-    }), {
-      ...stateInit,
+    }),
+    []
+  );
+
+  const [state, setState] = useMyReducerWithPropsUpdated({
+    reducer: selfReducer,
+    propsUpdated: {
       curPhotoInd,
       curPhoto: files[curPhotoInd],
       curPhotoWithTime: files[curPhotoInd],
+    },
+    initState: {
+      ...resumeObj.load({
+        props: {
+          ...stateInit,          
+        }
+      }),
     }, 
-  );
-
-  const [forceUpdated, forceUpdate] = React.useReducer(x => !x);
+  });
 
   const imgRef = React.useRef(null);
 
@@ -37,7 +54,7 @@ export function OnePhoto({
     if ({
       onTogglePhoto: 1, 
       onImgServerRotate: 1
-    }[state.action.name] === undefined) return;
+    }[state.action] === undefined) return;
 
     setTimeout(() => {
       imgRef.current.style.visibility = 'visible';
@@ -149,21 +166,22 @@ export function OnePhoto({
 
         break; 
 
-      case 37:  
+      case 37: // prev 
         stateUpd.curPhotoInd = prevPhotoInd;
         stateUpd.curPhoto = files[prevPhotoInd];
         stateUpd.curPhotoRotateDeg = 0;
-        stateUpd.action = onTogglePhoto;
+        stateUpd.action = onTogglePhoto.name;
 
-        break; // prev
+        break; 
 
-      case 39: onToggleNextPhoto();
-        break; // next
+      case 39: // next
+        onToggleNextPhoto();
+        break;
 
-      case 38: 
+      case 38: // rotate right
         stateUpd.curPhotoRotateDeg = checkRotate({ deg: state.curPhotoRotateDeg + 90 }); 
 
-        break; // rotate right
+        break; 
 
       case 40: 
         stateUpd.curPhotoRotateDeg = checkRotate({ deg: state.curPhotoRotateDeg - 90 });              
@@ -183,7 +201,7 @@ export function OnePhoto({
       stateUpd.curPhotoInd = nextPhotoInd; 
       stateUpd.curPhoto = files[nextPhotoInd];
       stateUpd.curPhotoRotateDeg = 0;
-      stateUpd.action = onTogglePhoto;
+      stateUpd.action = onTogglePhoto.name;
     }
 
     function checkRotate({ deg }) {
@@ -226,30 +244,36 @@ function getSelfReducer({
       ...newState,
     };
     const {
-      action: {
-        name: actionName,
-      },
+      action,
       curPhoto,
       curPhotoInd,
     } = stateUpd;
 
-    return Object.assign(stateUpd, {
-        [actionName]: {},
-        onTogglePhoto: {
-          curPhotoWithTime: curPhoto,
-          opacity: '0',
-          visibility: 'hidden',
-          curPhotoRemove: undefined,
-          isDialogRemove: false,
-        },
-        onImgServerRotate: {
-          curPhotoRotateDeg: 0,
-          curPhotoWithTime: `${files[curPhotoInd]}?${new Date().getTime()}`,
-          opacity: '0',
-          visibility: 'hidden',
-        },
-      }[actionName],
-    )
+    const stateReduced = {
+      [action]: {},
+      onTogglePhoto: {
+        curPhotoWithTime: curPhoto,
+        opacity: '0',
+        visibility: 'hidden',
+        curPhotoRemove: undefined,
+        isDialogRemove: false,
+      },
+      onImgServerRotate: {
+        curPhotoRotateDeg: 0,
+        curPhotoWithTime: `${files[curPhotoInd]}?${new Date().getTime()}`,
+        opacity: '0',
+        visibility: 'hidden',
+      },
+    }[action];
+
+    Object.assign(
+      stateUpd, 
+      stateReduced
+    );
+
+    resumeObj.save(stateUpd);
+    
+    return stateUpd;
   };
 }
 
@@ -362,5 +386,3 @@ const stateInit = {
   visibility: 'visible',
   action: {},
 };
-
-const navLink = [stateInit, OnePhoto.getReqProps, OnePhoto.getAPI];

@@ -1,30 +1,56 @@
-export function getResumeObj() {
-  return {
-    appState: {
-      leftWindow: {
-      },
-      rightWindow: {
-      },
-      browserCount: 0,
-      toPrint: {},
-      toShare: {},
+import { 
+  get as _get,
+  set as _set, 
+} from 'lodash';
+export class ResumeObj {
+  constructor(props) {
+    Object.assign(
+      this,
+      props,
+    );
+  }
+  compName = '';
+  appState = {
+    leftWindow: {
+      // OnePhoto: {},
     },
-    storageItemName: 'resume',
-    save(props) {
-      const appState = JSON.parse(localStorage.getItem(this.storageItemName));
-      Object.assign(appState[window.name], {
-        ...props,
-      });      
-      localStorage.setItem(this.storageItemName, JSON.stringify(appState));
+    rightWindow: {
     },
-    load(props) {
-      const appState = localStorage.getItem(this.storageItemName);      
-      if (appState) return JSON.parse(appState)[window.name];
-      
-      localStorage.setItem(this.storageItemName, JSON.stringify(Object.assign(this.appState, {
-        [window.name]: props
-      })));
-      return props;
-    },
+    browserCount: 0,
+    toPrint: {},
+    toShare: {},
   };
+  storageItemName = 'resume';
+  save(props) {
+    const appState = JSON.parse(localStorage.getItem(this.storageItemName));
+    Object.assign(
+      appState[window.name], 
+      {
+        [this.compName]: props,
+      },
+    );      
+    localStorage.setItem(this.storageItemName, JSON.stringify(appState));
+  }
+  load({
+    compName = '',
+    props,
+  }) {
+    const appState = JSON.parse(localStorage.getItem(this.storageItemName)) || this.appState;     
+    const compNameFullSrc = [window.name, this.compName].concat(compName ? compName.split('.') : []);
+    const compState = _get(appState, compNameFullSrc); 
+    if (compState) return compState;
+    
+    _set(
+      appState,
+      compNameFullSrc,
+      props
+    );
+    localStorage.setItem(
+      this.storageItemName, 
+      JSON.stringify(
+        appState
+      )
+    );
+    return props;
+  }
 }
