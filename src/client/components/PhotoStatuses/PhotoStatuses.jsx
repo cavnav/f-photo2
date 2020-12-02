@@ -7,7 +7,12 @@ import {
 import { set as _set, get as _get } from 'lodash';
 
 import './styles.css';
-import { tempReducer } from '../../functions';
+import { tempReducer, useMyReducer } from '../../functions';
+import { ResumeObj } from '../../resumeObj';
+
+const resumeObj = new ResumeObj({
+  compName: PhotoStatuses.name,
+});
 
 export function PhotoStatuses(props) {
   const { 
@@ -19,7 +24,16 @@ export function PhotoStatuses(props) {
     getFilesWithStatuses,
   });
 
-  const [state, setState] = React.useReducer(tempReducer, getStateInit());
+  const initState = React.useMemo(() => {
+    return resumeObj.load({
+      props: getInitState(),
+    });
+  }, []);
+  
+  const [state, setState] = useMyReducer({
+    initialState: initState,
+    fn: (val) => resumeObj.save(val),
+  });
 
   const statuses = _get(state.filesWithStatuses, [curPhoto]);
 
@@ -47,10 +61,10 @@ export function PhotoStatuses(props) {
     });
   }
 
-  function getStateInit() {
+  function getInitState() {
     return {
-      forceUpdate: false,
-      filesWithStatuses: {},
+        forceUpdate: false,
+        filesWithStatuses: {},
     };
   }
 

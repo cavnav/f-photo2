@@ -16,7 +16,7 @@ export function tempReducer (
 };
 
 export function useMyReducer({
-  reducer, 
+  reducer = tempReducer, 
   initialState,
   fn = () => {},
   init = () => initialState,

@@ -48,19 +48,16 @@ export function App(props) {
   
   [s.appState, d.setAppState] = useMyReducer({
     initialState: appStateInit,
-    reducer: tempReducer,
     fn: resumeSaveFn, // for silent setting case.
   });
 
   [s.photosState, d.setPhotosState] = useMyReducer({
     initialState: photosStateInit,
-    reducer: tempReducer,
     fn: resumeSaveFn, 
   });
 
   [s.browseState, d.setBrowseState] = useMyReducer({
     initialState: browseStateInit,
-    reducer: tempReducer,
     fn: resumeSaveFn, 
   });
 
