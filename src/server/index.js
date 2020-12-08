@@ -134,20 +134,24 @@ app.get('/api/browseFiles', (req, res) => {
         dirs,
       });
     
-      saveToFile({ content: files });
-
       res.send({
         files,
         dirs,
+        path: state.curDir.replace(/\\/g, '/').split('/'),
       });
     }
   });
 });
 
-app.get('/api/toward', (req, res) => {
-  let { subdir } = req.query;
+app.post('/api/toward', (req, res) => {
+  let { 
+    subdir,
+    resetTo, 
+  } = req.body;
+
+  const resetToUpd = resetTo ? resetTo.join('\\') : resetTo;
   subdir = subdir ? `\\${subdir}` : '';
-  const path = `${state.curDir}${subdir}`;
+  const path = resetToUpd || `${state.curDir}${subdir}`;
 
   setState({
     curDir: path,
@@ -156,7 +160,7 @@ app.get('/api/toward', (req, res) => {
   res.redirect('browseFiles');
 });
 
-app.get('/api/backward', (req, res) => {
+app.post('/api/backward', (req, res) => {
   const path = getBackwardPath();
   setState({
     curDir: path,
@@ -305,7 +309,7 @@ function calcCopyProgress({ countCopiedPhotos }) {
 }
 
 function getBackwardPath() {
-  if (state.albumDir === state.curDir) return state.curDir;
+  // if (state.albumDir === state.curDir) return state.curDir;
   return state.curDir.slice(0, state.curDir.lastIndexOf('\\'));
 }
 
@@ -327,7 +331,7 @@ function findFiles({
 }) {
   
   find.file('', path, (files) => {
-    let browseFiles = files;
+    let browseFiles = files; 
 
     if (doNeedTopLevelSearch) browseFiles = browseFiles.filter(isTopLevelFile);
 

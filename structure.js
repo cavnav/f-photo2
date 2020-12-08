@@ -72,7 +72,7 @@ app = {
     }
   },
   server: {
-    rootDir: 'C:\\Users\\shelm\\Pictures',    
+    rootDir: '',    
     sharedDir: '..\\..\\..\\shared',
     $share: {
       WhatsappBot: {
@@ -90,6 +90,26 @@ app = {
         ],
         sharedFolder: '../../shared/2020-10-22',
       }
+    },
+    projectDir: path.resolve(__dirname, '../../../'),
+    albumDir: '../src',
+      можно ли покидать альбомную папку?
+        почему нет?
+    API: {
+      toward:
+      backard:
+      browseFiles:  
+        findFiles()
+          doNeedDirs: true
+          onResolve()
+            setState
+              files
+              dirs
+            response.send()
+              files
+              dirs
+
+
     }
   },
 };

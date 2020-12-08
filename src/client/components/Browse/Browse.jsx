@@ -1,23 +1,23 @@
 import React, { useState, useEffect, useReducer, useRef } from 'react';
 import { Help, Actions } from '../';
-import { tempReducer } from '../../functions';
+import { Spin } from 'antd';
 
 import './styles.css';
 
 export function Browse({
   appState,
-  curPhotoInd,
+  browseState,
   files,
   dirs,
 
   setAppState,
   setBrowseState,
-  setServerToward,
+  server,
   tempReducer,
 }) {
   const [state, setState] = useReducer(tempReducer, stateInit);
 
-  useEffect(onRender, []);
+  useEffect(onFirstRender, []);
   useEffect(boostPerfImgRender, [files]);
 
   return getRender();
@@ -28,6 +28,8 @@ export function Browse({
       <div 
           className={`${Browse.name}`}
         >
+        { state.loading && <Spin size="large" /> }
+
         { getDirsToRender() }
         { getFilesToRender() }   
 
@@ -39,9 +41,18 @@ export function Browse({
     );
   }
 
-  function onRender() {
-    setServerToward();
-    const curPhotoEl = document.querySelector(`.${Browse.name} .file[ind='${curPhotoInd}']`);
+  function onFirstRender() {
+    setState({
+      loading: true,
+    });
+    server.toward({
+      resetTo: browseState.path,
+    })
+    .then(() => setState({
+      loading: false,
+    }));
+
+    const curPhotoEl = document.querySelector(`.${Browse.name} .file[ind='${browseState.curPhotoInd}']`);
     if (curPhotoEl) {
       curPhotoEl.scrollIntoView();
       curPhotoEl.classList.add('curFile');
@@ -72,8 +83,16 @@ export function Browse({
   }
 
   function onClickDir(e) {
+    setState({
+      loading: true,
+    });
     const subdir = e.target.getAttribute('name');
-    setServerToward({ subdir });
+    server.toward({ subdir })
+    .then(() => 
+      setState({
+        loading: false,
+      })
+    );
   }
 
   function onClickFile(e) {
@@ -131,9 +150,7 @@ Browse.getReqProps = ({ channel }) => {
         files: 1,
         dirs: 1,
       },
-      browseState: {
-        curPhotoInd: 1,
-      },
+      browseState: 1,
     },
     d: {
       setAppState: 1,
@@ -141,9 +158,7 @@ Browse.getReqProps = ({ channel }) => {
     },
     API: {
       comps: {
-        server: {
-          toward: 'setServerToward',
-        },
+        server: 1, 
       },
     },
   });
@@ -170,6 +185,7 @@ Browse.getAPI = () => {
 };
 
 const stateInit = {
+  loading: true,
   previewWidth: 100,
   previewHeight: 100,
 };

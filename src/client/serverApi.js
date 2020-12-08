@@ -67,23 +67,38 @@ export class AppServerAPI {
 
   backward = () => {
     this.navigate({ url: 'backward' });
-    this.s.browseState.path = this.s.browseState.path.slice(0, -1);
   }
 
-  toward = ({ subdir } = {}) => {
-    this.navigate({ url: 'toward', params: { subdir } });
-    this.s.browseState.path.push(subdir);
+  toward = ({
+    resetTo,
+    subdir,
+   } = {}) => {
+    return this.navigate({ 
+      url: 'toward', 
+      params: { 
+        subdir,
+        resetTo, 
+      } 
+    });
   }
 
   navigate = ({ url, params = {} }) => {
-    fetch(this.getUrlWithParams({ url, params }))
+    return fetch(
+      this.getFullUrl({ url }),
+      new PostObjTmp({
+        body: params,
+      })
+    )
     .then(res => res.json())
     .then((res) => {
-      const { files, dirs } = res;
+      const { files, dirs, path } = res;
       this.d.setPhotosState({
         files,
         dirs,
-      });    
+      });   
+      this.d.setBrowseState({
+        path,
+      }); 
     });
   }
 

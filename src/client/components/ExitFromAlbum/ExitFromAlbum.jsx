@@ -3,10 +3,10 @@ import React, { useState, useEffect } from 'react';
 import './styles.css';
 
 export function ExitFromAlbum({
-  browsePath,
-  setServerBackward,
+  browseState,
+  server,
 }) {
-  const [albumName] = browsePath.slice(-1);
+  const [albumName] = browseState.path.slice(-1);
   if (!albumName) return null;
 
   const title = `Закрыть альбом ${albumName}`;
@@ -26,18 +26,20 @@ export function ExitFromAlbum({
 
   // -----------------------------------------------------------------------
   function onClick(e) {
-    setServerBackward();
+    server.backward();
   };
-
 }
 
 ExitFromAlbum.getReqProps = function ({ channel }) {
   return channel.crop({
-    s: { browseState: { path: 'browsePath' } },
+    s: { 
+      browseState: 1 
+    },
     API: { 
       comps: {
-        server: { backward: 'setServerBackward' } },
+        server: 1,
       },
+    }
   });
 }
 

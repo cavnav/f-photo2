@@ -1,8 +1,9 @@
 .Browse {
+  position: relative;
   display: flex;
   flex-wrap: wrap;
   height: 100%;
-  overflow-y: scroll;
+  overflow-y: auto;
 }
 
 .fitPreview100 {  
@@ -33,4 +34,9 @@
 
 .Browse .scrollwait {
   visibility: hidden;
+}
+
+.Browse  .ant-spin {
+  position: absolute;
+  width: 100%;
 }
