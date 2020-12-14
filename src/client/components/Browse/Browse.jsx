@@ -4,9 +4,13 @@ import { Spin } from 'antd';
 
 import './styles.css';
 
+// const resumeObj = new ResumeObj({
+//   compName: OnePhoto.name,
+// });
+
 export function Browse({
   appState,
-  browseState,
+  browseState, 
   files,
   dirs,
 

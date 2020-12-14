@@ -44,7 +44,10 @@ export class AppServerAPI {
   }
 
   $remove = (params) => {
-    const url = this.getUrlWithParams({ url: 'remove', params });
+    const url = this.getUrlWithParams({ url: 'remove', params: {
+      ...params,
+      curWindow: window.name,
+    }});
     return fetch(url)
     .then(res => res.json());
   }
@@ -66,7 +69,9 @@ export class AppServerAPI {
   }
 
   backward = () => {
-    this.navigate({ url: 'backward' });
+    this.navigate({ 
+      url: 'backward', 
+    });
   }
 
   toward = ({
@@ -86,7 +91,10 @@ export class AppServerAPI {
     return fetch(
       this.getFullUrl({ url }),
       new PostObjTmp({
-        body: params,
+        body: {
+          ...params,
+          curWindow: window.name,
+        }
       })
     )
     .then(res => res.json())
@@ -96,7 +104,7 @@ export class AppServerAPI {
         files,
         dirs,
       });   
-      this.d.setBrowseState({
+      path && this.d.setBrowseState({
         path,
       }); 
     });
@@ -110,7 +118,9 @@ export class AppServerAPI {
       headers: {
         'Content-Type': 'application/json;charset=utf-8'
       },
-      body: JSON.stringify({})
+      body: JSON.stringify({
+        curWindow: window.name,
+      })
     }).then(res => res.json());
   }
 

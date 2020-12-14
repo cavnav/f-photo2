@@ -24,9 +24,10 @@ let state = {
   countCopiedPhotos: 0,
   albumDir,
   projectDir: path.resolve(__dirname, '../../../'),
-  curDir: albumDir,
+  curWindow: 'leftWindow',
+  leftWindow: albumDir,
+  rightWindow: albumDir,
   usbDriveLetter: undefined,
-
 };
 
 let timeoutIdImg
@@ -41,7 +42,6 @@ app.use(bodyParser.json());
 app.listen(process.env.PORT || 8080, () => console.log(`Listening on port ${process.env.PORT || 8080}!`));
 
 app.post('/api/share', async(req, response) => {
-  console.log('dg', req.body);
   response.send(req.body);
   const date = getCurMoment();
   
@@ -64,7 +64,7 @@ app.post('/api/share', async(req, response) => {
       names: req.body.names,
       sharedFolder,
     },
-    onClose: () => { console.log('onClose') },
+    onClose: () => {},
   });
   whatsappBot.run();
 });
@@ -84,7 +84,6 @@ app.get('/api/getUsbDevices', (req, res) => {
     setState({
       usbDriveLetter: usbDriveLetterUpd,
     });
-    console.log('usbDriveLetter', usbDriveLetterUpd)
 
     res.send({
       driveLetter: usbDriveLetter,
@@ -111,8 +110,6 @@ app.get('/api/getNewPhotos', async (req, res) => {
     doNeedTopLevelSearch: false,
     doNeedFullPath: true,
     onResolve({ files }) {
-
-      console.log(111, files);
       setState({
         newPhotos: [...files],
         countNewPhotos: files.length,
@@ -133,11 +130,14 @@ app.get('/api/browseFiles', (req, res) => {
         files,
         dirs,
       });
+
+      const path = state[state.curWindow].replace(/\\/g, '/').split('/');
+      const pathUpd = state[state.curWindow] === state.albumDir ? [undefined] : path;
     
       res.send({
         files,
         dirs,
-        path: state.curDir.replace(/\\/g, '/').split('/'),
+        path: pathUpd,
       });
     }
   });
@@ -147,23 +147,32 @@ app.post('/api/toward', (req, res) => {
   let { 
     subdir,
     resetTo, 
+    curWindow,
   } = req.body;
 
   const resetToUpd = resetTo ? resetTo.join('\\') : resetTo;
   subdir = subdir ? `\\${subdir}` : '';
-  const path = resetToUpd || `${state.curDir}${subdir}`;
+  const path = resetToUpd || `${state[curWindow]}${subdir}`;
 
-  setState({
-    curDir: path,
+  state[curWindow] && setState({
+    [curWindow]: path,
+    curWindow,
   });
 
   res.redirect('browseFiles');
 });
 
 app.post('/api/backward', (req, res) => {
-  const path = getBackwardPath();
+  const {
+    curWindow
+  } = req.body;
+  const path = getBackwardPath({
+    curWindow,
+  });
+
   setState({
-    curDir: path,
+    [curWindow]: path,
+    curWindow,
   });
 
   res.redirect('browseFiles');  
@@ -181,8 +190,11 @@ app.get('/api/saveChanges', (req, res) => {
 });
 
 app.get('/api/remove', async (req, res) => {
-  const { file } = req.query;
-  const fileUpd = state.curDir.concat('\\', file);
+  const { 
+    file,
+    curWindow,
+  } = req.query;
+  const fileUpd = state[curWindow].concat('\\', file);
   removeFile({ file: fileUpd, resolve });
   
   function resolve() {
@@ -191,9 +203,14 @@ app.get('/api/remove', async (req, res) => {
 });
 
 app.get('/api/imgRotate', (req, response) => {
-  let { img, deg = 0, path } = req.query;
-  const imgUpd = state.curDir.concat('\\', img);
-  const pathUpd = state.curDir.concat('\\', path);
+  let { 
+    img, 
+    deg = 0, 
+    path,
+    curWindow, 
+  } = req.query;
+  const imgUpd = state[curWindow].concat('\\', img);
+  const pathUpd = state[curWindow].concat('\\', path);
 
   Jimp.read(imgUpd)
   .then(imgUpd => {
@@ -210,7 +227,6 @@ app.post('/api/saveFilesToFlash', async (req, response) => {
   clearUpUSB()
   .then(async (res) => {
     const { files } = req.body;
-    console.log('saveFilesToFlash', req.body.folders, files);
     const filesList = Object.keys(files);
     const srcRoot = 'e:\\projects\\docsF-photo2\\root\\';
     const destRoot = state.usbDriveLetter;
@@ -227,6 +243,9 @@ app.post('/api/saveFilesToFlash', async (req, response) => {
 });
 
 app.post('/api/copyPhotos', (req, res) => {
+  const {
+    curWindow,
+  } = req.body;
   const curMoment = getCurMoment();
   const destDir = path.resolve(state.albumDir, curMoment);
 
@@ -265,7 +284,7 @@ app.post('/api/copyPhotos', (req, res) => {
       } else {
         await clearUpUSB();
         setState({
-          curDir: destDir,
+          [curWindow]: destDir,
         });
       }      
     });
@@ -308,9 +327,11 @@ function calcCopyProgress({ countCopiedPhotos }) {
   return Math.floor(countCopiedPhotos * 100 / countNewPhotos);
 }
 
-function getBackwardPath() {
-  // if (state.albumDir === state.curDir) return state.curDir;
-  return state.curDir.slice(0, state.curDir.lastIndexOf('\\'));
+function getBackwardPath({
+  curWindow,
+}) {
+  if (state.albumDir === state[curWindow]) return state[curWindow];
+  return state[curWindow].slice(0, state[curWindow].lastIndexOf('\\'));
 }
 
 function saveToFile({ 
@@ -322,14 +343,13 @@ function saveToFile({
 }
 
 function findFiles({ 
-  path = state.curDir,
+  path = state[state.curWindow],
 
   doNeedTopLevelSearch = true,
   doNeedDirs = false,
   doNeedFullPath = false,
   onResolve = () => {} 
 }) {
-  
   find.file('', path, (files) => {
     let browseFiles = files; 
 
@@ -381,7 +401,6 @@ function removeFile({
 }
 
 function clearUpUSB() {
-  console.log('clearUSB', state.usbDriveLetter);
   return fs.remove(state.usbDriveLetter)
   .then(() => {
   })
