@@ -10,6 +10,7 @@ const {
   SavePhotosToFlash,
   ActionSharePhotos,
   ExitFromOnePhoto,
+  MoveItems,
 } = AdditionalActionsComps;
 class Action {
   constructor(props) {
@@ -78,6 +79,10 @@ class AdditionalActions {
     isActive: true,
     componentName: ToggleRightWindow.name,
   });
+  MoveItems = new Action({
+    isActive: true,
+    componentName: MoveItems.name,
+  })
 }
 
 export const additionalActions = new AdditionalActions();

@@ -125,15 +125,13 @@ app.get('/api/browseFiles', (req, res) => {
   findFiles({ 
     doNeedDirs: true,
     onResolve({ files, dirs }) {
-
       setState({
         files,
         dirs,
       });
 
       const path = state[state.curWindow].replace(/\\/g, '/').split('/');
-      const pathUpd = state[state.curWindow] === state.albumDir ? [undefined] : path;
-    
+      const pathUpd = state[state.curWindow] === state.albumDir ? [undefined] : path;    
       res.send({
         files,
         dirs,
@@ -240,6 +238,52 @@ app.post('/api/saveFilesToFlash', async (req, response) => {
     copyProgress: 100, 
   }))
   .catch(console.error);
+});
+
+app.post('/api/moveToPath', (req, res) => {
+  res.send(req.body);
+
+  const {
+    path = state.rightWindow,
+    items,
+  } = req.body;
+  
+  setState({
+    copyProgress: 0,
+    countCopiedPhotos: 0,
+  });
+  
+  startCopy({ 
+    items,
+    path, 
+  });
+
+  // ------------------------------------
+
+  async function startCopy({
+    items,
+    path,
+  }) {
+    const countCopiedPhotosUpd = state.countCopiedPhotos + 1;
+
+    const copyProgress = calcCopyProgress({ 
+      countCopiedPhotos: countCopiedPhotosUpd, 
+    });
+
+    const [item] = items;
+
+    await fs.copy(
+      item, 
+      path,
+    );
+
+    if (copyProgress !== 100) {
+      startCopy({ 
+        items: items.slice(1), 
+        path,
+      });
+    }
+  }
 });
 
 app.post('/api/copyPhotos', (req, res) => {

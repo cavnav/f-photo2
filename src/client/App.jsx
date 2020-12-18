@@ -36,6 +36,7 @@ export function App(props) {
     compName: 'browseState',
     props: {
       path: [],
+      items: ['1.webp', '15.webp', '2020-11-16T060247'],
       curPhotoInd: -1,
       scrollY: 0,
     },
@@ -100,6 +101,7 @@ function getAppStateInit({
           additionalActions: [
             additionalActions.ExitFromAlbum, 
             additionalActions.ToggleRightWindow,
+            additionalActions.MoveItems,
           ],
         },
         OnePhoto: {

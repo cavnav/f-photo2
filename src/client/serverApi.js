@@ -110,6 +110,25 @@ export class AppServerAPI {
     });
   }
 
+  $moveToPath = ({
+    items,
+    path,
+  }) => {
+    return fetch(
+      this.getFullUrl({
+        url: 'copyToPath',
+      }), 
+      new PostObjTmp({      
+        body: {
+          items,
+          path,
+          curWindow: window.name,
+        }
+      })
+    )
+    .then(res => res.json());
+  }
+
   $copyPhotos = () => {
     return fetch(this.getFullUrl({
       url: 'copyPhotos',
@@ -129,7 +148,11 @@ export class AppServerAPI {
   }
 
   $checkCopyProgress = () => {
-    return fetch(this.getFullUrl({ url: 'checkCopyProgress' })).then(res => res.json());
+    return fetch(
+      this.getFullUrl({ 
+        url: 'checkCopyProgress' 
+      }))
+      .then(res => res.json());
   }
 
   browsePhotos = () => {

@@ -125,7 +125,7 @@ export function Copy({
     serverAPI.$checkCopyProgress()
       .then((res) => {
         const isCopyCompleted = res.copyProgress === 100;
-        setTimeout(() => (isCopyCompleted ? null : serverAPI.$checkCopyProgress()), 500);
+        setTimeout(() => (isCopyCompleted ? null : $checkCopyProgressWrap()), 500);
         setState({
           ...state,
           copyProgress: res.copyProgress,

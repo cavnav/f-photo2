@@ -25,7 +25,9 @@ export class Channel {
 
   essentials = (component, { parentProps = {} } = {}) => {
     if (component.getAPI) this.addAPI({
-      [component.name]: component.getAPI(), 
+      [component.name]: component.getAPI({
+        channel: this,
+      }), 
     });
     if (component.getReqProps) return {
       channel: this,

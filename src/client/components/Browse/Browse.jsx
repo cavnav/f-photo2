@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useReducer, useRef } from 'react';
 import { Help, Actions } from '../';
-import { Spin } from 'antd';
+import { 
+  Spin,
+  Progress,
+} from 'antd';
 
 import './styles.css';
 
@@ -20,6 +23,8 @@ export function Browse({
   tempReducer,
 }) {
   const [state, setState] = useReducer(tempReducer, stateInit);
+  Browse.state = state;
+  Browse.setState = setState;
 
   useEffect(onFirstRender, []);
   useEffect(boostPerfImgRender, [files]);
@@ -33,6 +38,12 @@ export function Browse({
           className={`${Browse.name}`}
         >
         { state.loading && <Spin size="large" /> }
+        { state.copyProgress < 100 && (
+          <Progress 
+            type="circle" 
+            percent={state.copyProgress}             
+          />    
+        )}
 
         { getDirsToRender() }
         { getFilesToRender() }   
@@ -168,7 +179,20 @@ Browse.getReqProps = ({ channel }) => {
   });
 };
 
-Browse.getAPI = () => {
+Browse.getAPI = ({
+  channel,
+}) => {
+  const props = channel.crop({
+    API: {
+      comps: {
+        server: 1,
+      }
+    }
+  });
+
+  Browse.state = {};
+  Browse.setState = () => {};
+
   return {
     toggleRightWindow() {            
       const states = {
@@ -184,11 +208,41 @@ Browse.getAPI = () => {
       if (count > 0) {
         window.location.reload();
       }
+    },
+    copyItems() {
+      const {
+        items,
+      } = Browse.state;
+
+      props.server.moveToPath({
+        items,
+      });
+
+      Browse.setState({
+        copyProgress: 0, 
+      });
+
+      checkCopyProgressWrap();
+
+      // ---------------------------------------
+      function checkCopyProgressWrap({
+      } = {}) {
+        props.server.$checkCopyProgress()
+          .then(({
+            copyProgress
+          }) => {
+            setTimeout(() => (copyProgress === 100 ? null : checkCopyProgressWrap()), 500);
+            Browse.setState({
+              copyProgress,
+            });
+          });
+      };
     }
   };
 };
 
 const stateInit = {
+  copyProgress: 100,
   loading: true,
   previewWidth: 100,
   previewHeight: 100,

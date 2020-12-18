@@ -1,3 +1,4 @@
+import { MoveItems } from './Movetems/MoveItems';
 import { ExitFromAlbum } from './ExitFromAlbum/ExitFromAlbum';
 import { ToggleRightWindow } from './ToggleRightWindow/ToggleRightWindow';
 import { ExitFromOnePhoto } from './ExitFromOnePhoto/ExitFromOnePhoto';
@@ -11,7 +12,8 @@ export const AdditionalActionsComps = {
   SaveChanges,
   SavePhotosToFlash,
   ActionSharePhotos,
-  ExitFromOnePhoto
+  ExitFromOnePhoto,
+  MoveItems,
 };
 
 export { SelectAlbum } from './SelectAlbum';
