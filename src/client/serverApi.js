@@ -110,6 +110,24 @@ export class AppServerAPI {
     });
   }
 
+  addAlbum = ({
+    albumName,
+  }) => {
+    if (!albumName) return;
+    return fetch(
+      this.getFullUrl({
+        url: 'addAlbum'
+      }),
+      new PostObjTmp({
+        body: {
+          albumName,
+          curWindow: window.name,
+        },
+      })
+    )
+    .then((res) => res.json());
+  };
+
   $moveToPath = ({
     items,
     path,

@@ -26,7 +26,7 @@ export function MoveItems({
 
   // -----------------------------------------------------------------------
   function onClick(e) {
-    BrowseAPI.copyItems();
+    BrowseAPI.moveItems();
   };
 }
 

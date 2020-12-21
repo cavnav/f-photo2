@@ -11,6 +11,7 @@ const {
   ActionSharePhotos,
   ExitFromOnePhoto,
   MoveItems,
+  AddAlbum,
 } = AdditionalActionsComps;
 class Action {
   constructor(props) {
@@ -82,7 +83,11 @@ class AdditionalActions {
   MoveItems = new Action({
     isActive: true,
     componentName: MoveItems.name,
-  })
+  });
+  AddAlbum = new Action({
+    isActive: true,
+    componentName: AddAlbum.name,
+  });
 }
 
 export const additionalActions = new AdditionalActions();

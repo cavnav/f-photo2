@@ -1,5 +1,9 @@
-import React, { useState, useEffect, useReducer, useRef } from 'react';
-import { Help, Actions } from '../';
+import React, { useEffect, useReducer } from 'react';
+import { 
+  Help, 
+  Actions,
+  Dialog 
+} from '../';
 import { 
   Spin,
   Progress,
@@ -23,8 +27,16 @@ export function Browse({
   tempReducer,
 }) {
   const [state, setState] = useReducer(tempReducer, stateInit);
+
   Browse.state = state;
   Browse.setState = setState;
+
+  const onDialogCancel = React.useCallback(() => {
+    setState({
+      isDialogEnabled: false,
+      dialogTitle: '',
+    });
+  }, []);
 
   useEffect(onFirstRender, []);
   useEffect(boostPerfImgRender, [files]);
@@ -43,6 +55,14 @@ export function Browse({
             type="circle" 
             percent={state.copyProgress}             
           />    
+        )}
+
+        {state.isDialogEnabled && (
+          <Dialog       
+            onCancel={onDialogCancel}    
+          >
+            <div>{state.dialogTitle}</div>
+          </Dialog>
         )}
 
         { getDirsToRender() }
@@ -179,6 +199,9 @@ Browse.getReqProps = ({ channel }) => {
   });
 };
 
+Browse.state = {};
+Browse.setState = () => {};
+
 Browse.getAPI = ({
   channel,
 }) => {
@@ -189,9 +212,6 @@ Browse.getAPI = ({
       }
     }
   });
-
-  Browse.state = {};
-  Browse.setState = () => {};
 
   return {
     toggleRightWindow() {            
@@ -209,7 +229,7 @@ Browse.getAPI = ({
         window.location.reload();
       }
     },
-    copyItems() {
+    moveItems() {
       const {
         items,
       } = Browse.state;
@@ -237,7 +257,32 @@ Browse.getAPI = ({
             });
           });
       };
-    }
+    },
+    async addAlbum({
+      albumName
+    }) {
+      const res = await props.server.addAlbum({
+        albumName,
+      });
+
+      if (!res) {
+        Browse.setState({
+          isDialogEnabled: true,
+          dialogTitle: `Альбом ${albumName} уже есть!`,
+        }); 
+        return;               
+      }
+
+      Browse.setState({
+        loading: true,
+      });
+      props.server.toward()
+      .then(() => 
+        Browse.setState({
+          loading: false,
+        })
+      );
+    },
   };
 };
 
@@ -246,4 +291,7 @@ const stateInit = {
   loading: true,
   previewWidth: 100,
   previewHeight: 100,
+  isDialogEnabled: false,
+  dialogTitle: '',
+  forceUpdate: false,
 };

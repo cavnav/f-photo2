@@ -121,6 +121,30 @@ app.get('/api/getNewPhotos', async (req, res) => {
   });
 });
 
+app.post(
+  '/api/addAlbum', 
+  async (req, res) => {    
+    const {
+      curWindow,
+      albumName,
+    } = req.body;
+
+    const src = path.join(state[curWindow], albumName);
+    
+    const exists = await fs.pathExists(src);
+    if (exists) {
+      res.send(false);
+      return;
+    }
+
+    await fs.ensureDir(
+      src,
+    );
+    
+    res.send(req.body);
+  }
+);
+
 app.get('/api/browseFiles', (req, res) => {
   findFiles({ 
     doNeedDirs: true,

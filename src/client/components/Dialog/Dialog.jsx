@@ -1,21 +1,24 @@
 import React from 'react';
+import { tempReducer, useMyReducerWithPropsUpdated } from '../../functions';
 
 import './styles.css';
 
 export function Dialog({ 
   children, 
-  isEnabled = false,
-  onCancel,
+  onCancel = () => {},
 }) {  
 
+  const [state, setState] = React.useReducer(tempReducer, initState);
+
   React.useEffect(() => {
-      setTimeout(() => { if (isEnabled) onCancel(); }, 1000);
-      return;
+      setTimeout(() => { 
+        onCancel();         
+      }, 1000);
     }, 
-    [isEnabled]
+    []
   );
 
-  return isEnabled === false ? null : (
+  return (
     <dialog 
       className="Dialog fontSize20"
     >        
@@ -39,5 +42,6 @@ Dialog.getReqProps = ({
     isEnabled,
   };
 }
-const InitState = {
+const initState = {
+  isEnabled: false,
 };
