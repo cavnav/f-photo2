@@ -1,0 +1,24 @@
+.RemoveItems {
+  display: flex;
+  --height: 36px;  
+}
+
+.RemoveItems .title {
+  display: flex;
+}
+
+.RemoveItems .title:hover .albumNameBox {
+  display: flex;  
+}
+
+.RemoveItems .albumName {
+  margin: 0px 5px;
+  border: 1px solid;
+  height: var(--height);
+}
+
+.RemoveItems .albumNameBox {
+  display: none;
+  align-items: center;
+  height: var(--height);
+}

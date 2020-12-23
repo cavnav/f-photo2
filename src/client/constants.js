@@ -12,6 +12,7 @@ const {
   ExitFromOnePhoto,
   MoveItems,
   AddAlbum,
+  RemoveItems,
 } = AdditionalActionsComps;
 class Action {
   constructor(props) {
@@ -87,6 +88,10 @@ class AdditionalActions {
   AddAlbum = new Action({
     isActive: true,
     componentName: AddAlbum.name,
+  });
+  RemoveItems = new Action({
+    isActive: true,
+    componentName: RemoveItems.name,
   });
 }
 

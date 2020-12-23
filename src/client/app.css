@@ -13,6 +13,10 @@ body {
   width: 100%;
 }
 
+.positionAbs {
+  position: absolute;
+}
+
 .f-photo {
   display: flex;
   flex-direction: column;

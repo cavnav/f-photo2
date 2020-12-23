@@ -6,6 +6,7 @@ import { ActionSharePhotos } from './ActionSharePhotos/ActionSharePhotos';
 import { SaveChanges } from './SaveChanges/SaveChanges';
 import { SavePhotosToFlash } from './SavePhotosToFlash/SavePhotosToFlash';
 import { AddAlbum } from './AddAlbum/AddAlbum';
+import { RemoveItems } from './RemoveItems/RemoveItems';
 
 export const AdditionalActionsComps = {
   ExitFromAlbum,
@@ -16,6 +17,7 @@ export const AdditionalActionsComps = {
   ExitFromOnePhoto,
   MoveItems,
   AddAlbum,
+  RemoveItems,
 };
 
 export { SelectAlbum } from './SelectAlbum';

@@ -128,6 +128,24 @@ export class AppServerAPI {
     .then((res) => res.json());
   };
 
+  removeItems = ({
+    items = [],
+  }) => {
+    if (items.length === 0) return;
+    return fetch(
+      this.getFullUrl({
+        url: 'removeItems'
+      }),
+      new PostObjTmp({
+        body: {
+          items,
+          curWindow: window.name,
+        },
+      })
+    )
+    .then((res) => res.json());
+  };
+
   $moveToPath = ({
     items,
     path,

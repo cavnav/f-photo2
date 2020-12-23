@@ -145,6 +145,60 @@ app.post(
   }
 );
 
+app.post(
+  '/api/removeItems',
+  async (req, res) => {
+    const {
+      curWindow,
+      items: items,
+    } = req.body;
+
+    setState({
+      copyProgress: 0,
+      countCopiedPhotos: 0,
+    });
+
+    remove({
+      slicedItems: items,
+    });
+
+    res.send(req.body);
+
+    // -----------------------
+    async function remove({
+      slicedItems,
+    }) {        
+      const [item] = slicedItems;
+      console.log(
+        'slicedItems',
+        slicedItems,
+      )
+      const src = path.join(state[curWindow], item);
+      await fs.remove(
+        src, 
+      );
+  
+      const countProcessed = state.countCopiedPhotos + 1;
+  
+      const progress = calcProgress({ 
+        cntProcessed: countProcessed, 
+        total: items.length,
+      });
+
+      if (progress !== 100 && slicedItems.length > 1) {
+        remove({ 
+          slicedItems: slicedItems.slice(1), 
+        });
+      }
+
+      setState({
+        copyProgress: progress,
+        countCopiedPhotos: countProcessed,
+      });
+    }  
+  }
+)
+
 app.get('/api/browseFiles', (req, res) => {
   findFiles({ 
     doNeedDirs: true,
@@ -393,6 +447,13 @@ app.post('/api/saveSettings', (req, res) => {
 function calcCopyProgress({ countCopiedPhotos }) {
   const { countNewPhotos, } = state;
   return Math.floor(countCopiedPhotos * 100 / countNewPhotos);
+}
+
+function calcProgress({
+  cntProcessed,
+  total,
+}) {
+  return Math.floor(cntProcessed * 100 / total);
 }
 
 function getBackwardPath({

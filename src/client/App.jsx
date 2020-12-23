@@ -103,6 +103,7 @@ function getAppStateInit({
             additionalActions.ToggleRightWindow,
             additionalActions.MoveItems,
             additionalActions.AddAlbum,
+            additionalActions.RemoveItems,
           ],
         },
         OnePhoto: {

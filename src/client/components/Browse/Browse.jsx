@@ -38,6 +38,12 @@ export function Browse({
     });
   }, []);
 
+  const onDialogRemoveCancel = React.useCallback(() => {
+    setState({
+      isDialogRemoveItem: false,
+    });
+  });
+
   useEffect(onFirstRender, []);
   useEffect(boostPerfImgRender, [files]);
 
@@ -50,11 +56,13 @@ export function Browse({
           className={`${Browse.name}`}
         >
         { state.loading && <Spin size="large" /> }
-        { state.copyProgress < 100 && (
-          <Progress 
-            type="circle" 
-            percent={state.copyProgress}             
-          />    
+        { state.progress < 100 && (
+          <div className="flexCenter width100pr positionAbs">
+            <Progress 
+              type="circle" 
+              percent={state.progress}             
+            />  
+          </div>
         )}
 
         {state.isDialogEnabled && (
@@ -62,6 +70,14 @@ export function Browse({
             onCancel={onDialogCancel}    
           >
             <div>{state.dialogTitle}</div>
+          </Dialog>
+        )}
+
+        {state.isDialogRemoveItem && (
+          <Dialog       
+            onCancel={onDialogRemoveCancel}    
+          >
+            <div>Удалить? Нажми еще раз</div>      
           </Dialog>
         )}
 
@@ -239,7 +255,7 @@ Browse.getAPI = ({
       });
 
       Browse.setState({
-        copyProgress: 0, 
+        progress: 0, 
       });
 
       checkCopyProgressWrap();
@@ -249,11 +265,11 @@ Browse.getAPI = ({
       } = {}) {
         props.server.$checkCopyProgress()
           .then(({
-            copyProgress
+            copyProgress,
           }) => {
             setTimeout(() => (copyProgress === 100 ? null : checkCopyProgressWrap()), 500);
             Browse.setState({
-              copyProgress,
+              progress: copyProgress,
             });
           });
       };
@@ -283,15 +299,74 @@ Browse.getAPI = ({
         })
       );
     },
+    removeItems(
+      { } = {}
+    ) {
+      if (Browse.state.isDialogRemoveItem === false) {
+        Browse.setState({
+          isDialogRemoveItem: true,
+        });
+        return;
+      }  
+
+      Browse.setState({
+        progress: 0,
+        isDialogRemoveItem: false,
+      });
+
+      props.server.removeItems({
+        items: ['att3', 'att4'],
+      });
+
+      checkProgress();
+
+      return;
+
+      // ----------------------
+      function checkProgress(
+        {} = {}
+      ) {
+        props.server.$checkCopyProgress()
+        .then(({
+          copyProgress,
+        }) => {
+          setTimeout(
+            () => {
+              if (copyProgress < 100) {
+                checkProgress();
+                return;
+              }
+
+              Browse.setState({
+                loading: true,
+                progress: copyProgress,
+              });
+
+              props.server.toward()
+              .then(() => {
+                Browse.setState({
+                  loading: false,
+                });
+              });            
+            }, 
+            500
+          );
+
+          Browse.setState({
+            progress: copyProgress,
+          });
+        });
+      }
+    },
   };
 };
 
 const stateInit = {
-  copyProgress: 100,
   loading: true,
   previewWidth: 100,
   previewHeight: 100,
   isDialogEnabled: false,
   dialogTitle: '',
-  forceUpdate: false,
+  isDialogRemoveItem: false,
+  progress: 100,
 };
