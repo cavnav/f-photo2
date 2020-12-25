@@ -44,6 +44,72 @@ export function Browse({
     });
   });
 
+  const dispatcher = {};
+
+  addHandlers({
+    target: dispatcher,
+    fns: [
+      React.useCallback(
+        function onClickDir({
+          event
+        }) {
+          setState({
+            loading: true,
+          });
+          const subdir = event.target.getAttribute('src');
+          server.toward({ subdir })
+          .then(() => 
+            setState({
+              loading: false,
+            })
+          );
+        }, []),
+
+      React.useCallback(
+        function onClickItemSelector({
+          event: { target },
+        }) {
+          setState({
+            setItSilent: function () {
+              const { checked } = target;
+              const src = target.parentElement.getAttribute('src');
+              if (checked) {
+                this.selections.add(src);              
+              }
+              else {
+                this.selections.delete(src);
+              }
+            },
+          });
+        }, 
+        []
+      ),
+      React.useCallback(
+        function onClickFile({
+          event
+        }) {
+          setBrowseState({      
+            curPhotoInd: +event.target.getAttribute('ind'),
+          });
+      
+          setAppState({
+            action: Actions.OnePhoto.name,
+          })
+        },
+        []
+      )
+    ],
+  });
+
+  const onClickDispatcher = React.useCallback((event) => {
+    const { target } = event;
+    const onClickCb = target.getAttribute('clickcb');
+
+    dispatcher[onClickCb]({
+      event,
+    });
+  }, []);
+
   useEffect(onFirstRender, []);
   useEffect(boostPerfImgRender, [files]);
 
@@ -54,6 +120,7 @@ export function Browse({
     return (
       <div 
           className={`${Browse.name}`}
+          onClick={onClickDispatcher}
         >
         { state.loading && <Spin size="large" /> }
         { state.progress < 100 && (
@@ -125,35 +192,19 @@ export function Browse({
       return (
         <div 
           key={dir}
-          name={dir}
-          className="fitPreview100 dir"
-          onClick={onClickDir}
-        >{dir}</div>
+          src={dir}
+          className="positionRel fitPreview100 dir"
+          clickcb={dispatcher.onClickDir.name}
+        >
+          {dir}
+          <input
+            className="itemSelector positionAbs"
+            type="checkbox"
+            clickcb={dispatcher.onClickItemSelector.name}
+          />
+        </div>
       );
     });
-  }
-
-  function onClickDir(e) {
-    setState({
-      loading: true,
-    });
-    const subdir = e.target.getAttribute('name');
-    server.toward({ subdir })
-    .then(() => 
-      setState({
-        loading: false,
-      })
-    );
-  }
-
-  function onClickFile(e) {
-    setBrowseState({      
-      curPhotoInd: +e.target.getAttribute('ind'),
-    });
-
-    setAppState({
-      action: Actions.OnePhoto.name,
-    })
   }
 
   function getFilesToRender() {
@@ -161,12 +212,17 @@ export function Browse({
       return (
         <div 
           key={file}
-          className='fitPreview100 file scrollwait'
+          className='positionRel fitPreview100 file scrollwait'
           style={{ 'backgroundImage': `url(${file})` }}
           ind={ind} 
           src={file}
-          onClick={onClickFile}
+          clickcb={dispatcher.onClickFile.name}
         >
+          <input
+            className="itemSelector positionAbs"
+            type="checkbox"
+            clickcb={dispatcher.onClickItemSelector.name}
+          />
         </div>
       );
     });
@@ -361,6 +417,41 @@ Browse.getAPI = ({
   };
 };
 
+const proxySet = {
+  set(
+    target,
+    prop,
+    value,
+  ) {
+    target[prop] = value;
+  }
+}
+
+function getDispatcher({
+  items,
+}) {
+  const obj = new Proxy(
+    {},
+    proxySet,
+  );
+
+  return Object.assign(
+    obj,
+    items,
+  );
+};
+
+function addHandlers({
+  target,
+  fns,
+}) {
+  const fnsObj = fns.reduce((res, fn) => { res[fn.name] = fn; return res; }, {});
+  Object.assign(
+    target,
+    fnsObj,
+  );
+}
+
 const stateInit = {
   loading: true,
   previewWidth: 100,
@@ -369,4 +460,7 @@ const stateInit = {
   dialogTitle: '',
   isDialogRemoveItem: false,
   progress: 100,
+  selections: new Set(),
 };
+
+

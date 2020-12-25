@@ -36,7 +36,18 @@
   visibility: hidden;
 }
 
-.Browse  .ant-spin {
+.Browse .ant-spin {
   position: absolute;
+  top: 40px;
   width: 100%;
 }
+
+.Browse .itemSelector {  
+  left: 4px;
+  bottom: 4px; 
+  width: var(--size);
+  height: var(--size);
+  opacity: 0.5;
+
+  --size: 40px;
+} 
