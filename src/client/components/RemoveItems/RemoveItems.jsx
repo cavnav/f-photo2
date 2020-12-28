@@ -1,14 +1,15 @@
 import React from 'react';
+import { Browse } from '../Browse/Browse';
+import { OnePhoto } from '../OnePhoto/OnePhoto';
 
 import './styles.css';
 
 export function RemoveItems({
-  browseState,
-  BrowseAPI,
+  ComponentAPI,
 }) {
   const title = `Удалить`;
 
-  const [state, setState] = React.useState({
+  const [state] = React.useState({
     ...stateInit,
   });
 
@@ -25,29 +26,37 @@ export function RemoveItems({
 
   // -----------------------------------------------------------------------
   function onClick() {
-    BrowseAPI.removeItems({
-    });
+    ComponentAPI.removeItems();
   };
-
-  function changeAlbumName(e) {
-    const albumName = e.target.value;
-    setState({
-      albumName,
-    });
-  }
 }
 
 RemoveItems.getReqProps = function ({ channel }) {
-  return channel.crop({
-    s: { 
-      browseState: 1 
-    },
-    API: { 
-      comps: {
-        Browse: 'BrowseAPI',
+  const { action: component } = channel.crop({
+    s: {
+      appState: {
+        action: 1, 
       },
-    }
+    },
   });
+
+  const res = ({
+    [OnePhoto.name]: channel.crop({      
+      API: { 
+        comps: {
+          OnePhoto: 'ComponentAPI',
+        },
+      }
+    }),
+    [Browse.name]: channel.crop({      
+      API: { 
+        comps: {
+          Browse: 'ComponentAPI',
+        },
+      }
+    }),
+  })[component];
+
+  return res;
 }
 
 const stateInit = {

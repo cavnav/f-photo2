@@ -144,7 +144,6 @@ export function Browse({
           <Dialog       
             onCancel={onDialogRemoveCancel}    
           >
-            <div>Удалить? Нажми еще раз</div>      
           </Dialog>
         )}
 
@@ -415,30 +414,6 @@ Browse.getAPI = ({
       }
     },
   };
-};
-
-const proxySet = {
-  set(
-    target,
-    prop,
-    value,
-  ) {
-    target[prop] = value;
-  }
-}
-
-function getDispatcher({
-  items,
-}) {
-  const obj = new Proxy(
-    {},
-    proxySet,
-  );
-
-  return Object.assign(
-    obj,
-    items,
-  );
 };
 
 function addHandlers({

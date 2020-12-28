@@ -23,6 +23,13 @@ export function OnePhoto({
   setBrowseState,
 }) {
 
+  Object.assign(
+    OnePhoto,
+    {
+      setBrowseState,
+    }
+  );
+  
   const selfReducer = React.useMemo(
     () => getSelfReducer({
       files,
@@ -45,6 +52,21 @@ export function OnePhoto({
       }),
     }, 
   });
+
+  Object.assign(
+    OnePhoto,
+    {
+      state,
+      setState,
+      files,
+    }
+  );
+
+  const onDialogRemoveCancel = React.useCallback(() => {
+    setState({
+      isDialogRemoveItem: false,
+    });
+  }, [state]);
 
   const imgRef = React.useRef(null);
 
@@ -70,31 +92,37 @@ export function OnePhoto({
       <div 
         className="OnePhoto fitScreen"
       >
-        <img 
-          ref={imgRef}
-          src={state.curPhotoWithTime}        
-          style={{
-            transform: `rotate(${state.curPhotoRotateDeg}deg)`,
-            width: state.curPhotoWidth,
-            height: state.curPhotoHeight,
-            opacity: state.opacity,
-            visibility: state.visibility,
-          }} 
-        />
-        <PhotoStatuses 
-          { ...channel.essentials(PhotoStatuses) }
-          curPhoto={state.curPhoto}
-        />
+        { state.isNoItems === false && (
+          <>
+            <img 
+              ref={imgRef}
+              src={state.curPhotoWithTime}        
+              style={{
+                transform: `rotate(${state.curPhotoRotateDeg}deg)`,
+                width: state.curPhotoWidth,
+                height: state.curPhotoHeight,
+                opacity: state.opacity,
+                visibility: state.visibility,
+              }} 
+            />
+            <PhotoStatuses 
+              { ...channel.essentials(PhotoStatuses) }
+              curPhoto={state.curPhoto}
+            />
+          </>
+        )}
         <Help
           toRender={toRenderHelp()}
           {...{doNeedHelp}}
         />
-        <Dialog 
-          isEnabled={state.isDialogRemove}
-          onCancel={onCancelRemove}
-        >
-          <div>Удалить фото? Нажми еще раз.</div>
-        </Dialog>
+        {state.isDialogRemoveItem && (
+          <Dialog
+            type={Dialog.RemoveItems}   
+            onCancel={onDialogRemoveCancel}    
+          >          
+          </Dialog>
+        )}
+        {state.isNoItems && 'Пусто'}
       </div>
     );
   }
@@ -139,24 +167,15 @@ export function OnePhoto({
   }
 
   function onKeyDown(e) {
-    const prevPhotoInd = state.curPhotoInd > 0 ? state.curPhotoInd - 1 : 0;
-    const nextPhotoInd = state.curPhotoInd < files.length - 1 ? (state.curPhotoInd + 1) : (files.length - 1);
-
+    const {
+      prevPhotoInd,
+    } = getIndexes({
+      curPhotoInd: state.curPhotoInd,
+      filesLength: files.length,
+    });
     const stateUpd = {};
 
-    switch (e.which) {
-      case 48: // 0
-        if (state.isDialogRemove) {
-          stateUpd.curPhotoRemove = state.curPhoto;
-          stateUpd.isDialogRemove = false;
-
-          onToggleNextPhoto();
-
-          break;
-        }  
-        stateUpd.isDialogRemove = true;
-        break;
-
+    switch (e.which) {  
       case 13: // enter.
         PhotoStatusesAPI.changeShareStatus();
         break;
@@ -175,7 +194,10 @@ export function OnePhoto({
         break; 
 
       case 39: // next
-        onToggleNextPhoto();
+        onToggleNextPhoto({
+          stateUpd,
+          files,
+        });
         break;
 
       case 38: // rotate right
@@ -190,19 +212,10 @@ export function OnePhoto({
     }
 
     setState(stateUpd);
-    setBrowseState({
-      setItSilent: function () { this.curPhotoInd = stateUpd.curPhotoInd; }
-    });
 
     changeAddActions();
 
     // ---------------------------
-    function onToggleNextPhoto() {
-      stateUpd.curPhotoInd = nextPhotoInd; 
-      stateUpd.curPhoto = files[nextPhotoInd];
-      stateUpd.curPhotoRotateDeg = 0;
-      stateUpd.action = onTogglePhoto.name;
-    }
 
     function checkRotate({ deg }) {
       return Math.abs(deg) === 360 ? 0 : deg;
@@ -219,7 +232,6 @@ export function OnePhoto({
           [updatedProp]: () => {},
           curPhotoInd: onTogglePhoto,
           curPhotoRotateDeg: onImgServerRotate,
-          curPhotoRemove: onImgServerRemove,
         }[updatedProp]({
             server,
             state,
@@ -251,14 +263,13 @@ function getSelfReducer({
 
     const stateReduced = {
       [action]: {},
-      onTogglePhoto: {
+      [onTogglePhoto.name]: {
         curPhotoWithTime: curPhoto,
         opacity: '0',
         visibility: 'hidden',
-        curPhotoRemove: undefined,
-        isDialogRemove: false,
+        curPhotoRotateDeg: 0,
       },
-      onImgServerRotate: {
+      [onImgServerRotate.name]: {
         curPhotoRotateDeg: 0,
         curPhotoWithTime: `${files[curPhotoInd]}?${new Date().getTime()}`,
         opacity: '0',
@@ -272,7 +283,18 @@ function getSelfReducer({
     );
 
     resumeObj.save(stateUpd);
-    
+
+    if (action === onTogglePhoto.name) {
+      OnePhoto.setBrowseState({
+        setItSilent: function () { 
+          this.curPhotoInd = stateUpd.curPhotoInd; 
+          if (stateUpd.isNoItems) {
+            this.curPhotoInd = -1;
+          }
+        }
+      });
+    }
+
     return stateUpd;
   };
 }
@@ -297,22 +319,34 @@ function getFitSize({ width, height }) {
 function onTogglePhoto() {
   additionalActions.SaveChanges.reset();
 }
-function onImgServerRemove({
-  server,
-  stateUpd: { 
-    curPhotoRemove,
-  },
-  setState,
+
+function getIndexes({
+  curPhotoInd,
+  filesLength,
 }) {
-  server.$remove({
-    file: curPhotoRemove,
-  })
-  .then(res => {
-    setState({
-      action: onImgServerRemove,
-    });
-    additionalActions.SaveChanges.reset();
-  }) 
+  const prevPhotoInd = curPhotoInd > 0 ? curPhotoInd - 1 : 0;
+  const nextPhotoInd = curPhotoInd < filesLength - 1 ? (curPhotoInd + 1) : (filesLength - 1);
+  return {
+    prevPhotoInd,
+    nextPhotoInd,
+  };
+}
+
+function onToggleNextPhoto({
+  stateUpd,
+  files,
+}) {
+  const {
+    nextPhotoInd,
+  } = getIndexes({
+    curPhotoInd: stateUpd.curPhotoInd,
+    filesLength: files.size,
+  });
+  stateUpd.curPhotoInd = nextPhotoInd; 
+  stateUpd.curPhoto = files[nextPhotoInd];
+  stateUpd.action = onTogglePhoto.name;
+
+  return stateUpd;
 }
 
 function onImgServerRotate({
@@ -369,20 +403,72 @@ OnePhoto.getReqProps = ({ channel }) => {
       },
     }
   }); 
+
+  ch.files = new Set(ch.files);
   return ch;
 };
 
+OnePhoto.getAPI = ({
+  channel,
+}) => {
+  const props = channel.crop({
+    API: {
+      comps: {
+        server: 1,
+      }
+    }
+  });
+
+  return {
+    removeItems(
+      {} = {}
+    ) {
+      if (OnePhoto.state.isDialogRemoveItem === false) {
+        OnePhoto.setState({
+          isDialogRemoveItem: true,
+        });
+        return;
+      }  
+
+      OnePhoto.setState({
+        isDialogRemoveItem: false,
+      });
+
+      props.server.removeItems({
+        items: [OnePhoto.state.curPhotoWithTime],
+      });
+    
+      OnePhoto.state.files.delete(OnePhoto.state.curPhoto);
+      
+      const stateUpd = onToggleNextPhoto({
+        stateUpd: OnePhoto.state,
+        files: OnePhoto.files,
+      });
+
+      if (OnePhoto.files.size === 1) {
+        stateUpd.isNoItems = true;
+      }
+
+      OnePhoto.setState(stateUpd);
+    }
+  };
+};
+
 const stateInit = {
+  isNoItems: false,
+  loading: false,
+  progress: 100,
+  isDialogRemoveItem: false,
   curPhoto: undefined,
   curPhotoWithTime: undefined,
   curPhotoInd: -1,
   curPhotoWidth: undefined,
   curPhotoHeight: undefined,
   curPhotoRotateDeg: 0,
-  curPhotoRemove: undefined,
   isDialogRemove: false,
   curDate: getCurDate(),
   opacity: '1',
   visibility: 'visible',
   action: {},
+  removedItems: new Set(),
 };

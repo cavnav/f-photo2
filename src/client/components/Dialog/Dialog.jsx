@@ -1,14 +1,17 @@
 import React from 'react';
-import { tempReducer, useMyReducerWithPropsUpdated } from '../../functions';
+import { tempReducer } from '../../functions';
+import { RemoveItems, Default } from './';
+import * as Types from './';
 
 import './styles.css';
 
 export function Dialog({ 
+  type = Dialog.default,
   children, 
   onCancel = () => {},
 }) {  
 
-  const [state, setState] = React.useReducer(tempReducer, initState);
+  const [state] = React.useReducer(tempReducer, initState);
 
   React.useEffect(() => {
       setTimeout(() => { 
@@ -18,30 +21,25 @@ export function Dialog({
     []
   );
 
-  return (
-    <dialog 
-      className="Dialog fontSize20"
-    >        
-      <div 
-        className="flexCenter"        
-      >
-        { children }
-      </div>
-    </dialog> 
-  );
+  const res = ({
+    [Default.name]: (
+      <Default>
+        {children}
+      </Default>
+    ),
+    [RemoveItems.name]: (
+      <RemoveItems />
+    ),
+  })[type];
 
-  // -------------------------------------------------------------------
+  return res;
 }
 
-Dialog.getReqProps = ({ 
-  parentProps: {
-    isEnabled,
-  }
-}) => {
-  return {
-    isEnabled,
-  };
-}
+Object.assign(
+  Dialog,
+  Object.keys(Types).reduce((res, type) => { res[type] = type; return res; }, {})
+);
+
 const initState = {
   isEnabled: false,
 };
