@@ -1,10 +1,32 @@
 import React from 'react';
 
-class Items extends Array {
+class MyItems {
+  constructor({
+    items,
+  }) {
+    this.items = items;
+    return this;
+  }
+
   delete(ind) {
-    cnt -= 1;
-    removed = ind;
-    inc += 1;
+    delete this.items[ind];
+    this.items = this.items.filter((i) => i);
+  }
+}
+class Items extends Array {
+  cnt = 0;
+  removed = 0;
+  inc = 0;
+
+  constructor(...props) {
+    super(...props);
+    this.cnt = props.length;
+  }
+
+  delete(ind) {
+    this.cnt -= 1;
+    this.removed = ind;
+    this.inc += 1;
   }
 }
 
@@ -87,14 +109,18 @@ export function getFileDateSrcKey({
   return `${date}-${fileSrc}`;
 }
 
+export function myArray({
+  items,
+}) {
+  return new MyItems({
+    items
+  });
+}
 
-export function myArr(items) {
-  let cnt = 0;
-  let removed = 0;
-  let inc = 0;
-
+export function myArr({
+  items
+}) {
   let myItems = new Items(...items);
-  cnt = myItems.length;
 
   return new Proxy(
     myItems, {
@@ -106,13 +132,13 @@ export function myArr(items) {
         const propInd = parseInt(prop, 10);
         if (isNaN(propInd)) {
           if (prop === 'length') {
-            return cnt;
+            return receiver.cnt;
           }
 
           return Reflect.get(target, prop, receiver);
         }
         let propIntUpd = propInd;
-        if (propInd >= removed) propIntUpd = propInd + inc;
+        if (propInd >= receiver.removed) propIntUpd = propInd + receiver.inc;
         return Reflect.get(target, propIntUpd, receiver);
       }
     }

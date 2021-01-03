@@ -105,7 +105,7 @@ export function Browse({
     const { target } = event;
     const onClickCb = target.getAttribute('clickcb');
 
-    dispatcher[onClickCb]({
+    onClickCb && dispatcher[onClickCb]({
       event,
     });
   }, []);
