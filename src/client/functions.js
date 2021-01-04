@@ -30,6 +30,15 @@ class Items extends Array {
   }
 }
 
+export function setItSilent({
+  state,
+  stateUpd,
+}) {
+  if (stateUpd.setItSilent) {
+    stateUpd.setItSilent.apply(state);
+  }
+}
+
 export function tempReducer(
   prevState,
   newState = {},
@@ -49,7 +58,7 @@ export function useMyReducer({
   reducer = tempReducer,
   initialState,
   fn = () => {},
-  init = () => initialState,
+  init = () => ({ ...initialState }),
 }) {
   const [state, setState] = React.useState(init(initialState));
   return [state, dispatch];

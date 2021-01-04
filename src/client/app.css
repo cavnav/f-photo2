@@ -19,6 +19,7 @@ body {
 
 .positionAbs {
   position: absolute;
+  z-index: 10000;
 }
 
 .f-photo {

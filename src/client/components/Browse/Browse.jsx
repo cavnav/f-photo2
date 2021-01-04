@@ -10,6 +10,7 @@ import {
 } from 'antd';
 
 import './styles.css';
+import { setItSilent, useMyReducer } from '../../functions';
 
 // const resumeObj = new ResumeObj({
 //   compName: OnePhoto.name,
@@ -24,9 +25,16 @@ export function Browse({
   setAppState,
   setBrowseState,
   server,
-  tempReducer,
 }) {
-  const [state, setState] = useReducer(tempReducer, stateInit);
+  const [forceUpdate] = React.useReducer((x) => !x, false).slice(1);
+  const [state, setState] = useMyReducer({
+    reducer: getSelfReducer({
+      files,
+      dirs,
+      forceUpdate,
+    }),
+    initialState: stateInit,
+  });
 
   Browse.state = state;
   Browse.setState = setState;
@@ -42,7 +50,7 @@ export function Browse({
     setState({
       isDialogRemoveItem: false,
     });
-  });
+  }, []);
 
   const dispatcher = {};
 
@@ -63,7 +71,7 @@ export function Browse({
               loading: false,
             })
           );
-        }, []),
+        }, [state]),
 
       React.useCallback(
         function onClickItemSelector({
@@ -81,8 +89,8 @@ export function Browse({
               }
             },
           });
-        }, 
-        []
+        },
+        [state]
       ),
       React.useCallback(
         function onClickFile({
@@ -132,6 +140,16 @@ export function Browse({
           </div>
         )}
 
+        { getDirsToRender() }
+        { getFilesToRender() }   
+        { state.isNoItems && (
+          <div 
+            className="width100pr flexCenter"
+          >
+            Пусто
+          </div>
+        )}
+
         {state.isDialogEnabled && (
           <Dialog       
             onCancel={onDialogCancel}    
@@ -141,14 +159,12 @@ export function Browse({
         )}
 
         {state.isDialogRemoveItem && (
-          <Dialog       
+          <Dialog 
+            type={Dialog.RemoveItems}      
             onCancel={onDialogRemoveCancel}    
           >
           </Dialog>
         )}
-
-        { getDirsToRender() }
-        { getFilesToRender() }   
 
         <Help
           toRender={toRenderHelp()}
@@ -364,13 +380,13 @@ Browse.getAPI = ({
         return;
       }  
 
-      Browse.setState({
+      Browse.setState({        
         progress: 0,
         isDialogRemoveItem: false,
       });
 
       props.server.removeItems({
-        items: ['att3', 'att4'],
+        items: [...Browse.state.selections.values()],
       });
 
       checkProgress();
@@ -385,31 +401,27 @@ Browse.getAPI = ({
         .then(({
           copyProgress,
         }) => {
-          setTimeout(
-            () => {
-              if (copyProgress < 100) {
-                checkProgress();
-                return;
-              }
-
-              Browse.setState({
-                loading: true,
-                progress: copyProgress,
-              });
-
-              props.server.toward()
-              .then(() => {
-                Browse.setState({
-                  loading: false,
-                });
-              });            
-            }, 
-            500
-          );
-
           Browse.setState({
             progress: copyProgress,
           });
+          
+          if (copyProgress < 100) {
+            setTimeout(
+              () => checkProgress(),
+              500,
+            );
+          } else {
+            Browse.setState({
+              loading: true,
+            });
+            props.server.toward()
+            .then(() => {
+              Browse.setState({
+                loading: false,
+                selections: new Set(),
+              });
+            });  
+          }          
         });
       }
     },
@@ -427,6 +439,34 @@ function addHandlers({
   );
 }
 
+function getSelfReducer({
+  files,
+  dirs,
+  forceUpdate,
+}) {
+  return function selfReducer(
+    state,
+    stateUpd,
+  ) {
+    const isNoItems = !(files.length || dirs.length);
+    
+    setItSilent({
+      state,
+      stateUpd,
+    });
+
+    Object.assign(
+      state,
+      stateUpd,
+      { 
+        isNoItems,
+      },
+    );
+    forceUpdate();
+    return state;
+  }
+}
+
 const stateInit = {
   loading: true,
   previewWidth: 100,
@@ -436,6 +476,7 @@ const stateInit = {
   isDialogRemoveItem: false,
   progress: 100,
   selections: new Set(),
+  isNoItems: false,
 };
 
 

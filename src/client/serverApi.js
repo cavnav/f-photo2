@@ -94,7 +94,7 @@ export class AppServerAPI {
         body: {
           ...params,
           curWindow: window.name,
-        }
+        },
       })
     )
     .then(res => res.json())

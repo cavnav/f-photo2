@@ -6,7 +6,7 @@ import * as Types from './';
 import './styles.css';
 
 export function Dialog({ 
-  type = Dialog.default,
+  type = Dialog.Default,
   children, 
   onCancel = () => {},
 }) {  
