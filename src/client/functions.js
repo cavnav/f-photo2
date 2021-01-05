@@ -54,6 +54,42 @@ export function tempReducer(
   };
 };
 
+export function useMyReducerWithObj({
+  reducer = tempReducer,
+  initialState,
+  fn = () => {},
+  init = () => ({ ...initialState }),
+}) {
+  const [stateObj] = React.useState({});
+  const [state, forceUpdate] = React.useState(init(initialState));
+  Object.assign(
+    stateObj,
+    state,
+  );
+  return [stateObj, dispatch];
+
+  // ---
+  function dispatch(stateUpd) {
+    const nextState = reducer(stateObj, stateUpd);    
+  
+    Object.assign(
+      stateObj,
+      nextState,
+      {
+        forceUpdate: true,
+      }
+    );
+
+    fn(nextState);
+    // console.log('zz', JSON.stringify(stateUpd));
+    if (nextState.forceUpdate === false) {      
+      return;
+    }
+    forceUpdate({});
+
+  }
+}
+
 export function useMyReducer({
   reducer = tempReducer,
   initialState,

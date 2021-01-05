@@ -1,29 +1,37 @@
 import React from 'react';
 import { PhotoStatuses } from '..';
 import { Help } from '..';
-
 import { additionalActions, } from '../../constants';
 import { Dialog } from '../';
 import { ResumeObj } from '../../resumeObj';
 import { myArray, useMyReducerWithPropsUpdated } from '../../functions';
+import { channel } from '../../Channel';
 
+import { Browse } from '../Browse/Browse';
 import './styles.css';
 
 const resumeObj = new ResumeObj({
   compName: OnePhoto.name,
 });
 
-export function OnePhoto({
-  channel,
-  doNeedHelp, 
-  files,
-  curPhotoInd,
-  server,
-  setBrowseState,
-  
-  PhotoStatusesAPI,
-  BrowseAPI,
-}) {  
+const OnePhotoComp = channel.addComp({
+  fn: OnePhoto,
+  getAPI,
+  getReqProps,
+});
+export function OnePhoto(
+  {}
+) { 
+  const {
+    doNeedHelp, 
+    files,
+    curPhotoInd,
+    server,
+    setBrowseState,
+    
+    PhotoStatusesAPI,
+  } = OnePhotoComp.reqProps;
+
   const [forceUpdate] = React.useReducer((x) => !x, false).slice(1);
   const selfReducer = React.useMemo(
     () => getSelfReducer({
@@ -47,7 +55,7 @@ export function OnePhoto({
   });
 
   Object.assign(
-    OnePhoto,
+    OnePhotoComp.deps,
     {
       state,
       setState,
@@ -111,7 +119,6 @@ export function OnePhoto({
               }} 
             />
             <PhotoStatuses 
-              { ...channel.essentials(PhotoStatuses) }
               curPhoto={state.curPhoto}
             />
           </>
@@ -373,9 +380,8 @@ function onImgServerRotate({
   });
 }
 
-OnePhoto.getReqProps = ({ channel }) => { 
-
-  const ch = channel.crop({
+function getReqProps({ channel }) { 
+  const props = channel.crop({
     s: {
       appState: { 
         doNeedHelp: 1 
@@ -392,22 +398,37 @@ OnePhoto.getReqProps = ({ channel }) => {
     },
     API: {
       comps: {
-        server: 1,
-        PhotoStatuses: 'PhotoStatusesAPI',
-        Browse: 'BrowseAPI',
+        server: 1
+      }
+    },
+    comps: {
+      [PhotoStatuses.name]: {
+        API: 'PhotoStatusesAPI',
       },
-    }
+      [Browse.name]: {
+        API: 'BrowseAPI',
+      }
+    },
   }); 
 
-  ch.files = myArray({
-    items: ch.files
+  props.files = myArray({
+    items: props.files
   });
-  return ch;
+  return props;
 };
 
-OnePhoto.getAPI = ({
+function getAPI({
   channel,
-}) => {
+  deps: {
+    state,
+    setState,
+    files,
+    forceUpdate,
+  },
+  reqProps: {
+    BrowseAPI,
+  },
+}) {
   const props = channel.crop({
     API: {
       comps: {
@@ -420,38 +441,38 @@ OnePhoto.getAPI = ({
     removeItems(
       {} = {}
     ) {
-      if (OnePhoto.state.isDialogRemoveItem === false) {
-        OnePhoto.setState({
+      if (state.isDialogRemoveItem === false) {
+        setState({
           isDialogRemoveItem: true,
         });
         return;
       }  
 
-      if (!OnePhoto.state.curPhoto) return;
+      if (!state.curPhoto) return;
 
       props.server.removeItems({
-        items: [OnePhoto.state.curPhotoWithTime],
+        items: [state.curPhotoWithTime],
       });
     
-      OnePhoto.files.delete(OnePhoto.state.curPhotoInd);
+      files.delete(state.curPhotoInd);
 
       const stateUpd = {
         action: onTogglePhoto.name,
         isDialogRemoveItem: false,
       };
       
-      if (OnePhoto.files.items.length === OnePhoto.state.curPhotoInd) {
-        stateUpd.curPhotoInd = OnePhoto.state.curPhotoInd - 1;
+      if (files.items.length === state.curPhotoInd) {
+        stateUpd.curPhotoInd = state.curPhotoInd - 1;
       }
       
-      OnePhoto.setState(
+      setState(
         stateUpd,
       );
 
-      OnePhoto.forceUpdate();
+      forceUpdate();
 
       BrowseAPI.changeSelections({
-        src: OnePhoto.state.curPhoto,
+        src: state.curPhoto,
         checked: false,
       });
     }

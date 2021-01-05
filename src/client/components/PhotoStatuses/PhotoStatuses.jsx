@@ -9,21 +9,20 @@ import { set as _set, get as _get } from 'lodash';
 import './styles.css';
 import { tempReducer, useMyReducer } from '../../functions';
 import { ResumeObj } from '../../resumeObj';
+import { channel } from '../../Channel';
 
 const resumeObj = new ResumeObj({
   compName: PhotoStatuses.name,
 });
 
-export function PhotoStatuses(props) {
-  const { 
-    curPhoto, 
-  } = props;
+const PhotoStatusesComp = channel.addComp({
+  fn: PhotoStatuses,
+  getAPI,
+});
 
-  Object.assign(PhotoStatuses, {
-    changeStatus,
-    getFilesWithStatuses,
-  });
-
+export function PhotoStatuses({
+  curPhoto,
+}) {
   const initState = React.useMemo(() => {
     return resumeObj.load({
       props: getInitState(),
@@ -36,6 +35,14 @@ export function PhotoStatuses(props) {
   });
 
   const statuses = _get(state.filesWithStatuses, [curPhoto]);
+
+  Object.assign(
+    PhotoStatusesComp.deps,
+    {
+      changeStatus,
+      getFilesWithStatuses,
+    },
+  );
 
   return (statuses === undefined) ? null : (
     <div className="PhotoStatusIcons">
@@ -63,8 +70,8 @@ export function PhotoStatuses(props) {
 
   function getInitState() {
     return {
-        forceUpdate: false,
-        filesWithStatuses: {},
+      forceUpdate: false,
+      filesWithStatuses: {},
     };
   }
 
@@ -73,16 +80,21 @@ export function PhotoStatuses(props) {
   }
 }
 
-PhotoStatuses.getAPI = () => {
+function getAPI({
+  deps: {
+    changeStatus,
+    getFilesWithStatuses,
+  }
+}) {
   return {
-    changeShareStatus: () => PhotoStatuses.changeStatus({
+    changeShareStatus: () => changeStatus({
       actionName: photoStatusIconsEntity.setToShare.name,
     }), 
-    changePrintStatus: () => PhotoStatuses.changeStatus({
+    changePrintStatus: () => changeStatus({
       actionName: photoStatusIconsEntity.setToPrint.name,
     }), 
     getFilesWithStatuses: () => {
-      return PhotoStatuses.getFilesWithStatuses();
+      return getFilesWithStatuses();
     },
   }
 };

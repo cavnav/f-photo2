@@ -1,9 +1,9 @@
 import React from 'react';
 import { additionalActions } from './constants';
 import { Actions, ControlPanel, Action, AdditionalPanel} from './components';
-import { tempReducer, useMyReducer } from './functions';
+import { useMyReducer } from './functions';
 import { get as _get } from 'lodash';
-import { Channel } from './Channel';
+import { channel } from './Channel';
 import { ResumeObj } from './resumeObj';
 
 import 'antd/dist/antd.css';
@@ -13,13 +13,17 @@ const resumeObj = new ResumeObj({
   compName: App.name,
 });
 
-export function App(props) {
+export function App() {
   const [d] = React.useState({}); // dispatch.
   const [s] = React.useState(resumeObj.load({
     props: {},
   })); // states.
-  const channel = React.useMemo(() => new Channel({ s, d }), []);
 
+  channel.preset({
+    s,
+    d,
+  });
+  
   const appStateInit = React.useMemo(() => getAppStateInit({
     resumeObj,
   }), []);

@@ -1,4 +1,4 @@
-import React, { useEffect, useReducer } from 'react';
+import React, { useEffect } from 'react';
 import { 
   Help, 
   Actions,
@@ -10,13 +10,23 @@ import {
 } from 'antd';
 
 import './styles.css';
-import { createPropCrop, objCrop, useMyReducer } from '../../functions';
+import { useMyReducerWithObj } from '../../functions';
+import { channel } from '../../Channel';
 
 // const resumeObj = new ResumeObj({
 //   compName: OnePhoto.name,
 // });
+
+const BrowseComp = channel.addComp({
+  fn: Browse,
+  getAPI,
+  getReqProps,
+});
+
 export function Browse(
-  {
+  {}
+) {
+  const {
     appState,
     browseState, 
     files,
@@ -25,46 +35,19 @@ export function Browse(
     setAppState,
     setBrowseState,
     server,
-  }
-) {
-  const [props] = React.useState({});
-  const propCrop = createPropCrop({
-    source: props,
-  });
+  } = BrowseComp.reqProps;
 
-  const [forceUpdate] = React.useReducer((x) => !x, false).slice(1);
-
-  Object.assign(
-    props,
-    {
-      files,
-      dirs,
-    },
-  );
-
-  const [state, setState] = useMyReducer({
-    reducer: getSelfReducer({
-      forceUpdate,
-      getProps: () => propCrop({
-        files,
-        dirs,
-      }),
-    }),
+  const [state, setState] = useMyReducerWithObj({
     initialState: stateInit,
   });
-  const [stateObj] = React.useState({});
-  const stateCrop = createPropCrop({
-    source: stateObj,
-  });
+
   Object.assign(
-    stateObj,
+    BrowseComp.deps,
     {
       state,
+      setState,
     }
   );
-
-  Browse.state = state;
-  Browse.setState = setState;
 
   const onDialogCancel = React.useCallback(() => {
     setState({
@@ -106,11 +89,6 @@ export function Browse(
         }) {
           const src = target.parentElement.getAttribute('src');
           const { checked } = target;
-          const {
-            state,
-          } = stateCrop({
-            state,
-          });
           const stateUpd = changeSelections({
             src,
             checked,
@@ -171,13 +149,6 @@ export function Browse(
 
         { getDirsToRender() }
         { getFilesToRender() }   
-        { state.isNoItems && (
-          <div 
-            className="width100pr flexCenter"
-          >
-            Пусто
-          </div>
-        )}
 
         {state.isDialogEnabled && (
           <Dialog       
@@ -266,6 +237,7 @@ export function Browse(
             className="itemSelector positionAbs"
             type="checkbox"
             clickcb={dispatcher.onClickItemSelector.name}
+            defaultChecked={state.selections.has(file)}
           />
         </div>
       );
@@ -293,7 +265,9 @@ function boostPerfImgRender() {
 
 // -------------------------------------------------------
 
-Browse.getReqProps = ({ channel }) => {
+function getReqProps({ 
+  channel, 
+}) {
   return channel.crop({
     s: { 
       appState: 1,
@@ -315,20 +289,15 @@ Browse.getReqProps = ({ channel }) => {
   });
 };
 
-Browse.state = {};
-Browse.setState = () => {};
-
-Browse.getAPI = ({
-  channel,
-}) => {
-  const props = channel.crop({
-    API: {
-      comps: {
-        server: 1,
-      }
-    }
-  });
-
+function getAPI({
+  deps: {
+    state,
+    setState,
+  },
+  reqProps: {
+    server,
+  }
+}) {
   return {
     toggleRightWindow() {            
       const states = {
@@ -348,13 +317,13 @@ Browse.getAPI = ({
     moveItems() {
       const {
         items,
-      } = Browse.state;
+      } = state;
 
-      props.server.moveToPath({
+      server.moveToPath({
         items,
       });
 
-      Browse.setState({
+      setState({
         progress: 0, 
       });
 
@@ -363,12 +332,12 @@ Browse.getAPI = ({
       // ---------------------------------------
       function checkCopyProgressWrap({
       } = {}) {
-        props.server.$checkCopyProgress()
+        server.$checkCopyProgress()
           .then(({
             copyProgress,
           }) => {
             setTimeout(() => (copyProgress === 100 ? null : checkCopyProgressWrap()), 500);
-            Browse.setState({
+            setState({
               progress: copyProgress,
             });
           });
@@ -377,24 +346,24 @@ Browse.getAPI = ({
     async addAlbum({
       albumName
     }) {
-      const res = await props.server.addAlbum({
+      const res = await server.addAlbum({
         albumName,
       });
 
       if (!res) {
-        Browse.setState({
+        setState({
           isDialogEnabled: true,
           dialogTitle: `Альбом ${albumName} уже есть!`,
         }); 
         return;               
       }
 
-      Browse.setState({
+      setState({
         loading: true,
       });
-      props.server.toward()
+      server.toward()
       .then(() => 
-        Browse.setState({
+        setState({
           loading: false,
         })
       );
@@ -402,20 +371,20 @@ Browse.getAPI = ({
     removeItems(
       { } = {}
     ) {
-      if (Browse.state.isDialogRemoveItem === false) {
-        Browse.setState({
+      if (state.isDialogRemoveItem === false) {
+        setState({
           isDialogRemoveItem: true,
         });
         return;
       }  
 
-      Browse.setState({        
+      setState({        
         progress: 0,
         isDialogRemoveItem: false,
       });
 
-      props.server.removeItems({
-        items: [...Browse.state.selections.values()],
+      server.removeItems({
+        items: [...state.selections.values()],
       });
 
       checkProgress();
@@ -426,11 +395,11 @@ Browse.getAPI = ({
       function checkProgress(
         {} = {}
       ) {
-        props.server.$checkCopyProgress()
+        server.$checkCopyProgress()
         .then(({
           copyProgress,
         }) => {
-          Browse.setState({
+          setState({
             progress: copyProgress,
           });
           
@@ -440,12 +409,12 @@ Browse.getAPI = ({
               500,
             );
           } else {
-            Browse.setState({
+            setState({
               loading: true,
             });
-            props.server.toward()
+            server.toward()
             .then(() => {
-              Browse.setState({
+              setState({
                 loading: false,
                 selections: new Set(),
               });
@@ -462,11 +431,11 @@ Browse.getAPI = ({
     ) {
       const stateUpd = changeSelections({
         checked,
-        selections: Browse.state,
+        selections: state.selections,
         src,
       });
 
-      Browse.setState(stateUpd);
+      setState(stateUpd);
     }
   };
 };
@@ -480,35 +449,6 @@ function addHandlers({
     target,
     fnsObj,
   );
-}
-
-function getSelfReducer({
-  forceUpdate,
-  getProps,
-}) {
-  return function selfReducer(
-    state,
-    stateUpd,
-  ) {
-    const {
-      files,
-      dirs,
-    } = getProps();
-    const isNoItems = !(files.length || dirs.length);
-    Object.assign(
-      state,
-      stateUpd,
-      { 
-        isNoItems,
-        softUpdate: false,
-      },
-    );
-    
-    if (!stateUpd.softUpdate) {
-      forceUpdate();
-    }
-    return state;
-  }
 }
 
 function changeSelections(
@@ -526,14 +466,14 @@ function changeSelections(
   selectionsUpd[action](src);
 
   const stateUpd = {
-    softUpdate: true,
+    forceUpdate: false,
     selections: selectionsUpd,
   };
   return stateUpd;
 }
 
 const stateInit = {
-  softUpdate: false,
+  forceUpdate: true,
   loading: true,
   previewWidth: 100,
   previewHeight: 100,
@@ -542,7 +482,6 @@ const stateInit = {
   isDialogRemoveItem: false,
   progress: 100,
   selections: new Set(),
-  isNoItems: false,
 };
 
 
