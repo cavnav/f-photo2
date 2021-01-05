@@ -19,8 +19,10 @@ export function OnePhoto({
   files,
   curPhotoInd,
   server,
-  PhotoStatusesAPI,
   setBrowseState,
+  
+  PhotoStatusesAPI,
+  BrowseAPI,
 }) {  
   const [forceUpdate] = React.useReducer((x) => !x, false).slice(1);
   const selfReducer = React.useMemo(
@@ -392,6 +394,7 @@ OnePhoto.getReqProps = ({ channel }) => {
       comps: {
         server: 1,
         PhotoStatuses: 'PhotoStatusesAPI',
+        Browse: 'BrowseAPI',
       },
     }
   }); 
@@ -446,6 +449,11 @@ OnePhoto.getAPI = ({
       );
 
       OnePhoto.forceUpdate();
+
+      BrowseAPI.changeSelections({
+        src: OnePhoto.state.curPhoto,
+        checked: false,
+      });
     }
   };
 };

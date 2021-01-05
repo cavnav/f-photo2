@@ -10,31 +10,58 @@ import {
 } from 'antd';
 
 import './styles.css';
-import { setItSilent, useMyReducer } from '../../functions';
+import { createPropCrop, objCrop, useMyReducer } from '../../functions';
 
 // const resumeObj = new ResumeObj({
 //   compName: OnePhoto.name,
 // });
+export function Browse(
+  {
+    appState,
+    browseState, 
+    files,
+    dirs,
 
-export function Browse({
-  appState,
-  browseState, 
-  files,
-  dirs,
+    setAppState,
+    setBrowseState,
+    server,
+  }
+) {
+  const [props] = React.useState({});
+  const propCrop = createPropCrop({
+    source: props,
+  });
 
-  setAppState,
-  setBrowseState,
-  server,
-}) {
   const [forceUpdate] = React.useReducer((x) => !x, false).slice(1);
-  const [state, setState] = useMyReducer({
-    reducer: getSelfReducer({
+
+  Object.assign(
+    props,
+    {
       files,
       dirs,
+    },
+  );
+
+  const [state, setState] = useMyReducer({
+    reducer: getSelfReducer({
       forceUpdate,
+      getProps: () => propCrop({
+        files,
+        dirs,
+      }),
     }),
     initialState: stateInit,
   });
+  const [stateObj] = React.useState({});
+  const stateCrop = createPropCrop({
+    source: stateObj,
+  });
+  Object.assign(
+    stateObj,
+    {
+      state,
+    }
+  );
 
   Browse.state = state;
   Browse.setState = setState;
@@ -71,26 +98,28 @@ export function Browse({
               loading: false,
             })
           );
-        }, [state]),
+        }, []),
 
       React.useCallback(
         function onClickItemSelector({
           event: { target },
         }) {
-          setState({
-            setItSilent: function () {
-              const { checked } = target;
-              const src = target.parentElement.getAttribute('src');
-              if (checked) {
-                this.selections.add(src);              
-              }
-              else {
-                this.selections.delete(src);
-              }
-            },
+          const src = target.parentElement.getAttribute('src');
+          const { checked } = target;
+          const {
+            state,
+          } = stateCrop({
+            state,
           });
+          const stateUpd = changeSelections({
+            src,
+            checked,
+            selections: state.selections,
+          });
+          
+          setState(stateUpd);
         },
-        [state]
+        []
       ),
       React.useCallback(
         function onClickFile({
@@ -425,6 +454,20 @@ Browse.getAPI = ({
         });
       }
     },
+    changeSelections(
+      {
+        src,
+        checked,
+      } = {},
+    ) {
+      const stateUpd = changeSelections({
+        checked,
+        selections: Browse.state,
+        src,
+      });
+
+      Browse.setState(stateUpd);
+    }
   };
 };
 
@@ -440,34 +483,57 @@ function addHandlers({
 }
 
 function getSelfReducer({
-  files,
-  dirs,
   forceUpdate,
+  getProps,
 }) {
   return function selfReducer(
     state,
     stateUpd,
   ) {
+    const {
+      files,
+      dirs,
+    } = getProps();
     const isNoItems = !(files.length || dirs.length);
-    
-    setItSilent({
-      state,
-      stateUpd,
-    });
-
     Object.assign(
       state,
       stateUpd,
       { 
         isNoItems,
+        softUpdate: false,
       },
     );
-    forceUpdate();
+    
+    if (!stateUpd.softUpdate) {
+      forceUpdate();
+    }
     return state;
   }
 }
 
+function changeSelections(
+  {
+    src,
+    checked,
+    selections: selectionsUpd,
+  } = {},
+) {
+  const action = {
+    true: Set.prototype.add,
+    false: Set.prototype.delete,
+  }[checked].name;
+
+  selectionsUpd[action](src);
+
+  const stateUpd = {
+    softUpdate: true,
+    selections: selectionsUpd,
+  };
+  return stateUpd;
+}
+
 const stateInit = {
+  softUpdate: false,
   loading: true,
   previewWidth: 100,
   previewHeight: 100,

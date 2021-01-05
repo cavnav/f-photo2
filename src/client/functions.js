@@ -153,3 +153,19 @@ export function myArr({
     }
   );
 }
+
+export function createPropCrop({
+  source,
+}) {
+  return (items) => objCrop({
+    source,
+    items,
+  });
+}
+
+export function objCrop({
+  source,
+  items,
+}) {
+  return Object.keys(items).reduce((res, item) => { res[item] = source[item]; return res; }, {});
+}
