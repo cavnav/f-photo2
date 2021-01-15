@@ -4,7 +4,7 @@ import { Help } from '..';
 import { additionalActions, } from '../../constants';
 import { Dialog } from '../';
 import { ResumeObj } from '../../resumeObj';
-import { myArray, useMyReducerWithPropsUpdated } from '../../functions';
+import { myArray, objCrop, useMyReducer } from '../../functions';
 import { channel } from '../../Channel';
 
 import { Browse } from '../Browse/Browse';
@@ -23,7 +23,7 @@ export function OnePhoto(
   {}
 ) { 
   const {
-    doNeedHelp, 
+    appState, 
     files,
     curPhotoInd,
     server,
@@ -32,20 +32,14 @@ export function OnePhoto(
     PhotoStatusesAPI,
   } = OnePhotoComp.reqProps;
 
-  const [forceUpdate] = React.useReducer((x) => !x, false).slice(1);
-  const selfReducer = React.useMemo(
-    () => getSelfReducer({
-      files,
-    }),
-    []
-  );
+  const [props] = React.useState({
+    curPhotoInd,
+  });
 
-  const [state, setState] = useMyReducerWithPropsUpdated({
+  const [state, setState] = useMyReducer({
     reducer: selfReducer,
-    propsUpdated: {
-      curPhotoInd,
-    },
-    initState: {
+    props,
+    initialState: {
       ...resumeObj.load({
         props: {
           ...stateInit,          
@@ -60,7 +54,6 @@ export function OnePhoto(
       state,
       setState,
       files,
-      forceUpdate,
     }
   );
 
@@ -68,7 +61,7 @@ export function OnePhoto(
     setState({
       isDialogRemoveItem: false,
     });
-  }, [state]);
+  }, []);
 
   const imgRef = React.useRef(null);
 
@@ -90,12 +83,11 @@ export function OnePhoto(
   React.useEffect(() => {
     if (state.action === onTogglePhoto.name) {
       setBrowseState({
-        setItSilent: function () { 
-          this.curPhotoInd = state.curPhotoInd; 
-        }
+        forceUpdate: false,
+        curPhotoInd: state.curPhotoInd,
       });
     }
-  });
+  }, [state.curPhotoInd]);
 
   return getRender();
 
@@ -112,8 +104,6 @@ export function OnePhoto(
               src={state.curPhotoWithTime}        
               style={{
                 transform: `rotate(${state.curPhotoRotateDeg}deg)`,
-                width: state.curPhotoWidth,
-                height: state.curPhotoHeight,
                 opacity: state.opacity,
                 visibility: state.visibility,
               }} 
@@ -122,11 +112,7 @@ export function OnePhoto(
               curPhoto={state.curPhoto}
             />
           </>
-        )}
-        <Help
-          toRender={toRenderHelp()}
-          {...{doNeedHelp}}
-        />
+        )}        
         {state.isDialogRemoveItem && (
           <Dialog
             type={Dialog.RemoveItems}   
@@ -164,13 +150,10 @@ export function OnePhoto(
   function fitCurPhotoSize() {
     const photoEl = imgRef.current;  
     if (!photoEl) return;  
-    const { width: curPhotoWidth, height: curPhotoHeight } = getFitSize(photoEl.getBoundingClientRect());
-
-    setState({
-      ...state,
-      curPhotoWidth,
-      curPhotoHeight,
-    });
+    Object.assign(
+      photoEl.style,
+      getFitSize(photoEl.getBoundingClientRect()),
+    );
   }
 
   function onKeyDown(e) {
@@ -251,54 +234,55 @@ export function OnePhoto(
   }
 }
 
-function getSelfReducer({
-  files,
-}) {
-  return function selfReducer(
-    state,
-    newState,
-  ) {
+function selfReducer(
+  state,
+  stateUpd,
+) {
 
-    const stateUpd = { 
-      ...state,
-      ...newState,
-    };
+  const {
+    files, 
+  } = OnePhotoComp.reqProps;
 
-    const stateReduced = {
-      curPhoto: files.items[stateUpd.curPhotoInd],   
-    };
-    Object.assign(
-      stateReduced,
-      {
-        isNoItems: stateReduced.curPhoto ? false : true,
-      },
-      {
-        [stateUpd.action]: {},
-        [onTogglePhoto.name]: {
-          curPhotoWithTime: stateReduced.curPhoto,
-          opacity: '0',
-          visibility: 'hidden',
-          curPhotoRotateDeg: 0,
-        },
-        [onImgServerRotate.name]: {
-          curPhotoRotateDeg: 0,
-          curPhotoWithTime: `${files.items[stateUpd.curPhotoInd]}?${new Date().getTime()}`,
-          opacity: '0',
-          visibility: 'hidden',
-        },
-      }[stateUpd.action]
-    );
-    
-    Object.assign(
-      stateUpd, 
-      stateReduced
-    );
-
-    resumeObj.save(stateUpd);
-
-    return stateUpd;
+  let stateReduced = { 
+    ...state,
+    ...stateUpd,
   };
-}
+
+  const curPhoto = files.items[stateReduced.curPhotoInd];
+
+  stateReduced = {
+    ...stateReduced,
+    curPhoto,
+    isNoItems: curPhoto ? false : true,
+    ...getProps({ stateReduced }),
+  };
+
+  resumeObj.save(stateReduced);
+
+  return stateReduced;
+
+  // ----------------------------------------
+
+  function getProps({
+    stateReduced,
+  }) {
+    return {
+      [stateReduced.action]: {},
+      [onTogglePhoto.name]: {
+        curPhotoWithTime: curPhoto,
+        opacity: '0',
+        visibility: 'hidden',
+        curPhotoRotateDeg: 0,
+      },
+      [onImgServerRotate.name]: {
+        curPhotoRotateDeg: 0,
+        curPhotoWithTime: `${curPhoto}?${new Date().getTime()}`,
+        opacity: '0',
+        visibility: 'hidden',
+      },
+    }[stateReduced.action];
+  }
+};
 
 function getCurDate() {
   const dateISO = new Date().toISOString();
@@ -383,9 +367,7 @@ function onImgServerRotate({
 function getReqProps({ channel }) { 
   const props = channel.crop({
     s: {
-      appState: { 
-        doNeedHelp: 1 
-      },
+      appState: 1,
       photosState: {
         files: 1,
       },
@@ -423,7 +405,6 @@ function getAPI({
     state,
     setState,
     files,
-    forceUpdate,
   },
   reqProps: {
     BrowseAPI,
@@ -452,28 +433,26 @@ function getAPI({
 
       props.server.removeItems({
         items: [state.curPhotoWithTime],
-      });
-    
-      files.delete(state.curPhotoInd);
+      }).then(() => {
+        files.delete(state.curPhotoInd);
 
-      const stateUpd = {
-        action: onTogglePhoto.name,
-        isDialogRemoveItem: false,
-      };
-      
-      if (files.items.length === state.curPhotoInd) {
-        stateUpd.curPhotoInd = state.curPhotoInd - 1;
-      }
-      
-      setState(
-        stateUpd,
-      );
+        const stateUpd = {
+          action: onTogglePhoto.name,
+          isDialogRemoveItem: false,
+        };
+        
+        if (files.items.length === state.curPhotoInd) {
+          stateUpd.curPhotoInd = state.curPhotoInd - 1;
+        }
+        
+        setState(
+          stateUpd,
+        );
 
-      forceUpdate();
-
-      BrowseAPI.changeSelections({
-        src: state.curPhoto,
-        checked: false,
+        BrowseAPI.changeSelections({
+          src: state.curPhoto,
+          checked: false,
+        });  
       });
     }
   };
@@ -483,11 +462,9 @@ const stateInit = {
   loading: false,
   progress: 100,
   isDialogRemoveItem: false,
-  curPhoto: undefined,
-  curPhotoWithTime: undefined,
+  curPhoto: '',
+  curPhotoWithTime: '',
   curPhotoInd: -1,
-  curPhotoWidth: undefined,
-  curPhotoHeight: undefined,
   curPhotoRotateDeg: 0,
   curDate: getCurDate(),
   opacity: '1',

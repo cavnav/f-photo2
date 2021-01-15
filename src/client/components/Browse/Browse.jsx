@@ -10,7 +10,7 @@ import {
 } from 'antd';
 
 import './styles.css';
-import { useMyReducerWithObj } from '../../functions';
+import { useMyReducer } from '../../functions';
 import { channel } from '../../Channel';
 
 // const resumeObj = new ResumeObj({
@@ -37,7 +37,7 @@ export function Browse(
     server,
   } = BrowseComp.reqProps;
 
-  const [state, setState] = useMyReducerWithObj({
+  const [state, setState] = useMyReducer({
     initialState: stateInit,
   });
 

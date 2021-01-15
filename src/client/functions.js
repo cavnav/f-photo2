@@ -54,96 +54,45 @@ export function tempReducer(
   };
 };
 
-export function useMyReducerWithObj({
-  reducer = tempReducer,
+export function useMyReducer({
+  reducer = (state, stateUpd) => stateUpd,
   initialState,
+  props,
   fn = () => {},
   init = () => ({ ...initialState }),
 }) {
-  const [stateObj] = React.useState({});
-  const [state, forceUpdate] = React.useState(init(initialState));
-  Object.assign(
-    stateObj,
-    state,
+  const [forceUpdate] = React.useReducer((x) => !x, false).slice(1);
+  const [state] = React.useState(init(initialState));
+  props && React.useMemo(
+    () => {      
+      const stateUpd = {
+        ...props,
+        forceUpdate: false,
+      };
+      dispatch(stateUpd);
+    },
+    Object.values(props),
   );
-  return [stateObj, dispatch];
+  return [state, dispatch];
 
   // ---
   function dispatch(stateUpd) {
-    const nextState = reducer(stateObj, stateUpd);    
+    const stateReduced = reducer(state, stateUpd);    
   
     Object.assign(
-      stateObj,
-      nextState,
+      state,
+      stateReduced,
       {
         forceUpdate: true,
       }
     );
 
-    fn(nextState);
+    fn(stateReduced);
     // console.log('zz', JSON.stringify(stateUpd));
-    if (nextState.forceUpdate === false) {      
+    if (stateReduced.forceUpdate === false) {      
       return;
     }
-    forceUpdate({});
-
-  }
-}
-
-export function useMyReducer({
-  reducer = tempReducer,
-  initialState,
-  fn = () => {},
-  init = () => ({ ...initialState }),
-}) {
-  const [state, setState] = React.useState(init(initialState));
-  return [state, dispatch];
-
-  // ---
-  function dispatch(stateUpd) {
-    const nextState = reducer(state, stateUpd);
-    setState(nextState);
-    fn(nextState);
-  }
-}
-
-export function useMyReducerWithPropsUpdated({
-  reducer,
-  initState,
-  propsUpdated,
-}) {
-  const [isPropsUpdated, setIsPropsUpdated] = React.useState(true);
-
-  React.useMemo(
-    () => setIsPropsUpdated(true),
-    Object.values(propsUpdated),
-  );
-
-  const [state, setState] = React.useState(initState);
-
-  if (isPropsUpdated) {
-    setIsPropsUpdated(false);
-    const nextState = dispatch(
-      propsUpdated,
-    );
-    return [nextState, dispatch];
-  }
-
-  return [state, dispatch];
-
-  // ---
-  function dispatch(
-    stateUpd
-  ) {
-    const nextState = reducer(
-      state,
-      stateUpd,
-    );
-    setState(
-      nextState,
-    );
-
-    return nextState;
+    forceUpdate();
   }
 }
 
