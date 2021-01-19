@@ -55,7 +55,9 @@ function getReqProps({
   const res = ({
     [OnePhoto.name]: channel.crop({      
       comps: {
-        [OnePhoto.name]: strComponentAPI,
+        [OnePhoto.name]: {
+          API: strComponentAPI,
+        },
       },
     }),
     [Browse.name]: channel.crop({      

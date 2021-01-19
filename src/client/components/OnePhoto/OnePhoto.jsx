@@ -32,8 +32,15 @@ export function OnePhoto(
     PhotoStatusesAPI,
   } = OnePhotoComp.reqProps;
 
+  const myFiles = React.useMemo(() => myArray({
+    items: files,
+  }),
+  []
+  );
+
   const [props] = React.useState({
     curPhotoInd,
+    files: myFiles,
   });
 
   const [state, setState] = useMyReducer({
@@ -53,7 +60,7 @@ export function OnePhoto(
     {
       state,
       setState,
-      files,
+      files: state.files,
     }
   );
 
@@ -158,6 +165,9 @@ export function OnePhoto(
 
   function onKeyDown(e) {
     const {
+      files,
+    } = state;
+    const {
       prevPhotoInd,
     } = getIndexes({
       curPhotoInd: state.curPhotoInd,
@@ -239,14 +249,14 @@ function selfReducer(
   stateUpd,
 ) {
 
-  const {
-    files, 
-  } = OnePhotoComp.reqProps;
-
   let stateReduced = { 
     ...state,
     ...stateUpd,
   };
+
+  const {
+    files,
+  } = stateReduced;
 
   const curPhoto = files.items[stateReduced.curPhotoInd];
 
@@ -392,36 +402,28 @@ function getReqProps({ channel }) {
       }
     },
   }); 
-
-  props.files = myArray({
-    items: props.files
-  });
+  
   return props;
 };
 
-function getAPI({
-  channel,
-  deps: {
-    state,
-    setState,
-    files,
-  },
-  reqProps: {
-    BrowseAPI,
-  },
+function getAPI({  
+  deps,
+  reqProps,
 }) {
-  const props = channel.crop({
-    API: {
-      comps: {
-        server: 1,
-      }
-    }
-  });
-
   return {
     removeItems(
       {} = {}
     ) {
+      const {
+        state,
+        setState,
+        files,
+      } = deps;
+      const {
+        BrowseAPI,
+        server,
+      } = reqProps;
+
       if (state.isDialogRemoveItem === false) {
         setState({
           isDialogRemoveItem: true,
@@ -431,7 +433,7 @@ function getAPI({
 
       if (!state.curPhoto) return;
 
-      props.server.removeItems({
+      server.removeItems({
         items: [state.curPhotoWithTime],
       }).then(() => {
         files.delete(state.curPhotoInd);
@@ -459,6 +461,7 @@ function getAPI({
 };
 
 const stateInit = {
+  files: {},
   loading: false,
   progress: 100,
   isDialogRemoveItem: false,

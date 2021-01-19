@@ -290,13 +290,8 @@ function getReqProps({
 };
 
 function getAPI({
-  deps: {
-    state,
-    setState,
-  },
-  reqProps: {
-    server,
-  }
+  deps,
+  reqProps,
 }) {
   return {
     toggleRightWindow() {            
@@ -316,9 +311,14 @@ function getAPI({
     },
     moveItems() {
       const {
-        items,
-      } = state;
+        state: items,
+        setState,
+      } = deps;
 
+      const {
+        server,
+      } = reqProps;
+      
       server.moveToPath({
         items,
       });
@@ -346,6 +346,12 @@ function getAPI({
     async addAlbum({
       albumName
     }) {
+      const {
+        setState,
+      } = deps;
+      const {
+        server,
+      } = reqProps;
       const res = await server.addAlbum({
         albumName,
       });
@@ -371,6 +377,14 @@ function getAPI({
     removeItems(
       { } = {}
     ) {
+      const {
+        state,
+        setState,
+      } = deps;
+      const {
+        server,
+      } = reqProps;
+
       if (state.isDialogRemoveItem === false) {
         setState({
           isDialogRemoveItem: true,
@@ -429,6 +443,11 @@ function getAPI({
         checked,
       } = {},
     ) {
+      const {
+        state,
+        setState,
+      } = deps;
+      
       const stateUpd = changeSelections({
         checked,
         selections: state.selections,

@@ -4,7 +4,7 @@ class MyItems {
   constructor({
     items,
   }) {
-    this.items = items;
+    this.items = [...items];
     return this;
   }
 
@@ -13,22 +13,22 @@ class MyItems {
     this.items = this.items.filter((i) => i);
   }
 }
-class Items extends Array {
-  cnt = 0;
-  removed = 0;
-  inc = 0;
+// class Items extends Array {
+//   cnt = 0;
+//   removed = 0;
+//   inc = 0;
 
-  constructor(...props) {
-    super(...props);
-    this.cnt = props.length;
-  }
+//   constructor(...props) {
+//     super(...props);
+//     this.cnt = props.length;
+//   }
 
-  delete(ind) {
-    this.cnt -= 1;
-    this.removed = ind;
-    this.inc += 1;
-  }
-}
+//   delete(ind) {
+//     this.cnt -= 1;
+//     this.removed = ind;
+//     this.inc += 1;
+//   }
+// }
 
 export function setItSilent({
   state,
@@ -111,33 +111,33 @@ export function myArray({
   });
 }
 
-export function myArr({
-  items
-}) {
-  let myItems = new Items(...items);
+// export function myArr({
+//   items
+// }) {
+//   let myItems = new Items(...items);
 
-  return new Proxy(
-    myItems, {
-      get(
-        target,
-        prop,
-        receiver,
-      ) {
-        const propInd = parseInt(prop, 10);
-        if (isNaN(propInd)) {
-          if (prop === 'length') {
-            return receiver.cnt;
-          }
+//   return new Proxy(
+//     myItems, {
+//       get(
+//         target,
+//         prop,
+//         receiver,
+//       ) {
+//         const propInd = parseInt(prop, 10);
+//         if (isNaN(propInd)) {
+//           if (prop === 'length') {
+//             return receiver.cnt;
+//           }
 
-          return Reflect.get(target, prop, receiver);
-        }
-        let propIntUpd = propInd;
-        if (propInd >= receiver.removed) propIntUpd = propInd + receiver.inc;
-        return Reflect.get(target, propIntUpd, receiver);
-      }
-    }
-  );
-}
+//           return Reflect.get(target, prop, receiver);
+//         }
+//         let propIntUpd = propInd;
+//         if (propInd >= receiver.removed) propIntUpd = propInd + receiver.inc;
+//         return Reflect.get(target, propIntUpd, receiver);
+//       }
+//     }
+//   );
+// }
 
 export function createPropCrop({
   source,
