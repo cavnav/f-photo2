@@ -104,7 +104,7 @@ export class AppServerAPI {
         files,
         dirs,
       });   
-      path && this.d.setBrowseState({
+      this.d.setBrowseState({
         path,
       }); 
     });

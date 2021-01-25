@@ -169,10 +169,6 @@ app.post(
       slicedItems,
     }) {        
       const [item] = slicedItems;
-      console.log(
-        'slicedItems',
-        slicedItems,
-      )
       const src = path.join(state[curWindow], item);
       await fs.remove(
         src, 
@@ -202,14 +198,18 @@ app.post(
 app.get('/api/browseFiles', (req, res) => {
   findFiles({ 
     doNeedDirs: true,
-    onResolve({ files, dirs }) {
+    onResolve({ 
+      files, 
+      dirs 
+    }) {
       setState({
         files,
         dirs,
       });
-
-      const path = state[state.curWindow].replace(/\\/g, '/').split('/');
-      const pathUpd = state[state.curWindow] === state.albumDir ? [undefined] : path;    
+      const path = state[state.curWindow]
+        .replace(albumDir, '')
+        .replace(/\\/g, '/');
+      const pathUpd = state[state.curWindow] === state.albumDir ? '' : path;    
       res.send({
         files,
         dirs,
@@ -226,7 +226,7 @@ app.post('/api/toward', (req, res) => {
     curWindow,
   } = req.body;
 
-  const resetToUpd = resetTo ? resetTo.join('\\') : resetTo;
+  const resetToUpd = resetTo ? `${albumDir}${resetTo}`.replace(/\//g, '\\') : resetTo;
   subdir = subdir ? `\\${subdir}` : '';
   const path = resetToUpd || `${state[curWindow]}${subdir}`;
 

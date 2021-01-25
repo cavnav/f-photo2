@@ -224,11 +224,12 @@ export function Browse(
 
   function getFilesToRender() {
     return files.map((file, ind) => {
+      const style = { 'backgroundImage': `url(${browseState.path}/${file})` };
       return (
         <div 
           key={file}
           className='positionRel fitPreview100 file scrollwait'
-          style={{ 'backgroundImage': `url(${file})` }}
+          style={style}
           ind={ind} 
           src={file}
           clickcb={dispatcher.onClickFile.name}

@@ -28,7 +28,7 @@ export function OnePhoto(
     curPhotoInd,
     server,
     setBrowseState,
-    
+    path,
     PhotoStatusesAPI,
   } = OnePhotoComp.reqProps;
 
@@ -41,6 +41,7 @@ export function OnePhoto(
   const [props] = React.useState({
     curPhotoInd,
     files: myFiles,
+    path,
   });
 
   const [state, setState] = useMyReducer({
@@ -108,7 +109,7 @@ export function OnePhoto(
           <>
             <img 
               ref={imgRef}
-              src={state.curPhotoWithTime}        
+              src={`${state.path}/${state.curPhotoWithTime}`}        
               style={{
                 transform: `rotate(${state.curPhotoRotateDeg}deg)`,
                 opacity: state.opacity,
@@ -383,6 +384,7 @@ function getReqProps({ channel }) {
       },
       browseState: {
         curPhotoInd: 1,
+        path: 1,
       },
     },
     d: {

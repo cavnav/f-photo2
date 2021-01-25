@@ -6,7 +6,7 @@ export function ExitFromAlbum({
   browseState,
   server,
 }) {
-  const [albumName] = browseState.path.slice(-1);
+  const [albumName] = browseState.path.split('/').slice(-1);
   if (!albumName) return null;
 
   const title = `Закрыть альбом ${albumName}`;
