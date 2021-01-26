@@ -1,11 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Actions } from '../';
+import { channel } from '../../Channel';
 import './styles.css';
 
-export function ExitFromOnePhoto({
-  setAppState,
-}) {
-  const [state, setState] = useState(stateInit);
+const ExitFromOnePhotoComp = channel.addComp({
+  fn: ExitFromOnePhoto,
+  getReqProps,
+});
+export function ExitFromOnePhoto(
+) {
+  const {
+    setAppState,
+  } = ExitFromOnePhotoComp.getReqProps();
 
   return (
     <div 
@@ -22,10 +28,9 @@ export function ExitFromOnePhoto({
       action: Actions.Browse.name,
     })
   };
-
 }
 
-ExitFromOnePhoto.getReqProps = ({ channel }) => {
+function getReqProps({ channel }) {
   return channel.crop({
     d: { setAppState: 1 },
   });

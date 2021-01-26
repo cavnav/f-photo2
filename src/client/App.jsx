@@ -8,6 +8,11 @@ import { ResumeObj } from './resumeObj';
 
 import 'antd/dist/antd.css';
 import './app.css';
+import { ExitFromAlbum } from './components/ExitFromAlbum/ExitFromAlbum';
+import { ToggleRightWindow } from './components/ToggleRightWindow/ToggleRightWindow';
+import { MoveSelections } from './components/MoveSelections/MoveSelections';
+import { AddAlbum } from './components/AddAlbum/AddAlbum';
+import { RemoveSelections } from './components/RemoveSelections/RemoveSelections';
 
 const resumeObj = new ResumeObj({
   compName: App.name,
@@ -103,18 +108,18 @@ function getAppStateInit({
           title: 'Смотреть',
           isActive: true,
           additionalActions: [
-            additionalActions.ExitFromAlbum, 
-            additionalActions.ToggleRightWindow,
-            additionalActions.MoveItems,
-            additionalActions.AddAlbum,
-            additionalActions.RemoveItems,
+            additionalActions[ExitFromAlbum.name], 
+            additionalActions[ToggleRightWindow.name],
+            additionalActions[MoveSelections.name],
+            additionalActions[AddAlbum.name],
+            additionalActions[RemoveSelections.name],
           ],
         },
         OnePhoto: {
           additionalActions: [       
             additionalActions.ExitFromOnePhoto,
             additionalActions.SaveChanges,
-            additionalActions.RemoveItems,
+            additionalActions.RemoveSelections,
           ],
           isActive: false,
         },

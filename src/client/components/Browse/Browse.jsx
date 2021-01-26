@@ -24,30 +24,15 @@ const BrowseComp = channel.addComp({
 });
 
 export function Browse(
-  {}
 ) {
-  const {
-    appState,
-    browseState, 
-    files,
-    dirs,
-
-    setAppState,
-    setBrowseState,
-    server,
-  } = BrowseComp.reqProps;
-
   const [state, setState] = useMyReducer({
+    comp: {
+      ref: BrowseComp,
+    },
     initialState: stateInit,
   });
 
-  Object.assign(
-    BrowseComp.deps,
-    {
-      state,
-      setState,
-    }
-  );
+  const rp = BrowseComp.getReqProps();
 
   const onDialogCancel = React.useCallback(() => {
     setState({
@@ -71,11 +56,16 @@ export function Browse(
         function onClickDir({
           event
         }) {
+          const rp = BrowseComp.getReqProps();
+          setState({
+            forceUpdate: false,
+            selections: getNewSelections(),
+          });
           setState({
             loading: true,
           });
           const subdir = event.target.getAttribute('src');
-          server.toward({ subdir })
+          rp.server.toward({ subdir })
           .then(() => 
             setState({
               loading: false,
@@ -89,7 +79,7 @@ export function Browse(
         }) {
           const src = target.parentElement.getAttribute('src');
           const { checked } = target;
-          const stateUpd = changeSelections({
+          const stateUpd = changeSelectionsCore({
             src,
             checked,
             selections: state.selections,
@@ -103,11 +93,13 @@ export function Browse(
         function onClickFile({
           event
         }) {
-          setBrowseState({      
+          const rp = BrowseComp.getReqProps();
+          
+          rp.setBrowseState({      
             curPhotoInd: +event.target.getAttribute('ind'),
           });
       
-          setAppState({
+          rp.setAppState({
             action: Actions.OnePhoto.name,
           })
         },
@@ -126,7 +118,8 @@ export function Browse(
   }, []);
 
   useEffect(onFirstRender, []);
-  useEffect(boostPerfImgRender, [files]);
+  
+  useEffect(boostPerfImgRender, [rp.photosState.files]);
 
   return getRender();
 
@@ -166,26 +159,27 @@ export function Browse(
           </Dialog>
         )}
 
-        <Help
+        {/* <Help
           toRender={toRenderHelp()}
-          {...{ doNeedHelp: appState.doNeedHelp }}
-        />
+          {...{ doNeedHelp: rp.appState.doNeedHelp }}
+        /> */}
       </div>
     );
   }
 
   function onFirstRender() {
+    const rp = BrowseComp.getReqProps();
     setState({
       loading: true,
     });
-    server.toward({
-      resetTo: browseState.path,
+    rp.server.toward({
+      resetTo: rp.browseState.path,
     })
     .then(() => setState({
       loading: false,
     }));
 
-    const curPhotoEl = document.querySelector(`.${Browse.name} .file[ind='${browseState.curPhotoInd}']`);
+    const curPhotoEl = document.querySelector(`.${Browse.name} .file[ind='${rp.browseState.curPhotoInd}']`);
     if (curPhotoEl) {
       curPhotoEl.scrollIntoView();
       curPhotoEl.classList.add('curFile');
@@ -203,7 +197,8 @@ export function Browse(
   }
 
   function getDirsToRender() {
-    return dirs.map(dir => {
+    const rp = BrowseComp.getReqProps();
+    return rp.photosState.dirs.map(dir => {
       return (
         <div 
           key={dir}
@@ -223,8 +218,9 @@ export function Browse(
   }
 
   function getFilesToRender() {
-    return files.map((file, ind) => {
-      const style = { 'backgroundImage': `url(${browseState.path}/${file})` };
+    const rp = BrowseComp.getReqProps();
+    return rp.photosState.files.map((file, ind) => {
+      const style = { 'backgroundImage': `url(${rp.browseState.path}/${file})` };
       return (
         <div 
           key={file}
@@ -268,19 +264,47 @@ function boostPerfImgRender() {
 
 function getReqProps({ 
   channel, 
+  reqProps,
 }) {
+  // 
+  // 1. list of all props
+  // 2. suggestion of every prop
+
+  // const BrowseProps = BrowseComp.getAllProps();
+  // const rp = BrowseComp.getReqProps({
+  //   [BrowseProps.appState]: 1,
+  //   [BrowseProps.photosState]: 1,            
+  // });
+  // rp.appState();
+  // rp.photosState();       
+  //
+
+  // function newObjFromNames({
+  //   names,
+  // }) {
+  //   return names.reduce((res, name) => { res[name] = name; return res; }, {});
+  // }  
+  
+  // const BrowseProps = newObjFromNames({
+  //   names: [
+  //     'appState',
+  //     'photoState',
+  //     'browseState',
+  //   ],
+  // });
+  
+  // const props = channel.crop(reqProps);
+  
   return channel.crop({
     s: { 
       appState: 1,
-      photosState: { 
-        files: 1,
-        dirs: 1,
-      },
+      photosState: 1,
       browseState: 1,
     },
     d: {
       setAppState: 1,
       setBrowseState: 1,
+      setPhotosState: 1,
     },
     API: {
       comps: {
@@ -292,186 +316,202 @@ function getReqProps({
 
 function getAPI({
   deps,
-  reqProps,
 }) {
   return {
-    toggleRightWindow() {            
-      const states = {
-        0: 1,
-        1: 2,
-        2: 1,
-      };
-      
-      const storageItem = 'browserCount';
-      const count = sessionStorage.getItem(storageItem) || '0';
-      const countUpd = states[count];
-      sessionStorage.setItem(storageItem, countUpd);  
-      if (count > 0) {
-        window.location.reload();
-      }
-    },
-    moveItems() {
-      const {
-        state: items,
-        setState,
-      } = deps;
+    toggleRightWindow,
+    moveSelections,
+    addAlbum,
+    removeSelections,
+    changeSelections,
+    clearSelections,
+  };
 
-      const {
-        server,
-      } = reqProps;
-      
-      server.moveToPath({
-        items,
-      });
+  function moveSelections() {
+    const {
+      state: items,
+      setState,
+    } = deps;
 
-      setState({
-        progress: 0, 
-      });
+    const rp = BrowseComp.getReqProps();
+    
+    rp.server.moveToPath({
+      items,
+    });
 
-      checkCopyProgressWrap();
+    setState({
+      progress: 0, 
+    });
 
-      // ---------------------------------------
-      function checkCopyProgressWrap({
-      } = {}) {
-        server.$checkCopyProgress()
-          .then(({
-            copyProgress,
-          }) => {
-            setTimeout(() => (copyProgress === 100 ? null : checkCopyProgressWrap()), 500);
-            setState({
-              progress: copyProgress,
-            });
-          });
-      };
-    },
-    async addAlbum({
-      albumName
-    }) {
-      const {
-        setState,
-      } = deps;
-      const {
-        server,
-      } = reqProps;
-      const res = await server.addAlbum({
-        albumName,
-      });
+    checkCopyProgressWrap();
 
-      if (!res) {
-        setState({
-          isDialogEnabled: true,
-          dialogTitle: `Альбом ${albumName} уже есть!`,
-        }); 
-        return;               
-      }
-
-      setState({
-        loading: true,
-      });
-      server.toward()
-      .then(() => 
-        setState({
-          loading: false,
-        })
-      );
-    },
-    removeItems(
-      { } = {}
-    ) {
-      const {
-        state,
-        setState,
-      } = deps;
-      const {
-        server,
-      } = reqProps;
-
-      if (state.isDialogRemoveItem === false) {
-        setState({
-          isDialogRemoveItem: true,
-        });
-        return;
-      }  
-
-      setState({        
-        progress: 0,
-        isDialogRemoveItem: false,
-      });
-
-      server.removeItems({
-        items: [...state.selections.values()],
-      });
-
-      checkProgress();
-
-      return;
-
-      // ----------------------
-      function checkProgress(
-        {} = {}
-      ) {
-        server.$checkCopyProgress()
+    // ---------------------------------------
+    function checkCopyProgressWrap({
+    } = {}) {
+      rp.server.$checkCopyProgress()
         .then(({
           copyProgress,
         }) => {
+          setTimeout(() => (copyProgress === 100 ? null : checkCopyProgressWrap()), 500);
           setState({
             progress: copyProgress,
           });
-          
-          if (copyProgress < 100) {
-            setTimeout(
-              () => checkProgress(),
-              500,
-            );
-          } else {
-            setState({
-              loading: true,
-            });
-            server.toward()
-            .then(() => {
-              setState({
-                loading: false,
-                selections: new Set(),
-              });
-            });  
-          }          
         });
-      }
-    },
-    changeSelections(
-      {
-        src,
-        checked,
-      } = {},
-    ) {
-      const {
-        state,
-        setState,
-      } = deps;
-      
-      const stateUpd = changeSelections({
-        checked,
-        selections: state.selections,
-        src,
-      });
+    };
+  }
 
-      setState(stateUpd);
+  async function addAlbum({
+    albumName
+  }) {
+    const {
+      setState,
+    } = deps;
+    const rp = BrowseComp.getReqProps();
+    const res = await rp.server.addAlbum({
+      albumName,
+    });
+
+    if (!res) {
+      setState({
+        isDialogEnabled: true,
+        dialogTitle: `Альбом ${albumName} уже есть!`,
+      }); 
+      return;               
     }
-  };
-};
 
-function addHandlers({
-  target,
-  fns,
-}) {
-  const fnsObj = fns.reduce((res, fn) => { res[fn.name] = fn; return res; }, {});
-  Object.assign(
-    target,
-    fnsObj,
-  );
+    setState({
+      loading: true,
+    });
+    rp.server.toward()
+    .then(() => 
+      setState({
+        loading: false,
+      })
+    );
+  }
+
+  function removeSelections(
+    { } = {}
+  ) {
+    const {
+      state,
+      setState,
+    } = deps;
+    const rp = BrowseComp.getReqProps();
+    
+    if (state.selections.size === 0) {
+      return;
+    }
+
+    if (state.isDialogRemoveItem === false) {
+      setState({
+        isDialogRemoveItem: true,
+      });
+      return;
+    }  
+
+    setState({        
+      progress: 0,
+      isDialogRemoveItem: false,
+    });
+
+    rp.server.removeItems({
+      items: [...state.selections.values()],
+    });
+
+    checkProgress();
+
+    return;
+
+    // ----------------------
+    function checkProgress(
+      {} = {}
+    ) {
+      const rp = BrowseComp.getReqProps();
+      rp.server.$checkCopyProgress()
+      .then(({
+        copyProgress,
+      }) => {
+        setState({
+          progress: copyProgress,
+        });
+        
+        if (copyProgress < 100) {
+          setTimeout(
+            () => checkProgress(),
+            500,
+          );
+        } else {
+          setState({
+            loading: true,
+          });
+          rp.server.toward()
+          .then(() => {
+            setState({
+              loading: false,
+              selections: getNewSelections(),
+            });
+          });  
+        }          
+      });
+    }
+  }
+
+  function clearSelections(
+  ) {
+    const {
+      setState,
+    } = deps;
+    setState({
+      forceUpdate: false,
+      selections: getNewSelections(),
+    });
+  }
+
+  function changeSelections({
+    src,
+    checked,
+  } = {}
+  ) {
+    const {
+      state,
+      setState,
+    } = deps;
+    
+    const selectionsUpd = changeSelectionsCore({
+      checked,
+      selections: state.selections,
+      src,
+    });
+
+    setState({
+      forceUpdate: false,
+      selections: selectionsUpd,
+    });
+  }
+
+  function toggleRightWindow() {            
+    const states = {
+      0: 1,
+      1: 2,
+      2: 1,
+    };
+    
+    const storageItem = 'browserCount';
+    const count = sessionStorage.getItem(storageItem) || '0';
+    const countUpd = states[count];
+    sessionStorage.setItem(storageItem, countUpd);  
+    if (count > 0) {
+      window.location.reload();
+    }
+  }
 }
 
-function changeSelections(
+// ------------------------------
+function getNewSelections() {
+  return new Set();
+}
+
+function changeSelectionsCore(
   {
     src,
     checked,
@@ -485,11 +525,18 @@ function changeSelections(
 
   selectionsUpd[action](src);
 
-  const stateUpd = {
-    forceUpdate: false,
-    selections: selectionsUpd,
-  };
-  return stateUpd;
+  return selectionsUpd;
+}
+
+function addHandlers({
+  target,
+  fns,
+}) {
+  const fnsObj = fns.reduce((res, fn) => { res[fn.name] = fn; return res; }, {});
+  Object.assign(
+    target,
+    fnsObj,
+  );
 }
 
 const stateInit = {

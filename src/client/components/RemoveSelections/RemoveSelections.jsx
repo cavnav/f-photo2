@@ -7,26 +7,23 @@ import './styles.css';
 
 const strComponentAPI = 'ComponentAPI';
 
-const RemoveItemsComp = channel.addComp({
-  fn: RemoveItems,
+const RemoveSelectionsComp = channel.addComp({
+  fn: RemoveSelections,
   getReqProps,
 })
 
-export function RemoveItems({
-}) {
+export function RemoveSelections(
+  
+) {
   const title = `Удалить`;
-
-  const [state] = React.useState({
-    ...stateInit,
-  });
 
   const {
     ComponentAPI,
-  } = RemoveItemsComp.reqProps;
+  } = RemoveSelectionsComp.getReqProps();
 
   return (
     <div 
-      className='RemoveItems' 
+      className='RemoveSelections' 
       onClick={onClick}      
     >
       <div className='title'>
@@ -37,7 +34,7 @@ export function RemoveItems({
 
   // -----------------------------------------------------------------------
   function onClick() {
-    ComponentAPI.removeItems();
+    ComponentAPI.removeSelections();
   };
 }
 
@@ -73,6 +70,4 @@ function getReqProps({
 }
 
 const stateInit = {
-  albumName: '',
-  target: undefined,
 };

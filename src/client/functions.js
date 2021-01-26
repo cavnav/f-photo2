@@ -58,6 +58,7 @@ export function useMyReducer({
   reducer = (state, stateUpd) => stateUpd,
   initialState,
   props,
+  comp = {},
   fn = () => {},
   init = () => ({ ...initialState }),
 }) {
@@ -87,7 +88,14 @@ export function useMyReducer({
       }
     );
 
-    fn(stateReduced);
+    fn(state);
+
+    if (comp.ref) {
+      comp.ref.setDeps({
+        state,
+        setState: dispatch,
+      });
+    }
     // console.log('zz', JSON.stringify(stateUpd));
     if (stateReduced.forceUpdate === false) {      
       return;

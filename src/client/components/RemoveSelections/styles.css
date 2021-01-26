@@ -1,23 +1,23 @@
-.RemoveItems {
+.RemoveSelections {
   display: flex;
   --height: 36px;  
 }
 
-.RemoveItems .title {
+.RemoveSelections .title {
   display: flex;
 }
 
-.RemoveItems .title:hover .albumNameBox {
+.RemoveSelections .title:hover .albumNameBox {
   display: flex;  
 }
 
-.RemoveItems .albumName {
+.RemoveSelections .albumName {
   margin: 0px 5px;
   border: 1px solid;
   height: var(--height);
 }
 
-.RemoveItems .albumNameBox {
+.RemoveSelections .albumNameBox {
   display: none;
   align-items: center;
   height: var(--height);

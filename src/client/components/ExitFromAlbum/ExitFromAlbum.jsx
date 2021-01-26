@@ -1,19 +1,25 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
+import { channel } from '../../Channel';
+import { Browse } from '../Browse/Browse';
 
 import './styles.css';
 
-export function ExitFromAlbum({
-  browseState,
-  server,
-}) {
+const ExitFromAlbumComp = channel.addComp({
+  fn: ExitFromAlbum,
+  getReqProps,
+});
+export function ExitFromAlbum(
+) {
+  const {
+    browseState,
+    BrowseAPI,
+    server,
+  } = ExitFromAlbumComp.getReqProps();
+
   const [albumName] = browseState.path.split('/').slice(-1);
   if (!albumName) return null;
 
   const title = `Закрыть альбом ${albumName}`;
-
-  const [state, setState] = useState({
-    ...stateInit,
-  });
 
   return (
     <div 
@@ -26,18 +32,24 @@ export function ExitFromAlbum({
 
   // -----------------------------------------------------------------------
   function onClick(e) {
+    BrowseAPI.clearSelections();
     server.backward();
   };
 }
 
-ExitFromAlbum.getReqProps = function ({ channel }) {
+function getReqProps({ channel }) {
   return channel.crop({
     s: { 
-      browseState: 1 
+      browseState: 1, 
     },
     API: { 
       comps: {
-        server: 1,
+        server: 1,        
+      },
+    },
+    comps: {
+      [Browse.name]: {
+        API: 'BrowseAPI',
       },
     }
   });

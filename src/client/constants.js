@@ -10,9 +10,9 @@ const {
   SavePhotosToFlash,
   ActionSharePhotos,
   ExitFromOnePhoto,
-  MoveItems,
+  MoveSelections,
   AddAlbum,
-  RemoveItems,
+  RemoveSelections,
 } = AdditionalActionsComps;
 class Action {
   constructor(props) {
@@ -51,23 +51,23 @@ class AdditionalActions {
     });
   }
 
-  ExitFromAlbum = new Action({ 
+  [ExitFromAlbum.name] = new Action({ 
     title: 'Закрыть альбом',
     isActive: true,
     componentName: ExitFromAlbum.name,    
   });
-  ExitFromOnePhoto = new Action({
+  [ExitFromOnePhoto.name] = new Action({
     title: 'Вернуть фото',
     isActive: true,
     componentName: ExitFromOnePhoto.name,
   });  
-  SaveChanges = new Action({
+  [SaveChanges.name] = new Action({
     title: 'Сохранить изменения',
     className: 'SaveChanges',
     isActive: false,
     componentName: SaveChanges.name,
   });
-  SavePhotosToFlash = new Action({
+  [SavePhotosToFlash.name] = new Action({
     title: 'Записать фото на флешку',
     className: 'SaveFotosToFlash',
     isActive: true,
@@ -77,21 +77,21 @@ class AdditionalActions {
     isActive: true,
     componentName: ActionSharePhotos.name,
   });
-  ToggleRightWindow = new Action({
+  [ToggleRightWindow.name] = new Action({
     isActive: true,
     componentName: ToggleRightWindow.name,
   });
-  MoveItems = new Action({
+  [MoveSelections.name] = new Action({
     isActive: true,
-    componentName: MoveItems.name,
+    componentName: MoveSelections.name,
   });
-  AddAlbum = new Action({
+  [AddAlbum.name] = new Action({
     isActive: true,
     componentName: AddAlbum.name,
   });
-  RemoveItems = new Action({
+  [RemoveSelections.name] = new Action({
     isActive: true,
-    componentName: RemoveItems.name,
+    componentName: RemoveSelections.name,
   });
 }
 

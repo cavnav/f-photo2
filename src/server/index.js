@@ -164,7 +164,8 @@ app.post(
 
     res.send(req.body);
 
-    // -----------------------
+    
+    // ----------------------
     async function remove({
       slicedItems,
     }) {        
@@ -193,7 +194,7 @@ app.post(
       });
     }  
   }
-)
+);
 
 app.get('/api/browseFiles', (req, res) => {
   findFiles({ 

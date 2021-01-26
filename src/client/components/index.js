@@ -1,4 +1,4 @@
-import { MoveItems } from './MoveItems/MoveItems';
+import { MoveSelections } from './MoveSelections/MoveSelections';
 import { ExitFromAlbum } from './ExitFromAlbum/ExitFromAlbum';
 import { ToggleRightWindow } from './ToggleRightWindow/ToggleRightWindow';
 import { ExitFromOnePhoto } from './ExitFromOnePhoto/ExitFromOnePhoto';
@@ -6,7 +6,7 @@ import { ActionSharePhotos } from './ActionSharePhotos/ActionSharePhotos';
 import { SaveChanges } from './SaveChanges/SaveChanges';
 import { SavePhotosToFlash } from './SavePhotosToFlash/SavePhotosToFlash';
 import { AddAlbum } from './AddAlbum/AddAlbum';
-import { RemoveItems } from './RemoveItems/RemoveItems';
+import { RemoveSelections } from './RemoveSelections/RemoveSelections';
 
 export const AdditionalActionsComps = {
   ExitFromAlbum,
@@ -15,9 +15,9 @@ export const AdditionalActionsComps = {
   SavePhotosToFlash,
   ActionSharePhotos,
   ExitFromOnePhoto,
-  MoveItems,
+  MoveSelections,
   AddAlbum,
-  RemoveItems,
+  RemoveSelections,
 };
 
 export { SelectAlbum } from './SelectAlbum';

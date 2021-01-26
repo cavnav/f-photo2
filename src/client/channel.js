@@ -44,20 +44,24 @@ function ChannelWrap(props) {
       getReqProps = () => {},
     }) {
       const comp = this.comps[fn.name] = {
-        deps: {}, // Component props for API methods.
+        deps: {}, // Component own props for API methods.
+        setDeps(deps) {
+          Object.assign(
+            this.deps,
+            deps,
+          );
+        },
+        getReqProps() {
+          return getReqProps({ // shared Apps props.
+            channel,          
+          })
+        },
       };
-
-      Object.defineProperty(comp, 'reqProps', {
-        get: () => getReqProps({ // shared App props.
-          channel: this,          
-        }),
-      });
 
       Object.defineProperty(comp, 'API', {
         get: () => getAPI({ // Component API.
           channel: this,
           deps: comp.deps,
-          reqProps: comp.reqProps,
         }),
       });
 

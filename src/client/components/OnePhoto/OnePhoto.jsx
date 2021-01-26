@@ -30,7 +30,7 @@ export function OnePhoto(
     setBrowseState,
     path,
     PhotoStatusesAPI,
-  } = OnePhotoComp.reqProps;
+  } = OnePhotoComp.getReqProps();
 
   const myFiles = React.useMemo(() => myArray({
     items: files,
@@ -426,14 +426,14 @@ function getAPI({
         server,
       } = reqProps;
 
+      if (!state.curPhoto) return;
+      
       if (state.isDialogRemoveItem === false) {
         setState({
           isDialogRemoveItem: true,
         });
         return;
       }  
-
-      if (!state.curPhoto) return;
 
       server.removeItems({
         items: [state.curPhotoWithTime],
@@ -453,7 +453,7 @@ function getAPI({
           src: state.curPhoto,
           checked: false,
         });
-        
+
         setState(
           stateUpd,
         );          
