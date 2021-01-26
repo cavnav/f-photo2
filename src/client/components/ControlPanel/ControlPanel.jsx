@@ -12,7 +12,7 @@ export function ControlPanel({
 
   return (
     <div 
-      className={`controlPanel flex ${isWelcome ? 'attention' : ''}`} 
+      className="controlPanel flex"
       onClick={onClickAction}
     >
       {Object.entries(appState.actions)

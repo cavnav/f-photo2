@@ -1,3 +1,7 @@
+:root {
+  --main-browse-size: 300px;
+}
+
 html,
 body,
 #root,

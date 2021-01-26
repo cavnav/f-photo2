@@ -6,9 +6,19 @@
   overflow-y: auto;
 }
 
-.fitPreview100 {  
-  padding: 5px;
+.fitPreview {
+  height: var(--main-browse-size);
+  width: var(--main-browse-size);
+}
+
+.fitPreview100 {
+  width: 100px;
   height: 100px;
+}
+
+.fitPreview100,
+.fitPreview {  
+  padding: 5px;
   margin-right: 5px;
   margin-top: 5px;
   background-color: white;
@@ -21,7 +31,6 @@
 }
 
 .Browse .file {
-  width: 100px;
 }
 
 .Browse .dir {

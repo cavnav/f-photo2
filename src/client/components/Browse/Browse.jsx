@@ -208,7 +208,7 @@ export function Browse(
         <div 
           key={dir}
           src={dir}
-          className="positionRel fitPreview100 dir"
+          className="positionRel fitPreview dir"
           clickcb={dispatcher.onClickDir.name}
         >
           {dir}
@@ -228,7 +228,7 @@ export function Browse(
       return (
         <div 
           key={file}
-          className='positionRel fitPreview100 file scrollwait'
+          className='positionRel fitPreview file scrollwait'
           style={style}
           ind={ind} 
           src={file}

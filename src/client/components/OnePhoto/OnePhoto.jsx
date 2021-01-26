@@ -449,14 +449,14 @@ function getAPI({
           stateUpd.curPhotoInd = state.curPhotoInd - 1;
         }
         
-        setState(
-          stateUpd,
-        );
-
         BrowseAPI.changeSelections({
           src: state.curPhoto,
           checked: false,
-        });  
+        });
+        
+        setState(
+          stateUpd,
+        );          
       });
     }
   };
