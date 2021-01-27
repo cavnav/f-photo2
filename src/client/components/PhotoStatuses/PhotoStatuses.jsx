@@ -4,10 +4,8 @@ import {
   photoStatusIconsEntity, 
 } from './constants';
 
-import { set as _set, get as _get } from 'lodash';
-
 import './styles.css';
-import { tempReducer, useMyReducer } from '../../functions';
+import { useMyReducer } from '../../functions';
 import { ResumeObj } from '../../resumeObj';
 import { channel } from '../../Channel';
 
@@ -18,6 +16,7 @@ const resumeObj = new ResumeObj({
 const PhotoStatusesComp = channel.addComp({
   fn: PhotoStatuses,
   getAPI,
+  getReqProps,
 });
 
 export function PhotoStatuses({
@@ -25,24 +24,22 @@ export function PhotoStatuses({
 }) {
   const initState = React.useMemo(() => {
     return resumeObj.load({
-      props: getInitState(),
+      props: stateInit(),
     });
   }, []);
   
   const [state, setState] = useMyReducer({
     initialState: initState,
+    comp: {
+      ref: PhotoStatusesComp,
+      deps: {
+        curPhoto,
+      },
+    },
     fn: (val) => resumeObj.save(val),
   });
 
-  const statuses = _get(state.filesWithStatuses, [curPhoto]);
-
-  Object.assign(
-    PhotoStatusesComp.deps,
-    {
-      changeStatus,
-      getFilesWithStatuses,
-    },
-  );
+  const statuses = state.filesWithStatuses[curPhoto];
 
   return (statuses === undefined) ? null : (
     <div className="PhotoStatusIcons">
@@ -54,47 +51,66 @@ export function PhotoStatuses({
       }
     </div>
   );
+}
+
+function getReqProps({
+  channel,
+}) {
+  return channel.crop({
+    d: {
+      setPhotosState: 1,
+    },
+  });
+}
+
+function getAPI({
+}) {
+  return {
+    changeShareStatus: () => {      
+      changeStatus({
+        actionName: photoStatusIconsEntity.setToShare.name,
+      });
+    }, 
+    changePrintStatus: () => {
+      changeStatus({
+        actionName: photoStatusIconsEntity.setToPrint.name,
+      });
+    }, 
+    getFilesWithStatuses,
+  }
+
+  // ----------------------
 
   function changeStatus({
     actionName,
   }) {    
-    const path = [curPhoto];
-    const statusUpd = _get(state.filesWithStatuses, path, new PhotoStatusIcons());
-    _set(state.filesWithStatuses, path, statusUpd);
-    statusUpd[actionName]({});
+    const {
+      state,
+      setState,
+      curPhoto,
+    } = PhotoStatusesComp.deps;
 
     setState({
-      forceUpdate: !state.forceUpdate,
+      autoUpdate: () => {
+        const status = state.filesWithStatuses[curPhoto];
+        if (status === undefined) {
+          state.filesWithStatuses[curPhoto] = new PhotoStatusIcons();
+        }
+        status.filesWithStatuses[curPhoto][actionName]();
+      }
     });
   }
 
-  function getInitState() {
-    return {
-      forceUpdate: false,
-      filesWithStatuses: {},
-    };
-  }
-
   function getFilesWithStatuses() {
+    const {
+      state,
+    } = PhotoStatusesComp.deps;
     return state.filesWithStatuses;
   }
-}
-
-function getAPI({
-  deps: {
-    changeStatus,
-    getFilesWithStatuses,
-  }
-}) {
-  return {
-    changeShareStatus: () => changeStatus({
-      actionName: photoStatusIconsEntity.setToShare.name,
-    }), 
-    changePrintStatus: () => changeStatus({
-      actionName: photoStatusIconsEntity.setToPrint.name,
-    }), 
-    getFilesWithStatuses: () => {
-      return getFilesWithStatuses();
-    },
-  }
 };
+
+function stateInit() {
+  return {
+    filesWithStatuses: {},
+  };
+}

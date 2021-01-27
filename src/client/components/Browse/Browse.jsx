@@ -79,13 +79,10 @@ export function Browse(
         }) {
           const src = target.parentElement.getAttribute('src');
           const { checked } = target;
-          const stateUpd = changeSelectionsCore({
+          changeSelections({
             src,
             checked,
-            selections: state.selections,
           });
-          
-          setState(stateUpd);
         },
         []
       ),
@@ -120,6 +117,8 @@ export function Browse(
   useEffect(onFirstRender, []);
   
   useEffect(boostPerfImgRender, [rp.photosState.files]);
+
+  useEffect(resetSelections, [state.selections]);
 
   return getRender();
 
@@ -210,6 +209,7 @@ export function Browse(
           <input
             className="itemSelector positionAbs"
             type="checkbox"
+            src={dir}
             clickcb={dispatcher.onClickItemSelector.name}
           />
         </div>
@@ -233,8 +233,8 @@ export function Browse(
           <input
             className="itemSelector positionAbs"
             type="checkbox"
-            clickcb={dispatcher.onClickItemSelector.name}
-            defaultChecked={state.selections.has(file)}
+            src={file}
+            clickcb={dispatcher.onClickItemSelector.name}         
           />
         </div>
       );
@@ -315,7 +315,6 @@ function getReqProps({
 };
 
 function getAPI({
-  deps,
 }) {
   return {
     toggleRightWindow,
@@ -330,7 +329,7 @@ function getAPI({
     const {
       state: items,
       setState,
-    } = deps;
+    } = BrowseComp.deps;
 
     const rp = BrowseComp.getReqProps();
     
@@ -364,7 +363,7 @@ function getAPI({
   }) {
     const {
       setState,
-    } = deps;
+    } = BrowseComp.deps;
     const rp = BrowseComp.getReqProps();
     const res = await rp.server.addAlbum({
       albumName,
@@ -395,7 +394,7 @@ function getAPI({
     const {
       state,
       setState,
-    } = deps;
+    } = BrowseComp.deps;
     const rp = BrowseComp.getReqProps();
     
     if (state.selections.size === 0) {
@@ -460,32 +459,10 @@ function getAPI({
   ) {
     const {
       setState,
-    } = deps;
+    } = BrowseComp.deps;
     setState({
       forceUpdate: false,
       selections: getNewSelections(),
-    });
-  }
-
-  function changeSelections({
-    src,
-    checked,
-  } = {}
-  ) {
-    const {
-      state,
-      setState,
-    } = deps;
-    
-    const selectionsUpd = changeSelectionsCore({
-      checked,
-      selections: state.selections,
-      src,
-    });
-
-    setState({
-      forceUpdate: false,
-      selections: selectionsUpd,
     });
   }
 
@@ -511,21 +488,16 @@ function getNewSelections() {
   return new Set();
 }
 
-function changeSelectionsCore(
+function getCheckedAction(
   {
-    src,
     checked,
-    selections: selectionsUpd,
   } = {},
 ) {
   const action = {
     true: Set.prototype.add,
     false: Set.prototype.delete,
   }[checked].name;
-
-  selectionsUpd[action](src);
-
-  return selectionsUpd;
+  return action;
 }
 
 function addHandlers({
@@ -537,6 +509,37 @@ function addHandlers({
     target,
     fnsObj,
   );
+}
+
+function changeSelections({
+  src,
+  checked,
+} = {}
+) {
+  const {
+    state,
+    setState,
+  } = BrowseComp.deps;
+  
+  const action = getCheckedAction({
+    checked,
+  });
+
+  setState({
+    forceUpdate: false,
+    autoUpdate: () => { state.selections[action](src); },
+  });
+}
+
+function resetSelections() {
+  const { 
+    state: { selections },
+  } = BrowseComp.deps;
+
+  [...document.querySelectorAll('.itemSelector')].forEach((item) => {
+    const src = item.getAttribute('src');
+    item.checked = selections.has(src);
+  });
 }
 
 const stateInit = {

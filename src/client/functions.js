@@ -1,3 +1,4 @@
+import { update } from 'lodash';
 import React from 'react';
 
 class MyItems {
@@ -55,7 +56,7 @@ export function tempReducer(
 };
 
 export function useMyReducer({
-  reducer = (state, stateUpd) => stateUpd,
+  reducer,
   initialState,
   props,
   comp = {},
@@ -78,29 +79,57 @@ export function useMyReducer({
 
   // ---
   function dispatch(stateUpd) {
-    const stateReduced = reducer(state, stateUpd);    
-  
-    Object.assign(
+    updateState({
       state,
-      stateReduced,
-      {
-        forceUpdate: true,
-      }
-    );
+      stateUpd,
+      reducer,
+    });
 
     fn(state);
+    setCompDeps({
+      compRef: comp.ref,
+      compDeps: comp.deps,
+      state,
+      dispatch,
+    })
 
-    if (comp.ref) {
-      comp.ref.setDeps({
+    // console.log('zz', JSON.stringify(stateUpd));
+    stateUpd.forceUpdate === undefined &&
+    forceUpdate();
+
+    // ----------------
+    function setCompDeps({
+      compRef,
+      compDeps,
+      state,
+      dispatch,
+    }) {
+      compRef && 
+      compRef.setDeps({
         state,
         setState: dispatch,
+        ...compDeps,
       });
     }
-    // console.log('zz', JSON.stringify(stateUpd));
-    if (stateReduced.forceUpdate === false) {      
-      return;
+
+    function updateState({
+      state,
+      stateUpd,
+      reducer,
+    }) {
+      if (stateUpd.autoUpdate) {
+        stateUpd.autoUpdate();
+        return;
+      }
+      const stateReduced = reducer ? reducer(state, stateUpd) : undefined;
+      Object.assign(
+        state,
+        stateReduced || stateUpd,
+        {
+          forceUpdate: true,
+        }
+      );
     }
-    forceUpdate();
   }
 }
 

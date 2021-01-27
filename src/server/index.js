@@ -164,7 +164,6 @@ app.post(
 
     res.send(req.body);
 
-    
     // ----------------------
     async function remove({
       slicedItems,

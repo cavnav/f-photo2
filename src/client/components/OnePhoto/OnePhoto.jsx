@@ -23,29 +23,28 @@ export function OnePhoto(
   {}
 ) { 
   const {
-    appState, 
-    files,
-    curPhotoInd,
-    server,
+    photosState,
+    browseState,
     setBrowseState,
-    path,
-    PhotoStatusesAPI,
+    server,
   } = OnePhotoComp.getReqProps();
-
   const myFiles = React.useMemo(() => myArray({
-    items: files,
-  }),
-  []
+      items: photosState.files,
+    }),
+    []
   );
 
   const [props] = React.useState({
-    curPhotoInd,
+    curPhotoInd: browseState.curPhotoInd,
     files: myFiles,
-    path,
+    path: browseState.path,
   });
 
   const [state, setState] = useMyReducer({
     reducer: selfReducer,
+    comp: {
+      ref: OnePhotoComp,
+    },
     props,
     initialState: {
       ...resumeObj.load({
@@ -55,15 +54,6 @@ export function OnePhoto(
       }),
     }, 
   });
-
-  Object.assign(
-    OnePhotoComp.deps,
-    {
-      state,
-      setState,
-      files: state.files,
-    }
-  );
 
   const onDialogRemoveCancel = React.useCallback(() => {
     setState({
@@ -378,14 +368,8 @@ function onImgServerRotate({
 function getReqProps({ channel }) { 
   const props = channel.crop({
     s: {
-      appState: 1,
-      photosState: {
-        files: 1,
-      },
-      browseState: {
-        curPhotoInd: 1,
-        path: 1,
-      },
+      photosState: 1,
+      browseState: 1,
     },
     d: {
       setBrowseState: 1,
@@ -409,22 +393,19 @@ function getReqProps({ channel }) {
 };
 
 function getAPI({  
-  deps,
-  reqProps,
 }) {
   return {
-    removeItems(
+    removeSelections(
       {} = {}
     ) {
       const {
         state,
         setState,
-        files,
-      } = deps;
+      } = OnePhotoComp.deps;
       const {
         BrowseAPI,
         server,
-      } = reqProps;
+      } = OnePhotoComp.getReqProps();
 
       if (!state.curPhoto) return;
       
@@ -438,14 +419,14 @@ function getAPI({
       server.removeItems({
         items: [state.curPhotoWithTime],
       }).then(() => {
-        files.delete(state.curPhotoInd);
+        state.files.delete(state.curPhotoInd);
 
         const stateUpd = {
           action: onTogglePhoto.name,
           isDialogRemoveItem: false,
         };
         
-        if (files.items.length === state.curPhotoInd) {
+        if (state.files.items.length === state.curPhotoInd) {
           stateUpd.curPhotoInd = state.curPhotoInd - 1;
         }
         
