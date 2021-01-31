@@ -1,3 +1,6 @@
+agreements:
+  folderName and fileName are uniq.
+
 app = {
   client: {
     ControlPanel: {

@@ -43,11 +43,18 @@ function ChannelWrap(props) {
       getAPI = () => {},
       getReqProps = () => {},
     }) {
+      // For geIting CompAPI.
+      fn.API = {
+        [fn.name]: {
+          API: `${fn.name}API`,
+        },
+      };
+
       const comp = this.comps[fn.name] = {
         deps: {}, // Component own props for API methods.
         setDeps(deps) {
           Object.assign(
-            this.deps,
+            comp.deps,
             deps,
           );
         },

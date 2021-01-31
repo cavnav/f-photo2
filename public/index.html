@@ -10,9 +10,11 @@
   <script>
     if (window.self === window.top) {
       window.name = 'leftWindow';
+      window.oppositeWindow = 'rightWindow';
     }
     else {
       window.name = 'rightWindow';
+      window.oppositeWindow = 'leftWindow';
     }
   </script>
 </head>
@@ -24,11 +26,11 @@
 </body>
 <script>  
   window.onload = () => { 
-    const browserCount = sessionStorage.getItem('browserCount');
+    const browserCount = JSON.parse(localStorage.getItem('resume')).browserCount;
     
     if (
       window.self === window.top && 
-      browserCount === "2"
+      browserCount === 2
     ) {
       const container = document.createElement('div');
       container.id = "rightSideWindow";

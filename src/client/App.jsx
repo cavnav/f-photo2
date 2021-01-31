@@ -44,15 +44,17 @@ export function App() {
   const browseStateInit = React.useMemo(() => resumeObj.load({
     compName: 'browseState',
     props: {
+      sep: undefined,
       path: '',
-      items: ['1.webp', '15.webp', '2020-11-16T060247'],
       curPhotoInd: -1,
       scrollY: 0,
     },
   }), []);
 
   const resumeSaveFn = React.useCallback(
-    () => setTimeout(() => resumeObj.save(s)),
+    () => resumeObj.save({
+      stateUpd: s,
+    }),
     [],
   );
   

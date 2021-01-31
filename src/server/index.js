@@ -13,7 +13,8 @@ const Jimp = require('jimp');
 const WhatsappBot = require('./scriptWhatsappBot');
 
 const app = express();
-const albumDir = path.resolve('e:\\projects\\album\\');
+const albumDir = path.join('z:', 'album');
+
 
 let state = {
   newPhotos: [],
@@ -106,7 +107,7 @@ app.get('/api/getNewPhotos', async (req, res) => {
   }
 
   findFiles({
-    path: state.usbDriveLetter,
+    reqPath: state.usbDriveLetter,
     doNeedTopLevelSearch: false,
     doNeedFullPath: true,
     onResolve({ files }) {
@@ -150,7 +151,7 @@ app.post(
   async (req, res) => {
     const {
       curWindow,
-      items: items,
+      items,
     } = req.body;
 
     setState({
@@ -169,7 +170,7 @@ app.post(
       slicedItems,
     }) {        
       const [item] = slicedItems;
-      const src = path.join(state[curWindow], item);
+      const src = path.resolve(state[curWindow], path.basename(item));
       await fs.remove(
         src, 
       );
@@ -201,37 +202,52 @@ app.get('/api/browseFiles', (req, res) => {
     onResolve({ 
       files, 
       dirs 
-    }) {
+    }) {      
+
       setState({
         files,
         dirs,
       });
-      const path = state[state.curWindow]
-        .replace(albumDir, '')
-        .replace(/\\/g, '/');
-      const pathUpd = state[state.curWindow] === state.albumDir ? '' : path;    
+
+      const myPath = state[state.curWindow] === state.albumDir ? '' : 
+        path.join(state[state.curWindow]).replace(albumDir, '');
+
       res.send({
         files,
         dirs,
-        path: pathUpd,
+        path: myPath,
+        sep: path.sep,
       });
     }
   });
 });
 
-app.post('/api/toward', (req, res) => {
+app.post('/api/resetNavigation', (req, res) => {
   let { 
-    subdir,
     resetTo, 
     curWindow,
   } = req.body;
 
-  const resetToUpd = resetTo ? `${albumDir}${resetTo}`.replace(/\//g, '\\') : resetTo;
-  subdir = subdir ? `\\${subdir}` : '';
-  const path = resetToUpd || `${state[curWindow]}${subdir}`;
-
+  const resetToUpd = path.join(albumDir, resetTo);
   state[curWindow] && setState({
-    [curWindow]: path,
+    [curWindow]: resetToUpd,
+  });
+
+  res.send(req.body);
+});
+
+app.post('/api/toward', (req, res) => {
+  let { 
+    subdir = '',
+    resetTo, 
+    curWindow,
+  } = req.body;
+
+  const resetToUpd = resetTo ? path.join(albumDir, resetTo) : undefined;
+  const pathUpd = resetTo ? undefined : path.join(state[curWindow], path.basename(subdir));
+   
+  state[curWindow] && setState({
+    [curWindow]: resetToUpd || pathUpd,
     curWindow,
   });
 
@@ -271,7 +287,7 @@ app.get('/api/remove', async (req, res) => {
     curWindow,
   } = req.query;
   const fileUpd = state[curWindow].concat('\\', file);
-  removeFile({ file: fileUpd, resolve });
+  removeItem({ file: fileUpd, resolve });
   
   function resolve() {
     res.send(req.query);
@@ -304,7 +320,7 @@ app.post('/api/saveFilesToFlash', async (req, response) => {
   .then(async (res) => {
     const { files } = req.body;
     const filesList = Object.keys(files);
-    const srcRoot = 'e:\\projects\\docsF-photo2\\root\\';
+    // TODO const srcRoot = 'z:\\album\\root\\';
     const destRoot = state.usbDriveLetter;
     for (let index = 0; index < filesList.length; index++) {
       const file = filesList[index]
@@ -318,51 +334,173 @@ app.post('/api/saveFilesToFlash', async (req, response) => {
   .catch(console.error);
 });
 
-app.post('/api/moveToPath', (req, res) => {
-  res.send(req.body);
+app.post('/api/moveToPath', 
+  async(req, res) => {
+    res.send(req.body);
 
-  const {
-    path = state.rightWindow,
-    items,
-  } = req.body;
-  
-  setState({
-    copyProgress: 0,
-    countCopiedPhotos: 0,
-  });
-  
-  startCopy({ 
-    items,
-    path, 
-  });
+    const {
+      destWindow,
+      items,
+      curWindow,
+    } = req.body;
 
-  // ------------------------------------
+    const source = state[curWindow];
+    const dest = state[destWindow];
 
-  async function startCopy({
-    items,
-    path,
-  }) {
-    const countCopiedPhotosUpd = state.countCopiedPhotos + 1;
-
-    const copyProgress = calcCopyProgress({ 
-      countCopiedPhotos: countCopiedPhotosUpd, 
+    setState({
+      copyProgress: 0,
+      countCopiedPhotos: 0,
     });
 
-    const [item] = items;
+    const allItems = await getAllItems({
+      items,
+      source,
+    });
+    const flattedItems = allItems.flat();
+    
+    startCopy({
+      sourceItems: items,
+      items: flattedItems,
+      total: flattedItems.length,
+      source,
+      dest,
+    });
 
-    await fs.copy(
-      item, 
-      path,
-    );
+    
+    // -------------------------------------
+    async function getAllItems({
+      items,
+      source,
+    }) {
+      let allItems = [];
+      for (let index = 0; index < items.length; index++) {      
+        const itemNext = items[index];
+        const basename = path.basename(itemNext)
+        if (basename === itemNext) { // if file.
+          allItems = [
+            ...allItems,
+            itemNext,
+          ];
+          continue;
+        }
+        const itemItems = await getItemsOfItem({ // if folder.
+          item: path.resolve(source, basename),
+          source,
+        });
 
-    if (copyProgress !== 100) {
-      startCopy({ 
-        items: items.slice(1), 
-        path,
+        allItems = [
+          ...allItems,
+          ...itemItems,
+        ];        
+      }
+
+      return allItems;
+    }
+
+    async function getItemsOfItem({
+      item,
+      source,
+    }) {              
+      const { files } = await new Promise((
+        resolve
+      ) => {
+        findFiles({
+          reqPath: item,
+          doNeedFullPath: true,
+          doNeedTopLevelSearch: false,
+          doNeedDirs: false,
+          onResolve: resolve,
+        })
       });
+
+      // case when empty dir.
+      const relatedPathfiles = (files.length ? files : [item]).map((file) => path.relative(source, file))
+      return relatedPathfiles;
+    }
+
+    async function startCopy({
+      items,
+      source,
+      dest,
+      total,
+      sourceItems,
+    }) {
+      console.log('t7', sourceItems, );
+      const countProcessed = state.countCopiedPhotos + 1;
+      const progress = calcProgress({ 
+        cntProcessed: countProcessed, 
+        total,
+      });
+
+      // either dir or file. Distinguish: fileName\ = dir; fileName = file.
+      // if item is file then dest cannot be directory
+      const [item] = items;
+      const sourceUpd = path.resolve(source, item);
+      const destUpd = path.resolve(dest, item);    
+      
+      console.log('t9', sourceUpd, destUpd);
+      await fs.copy(
+        sourceUpd, 
+        destUpd,
+      );
+
+      setState({
+        copyProgress: progress - 10,
+        countCopiedPhotos: countProcessed,
+      });
+      
+      if (progress !== 100) {
+        console.log('t10', sourceItems)
+        setTimeout(
+          () => {
+            startCopy({ 
+              items: items.slice(1), 
+              dest,
+              total,
+              source,
+              sourceItems,
+            });
+          },
+        );
+      }
+      else {
+        startRemove({
+          items: sourceItems,
+          source,
+        });      
+      }
+    }
+
+    // ----------------------
+    function startRemove({
+      items,
+      source,
+    }) {
+      console.log('t8', items, source)
+      const [item] = items;
+      const basename = path.basename(item);
+      const resolvedItem = path.resolve(source, basename);
+      removeItem({
+        file: resolvedItem, 
+        resolve: () => {   
+          if (items.length > 1) {   
+            setTimeout(
+              () => startRemove({
+                items: items.slice(1),
+                source,
+              }),
+            );
+          }
+          else {
+            setState({
+              copyProgress: 100,
+            });
+          }
+        },           
+      })
     }
   }
-});
+);
 
 app.post('/api/copyPhotos', (req, res) => {
   const {
@@ -387,7 +525,7 @@ app.post('/api/copyPhotos', (req, res) => {
   function startCopy({ photos, destDir }) {
     photos.length && setTimeout(async () => {
       const [photo] = photos;
-      const photoName = getFileName({ file: photo });
+      const photoName = path.basename(photo);
       const destPath = path.resolve(destDir, photoName);
 
       await fs.copy(photo, destPath);
@@ -459,8 +597,16 @@ function calcProgress({
 function getBackwardPath({
   curWindow,
 }) {
-  if (state.albumDir === state[curWindow]) return state[curWindow];
-  return state[curWindow].slice(0, state[curWindow].lastIndexOf('\\'));
+  const a = state[curWindow]
+  .split(path.sep)
+  .slice(0, -1);
+
+  if (state.albumDir === state[curWindow]) return state.albumDir;
+  return path.join(
+    ...state[curWindow]
+    .split(path.sep)
+    .slice(0, -1)
+  );
 }
 
 function saveToFile({ 
@@ -472,36 +618,37 @@ function saveToFile({
 }
 
 function findFiles({ 
-  path = state[state.curWindow],
+  reqPath = state[state.curWindow],
 
   doNeedTopLevelSearch = true,
   doNeedDirs = false,
   doNeedFullPath = false,
   onResolve = () => {} 
 }) {
-  find.file('', path, (files) => {
+  find.file('', reqPath, (files) => {
     let browseFiles = files; 
 
     if (doNeedTopLevelSearch) browseFiles = browseFiles.filter(isTopLevelFile);
-
     if (!doNeedFullPath) browseFiles = browseFiles.map((file) => {
-      const fileUpd = getFileName({ file });
+      const fileUpd = path.basename(file);
       return `${fileUpd}`;
     });  
 
     if (!doNeedDirs) return onResolve({ files: browseFiles, dirs: [] });
     
-    find.dir('', path, (dirs) => {
-      const browseDirs = dirs.filter(isTopLevelFile).map((dir) => {
-        return getFileName({ file: dir });
-      });  
+    find.dir('', reqPath, (dirs) => {
+      const { sep } = path;
+      const browseDirs = dirs
+        .filter(isTopLevelFile)
+        .map((dir) => path.join(sep, path.basename(dir))); 
+
       onResolve({ files: browseFiles, dirs: browseDirs });
     });  
   });
 
   // ------------------------------------------- 
   function isTopLevelFile(file) {
-    return path.length === file.lastIndexOf('\\');
+    return reqPath.length === file.lastIndexOf(path.sep);
   }
 }
 
@@ -510,22 +657,17 @@ function getCurMoment() {
   return dateISO.slice(0, dateISO.indexOf('.')).replace(/:/g, '');
 }
 
-function getFileName({ file }) {
-  return file.slice(file.lastIndexOf('\\') + 1);
-}
-
-function removeFile({ 
+function removeItem({ 
   file, 
-  resolve, 
-  err = () => {} 
+  resolve = () => {}, 
 }) {  
+  console.log('t12', file);
   return fs.remove(file)
   .then(() => {
-
     resolve();
   })
   .catch(err => {
-    err();
+    console.log(err);
   });
 }
 

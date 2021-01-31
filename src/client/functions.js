@@ -57,12 +57,15 @@ export function tempReducer(
 
 export function useMyReducer({
   reducer,
-  initialState,
+  initialState = {},
   props,
   comp = {},
   fn = () => {},
   init = () => ({ ...initialState }),
 }) {
+  const {
+    setDeps = () => {},
+  } = comp;
   const [forceUpdate] = React.useReducer((x) => !x, false).slice(1);
   const [state] = React.useState(init(initialState));
   props && React.useMemo(
@@ -75,6 +78,10 @@ export function useMyReducer({
     },
     Object.values(props),
   );
+  setDeps({
+    state,
+    setState: dispatch,
+  });
   return [state, dispatch];
 
   // ---
@@ -86,32 +93,17 @@ export function useMyReducer({
     });
 
     fn(state);
-    setCompDeps({
-      compRef: comp.ref,
-      compDeps: comp.deps,
-      state,
-      dispatch,
-    })
+    setDeps({
+      ...comp.deps,
+    });
 
     // console.log('zz', JSON.stringify(stateUpd));
     stateUpd.forceUpdate === undefined &&
     forceUpdate();
 
-    // ----------------
-    function setCompDeps({
-      compRef,
-      compDeps,
-      state,
-      dispatch,
-    }) {
-      compRef && 
-      compRef.setDeps({
-        state,
-        setState: dispatch,
-        ...compDeps,
-      });
-    }
 
+    // -----------------------
+    
     function updateState({
       state,
       stateUpd,

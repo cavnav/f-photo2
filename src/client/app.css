@@ -14,7 +14,11 @@ body {
 }
 
 #root {
-  width: 100%;
+  width: 100%;  
+}
+
+#root, #rightSideWindow {
+  min-width: 50%;
 }
 
 .positionRel {

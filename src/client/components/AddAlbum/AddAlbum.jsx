@@ -1,4 +1,5 @@
 import React from 'react';
+import { Browse } from '../Browse/Browse';
 
 import './styles.css';
 
@@ -58,10 +59,8 @@ AddAlbum.getReqProps = function ({ channel }) {
     s: { 
       browseState: 1 
     },
-    API: { 
-      comps: {
-        Browse: 'BrowseAPI',
-      },
+    comps: { 
+      ...Browse.API,
     }
   });
 }

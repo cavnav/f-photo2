@@ -9,48 +9,77 @@ export class ResumeObj {
       props,
     );
   }
+  storageItemName = 'resume';
   compName = '';
-  appState = {
+  defAppState = this.state || {
     leftWindow: {
       // OnePhoto: {},
     },
     rightWindow: {
     },
-    browserCount: 0,
+    browserCount: 1,
     toPrint: {},
     toShare: {},
   };
-  storageItemName = 'resume';
-  save(props) {
-    const appState = JSON.parse(localStorage.getItem(this.storageItemName));
+
+
+  save({ 
+    stateUpd, 
+    windowName = window.name
+  }) { 
+    const appStateUpd = this.state;
     Object.assign(
-      appState[window.name], 
+      appStateUpd[windowName], 
       {
-        [this.compName]: props,
+        [this.compName]: stateUpd,
       },
     );      
-    localStorage.setItem(this.storageItemName, JSON.stringify(appState));
+    localStorage.setItem(
+      this.storageItemName, 
+      JSON.stringify(appStateUpd)
+    );
+  }
+  saveCustom(stateUpd) {
+    localStorage.setItem(
+      this.storageItemName, 
+      JSON.stringify({
+        ...this.state,
+        ...stateUpd
+      })
+    );
   }
   load({
     compName = '',
     props,
+    helper,
   }) {
-    const appState = JSON.parse(localStorage.getItem(this.storageItemName)) || this.appState;     
     const compNameFullSrc = [window.name, this.compName].concat(compName ? compName.split('.') : []);
-    const compState = _get(appState, compNameFullSrc); 
-    if (compState) return compState;
+    const appState = this.state;   
+    if (appState) {      
+      let compState = _get(appState, compNameFullSrc); 
+      if (compState) {
+        if (helper) {
+          compState = helper(compState);
+        }
+        return compState;
+      }  
+    }
     
-    _set(
-      appState,
+    
+    const newAppState = _set(
+      { ...this.defAppState },
       compNameFullSrc,
       props
     );
     localStorage.setItem(
       this.storageItemName, 
       JSON.stringify(
-        appState
+        newAppState
       )
     );
     return props;
   }
+  get state() {
+    return JSON.parse(localStorage.getItem(this.storageItemName));
+  }  
 }

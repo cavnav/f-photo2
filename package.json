@@ -16,7 +16,7 @@
   "author": "J0101",
   "license": "ISC",
   "dependencies": {
-    "antd": "^3.26.6",
+    "antd": "^4.13.1",
     "babel-polyfill": "^6.26.0",
     "body-parser": "^1.19.0",
     "drivelist": "^8.0.10",
@@ -39,7 +39,7 @@
     "babel-eslint": "^10.0.0",
     "babel-loader": "^8.0.0",
     "clean-webpack-plugin": "^1.0.0",
-    "concurrently": "^4.0.0",
+    "concurrently": "^6.0.0",
     "css-loader": "^2.0.0",
     "eslint": "^5.0.0",
     "eslint-config-airbnb": "^17.0.0",

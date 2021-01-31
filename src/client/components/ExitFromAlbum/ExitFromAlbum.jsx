@@ -16,7 +16,7 @@ export function ExitFromAlbum(
     server,
   } = ExitFromAlbumComp.getReqProps();
 
-  const [albumName] = browseState.path.split('/').slice(-1);
+  const albumName = browseState.path.slice(1);
   if (!albumName) return null;
 
   const title = `Закрыть альбом ${albumName}`;
@@ -32,7 +32,11 @@ export function ExitFromAlbum(
 
   // -----------------------------------------------------------------------
   function onClick(e) {
-    BrowseAPI.clearSelections();
+    BrowseAPI.changeSelections();
+    const rp = ExitFromAlbumComp.getReqProps();
+    rp.setBrowseState({      
+      curPhotoInd: -1,
+    });
     server.backward();
   };
 }
@@ -41,6 +45,9 @@ function getReqProps({ channel }) {
   return channel.crop({
     s: { 
       browseState: 1, 
+    },
+    d: {
+      setBrowseState: 1,
     },
     API: { 
       comps: {

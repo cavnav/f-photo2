@@ -74,15 +74,31 @@ export class AppServerAPI {
     });
   }
 
+  resetNavigation = ({
+    curWindow,
+  }) => {
+    return fetch(
+      this.getFullUrl({ url: 'resetNavigation' }),
+      new PostObjTmp({
+        body: {
+          resetTo: '',
+          curWindow,
+        }
+      })
+    );
+  }
+
   toward = ({
     resetTo,
     subdir,
+    curWindow,
    } = {}) => {
     return this.navigate({ 
       url: 'toward', 
       params: { 
         subdir,
         resetTo, 
+        curWindow,
       } 
     });
   }
@@ -93,20 +109,22 @@ export class AppServerAPI {
       new PostObjTmp({
         body: {
           ...params,
-          curWindow: window.name,
+          ...(!params.curWindow && { curWindow: window.name }),
         },
       })
     )
     .then(res => res.json())
     .then((res) => {
-      const { files, dirs, path } = res;
+      const { files, dirs, path, sep } = res;
+      console.log('z13', {path, sep});
+      this.d.setBrowseState({
+        path,
+        sep,
+      }); 
       this.d.setPhotosState({
         files,
         dirs,
-      });   
-      this.d.setBrowseState({
-        path,
-      }); 
+      });         
     });
   }
 
@@ -146,18 +164,18 @@ export class AppServerAPI {
     .then((res) => res.json());
   };
 
-  $moveToPath = ({
+  moveToPath = ({
     items,
-    path,
+    destWindow,
   }) => {
     return fetch(
       this.getFullUrl({
-        url: 'copyToPath',
+        url: 'moveToPath',
       }), 
       new PostObjTmp({      
         body: {
           items,
-          path,
+          destWindow,
           curWindow: window.name,
         }
       })

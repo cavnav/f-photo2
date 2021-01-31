@@ -12,10 +12,12 @@ import {
 import './styles.css';
 import { useMyReducer } from '../../functions';
 import { channel } from '../../Channel';
+import { eventNames, MoveSelections } from '../MoveSelections/MoveSelections';
+import { ResumeObj } from '../../resumeObj';
 
-// const resumeObj = new ResumeObj({
-//   compName: OnePhoto.name,
-// });
+const resumeObj = new ResumeObj({
+  compName: Browse.name,
+});
 
 const BrowseComp = channel.addComp({
   fn: Browse,
@@ -27,9 +29,25 @@ export function Browse(
 ) {
   const [state, setState] = useMyReducer({
     comp: {
-      ref: BrowseComp,
+      setDeps: BrowseComp.setDeps,
     },
-    initialState: stateInit,
+    initialState: resumeObj.load({
+        props: stateInit,
+        helper: (state) => {
+          return {
+            ...state,
+            selections: new Set(state.selections),
+          };
+        }
+      }),
+    fn: (state) => {
+      resumeObj.save({
+        stateUpd: {
+          ...state,
+          selections: [...state.selections],
+        },
+      });
+    }
   });
 
   const rp = BrowseComp.getReqProps();
@@ -47,6 +65,9 @@ export function Browse(
     });
   }, []);
 
+
+  React.useEffect(oppositeWindowCheckSamePaths, [rp.browseState.path]);
+
   const dispatcher = {};
 
   addHandlers({
@@ -58,26 +79,23 @@ export function Browse(
         }) {
           const rp = BrowseComp.getReqProps();
           setState({
-            forceUpdate: false,
-            selections: getNewSelections(),
-          });
-          setState({
             loading: true,
           });
           const subdir = event.target.getAttribute('src');
           rp.server.toward({ subdir })
-          .then(() => 
+          .then(() => {
+            changeSelections();
             setState({
               loading: false,
-            })
-          );
+            });
+          });
         }, []),
 
       React.useCallback(
         function onClickItemSelector({
           event: { target },
         }) {
-          const src = target.parentElement.getAttribute('src');
+          const src = target.getAttribute('src');
           const { checked } = target;
           changeSelections({
             src,
@@ -114,11 +132,13 @@ export function Browse(
     });
   }, []);
 
-  useEffect(onFirstRender, []);
+  useEffect(resetTo, []);
+
+  useEffect(scrollToSelectedImage, [rp.browseState.curPhotoInd]);
   
   useEffect(boostPerfImgRender, [rp.photosState.files]);
 
-  useEffect(resetSelections, [state.selections]);
+  useEffect(htmlResetSelections, [state.selections]);
 
   return getRender();
 
@@ -166,7 +186,22 @@ export function Browse(
     );
   }
 
-  function onFirstRender() {
+  function scrollToSelectedImage() {
+    if (rp.browseState.curPhotoInd === -1) {
+      const curPhotoEl = document.querySelector(`.${Browse.name} .file.curFile`);
+      if (curPhotoEl) {
+        curPhotoEl.classList.remove('curFile');
+      }
+      return;
+    }
+    const curPhotoEl = document.querySelector(`.${Browse.name} .file[ind='${rp.browseState.curPhotoInd}']`);
+    if (curPhotoEl) {
+      curPhotoEl.scrollIntoView();
+      curPhotoEl.classList.add('curFile');
+    }
+  }
+
+  function resetTo() {
     const rp = BrowseComp.getReqProps();
     setState({
       loading: true,
@@ -177,12 +212,6 @@ export function Browse(
     .then(() => setState({
       loading: false,
     }));
-
-    const curPhotoEl = document.querySelector(`.${Browse.name} .file[ind='${rp.browseState.curPhotoInd}']`);
-    if (curPhotoEl) {
-      curPhotoEl.scrollIntoView();
-      curPhotoEl.classList.add('curFile');
-    }
   }
 
   function toRenderHelp() {
@@ -205,7 +234,7 @@ export function Browse(
           className="positionRel fitPreview dir"
           clickcb={dispatcher.onClickDir.name}
         >
-          {dir}
+          {dir.slice(1)}
           <input
             className="itemSelector positionAbs"
             type="checkbox"
@@ -219,8 +248,9 @@ export function Browse(
 
   function getFilesToRender() {
     const rp = BrowseComp.getReqProps();
+    const browsePath = rp.browseState.path + rp.browseState.sep;
     return rp.photosState.files.map((file, ind) => {
-      const style = { 'backgroundImage': `url(${rp.browseState.path}/${file})` };
+      const style = { 'backgroundImage': `url('${encodeURI(browsePath + file)}')` };
       return (
         <div 
           key={file}
@@ -264,7 +294,6 @@ function boostPerfImgRender() {
 
 function getReqProps({ 
   channel, 
-  reqProps,
 }) {
   // 
   // 1. list of all props
@@ -311,30 +340,48 @@ function getReqProps({
         server: 1, 
       },
     },
+    comps: {
+      [MoveSelections.name]: {
+        API: 'MoveSelectionsAPI',
+      },
+    },
   });
 };
 
 function getAPI({
 }) {
   return {
+    getCountSelections,
     toggleRightWindow,
     moveSelections,
     addAlbum,
     removeSelections,
     changeSelections,
-    clearSelections,
   };
+
+  function getCountSelections() {
+    const {
+      state,
+    } = BrowseComp.deps;
+    return state ? state.selections.size : 0;
+  }
 
   function moveSelections() {
     const {
-      state: items,
+      state,
       setState,
     } = BrowseComp.deps;
 
     const rp = BrowseComp.getReqProps();
-    
+    const {
+      browseState: { 
+        path,
+      },
+    } = rp;
+
     rp.server.moveToPath({
-      items,
+      items: [...state.selections],
+      destWindow: window.oppositeWindow,
     });
 
     setState({
@@ -354,6 +401,14 @@ function getAPI({
           setState({
             progress: copyProgress,
           });
+
+          if (copyProgress === 100) {
+            changeSelections();
+            setState({
+              selections: new Set(),
+            });   
+            refreshWindows();         
+          }
         });
     };
   }
@@ -381,11 +436,12 @@ function getAPI({
       loading: true,
     });
     rp.server.toward()
-    .then(() => 
+    .then(() => {
       setState({
         loading: false,
-      })
-    );
+      });
+      refreshWindows();
+    });
   }
 
   function removeSelections(
@@ -445,48 +501,43 @@ function getAPI({
           });
           rp.server.toward()
           .then(() => {
+            changeSelections();
             setState({
-              loading: false,
-              selections: getNewSelections(),
+              loading: false,              
             });
+
+            refreshWindows();
           });  
         }          
       });
     }
   }
 
-  function clearSelections(
-  ) {
-    const {
-      setState,
-    } = BrowseComp.deps;
-    setState({
-      forceUpdate: false,
-      selections: getNewSelections(),
-    });
-  }
-
-  function toggleRightWindow() {            
+  async function toggleRightWindow() {            
     const states = {
-      0: 1,
       1: 2,
       2: 1,
     };
-    
-    const storageItem = 'browserCount';
-    const count = sessionStorage.getItem(storageItem) || '0';
-    const countUpd = states[count];
-    sessionStorage.setItem(storageItem, countUpd);  
-    if (count > 0) {
-      window.location.reload();
+    const rp = BrowseComp.getReqProps();
+    const appState = resumeObj.state;
+    const browserCount = appState.browserCount;
+    const browserCountUpd = states[browserCount];
+
+    resumeObj.saveCustom({    
+      browserCount: browserCountUpd,
+      rightWindow: {},
+    });    
+
+    if (browserCountUpd === 1) {      
+      await rp.server.resetNavigation({
+        curWindow: window.oppositeWindow,
+      });
     }
+    window.location.reload();
   }
 }
 
 // ------------------------------
-function getNewSelections() {
-  return new Set();
-}
 
 function getCheckedAction(
   {
@@ -496,6 +547,7 @@ function getCheckedAction(
   const action = {
     true: Set.prototype.add,
     false: Set.prototype.delete,
+    undefined: Set.prototype.clear,
   }[checked].name;
   return action;
 }
@@ -520,18 +572,29 @@ function changeSelections({
     state,
     setState,
   } = BrowseComp.deps;
-  
+  const {
+    MoveSelectionsAPI,
+  } = BrowseComp.getReqProps();
+
   const action = getCheckedAction({
     checked,
   });
-
+  
   setState({
     forceUpdate: false,
-    autoUpdate: () => { state.selections[action](src); },
+    autoUpdate: () => {
+      if (action === Set.prototype.clear.name) {
+        state.selections = new Set();
+      }
+      else {
+        state.selections[action](src); 
+      }
+      MoveSelectionsAPI.forceUpdate(); 
+    },
   });
 }
 
-function resetSelections() {
+function htmlResetSelections() {
   const { 
     state: { selections },
   } = BrowseComp.deps;
@@ -543,7 +606,6 @@ function resetSelections() {
 }
 
 const stateInit = {
-  forceUpdate: true,
   loading: true,
   previewWidth: 100,
   previewHeight: 100,
@@ -555,3 +617,13 @@ const stateInit = {
 };
 
 
+function oppositeWindowCheckSamePaths() {
+  const oppositeWindowObj = window.self === window.top ? window.frames[0] : window.parent;
+  oppositeWindowObj && oppositeWindowObj.document.dispatchEvent(new Event(eventNames.checkSameWindowPaths));
+}
+
+function refreshWindows() {
+  // refresh otherside window.
+  const parentWindow = window.self === window.top ? window : window.parent;
+  parentWindow.location.reload();
+}

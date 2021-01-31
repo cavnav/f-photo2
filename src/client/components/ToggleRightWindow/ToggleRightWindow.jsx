@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useReducer } from 'react';
+import { Browse } from '../Browse/Browse';
 import './styles.css';
 
 export function ToggleRightWindow({
@@ -28,11 +29,11 @@ ToggleRightWindow.getReqProps = ({
 }) => {
 
   return channel.crop({
-    API: {
-      comps: {
-        Browse: 'BrowseAPI',
-      }
-    },
+    comps: {
+      [Browse.name]: {
+        API: 'BrowseAPI',
+      },
+    }
   });
 };
 

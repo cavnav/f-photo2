@@ -43,7 +43,7 @@ export function OnePhoto(
   const [state, setState] = useMyReducer({
     reducer: selfReducer,
     comp: {
-      ref: OnePhotoComp,
+      setDeps: OnePhotoComp.setDeps,
     },
     props,
     initialState: {
@@ -258,7 +258,9 @@ function selfReducer(
     ...getProps({ stateReduced }),
   };
 
-  resumeObj.save(stateReduced);
+  resumeObj.save({
+    stateUpd: stateReduced
+  });
 
   return stateReduced;
 

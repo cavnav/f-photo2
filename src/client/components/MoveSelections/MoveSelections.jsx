@@ -1,23 +1,49 @@
 import React from 'react';
 import { channel } from '../../Channel';
+import { useMyReducer } from '../../functions';
+import { ResumeObj } from '../../resumeObj';
 import { Browse } from '../Browse/Browse';
-
+import { get as _get } from 'lodash';
 import './styles.css';
+
+export const eventNames = {
+  checkSameWindowPaths: 'checkSameWindowPaths'
+};
+
+const resumeObj = new ResumeObj ({
+  compName: MoveSelections.name,
+});
 
 const MoveSelectionsComp = channel.addComp({
   fn: MoveSelections,
   getReqProps,
+  getAPI,
 })
 export function MoveSelections(
 ) {
   const {
-    browseState,
     BrowseAPI,
   } = MoveSelectionsComp.getReqProps();
 
-  const itemsCount = browseState.items.length;
+  const itemsCount = BrowseAPI.getCountSelections();  
 
-  if (itemsCount === 0) return null;
+  useMyReducer({
+    comp: {
+      setDeps: MoveSelectionsComp.setDeps,
+    },
+  });
+
+  React.useEffect(
+    () => {      
+      document.addEventListener(eventNames.checkSameWindowPaths, onCheckSameWindowPaths);
+      return () => document.removeEventListener(eventNames.checkSameWindowPaths, onCheckSameWindowPaths);
+    },
+    []
+  );
+
+  if (itemsCount === 0 ||
+    isSameWindowPaths()
+  ) return null;
 
   const title = `Переместить ${itemsCount}`;
 
@@ -42,11 +68,40 @@ function getReqProps({ channel }) {
       browseState: 1 
     },
     comps: {
-      [Browse.name]: 'BrowseAPI',
+      [Browse.name]: {
+        API: 'BrowseAPI',
+      },
     }
   });
+}
+
+function getAPI({
+
+}) {
+  return {
+    forceUpdate,
+  };
+
+  function forceUpdate() {
+    const {
+      setState,
+    } = MoveSelectionsComp.deps;
+    setState({
+    });
+  }
 }
 
 const stateInit = {
 };
 
+function isSameWindowPaths() {
+  const resumeState = resumeObj.state;
+  const res = _get(resumeState.leftWindow, 'App.browseState.path', 1) === 
+    _get(resumeState.rightWindow, 'App.browseState.path', 2)
+
+  return res;
+}
+
+function onCheckSameWindowPaths() {
+  MoveSelectionsComp.deps.setState({});
+}

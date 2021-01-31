@@ -31,12 +31,14 @@ export function PhotoStatuses({
   const [state, setState] = useMyReducer({
     initialState: initState,
     comp: {
-      ref: PhotoStatusesComp,
+      setDeps: PhotoStatusesComp.setDeps,
       deps: {
         curPhoto,
       },
     },
-    fn: (val) => resumeObj.save(val),
+    fn: (val) => resumeObj.save({ 
+      stateUpd: val
+    }),
   });
 
   const statuses = state.filesWithStatuses[curPhoto];
