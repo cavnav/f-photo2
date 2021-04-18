@@ -1,16 +1,13 @@
-import React from 'react';
-import { channel } from '../../Channel';
-import { useMyReducer } from '../../functions';
-import { ResumeObj } from '../../resumeObj';
-import { Browse } from '../Browse/Browse';
-import { get as _get } from 'lodash';
 import './styles.css';
 
-export const eventNames = {
-  checkSameWindowPaths: 'checkSameWindowPaths'
-};
+import React from 'react';
+import { channel } from '../../Channel';
+import { isSameWindowPaths, useMyReducer } from '../../functions';
+import { ResumeObj } from '../../resumeObj';
+import { Browse } from '../Browse/Browse';
+import { eventNames } from '../../constants';
 
-const resumeObj = new ResumeObj ({
+const resumeObj = new ResumeObj({
   compName: MoveSelections.name,
 });
 
@@ -93,14 +90,6 @@ function getAPI({
 
 const stateInit = {
 };
-
-function isSameWindowPaths() {
-  const resumeState = resumeObj.state;
-  const res = _get(resumeState.leftWindow, 'App.browseState.path', 1) === 
-    _get(resumeState.rightWindow, 'App.browseState.path', 2)
-
-  return res;
-}
 
 function onCheckSameWindowPaths() {
   MoveSelectionsComp.deps.setState({});

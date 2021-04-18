@@ -17,10 +17,9 @@ export function RemoveSelections(
 ) {
   const title = `Удалить`;
 
-  const {
-    ComponentAPI,
-  } = RemoveSelectionsComp.getReqProps();
-
+  const rp = RemoveSelectionsComp.getReqProps();
+  const ComponentAPI = rp[strComponentAPI];
+  
   return (
     <div 
       className='RemoveSelections' 

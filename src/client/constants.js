@@ -3,6 +3,11 @@ import {
   AdditionalActionsComps,
 } from "./components/";
 
+export const eventNames = {
+  checkSameWindowPaths: 'checkSameWindowPaths',
+  refreshWindow: 'refreshWindow',
+};
+
 const {
   ExitFromAlbum,
   ToggleRightWindow,

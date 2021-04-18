@@ -393,7 +393,6 @@ app.post('/api/moveToPath',
           ...itemItems,
         ];        
       }
-
       return allItems;
     }
 

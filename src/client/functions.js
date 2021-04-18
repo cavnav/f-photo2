@@ -1,5 +1,6 @@
-import { update } from 'lodash';
+import { get as _get } from 'lodash';
 import React from 'react';
+import { ResumeObj } from './resumeObj';
 
 class MyItems {
   constructor({
@@ -182,4 +183,14 @@ export function objCrop({
   items,
 }) {
   return Object.keys(items).reduce((res, item) => { res[item] = source[item]; return res; }, {});
+}
+
+const resumeObj = new ResumeObj();
+
+export function isSameWindowPaths() {
+  const resumeState = resumeObj.state;
+  const res = _get(resumeState.leftWindow, 'App.browseState.path', 1) === 
+    _get(resumeState.rightWindow, 'App.browseState.path', 2)
+
+  return res;
 }

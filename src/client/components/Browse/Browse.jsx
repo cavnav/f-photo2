@@ -10,10 +10,11 @@ import {
 } from 'antd';
 
 import './styles.css';
-import { useMyReducer } from '../../functions';
+import { isSameWindowPaths, useMyReducer } from '../../functions';
 import { channel } from '../../Channel';
-import { eventNames, MoveSelections } from '../MoveSelections/MoveSelections';
+import { MoveSelections } from '../MoveSelections/MoveSelections';
 import { ResumeObj } from '../../resumeObj';
+import { eventNames } from '../../constants';
 
 const resumeObj = new ResumeObj({
   compName: Browse.name,
@@ -65,6 +66,13 @@ export function Browse(
     });
   }, []);
 
+  React.useEffect(
+    () => {      
+      document.addEventListener(eventNames.refreshWindow, refreshWindow);
+      return () => document.removeEventListener(eventNames.refreshWindow, refreshWindow);
+    },
+    []
+  );
 
   React.useEffect(oppositeWindowCheckSamePaths, [rp.browseState.path]);
 
@@ -373,11 +381,6 @@ function getAPI({
     } = BrowseComp.deps;
 
     const rp = BrowseComp.getReqProps();
-    const {
-      browseState: { 
-        path,
-      },
-    } = rp;
 
     rp.server.moveToPath({
       items: [...state.selections],
@@ -407,7 +410,8 @@ function getAPI({
             setState({
               selections: new Set(),
             });   
-            refreshWindows();         
+                 
+            refreshWindows();
           }
         });
     };
@@ -435,12 +439,11 @@ function getAPI({
     setState({
       loading: true,
     });
-    rp.server.toward()
+    refreshWindows()
     .then(() => {
       setState({
         loading: false,
       });
-      refreshWindows();
     });
   }
 
@@ -499,14 +502,12 @@ function getAPI({
           setState({
             loading: true,
           });
-          rp.server.toward()
+          refreshWindows()
           .then(() => {
             changeSelections();
             setState({
               loading: false,              
             });
-
-            refreshWindows();
           });  
         }          
       });
@@ -616,14 +617,28 @@ const stateInit = {
   selections: new Set(),
 };
 
+function getOppositeWindowObj() {
+  const oppositeWindowObj = window.self === window.top ? window.frames[0] : window.parent;
+  return oppositeWindowObj;
+}
 
 function oppositeWindowCheckSamePaths() {
-  const oppositeWindowObj = window.self === window.top ? window.frames[0] : window.parent;
+  const oppositeWindowObj = getOppositeWindowObj();
   oppositeWindowObj && oppositeWindowObj.document.dispatchEvent(new Event(eventNames.checkSameWindowPaths));
 }
 
-function refreshWindows() {
-  // refresh otherside window.
-  const parentWindow = window.self === window.top ? window : window.parent;
-  parentWindow.location.reload();
+function refreshWindow() {
+  const rp = BrowseComp.getReqProps();
+  return rp.server.toward();
+}
+
+async function refreshWindows() {
+  const promise = await refreshWindow();
+  if (isSameWindowPaths()) {
+    const oppositeWindowObj = getOppositeWindowObj();
+    getOppositeWindowObj && oppositeWindowObj.document.dispatchEvent(
+      new Event(eventNames.refreshWindow)
+    );
+  }
+  return promise;
 }
