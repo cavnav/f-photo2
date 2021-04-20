@@ -122,6 +122,7 @@ function getAppStateInit({
             additionalActions.ExitFromOnePhoto,
             additionalActions.SaveChanges,
             additionalActions.RemoveSelections,
+            additionalActions.MoveSelections,
           ],
           isActive: false,
         },

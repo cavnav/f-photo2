@@ -2,7 +2,7 @@ import './styles.css';
 
 import React from 'react';
 import { channel } from '../../Channel';
-import { isSameWindowPaths, useMyReducer } from '../../functions';
+import { getOppositeWindowObj, isCatalogSelected, isSameWindowPaths, useMyReducer } from '../../functions';
 import { ResumeObj } from '../../resumeObj';
 import { Browse } from '../Browse/Browse';
 import { eventNames } from '../../constants';
@@ -38,8 +38,23 @@ export function MoveSelections(
     []
   );
 
-  if (itemsCount === 0 ||
-    isSameWindowPaths()
+  React.useEffect(
+    () => {
+
+    }
+  )
+  const oppositeWindowObj = getOppositeWindowObj();
+
+  if (
+    !oppositeWindowObj ||
+    (
+      itemsCount > 0 &&
+      oppositeWindowObj &&
+      isCatalogSelected({
+        windowName: oppositeWindowObj.name
+      }) &&
+      isSameWindowPaths() === false
+    ) === false
   ) return null;
 
   const title = `Переместить ${itemsCount}`;

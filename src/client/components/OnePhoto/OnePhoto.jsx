@@ -443,6 +443,23 @@ function getAPI({
       });
     }
   };
+
+  // -------------------------
+  function move() {
+    const {
+      state,
+      setState,
+    } = OnePhotoComp.deps;
+
+    const rp = OnePhotoComp.getReqProps();
+
+    rp.server.moveToPath({
+      items: [...state.curPhotoWithTime],
+      destWindow: window.oppositeWindow,
+    });
+
+    checkCopyProgressWrap();
+  }
 };
 
 const stateInit = {

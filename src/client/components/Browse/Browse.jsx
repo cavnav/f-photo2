@@ -10,7 +10,7 @@ import {
 } from 'antd';
 
 import './styles.css';
-import { isSameWindowPaths, useMyReducer } from '../../functions';
+import { getOppositeWindowObj, useMyReducer } from '../../functions';
 import { channel } from '../../Channel';
 import { MoveSelections } from '../MoveSelections/MoveSelections';
 import { ResumeObj } from '../../resumeObj';
@@ -367,6 +367,7 @@ function getAPI({
     changeSelections,
   };
 
+  // ----------------------------------------
   function getCountSelections() {
     const {
       state,
@@ -424,6 +425,13 @@ function getAPI({
       setState,
     } = BrowseComp.deps;
     const rp = BrowseComp.getReqProps();
+    if (albumName === '') {
+      setState({
+        isDialogEnabled: true,
+        dialogTitle: `Дай альбому название!`,
+      }); 
+      return;  
+    }
     const res = await rp.server.addAlbum({
       albumName,
     });
@@ -617,11 +625,6 @@ const stateInit = {
   selections: new Set(),
 };
 
-function getOppositeWindowObj() {
-  const oppositeWindowObj = window.self === window.top ? window.frames[0] : window.parent;
-  return oppositeWindowObj;
-}
-
 function oppositeWindowCheckSamePaths() {
   const oppositeWindowObj = getOppositeWindowObj();
   oppositeWindowObj && oppositeWindowObj.document.dispatchEvent(new Event(eventNames.checkSameWindowPaths));
@@ -634,11 +637,9 @@ function refreshWindow() {
 
 async function refreshWindows() {
   const promise = await refreshWindow();
-  if (isSameWindowPaths()) {
-    const oppositeWindowObj = getOppositeWindowObj();
-    getOppositeWindowObj && oppositeWindowObj.document.dispatchEvent(
-      new Event(eventNames.refreshWindow)
-    );
-  }
+  const oppositeWindowObj = getOppositeWindowObj();
+  oppositeWindowObj && oppositeWindowObj.document.dispatchEvent(
+    new Event(eventNames.refreshWindow)
+  );
   return promise;
 }
