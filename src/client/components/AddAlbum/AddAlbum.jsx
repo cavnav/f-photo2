@@ -4,7 +4,6 @@ import { Browse } from '../Browse/Browse';
 import './styles.css';
 
 export function AddAlbum({
-  browseState,
   BrowseAPI,
 }) {
   const title = `Добавить альбом`;

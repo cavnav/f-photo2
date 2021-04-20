@@ -118,13 +118,13 @@ function getAppStateInit({
           ],
         },
         OnePhoto: {
+          isActive: false,
           additionalActions: [       
             additionalActions.ExitFromOnePhoto,
             additionalActions.SaveChanges,
             additionalActions.RemoveSelections,
-            additionalActions.MoveSelections,
+            additionalActions[MoveSelections.name],
           ],
-          isActive: false,
         },
         Print: {
           title: 'Печатать',

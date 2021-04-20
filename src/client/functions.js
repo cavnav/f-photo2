@@ -1,5 +1,6 @@
 import { get as _get } from 'lodash';
 import React from 'react';
+import { eventNames } from './constants';
 import { ResumeObj } from './resumeObj';
 
 class MyItems {
@@ -204,4 +205,16 @@ export function isSameWindowPaths() {
 
 export function getOppositeWindowObj() {
   return window.self === window.top ? window.frames[0] : window.parent;
+}
+
+export function oppositeWindowCheckSamePaths() {
+  const oppositeWindowObj = getOppositeWindowObj();
+  oppositeWindowObj && oppositeWindowObj.document.dispatchEvent(new Event(eventNames.checkSameWindowPaths));
+}
+
+export function refreshOppositeWindow() {
+  const oppositeWindowObj = getOppositeWindowObj();
+  oppositeWindowObj && oppositeWindowObj.document.dispatchEvent(
+    new Event(eventNames.refreshWindow)
+  );
 }

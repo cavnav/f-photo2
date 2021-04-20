@@ -10,7 +10,7 @@ import {
 } from 'antd';
 
 import './styles.css';
-import { getOppositeWindowObj, useMyReducer } from '../../functions';
+import { getOppositeWindowObj, oppositeWindowCheckSamePaths, useMyReducer } from '../../functions';
 import { channel } from '../../Channel';
 import { MoveSelections } from '../MoveSelections/MoveSelections';
 import { ResumeObj } from '../../resumeObj';
@@ -624,11 +624,6 @@ const stateInit = {
   progress: 100,
   selections: new Set(),
 };
-
-function oppositeWindowCheckSamePaths() {
-  const oppositeWindowObj = getOppositeWindowObj();
-  oppositeWindowObj && oppositeWindowObj.document.dispatchEvent(new Event(eventNames.checkSameWindowPaths));
-}
 
 function refreshWindow() {
   const rp = BrowseComp.getReqProps();

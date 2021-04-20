@@ -6,6 +6,7 @@ import { getOppositeWindowObj, isCatalogSelected, isSameWindowPaths, useMyReduce
 import { ResumeObj } from '../../resumeObj';
 import { Browse } from '../Browse/Browse';
 import { eventNames } from '../../constants';
+import { OnePhoto } from '../OnePhoto/OnePhoto';
 
 const resumeObj = new ResumeObj({
   compName: MoveSelections.name,
@@ -18,11 +19,9 @@ const MoveSelectionsComp = channel.addComp({
 })
 export function MoveSelections(
 ) {
-  const {
-    BrowseAPI,
-  } = MoveSelectionsComp.getReqProps();
+  const ComponentAPI = MoveSelectionsComp.getReqProps();
 
-  const itemsCount = BrowseAPI.getCountSelections();  
+  const itemsCount = ComponentAPI.getCountSelections();  
 
   useMyReducer({
     comp: {
@@ -38,11 +37,6 @@ export function MoveSelections(
     []
   );
 
-  React.useEffect(
-    () => {
-
-    }
-  )
   const oppositeWindowObj = getOppositeWindowObj();
 
   if (
@@ -70,37 +64,36 @@ export function MoveSelections(
 
   // -----------------------------------------------------------------------
   function onClick(e) {
-    BrowseAPI.moveSelections();
+    ComponentAPI.moveSelections();
   };
 }
 
-function getReqProps({ channel }) {
-  return channel.crop({
-    s: { 
-      browseState: 1 
-    },
-    comps: {
-      [Browse.name]: {
-        API: 'BrowseAPI',
+function getReqProps({ 
+  channel 
+}) {
+  const { action } = channel.crop({
+    s: {
+      appState: {
+        action: 1, 
       },
+    },
+  });
+
+  const API = channel.crop({
+    comps: {
+      ...Browse.API,
+      ...OnePhoto.API,
     }
   });
+
+  return API[`${action}API`];
 }
 
 function getAPI({
-
 }) {
   return {
-    forceUpdate,
+    forceUpdate: () => MoveSelectionsComp.deps.setState({}),
   };
-
-  function forceUpdate() {
-    const {
-      setState,
-    } = MoveSelectionsComp.deps;
-    setState({
-    });
-  }
 }
 
 const stateInit = {

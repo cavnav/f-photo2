@@ -4,7 +4,7 @@ import { Help } from '..';
 import { additionalActions, } from '../../constants';
 import { Dialog } from '../';
 import { ResumeObj } from '../../resumeObj';
-import { myArray, objCrop, useMyReducer } from '../../functions';
+import { myArray, oppositeWindowCheckSamePaths, refreshOppositeWindow, useMyReducer } from '../../functions';
 import { channel } from '../../Channel';
 
 import { Browse } from '../Browse/Browse';
@@ -421,44 +421,55 @@ function getAPI({
       server.removeItems({
         items: [state.curPhotoWithTime],
       }).then(() => {
-        state.files.delete(state.curPhotoInd);
-
-        const stateUpd = {
-          action: onTogglePhoto.name,
-          isDialogRemoveItem: false,
-        };
-        
-        if (state.files.items.length === state.curPhotoInd) {
-          stateUpd.curPhotoInd = state.curPhotoInd - 1;
-        }
-        
-        BrowseAPI.changeSelections({
-          src: state.curPhoto,
-          checked: false,
-        });
-
-        setState(
-          stateUpd,
-        );          
+        updateStates();
       });
+    },
+    moveSelections,
+    getCountSelections() {
+      return 1;
     }
   };
 
   // -------------------------
-  function move() {
+  function moveSelections() {
+    const rp = OnePhotoComp.getReqProps();
+    const deps = OnePhotoComp.deps;
+    rp.server.moveToPath({
+      items: [deps.state.curPhotoWithTime],
+      destWindow: window.oppositeWindow,
+    })
+    .then(() => {
+      updateStates();
+      refreshOppositeWindow();
+    });   
+  }
+
+  function updateStates() {
     const {
       state,
       setState,
     } = OnePhotoComp.deps;
-
     const rp = OnePhotoComp.getReqProps();
 
-    rp.server.moveToPath({
-      items: [...state.curPhotoWithTime],
-      destWindow: window.oppositeWindow,
+    state.files.delete(state.curPhotoInd);
+
+    const stateUpd = {
+      action: onTogglePhoto.name,
+      isDialogRemoveItem: false,
+    };
+    
+    if (state.files.items.length === state.curPhotoInd) {
+      stateUpd.curPhotoInd = state.curPhotoInd - 1;
+    }
+    
+    rp.BrowseAPI.changeSelections({
+      src: state.curPhoto,
+      checked: false,
     });
 
-    checkCopyProgressWrap();
+    setState(
+      stateUpd,
+    );  
   }
 };
 
