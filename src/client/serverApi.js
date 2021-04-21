@@ -116,7 +116,6 @@ export class AppServerAPI {
     .then(res => res.json())
     .then((res) => {
       const { files, dirs, path, sep } = res;
-      console.log('z13', {path, sep});
       this.d.setBrowseState({
         path,
         sep,

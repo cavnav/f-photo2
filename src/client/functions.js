@@ -186,16 +186,16 @@ export function objCrop({
   return Object.keys(items).reduce((res, item) => { res[item] = source[item]; return res; }, {});
 }
 
-const resumeObj = new ResumeObj();
-
 export function isCatalogSelected({
   windowName,
 }) {
+  const resumeObj = new ResumeObj();
   if (!windowName) return false;
   const resumeState = resumeObj.state;
   return Boolean(_get(resumeState[windowName], 'App.browseState.path'));
 }
 export function isSameWindowPaths() {
+  const resumeObj = new ResumeObj();
   const resumeState = resumeObj.state;
   const res = _get(resumeState.leftWindow, 'App.browseState.path', 1) === 
     _get(resumeState.rightWindow, 'App.browseState.path', 2)

@@ -424,7 +424,6 @@ app.post('/api/moveToPath',
       total,
       sourceItems,
     }) {
-      console.log('t7', sourceItems, );
       const countProcessed = state.countCopiedPhotos + 1;
       const progress = calcProgress({ 
         cntProcessed: countProcessed, 
@@ -437,7 +436,6 @@ app.post('/api/moveToPath',
       const sourceUpd = path.resolve(source, item);
       const destUpd = path.resolve(dest, item);    
       
-      console.log('t9', sourceUpd, destUpd);
       await fs.copy(
         sourceUpd, 
         destUpd,
@@ -449,7 +447,6 @@ app.post('/api/moveToPath',
       });
       
       if (progress !== 100) {
-        console.log('t10', sourceItems)
         setTimeout(
           () => {
             startCopy({ 
@@ -475,7 +472,6 @@ app.post('/api/moveToPath',
       items,
       source,
     }) {
-      console.log('t8', items, source)
       const [item] = items;
       const basename = path.basename(item);
       const resolvedItem = path.resolve(source, basename);
@@ -660,7 +656,6 @@ function removeItem({
   file, 
   resolve = () => {}, 
 }) {  
-  console.log('t12', file);
   return fs.remove(file)
   .then(() => {
     resolve();
