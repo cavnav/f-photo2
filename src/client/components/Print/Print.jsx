@@ -287,8 +287,10 @@ Print.getReqProps = ({ channel }) => {
           $checkCopyProgress: 1,
           $saveFilesToFlash: 1,
         },
-        PhotoStatuses: 'PhotoStatusesAPI',
       },
+    },  
+    comps: {
+      ...PhotoStatuses.API
     },
   });
 };

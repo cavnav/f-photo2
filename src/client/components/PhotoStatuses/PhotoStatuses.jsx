@@ -81,6 +81,7 @@ function getAPI({
     getFilesWithStatuses,
   }
 
+
   // ----------------------
 
   function changeStatus({
@@ -107,7 +108,7 @@ function getAPI({
     const {
       state,
     } = PhotoStatusesComp.deps;
-    return state.filesWithStatuses;
+    return state ? state.filesWithStatuses : [];
   }
 };
 
