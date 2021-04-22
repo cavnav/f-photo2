@@ -1,3 +1,5 @@
+import './styles.css';
+
 import React from 'react';
 import { PhotoStatuses } from '..';
 import { Help } from '..';
@@ -6,9 +8,8 @@ import { Dialog } from '../';
 import { ResumeObj } from '../../resumeObj';
 import { myArray, oppositeWindowCheckSamePaths, refreshOppositeWindow, useMyReducer } from '../../functions';
 import { channel } from '../../Channel';
-
 import { Browse } from '../Browse/Browse';
-import './styles.css';
+import { getCurDate } from '../../functions';
 
 const resumeObj = new ResumeObj({
   compName: OnePhoto.name,
@@ -164,15 +165,16 @@ export function OnePhoto(
       curPhotoInd: state.curPhotoInd,
       filesLength: files.items.length,
     });
+    const rp = OnePhotoComp.getReqProps();
     const stateUpd = {};
 
     switch (e.which) {  
       case 13: // enter.
-        PhotoStatusesAPI.changeShareStatus();
+        rp.PhotoStatusesAPI.changeShareStatus();
         break;
 
       case 32:  // Space
-        PhotoStatusesAPI.changePrintStatus(); 
+        rp.PhotoStatusesAPI.changePrintStatus(); 
 
         break; 
 
@@ -287,11 +289,6 @@ function selfReducer(
   }
 };
 
-function getCurDate() {
-  const dateISO = new Date().toISOString();
-  return dateISO.slice(0, dateISO.indexOf('T'));
-}
-
 function getFitSize({ width, height }) {
   const res = {};
   if (width > height * 2) {
@@ -382,12 +379,8 @@ function getReqProps({ channel }) {
       }
     },
     comps: {
-      [PhotoStatuses.name]: {
-        API: 'PhotoStatusesAPI',
-      },
-      [Browse.name]: {
-        API: 'BrowseAPI',
-      }
+      ...PhotoStatuses.API,
+      ...Browse.API,
     },
   }); 
   

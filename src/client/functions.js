@@ -83,6 +83,7 @@ export function useMyReducer({
   setDeps({
     state,
     setState: dispatch,
+    ...comp.deps,
   });
   return [state, dispatch];
 
@@ -95,9 +96,9 @@ export function useMyReducer({
     });
 
     fn(state);
-    setDeps({
-      ...comp.deps,
-    });
+    // setDeps({
+    //   ...comp.deps,
+    // });
 
     // console.log('zz', JSON.stringify(stateUpd));
     stateUpd.forceUpdate === undefined &&
@@ -217,4 +218,9 @@ export function refreshOppositeWindow() {
   oppositeWindowObj && oppositeWindowObj.document.dispatchEvent(
     new Event(eventNames.refreshWindow)
   );
+}
+
+export function getCurDate() {
+  const dateISO = new Date().toISOString();
+  return dateISO.slice(0, dateISO.indexOf('T'));
 }

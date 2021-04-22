@@ -1,3 +1,5 @@
+import './styles.css';
+
 import React from 'react';
 
 import { Progress, } from 'antd';
@@ -6,9 +8,8 @@ import {
 } from '../';
 import { tempReducer } from '../../functions';
 import { createSteps } from './createSteps';
-
-import './styles.css';
 import { PhotoStatuses } from '../PhotoStatuses/PhotoStatuses';
+import { getCurDate } from '../../functions';
 
 const Copying = React.memo(function ({
   filesToPrint,
@@ -161,7 +162,7 @@ export function Print({
 
   return (
     <div className="Print">
-      <div>2020-09-29</div>
+      <div>{getCurDate()}</div>
       { state.isSavePhotosToFlash ? <Stepper 
           steps={steps}
         /> : renderPrintState({ 

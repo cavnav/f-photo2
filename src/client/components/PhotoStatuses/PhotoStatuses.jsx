@@ -36,8 +36,8 @@ export function PhotoStatuses({
         curPhoto,
       },
     },
-    fn: (val) => resumeObj.save({ 
-      stateUpd: val
+    fn: (stateUpd) => resumeObj.save({ 
+      stateUpd,
     }),
   });
 
@@ -99,7 +99,7 @@ function getAPI({
         if (status === undefined) {
           state.filesWithStatuses[curPhoto] = new PhotoStatusIcons();
         }
-        status.filesWithStatuses[curPhoto][actionName]();
+        state.filesWithStatuses[curPhoto][actionName]();
       }
     });
   }
