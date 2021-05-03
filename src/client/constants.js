@@ -19,6 +19,7 @@ const {
   AddAlbum,
   RemoveSelections,
 } = AdditionalActionsComps;
+
 class Action {
   constructor(props) {
     Object.entries(props).map(([propName, prop]) => {

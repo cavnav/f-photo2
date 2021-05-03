@@ -7,6 +7,8 @@ import { SaveChanges } from './SaveChanges/SaveChanges';
 import { SavePhotosToFlash } from './SavePhotosToFlash/SavePhotosToFlash';
 import { AddAlbum } from './AddAlbum/AddAlbum';
 import { RemoveSelections } from './RemoveSelections/RemoveSelections';
+import { Print } from './Print/Print';
+import { Share } from './Share/Share';
 
 export const AdditionalActionsComps = {
   ExitFromAlbum,
@@ -20,6 +22,7 @@ export const AdditionalActionsComps = {
   RemoveSelections,
 };
 
+export { Dirs } from './Dirs/Dirs';
 export { SelectAlbum } from './SelectAlbum';
 export { Copying } from './Copying/Copying';
 export { ControlPanel } from './ControlPanel/ControlPanel';
@@ -32,12 +35,10 @@ export { OnePhoto } from './OnePhoto/OnePhoto';
 export { Dialog } from './Dialog/Dialog';
 export { Selector } from './Selector/Selector';
 
-import { Share } from './Share/Share';
 import { OnePhoto } from './OnePhoto/OnePhoto';
 import { Tune } from './Tune';
 import { Copy } from './Copy/Copy';
 import { Browse } from './Browse/Browse';
-import { Print } from './Print/Print';
 import { Welcome } from './Welcome';
 import { Help } from './Help';
 

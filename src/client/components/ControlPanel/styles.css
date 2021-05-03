@@ -3,3 +3,7 @@
   font-weight: 800;
   justify-content: space-around;
 }
+
+.action.active {
+  background-color: goldenrod;
+}

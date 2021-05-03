@@ -2,7 +2,8 @@ import React, { useEffect } from 'react';
 import { 
   Help, 
   Actions,
-  Dialog 
+  Dialog,
+  Dirs, 
 } from '../';
 import { 
   Spin,
@@ -10,7 +11,7 @@ import {
 } from 'antd';
 
 import './styles.css';
-import { getOppositeWindowObj, oppositeWindowCheckSamePaths, useMyReducer } from '../../functions';
+import { addHandlers, getBackgroundImageStyle, getOppositeWindowObj, oppositeWindowCheckSamePaths, useMyReducer } from '../../functions';
 import { channel } from '../../Channel';
 import { MoveSelections } from '../MoveSelections/MoveSelections';
 import { ResumeObj } from '../../resumeObj';
@@ -29,23 +30,17 @@ const BrowseComp = channel.addComp({
 export function Browse(
 ) {
   const [state, setState] = useMyReducer({
-    comp: {
-      setDeps: BrowseComp.setDeps,
+    setCompDeps: BrowseComp.setCompDeps,
+    initialState: {
+      ...getStateInit(),     
     },
-    initialState: resumeObj.load({
-        props: stateInit,
-        helper: (state) => {
-          return {
-            ...state,
-            selections: new Set(state.selections),
-          };
-        }
-      }),
-    fn: (state) => {
+    fn: ({
+      state,
+    }) => {
       resumeObj.save({
         stateUpd: {
           ...state,
-          selections: [...state.selections],
+          selections: Array.from(state.selections),
         },
       });
     }
@@ -76,12 +71,9 @@ export function Browse(
 
   React.useEffect(oppositeWindowCheckSamePaths, [rp.browseState.path]);
 
-  const dispatcher = {};
-
-  addHandlers({
-    target: dispatcher,
-    fns: [
-      React.useCallback(
+  const dispatcher = React.useMemo(
+    () => addHandlers({
+      fns: [
         function onClickDir({
           event
         }) {
@@ -97,9 +89,8 @@ export function Browse(
               loading: false,
             });
           });
-        }, []),
-
-      React.useCallback(
+        },
+        
         function onClickItemSelector({
           event: { target },
         }) {
@@ -110,9 +101,7 @@ export function Browse(
             checked,
           });
         },
-        []
-      ),
-      React.useCallback(
+          
         function onClickFile({
           event
         }) {
@@ -126,10 +115,10 @@ export function Browse(
             action: Actions.OnePhoto.name,
           })
         },
-        []
-      )
-    ],
-  });
+      ],
+    }),
+    []
+  );
 
   const onClickDispatcher = React.useCallback((event) => {
     const { target } = event;
@@ -154,7 +143,7 @@ export function Browse(
   function getRender() {
     return (
       <div 
-          className={`${Browse.name}`}
+          className={`${Browse.name} layout`}
           onClick={onClickDispatcher}
         >
         { state.loading && <Spin size="large" /> }
@@ -167,7 +156,11 @@ export function Browse(
           </div>
         )}
 
-        { getDirsToRender() }
+        <Dirs
+          dirs={rp.photosState.dirs}
+          onClickDirFnName={dispatcher.onClickDir.name}
+          onClickItemSelectorFnName={dispatcher.onClickItemSelector.name}
+        ></Dirs>
         { getFilesToRender() }   
 
         {state.isDialogEnabled && (
@@ -232,33 +225,13 @@ export function Browse(
     </div>
   }
 
-  function getDirsToRender() {
-    const rp = BrowseComp.getReqProps();
-    return rp.photosState.dirs.map(dir => {
-      return (
-        <div 
-          key={dir}
-          src={dir}
-          className="positionRel fitPreview dir"
-          clickcb={dispatcher.onClickDir.name}
-        >
-          {dir.slice(1)}
-          <input
-            className="itemSelector positionAbs"
-            type="checkbox"
-            src={dir}
-            clickcb={dispatcher.onClickItemSelector.name}
-          />
-        </div>
-      );
-    });
-  }
-
   function getFilesToRender() {
     const rp = BrowseComp.getReqProps();
     const browsePath = rp.browseState.path + rp.browseState.sep;
     return rp.photosState.files.map((file, ind) => {
-      const style = { 'backgroundImage': `url('${encodeURI(browsePath + file)}')` };
+      const style = getBackgroundImageStyle({
+        file: `${browsePath}${file}`,
+      });
       return (
         <div 
           key={file}
@@ -532,9 +505,11 @@ function getAPI({
     const browserCount = appState.browserCount;
     const browserCountUpd = states[browserCount];
 
-    resumeObj.saveCustom({    
-      browserCount: browserCountUpd,
-      rightWindow: {},
+    resumeObj.saveCustom({ 
+      stateUpd: {   
+        browserCount: browserCountUpd,
+        rightWindow: {},
+      },
     });    
 
     if (browserCountUpd === 1) {      
@@ -561,17 +536,6 @@ function getCheckedAction(
   return action;
 }
 
-function addHandlers({
-  target,
-  fns,
-}) {
-  const fnsObj = fns.reduce((res, fn) => { res[fn.name] = fn; return res; }, {});
-  Object.assign(
-    target,
-    fnsObj,
-  );
-}
-
 function changeSelections({
   src,
   checked,
@@ -581,26 +545,32 @@ function changeSelections({
     state,
     setState,
   } = BrowseComp.deps;
-  const {
-    MoveSelectionsAPI,
-  } = BrowseComp.getReqProps();
-
-  const action = getCheckedAction({
-    checked,
-  });
   
   setState({
     forceUpdate: false,
-    autoUpdate: () => {
-      if (action === Set.prototype.clear.name) {
-        state.selections = new Set();
-      }
-      else {
-        state.selections[action](src); 
-      }
-      MoveSelectionsAPI.forceUpdate(); 
-    },
+    selections: updateSelections(),
+  })
+  .then(() => {
+    const {
+      MoveSelectionsAPI,
+    } = BrowseComp.getReqProps();
+    MoveSelectionsAPI.forceUpdate(); 
   });
+
+
+  // ------------------------------------
+  function updateSelections() {
+    const action = getCheckedAction({
+      checked,
+    });
+  
+    const newSet = action === Set.prototype.clear.name ?
+      new Set() : undefined;
+        
+    state.selections[action](src); 
+
+    return newSet || state.selections;
+  }
 }
 
 function htmlResetSelections() {
@@ -614,17 +584,6 @@ function htmlResetSelections() {
   });
 }
 
-const stateInit = {
-  loading: true,
-  previewWidth: 100,
-  previewHeight: 100,
-  isDialogEnabled: false,
-  dialogTitle: '',
-  isDialogRemoveItem: false,
-  progress: 100,
-  selections: new Set(),
-};
-
 function refreshWindow() {
   const rp = BrowseComp.getReqProps();
   return rp.server.toward();
@@ -637,4 +596,21 @@ async function refreshWindows() {
     new Event(eventNames.refreshWindow)
   );
   return promise;
+}
+
+function getStateInit() {
+  const loaded = resumeObj.load({});
+      
+  return {
+    loading: true,
+    previewWidth: 100,
+    previewHeight: 100,
+    isDialogEnabled: false,
+    dialogTitle: '',
+    isDialogRemoveItem: false,
+    progress: 100,
+    
+    ...loaded,
+    selections: new Set(loaded.selections),
+  };
 }

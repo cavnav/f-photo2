@@ -2,11 +2,10 @@ import './styles.css';
 
 import React from 'react';
 import { PhotoStatuses } from '..';
-import { Help } from '..';
 import { additionalActions, } from '../../constants';
 import { Dialog } from '../';
 import { ResumeObj } from '../../resumeObj';
-import { myArray, oppositeWindowCheckSamePaths, refreshOppositeWindow, useMyReducer } from '../../functions';
+import { myArray, refreshOppositeWindow, useMyReducer } from '../../functions';
 import { channel } from '../../Channel';
 import { Browse } from '../Browse/Browse';
 import { getCurDate } from '../../functions';
@@ -43,16 +42,11 @@ export function OnePhoto(
 
   const [state, setState] = useMyReducer({
     reducer: selfReducer,
-    comp: {
-      setDeps: OnePhotoComp.setDeps,
-    },
+    setCompDeps: OnePhotoComp.setCompDeps,
     props,
     initialState: {
-      ...resumeObj.load({
-        props: {
-          ...stateInit,          
-        }
-      }),
+      ...stateInit,
+      ...resumeObj.load({}),      
     }, 
   });
 
@@ -92,6 +86,8 @@ export function OnePhoto(
 
   //--------------------------------------------------------------------------
   function getRender() {
+    const rp = OnePhotoComp.getReqProps();
+    const id = `${rp.browseState.path}${rp.browseState.sep}${state.curPhoto}`;
     return (
       <div 
         className="OnePhoto fitScreen"
@@ -108,7 +104,7 @@ export function OnePhoto(
               }} 
             />
             <PhotoStatuses 
-              curPhoto={state.curPhoto}
+              id={id}
             />
           </>
         )}        
@@ -194,13 +190,13 @@ export function OnePhoto(
         break;
 
       case 38: // rotate right
-        stateUpd.curPhotoRotateDeg = checkRotate({ deg: state.curPhotoRotateDeg + 90 }); 
-
+        stateUpd.curPhotoRotateDeg = rotate({ deg: state.curPhotoRotateDeg + 90 }); 
+        stateUpd.action = onImgServerRotate.name;
         break; 
 
       case 40: 
-        stateUpd.curPhotoRotateDeg = checkRotate({ deg: state.curPhotoRotateDeg - 90 });              
-        
+        stateUpd.curPhotoRotateDeg = rotate({ deg: state.curPhotoRotateDeg - 90 });              
+        stateUpd.action = onImgServerRotate.name;
         break; // rotate left
     }
 
@@ -210,7 +206,7 @@ export function OnePhoto(
 
     // ---------------------------
 
-    function checkRotate({ deg }) {
+    function rotate({ deg }) {
       return Math.abs(deg) === 360 ? 0 : deg;
     }
 
@@ -237,10 +233,10 @@ export function OnePhoto(
   }
 }
 
-function selfReducer(
+function selfReducer({
   state,
   stateUpd,
-) {
+}) {
 
   let stateReduced = { 
     ...state,
@@ -280,7 +276,7 @@ function selfReducer(
         curPhotoRotateDeg: 0,
       },
       [onImgServerRotate.name]: {
-        curPhotoRotateDeg: 0,
+       // curPhotoRotateDeg: 0,
         curPhotoWithTime: `${curPhoto}?${new Date().getTime()}`,
         opacity: '0',
         visibility: 'hidden',
@@ -446,19 +442,20 @@ function getAPI({
 
     state.files.delete(state.curPhotoInd);
 
-    const stateUpd = {
-      action: onTogglePhoto.name,
-      isDialogRemoveItem: false,
-    };
-    
-    if (state.files.items.length === state.curPhotoInd) {
-      stateUpd.curPhotoInd = state.curPhotoInd - 1;
-    }
-    
     rp.BrowseAPI.changeSelections({
       src: state.curPhoto,
       checked: false,
     });
+
+    const curPhotoIndUpd = state.files.items.length === state.curPhotoInd ?
+      state.curPhotoInd - 1 :
+      state.curPhotoInd;
+
+    const stateUpd = {
+      action: onTogglePhoto.name,
+      isDialogRemoveItem: false,
+      curPhotoInd: curPhotoIndUpd,
+    };
 
     setState(
       stateUpd,
@@ -468,6 +465,7 @@ function getAPI({
 
 const stateInit = {
   files: {},
+  path: undefined,
   loading: false,
   progress: 100,
   isDialogRemoveItem: false,

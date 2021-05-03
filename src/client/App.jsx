@@ -1,3 +1,37 @@
+// TODO 
+// content-visibility
+// ctg file
+// add loading
+// Failed to load resource
+// rename folder
+// remove folder error in two  windows mode. trouble in server side.
+// help
+// scroll to selected folder
+// +save files after create printFlash to appropriate folder
+// +active menu item
+// +remove cardreader from pc
+// +checkbox and remove
+// +print
+// +move
+// +Next on copy from flash
+// +extract files, then open new folder.
+// +OnePhoto error after f5
+// +ban print in two windows
+// +highlight statusIcons
+// +error location showing statusIcons  
+// +add checks to show/hide status icons.
+// -.toPrint, .toShare methode must get val.
+// -may be create global object filesWithStatuses
+// +zero print problem
+// +multiple changing status error
+// +save statuses on global resume object level
+// +forbid insert non number symbols
+// +progress
+// +fix layout
+
+import 'antd/dist/antd.css';
+import './app.css';
+
 import React from 'react';
 import { additionalActions } from './constants';
 import { Actions, ControlPanel, Action, AdditionalPanel} from './components';
@@ -5,9 +39,6 @@ import { useMyReducer } from './functions';
 import { get as _get } from 'lodash';
 import { channel } from './Channel';
 import { ResumeObj } from './resumeObj';
-
-import 'antd/dist/antd.css';
-import './app.css';
 import { ExitFromAlbum } from './components/ExitFromAlbum/ExitFromAlbum';
 import { ToggleRightWindow } from './components/ToggleRightWindow/ToggleRightWindow';
 import { MoveSelections } from './components/MoveSelections/MoveSelections';
@@ -20,9 +51,7 @@ const resumeObj = new ResumeObj({
 
 export function App() {
   const [d] = React.useState({}); // dispatch.
-  const [s] = React.useState(resumeObj.load({
-    props: {},
-  })); // states.
+  const [s] = React.useState(resumeObj.load({}));
 
   channel.preset({
     s,
@@ -33,23 +62,27 @@ export function App() {
     resumeObj,
   }), []);
 
-  const photosStateInit = React.useMemo(() => resumeObj.load({
-    compName: 'photosState',
-    props: {
+  const photosStateInit = React.useMemo(() => {
+    return {
       files: [],
       dirs: [],
-    },
-  }), []);
+      ...resumeObj.load({
+        compName: 'photosState',
+      }),      
+    };
+  }, []);
 
-  const browseStateInit = React.useMemo(() => resumeObj.load({
-    compName: 'browseState',
-    props: {
+  const browseStateInit = React.useMemo(() => {
+    return {      
       sep: undefined,
       path: '',
       curPhotoInd: -1,
       scrollY: 0,
-    },
-  }), []);
+      ...resumeObj.load({
+        compName: 'browseState',
+      }),
+    };    
+  }, []);
 
   const resumeSaveFn = React.useCallback(
     () => resumeObj.save({
@@ -73,8 +106,6 @@ export function App() {
     fn: resumeSaveFn, 
   });
 
-  [s.ignored, d.forceUpdate] = React.useReducer(x => !x, true);
-
   return (    
     <div className="f-photo">     
       <ControlPanel 
@@ -95,56 +126,56 @@ export function App() {
 function getAppStateInit({
   resumeObj,
 }) {
-  return resumeObj.load({
-    compName: 'appState',
-    props: {
-      action: Actions.Welcome.name,
-      forceUpdate: false,
-      doNeedHelp: false, // move to Help module.
-      actions: {
-        Copy: {
-          title: 'Копировать',
-          isActive: true
-        },
-        Browse: {
-          title: 'Смотреть',
-          isActive: true,
-          additionalActions: [
-            additionalActions[ExitFromAlbum.name], 
-            additionalActions[ToggleRightWindow.name],
-            additionalActions[MoveSelections.name],
-            additionalActions[AddAlbum.name],
-            additionalActions[RemoveSelections.name],
-          ],
-        },
-        OnePhoto: {
-          isActive: false,
-          additionalActions: [       
-            additionalActions.ExitFromOnePhoto,
-            additionalActions.SaveChanges,
-            additionalActions.RemoveSelections,
-            additionalActions[MoveSelections.name],
-          ],
-        },
-        Print: {
-          title: 'Печатать',
-          isActive: true,
-          additionalActions: [
-            additionalActions.SavePhotosToFlash,
-          ],
-        },
-        Share: {
-          title: 'Отправить',
-          isActive: true,
-          additionalActions: [
-            additionalActions.SharePhotos,
-          ],
-        },
-        // Help: {
-        //   title: '?',
-        //   isActive: true,
-        // }
+  return {
+    action: Actions.Welcome.name,
+    forceUpdate: false,
+    doNeedHelp: false, // move to Help module.
+    actions: {
+      Copy: {
+        title: 'Копировать',
+        isActive: true
       },
+      Browse: {
+        title: 'Смотреть',
+        isActive: true,
+        additionalActions: [
+          additionalActions[ExitFromAlbum.name], 
+          additionalActions[ToggleRightWindow.name],
+          additionalActions[MoveSelections.name],
+          additionalActions[AddAlbum.name],
+          additionalActions[RemoveSelections.name],
+        ],
+      },
+      OnePhoto: {
+        isActive: false,
+        additionalActions: [       
+          additionalActions.ExitFromOnePhoto,
+          additionalActions.SaveChanges,
+          additionalActions.RemoveSelections,
+          additionalActions[MoveSelections.name],
+        ],
+      },
+      Print: {
+        title: 'Печатать',
+        isActive: true,
+        additionalActions: [
+          additionalActions.SavePhotosToFlash,
+        ],
+      },
+      Share: {
+        title: 'Отправить',
+        isActive: true,
+        additionalActions: [
+          additionalActions.SharePhotos,
+        ],
+      },
+      // Help: {
+      //   title: '?',
+      //   isActive: true,
+      // }
     },
-  });
+    ...resumeObj.load({
+      compName: 'appState',
+    }),
+  };
 };

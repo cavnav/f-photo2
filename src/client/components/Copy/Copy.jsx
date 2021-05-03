@@ -7,6 +7,7 @@ import './styles.css';
 
 export function Copy({
   setAppState,
+  setBrowseState,
   serverAPI,
 }) {
   
@@ -52,11 +53,25 @@ export function Copy({
         type: 'reject',
         desc: 'Что-то пошло не так... Попробуй еще раз',
         stepNumDelta: -2,
-      }, {
+      }, 
+      {
         toRender: getCopyingContent,
         trigger: $getNewPhotosWrap,
+      },
+      {
+        toRender: () => {
+          return (<>
+            <Progress type="circle" percent={state.copyProgress} />
+            {state.isCopyCompleted && <div>Все фотографии успешно скопированы!</div>}   
+          </>);
+        },        
+        trigger: $onCopyWrap,
         isNextBtn: state.isCopyCompleted,
-      }, {
+      },
+      {
+        desc: 'Вытащи картридер из компьютера',
+      },
+      {
         photoSrc: 'wizardCopy/005_returnMemCardInPhoto.jpg',
         desc: 'Вытащи карту памяти из кардРидера и вставь обратно в фотоаппарат до щелчка, как показано ниже:',
       }, {
@@ -86,16 +101,11 @@ export function Copy({
   }
 
   function getCopyingContent({ key }) {
-    const started = <div className="flex flexDirColumn" key={key}>
+    return <div className="flex flexDirColumn" key={key}>
       Количество новых фото:
       { state.countNewPhotos }
-      <div><input type="button" onClick={$onCopyWrap} value="Копировать" /></div>
       <div>* Внимание! После копирования карта памяти будет очищена.</div>
-      <Progress type="circle" percent={state.copyProgress} />      
-    </div>;    
-    const finished = <div>Все фотографии успешно скопированы!</div>;
-
-    return state.isCopyCompleted ? finished : started;
+    </div>;        
   }
 
   function $waitUSBconnectWrap() {
@@ -117,6 +127,9 @@ export function Copy({
     return serverAPI.$copyPhotos({
       userDirName: '',
     }).then((res) => {
+      setBrowseState({
+        path: res.destDir,
+      });
       $checkCopyProgressWrap();
     });
   }
@@ -125,7 +138,7 @@ export function Copy({
     serverAPI.$checkCopyProgress()
       .then((res) => {
         const isCopyCompleted = res.copyProgress === 100;
-        setTimeout(() => (isCopyCompleted ? null : $checkCopyProgressWrap()), 500);
+        setTimeout(() => (isCopyCompleted ? null : $checkCopyProgressWrap()), 500);        
         setState({
           ...state,
           copyProgress: res.copyProgress,
@@ -139,6 +152,7 @@ Copy.getReqProps = ({ channel }) => {
   return channel.crop({
     d: {
       setAppState: 1,
+      setBrowseState: 1,
     },
     API: {
       comps: {

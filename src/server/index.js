@@ -1,19 +1,23 @@
 
+const WhatsappBot = require('./scriptWhatsappBot');
+
 const express = require('express');
 const bodyParser = require('body-parser');
-
 const fs = require('fs-extra');
-
+const Jimp = require('jimp');
 const path = require('path');
 const usbDetect = require('usb-detection');
 const drivelist = require('drivelist');
 const find = require('find');
 
-const Jimp = require('jimp');
-const WhatsappBot = require('./scriptWhatsappBot');
 
 const app = express();
-const albumDir = path.join('z:', 'album');
+
+const ALBUM_DIR = path.join('z:', 'album');
+const PRINTED_DIR = path.join(ALBUM_DIR, 'printed');
+const PRINTED_NEW = path.join(PRINTED_DIR, 'Новая');
+const SHARED_DIR = path.join(ALBUM_DIR, 'shared');
+const PRINT_JSON = 'index.json';
 
 
 let state = {
@@ -23,11 +27,9 @@ let state = {
   countNewPhotos: 0,
   copyProgress: 0,
   countCopiedPhotos: 0,
-  albumDir,
-  projectDir: path.resolve(__dirname, '../../../'),
   curWindow: 'leftWindow',
-  leftWindow: albumDir,
-  rightWindow: albumDir,
+  leftWindow: ALBUM_DIR,
+  rightWindow: ALBUM_DIR,
   usbDriveLetter: undefined,
 };
 
@@ -35,7 +37,7 @@ let timeoutIdImg
 
 // ------------------------------------------------------------------------------------------------
 
-app.use(express.static(albumDir));
+app.use(express.static(ALBUM_DIR));
 app.use(express.static('public'));
 app.use(express.static('dist'));
 app.use(bodyParser.json());
@@ -46,11 +48,11 @@ app.post('/api/share', async(req, response) => {
   response.send(req.body);
   const date = getCurMoment();
   
-  const sharedFolder = path.resolve(state.albumDir, date);
+  const sharedFolder = path.resolve(ALBUM_DIR, date);
   await (async () => {
     const { filesSrc } = req.body;
     for (let index = 0; index < files.length; index++) {
-      const fileFrom = path.resolve(state.albumDir, filesSrc[index]);
+      const fileFrom = path.resolve(ALBUM_DIR, filesSrc[index]);
       const fileTo = path.resolve(sharedFolder, path.basename(fileFrom));
       await fs.copy(fileFrom, fileTo);
     }
@@ -81,7 +83,7 @@ app.get('/api/getUsbDevices', (req, res) => {
         return mountpoint.path;
       });
 
-    const usbDriveLetterUpd = (usbDriveLetter) ? `${usbDriveLetter}\\` : usbDriveLetter;
+    const usbDriveLetterUpd = (usbDriveLetter) ? path.join(usbDriveLetter, path.sep) : usbDriveLetter;
     setState({
       usbDriveLetter: usbDriveLetterUpd,
     });
@@ -203,15 +205,10 @@ app.get('/api/browseFiles', (req, res) => {
       files, 
       dirs 
     }) {      
+      const myPath = state[state.curWindow] === ALBUM_DIR ? '' : 
+        path.join(state[state.curWindow]).replace(ALBUM_DIR, '');
 
-      setState({
-        files,
-        dirs,
-      });
-
-      const myPath = state[state.curWindow] === state.albumDir ? '' : 
-        path.join(state[state.curWindow]).replace(albumDir, '');
-
+        console.log(112233, dirs);
       res.send({
         files,
         dirs,
@@ -228,7 +225,7 @@ app.post('/api/resetNavigation', (req, res) => {
     curWindow,
   } = req.body;
 
-  const resetToUpd = path.join(albumDir, resetTo);
+  const resetToUpd = path.join(ALBUM_DIR, resetTo);
   state[curWindow] && setState({
     [curWindow]: resetToUpd,
   });
@@ -243,7 +240,7 @@ app.post('/api/toward', (req, res) => {
     curWindow,
   } = req.body;
 
-  const resetToUpd = resetTo ? path.join(albumDir, resetTo) : undefined;
+  const resetToUpd = resetTo ? path.join(ALBUM_DIR, resetTo) : undefined;
   const pathUpd = resetTo ? undefined : path.join(state[curWindow], path.basename(subdir));
    
   state[curWindow] && setState({
@@ -318,14 +315,65 @@ app.post('/api/saveFilesToFlash', async (req, response) => {
   response.send(req.body);
   clearUpUSB()
   .then(async (res) => {
+    setState({
+      copyProgress: 0,
+      countCopiedPhotos: 0,
+    });
     const { files } = req.body;
-    const filesList = Object.keys(files);
-    // TODO const srcRoot = 'z:\\album\\root\\';
-    const destRoot = state.usbDriveLetter;
-    for (let index = 0; index < filesList.length; index++) {
-      const file = filesList[index]
-      const folder = files[file];
-      await fs.copy(`${srcRoot}\\${file}`, `${destRoot}\\${folder}\\${file}`);
+    const total = Object.keys(files).length;
+
+    // create appropriate folder in printedFolder
+    {
+      const dest = path.join(PRINTED_DIR, getCurMoment());
+      await fs.mkdirs(
+        dest,
+      );
+      await fs.writeJSON(
+        path.join(dest, PRINT_JSON),
+        files,
+      );
+
+      await fs.remove(
+        path.join(PRINTED_NEW, PRINT_JSON),
+      );
+    }
+
+    // copy to flash
+    {
+      const source = path.join(ALBUM_DIR);
+      const dest = path.join(state.usbDriveLetter);
+      copy({
+        source,
+        dest,
+        total,
+      });
+    }
+
+    // ---------------------------------------
+    async function copy({
+      source,
+      dest,
+    }) {
+      for (const file in files) {
+        const folder = String(files[file]);
+        const fileName = path.basename(file);
+        const sourceUpd = path.join(source, file);
+        const destUpd = path.join(dest, folder, fileName);
+        await fs.copy(
+          sourceUpd,
+          destUpd,
+        );
+
+        const countProcessed = state.countCopiedPhotos + 1;
+        const progress = calcProgress({ 
+          cntProcessed: countProcessed, 
+          total,
+        });
+        setState({
+          copyProgress: progress,
+          countCopiedPhotos: countProcessed,
+        });
+      }
     }
   })
   .then(res => setState({
@@ -502,9 +550,12 @@ app.post('/api/copyPhotos', (req, res) => {
     curWindow,
   } = req.body;
   const curMoment = getCurMoment();
-  const destDir = path.resolve(state.albumDir, curMoment);
+  const destDir = path.resolve(ALBUM_DIR, curMoment);
 
-  res.send(req.body);
+  res.send({
+    ...req.body,
+    destDir: path.join(destDir).replace(ALBUM_DIR, ''),
+  });
 
   if (fs.existsSync(destDir)) {
     return;
@@ -596,7 +647,7 @@ function getBackwardPath({
   .split(path.sep)
   .slice(0, -1);
 
-  if (state.albumDir === state[curWindow]) return state.albumDir;
+  if (ALBUM_DIR === state[curWindow]) return ALBUM_DIR;
   return path.join(
     ...state[curWindow]
     .split(path.sep)

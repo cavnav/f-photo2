@@ -2,132 +2,53 @@ import './styles.css';
 
 import React from 'react';
 
-import { Progress, } from 'antd';
 import { 
   Stepper,
 } from '../';
-import { tempReducer } from '../../functions';
+import { addHandlers, getBackgroundImageStyle, getFilesWithStatuses, updateFilesWithStatuses, useMyReducer } from '../../functions';
 import { createSteps } from './createSteps';
-import { PhotoStatuses } from '../PhotoStatuses/PhotoStatuses';
 import { getCurDate } from '../../functions';
+import { channel } from '../../Channel';
+import { Copying } from './components/Copying';
+import { ResumeObj } from '../../resumeObj';
+import { Dirs } from '../Dirs/Dirs';
 
-const Copying = React.memo(function ({
-  filesToPrint,
-  onCopyCompleted = () => {},
-  onCopyCanceled = () => {},
-  $checkCopyProgress,
-  $saveFilesToFlash,
-}) {
-  const [state, setState] = React.useReducer(tempReducer, getStateInit());
-  const onAcceptCb = React.useCallback(() => onAccept(), [state.timer]);
-  
-  React.useEffect(() => timer(state.timer), [state.timer]);
-  React.useEffect(() => { if (state.isCopyCompleted === true) onCopyCompleted() }, [state.isCopyCompleted]);
-
-  return (
-    <div className="flexCenter flexDirColumn">
-      { (state.copyProgress === 0) && (
-          <>
-            <div>Внимание! Флешка будет очищена перед копированием, <span style={{fontSize: '30px'}}>{state.timer}</span></div> 
-            <input className="acceptBtn" type="button" value="ok" onClick={onAcceptCb}/>
-          </>
-        )
-      }
-      <Progress className="copyProgress" type="circle" percent={state.copyProgress} />  
-      { (state.isCopyCompleted) && <div>Все файлы успешно скопированы</div> }    
-    </div>
-  );  
-
-  function timer(val) { 
-    if (val === 0) {
-      onCopyCanceled();
-      return;
-    }
-
-    if (state.clearTimerId) return;
-    const timerId = setTimeout(() => setState({ timer: val - 1 }), 1000);
-    
-    setState( {
-      timerId,
-    });
-  }
-
-  function getStateInit() {
-    return {
-      copyProgress: 0,
-      isCopyCompleted: false,
-      timer: 10,
-      timerId: 0,
-      clearTimerId: 0,
-    };
-  }
-
-  function getDataForCopyFiles({
-    filesToPrint,
-  }) {
-    return {
-      files: Object.entries(filesToPrint)
-      .reduce((res, [fileSrc, cntCopies]) => { 
-          res[fileSrc] = cntCopies;
-          return res; 
-        }, 
-        {}
-      ),
-    };
-  };
-
-  function onAccept() {
-    setState({
-      clearTimerId: state.timerId
-    });
-    
-
-    $saveFilesToFlash(
-      getDataForCopyFiles({
-        filesToPrint,
-      })    
-    )
-    .then(checkCopyProgress);
-
-    function checkCopyProgress() {
-      $checkCopyProgress()
-      .then((res1) => {
-        const isCopyCompleted = res1.copyProgress === 100;
-        if (isCopyCompleted === false) {
-          setTimeout(() => checkCopyProgress(), 500);
-        }
-        setState({
-          copyProgress: res1.copyProgress,
-          isCopyCompleted,
-        });
-      });
-    }
-  }
+const resumeObj = new ResumeObj({
+  compName: Print.name,
 });
 
-export function Print({
-  PhotoStatusesAPI,
-  tempReducer,
-  $getUsbDevices,
-  $checkCopyProgress,
-  $saveFilesToFlash
+
+const PrintComp = channel.addComp({
+  fn: Print,
+  getAPI,
+  getReqProps,
+});
+
+export function Print({  
 }) {
+  const rp = PrintComp.getReqProps();
 
-  const filesToPrint = React.useMemo(() => {
-    return Object.entries(PhotoStatusesAPI.getFilesWithStatuses())
-    .reduce((res, [key, val]) => {
-      res[key] = val.toPrint ? 1 : 0;
-      return res;
-    }, {});
-  }, []);
-
-  const [state, setState] = React.useReducer(tempReducer, getStateInit({
-    filesToPrint,
-  }));
-
-  Print.setState = setState;
-  
-  const [ignored, forceUpdate] = React.useReducer(x => !x, false);
+  const [state, setState] = useMyReducer({    
+    initialState: {
+      ...getStateInit(),
+    },
+    setCompDeps: PrintComp.setCompDeps,
+    fn: ({
+      state,
+      stateUpd,
+    }) => {      
+      const stateUpdNext = {
+        ...state,
+      };
+      delete stateUpdNext.filesToPrint;
+      resumeObj.save({ 
+        stateUpd: stateUpdNext,
+      });
+      stateUpd.filesToPrint !== undefined && updateFilesWithStatuses({
+        stateUpd: stateUpd.filesToPrint,
+      });
+    }
+  });
 
   const onCopyCompleted = React.useCallback(() => setState({
     isCopyCompleted: true,
@@ -141,33 +62,81 @@ export function Print({
     isSavePhotosToFlash: false 
   }), [state.isSavePhotosToFlash]);
 
-  const steps = createSteps({
-    $getUsbDevices,
-    isCopyCompleted: state.isCopyCompleted,
-    onAllStepsPassed,
-    Copying: () => <Copying 
-        filesToPrint={filesToPrint}
-        onCopyCompleted={onCopyCompleted} 
-        onCopyCanceled={onCopyCanceled}
-        $saveFilesToFlash={$saveFilesToFlash}
-        $checkCopyProgress={$checkCopyProgress} 
-      />,
-  });
+  const steps = React.useMemo(
+    () => createSteps({
+      $getUsbDevices: rp.$getUsbDevices,
+      isCopyCompleted: state.isCopyCompleted,
+      onAllStepsPassed,
+      Copying: () => <Copying 
+          filesToPrint={state.filesToPrint}
+          onCopyCompleted={onCopyCompleted} 
+          onCopyCanceled={onCopyCanceled}
+          $saveFilesToFlash={rp.$saveFilesToFlash}
+          $checkCopyProgress={rp.$checkCopyProgress} 
+        />,
+    }),
+    [state.isCopyCompleted],
+  );
+
+  const dispatcher = React.useMemo(
+    () => addHandlers(
+      {
+        fns: [
+          function onClickDir({
+            event
+          }) {
+            const rp = Print.getReqProps();
+            setState({
+              loading: true,
+            });
+            const dir = event.target.getAttribute('src');
+            rp.server.printedNavigate({ 
+              dir, 
+            })
+            .then((res) => {
+              setState({
+                loading: false,
+              });
+            });
+          }, 
+        ]
+      },
+    ),
+    [],  
+  );
+
+  const onClickDispatcher = React.useCallback((event) => {
+    const { target } = event;
+    const onClickCb = target.getAttribute('clickcb');
+
+    onClickCb && dispatcher[onClickCb]({
+      event,
+    });
+  }, []);
 
   React.useEffect(addKeyDownListener);
   React.useEffect(() => {
     const input = getActiveInput();
     input && input.focus();
   });
+  React.useEffect(
+    resetTo,
+    []
+  );
 
   return (
-    <div className="Print">
-      <div>{getCurDate()}</div>
+    <div 
+      className="Print layout"
+      onClick={onClickDispatcher}
+    >
+      <Dirs
+        dirs={rp.photosState.dirs}
+        onClickDirFnName={dispatcher.onClickDir.name}
+      ></Dirs>
+      
       { state.isSavePhotosToFlash ? <Stepper 
           steps={steps}
-        /> : renderPrintState({ 
-            filesToPrint: state.filesToPrint,
-          }) 
+        /> : renderPrintState() 
       }
     </div>    
   );
@@ -207,39 +176,54 @@ export function Print({
       default: return;
     }
 
-    state.filesToPrint[photoSrc] = cntUpd; 
-
     setState({
-      forceUpdate: !state.forceUpdate,
+      filesToPrint: updateFilesToPrint(),
     });
+
+
+    // --------------------------------------
+    function updateFilesToPrint() {
+      state.filesToPrint[photoSrc].toPrint = cntUpd;
+      return state.filesToPrint;
+    }
   }  
 
-  function renderPrintState({
-    filesToPrint,
-  }) {
+  function renderPrintState(    
+  ) {
+    const {
+      state,
+    } = PrintComp.deps;
     return (
       <>
         <div className="PrintItems">
           {
-            Object.keys(filesToPrint).map((photoSrc) => { 
-              const key = photoSrc;         
+            Object.entries(state.filesToPrint).map(([photoSrc, statuses]) => { 
+              const key = photoSrc;  
+              if (statuses.toPrint < 0) return null;
+
               return <div 
                 className="rowData"
                 key={key}
-                photosrc={photoSrc}
               >
                 <div
-                  className='fitPreview100 file marginRight10'
-                  style={{ 'backgroundImage': `url(${photoSrc})` }}
-                >
-                </div>              
-                <input 
-                  className="changePhotoCount marginRight10" 
-                  keyid={key}
-                  value={filesToPrint[photoSrc]} 
-                  onChange={onChangePhotoCount} 
-                />
-                <input type="button" className="marginRight10" onClick={onClickErasePhotoCount} value="Стереть" />
+                  className='fitPreview file'
+                  style={getBackgroundImageStyle({
+                    file: photoSrc,
+                  })}
+                >                  
+                </div>               
+                <div 
+                  className='controls'
+                  photosrc={photoSrc}
+                >           
+                  <input 
+                    className="changePhotoCount" 
+                    keyid={key}
+                    value={statuses.toPrint} 
+                    onChange={onChangePhotoCount} 
+                  />
+                  <input type="button" className="marginRight10" onClick={onClickErasePhotoCount} value="Стереть" />
+                </div>    
               </div>
             })
           }
@@ -251,22 +235,34 @@ export function Print({
   function onClickErasePhotoCount(e) {
     const { photoSrc } = getDataPrint({ element: e.target.parentElement });
 
-    state.filesToPrint[photoSrc] = 0;
-
     setState({
+      filesToPrint: (() => { state.filesToPrint[photoSrc].toPrint = 0; return state.filesToPrint })(),
       activeInput: photoSrc,
     });
   }
 
   function onChangePhotoCount(e) {
     const input = e.target;
-    const { photoSrc } = getDataPrint({ element: input.parentElement });
+    
+    // allowed only numbers.
+    const numbers = /^[0-9]+$/;
+    if (input.value.match(numbers) === null) {
+      e.preventDefault();
+      return;
+    }
 
-    state.filesToPrint[photoSrc] = input.value; 
+    const { photoSrc } = getDataPrint({ element: input.parentElement });    
 
     setState({
+      filesToPrint: updateFilesToPrint(),
       activeInput: photoSrc,
     });
+
+    // --------------------------------------------
+    function updateFilesToPrint() {
+      state.filesToPrint[photoSrc].toPrint = input.value;
+      return state.filesToPrint;
+    }
   }
 
   function getDataPrint({ element }) {
@@ -279,44 +275,64 @@ export function Print({
 
 }
 
-Print.getReqProps = ({ channel }) => {
+function getReqProps({ channel }) {
   return channel.crop({
+    s: {
+      photosState: 1,
+    },
     API: {
       comps: {
         server: {
           $getUsbDevices: 1,
           $checkCopyProgress: 1,
           $saveFilesToFlash: 1,
+          toward: 1,
         },
       },
     },  
-    comps: {
-      ...PhotoStatuses.API
-    },
   });
 };
 
-Print.getAPI = function (
+function getAPI(
 ) {
   return {
     saveToFlash() {
-      Print.setState({
+      const { 
+        setState,
+      } = PrintComp.deps;
+      setState({
         isSavePhotosToFlash: true,
       });
     }
   };
 }
 
-function getStateInit({
-  filesToPrint,
-}) {
+function getStateInit(
+) {
+  const loaded = resumeObj.load({});
+
   return {
+    loading: false,
+    filesToPrint: getFilesWithStatuses(),
+    dirs: [],
     activeInput: undefined,
     isSavePhotosToFlash: false,
     isCopyCompleted: false,
-    filesToPrint,
-    forceUpdate: false,
+
+    ...loaded,
   };
 }
 
-
+function resetTo() {
+  const rp = PrintComp.getReqProps();
+  const { deps } = PrintComp;
+  deps.setState({
+    loading: true,
+  });
+  rp.toward({
+    resetTo: '\printed',
+  })
+  .then((res) => deps.setState({
+    loading: false,    
+  }));
+}

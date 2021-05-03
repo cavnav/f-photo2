@@ -1,13 +1,30 @@
 export class PhotoStatusIcons {  
-  toPrint = false;
+  toPrint = -1;
   toShare = false;
   
-  setToPrint({ flag = this.toPrint} = {}) {
-    this.toPrint = flag === false ? true : false;
+  static checkHide({
+    status,
+    val,
+  }) {
+    return PhotoStatusIcons[`${status}CheckHide`]({
+      val,
+    });
   }
-  setToShare({ flag = this.toShare } = {}) {
+  static setToPrint({ cnt = this.toPrint } = {}) {
+    this.toPrint = cnt >= 0  ? -1 : 1;
+  }
+  static setToShare({ flag = this.toShare } = {}) {
     this.toShare = flag === false ? true : false;
   }
- };
 
- export const photoStatusIconsEntity = new PhotoStatusIcons();
+  static toPrintCheckHide({
+    val,
+  }) {
+    return val >= 0 ? false : true;
+  }
+  static toShareCheckHide({
+    val,
+  }) {
+    return !val;
+  }  
+ };

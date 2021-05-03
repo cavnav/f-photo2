@@ -1,42 +1,3 @@
-.Browse {
-  position: relative;
-  display: flex;
-  flex-wrap: wrap;
-  height: 100%;
-  overflow-y: auto;
-}
-
-.fitPreview {
-  height: var(--main-browse-size);
-  width: var(--main-browse-size);
-}
-
-.fitPreview100 {
-  width: 100px;
-  height: 100px;
-}
-
-.fitPreview100,
-.fitPreview {  
-  padding: 5px;
-  margin-right: 5px;
-  margin-top: 5px;
-  background-color: white;
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.2), 0 1px 11px 0 rgba(0, 0, 0, 0.19);
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  background-repeat: no-repeat;
-  background-position: center center;
-  background-size: contain;
-}
-
-.Browse .file {
-}
-
-.Browse .dir {
-  min-width: 100px;
-}
-
 .Browse .curFile {
   margin: 50px;
 }
@@ -50,13 +11,3 @@
   top: 40px;
   width: 100%;
 }
-
-.Browse .itemSelector {  
-  left: 4px;
-  bottom: 4px; 
-  width: var(--size);
-  height: var(--size);
-  opacity: 0.5;
-
-  --size: 40px;
-} 

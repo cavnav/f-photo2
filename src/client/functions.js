@@ -1,7 +1,7 @@
 import { get as _get } from 'lodash';
 import React from 'react';
 import { eventNames } from './constants';
-import { ResumeObj } from './resumeObj';
+import { ResumeObj, resumeObjConstants } from './resumeObj';
 
 class MyItems {
   constructor({
@@ -58,16 +58,13 @@ export function tempReducer(
 };
 
 export function useMyReducer({
-  reducer,
   initialState = {},
-  props,
-  comp = {},
+  reducer,
+  props, // props will inject to state.
+  setCompDeps,
   fn = () => {},
   init = () => ({ ...initialState }),
 }) {
-  const {
-    setDeps = () => {},
-  } = comp;
   const [forceUpdate] = React.useReducer((x) => !x, false).slice(1);
   const [state] = React.useState(init(initialState));
   props && React.useMemo(
@@ -80,10 +77,11 @@ export function useMyReducer({
     },
     Object.values(props),
   );
-  setDeps({
-    state,
-    setState: dispatch,
-    ...comp.deps,
+  setCompDeps && setCompDeps({
+    deps: {
+      state,
+      setState: dispatch,
+    },
   });
   return [state, dispatch];
 
@@ -95,15 +93,17 @@ export function useMyReducer({
       reducer,
     });
 
-    fn(state);
-    // setDeps({
-    //   ...comp.deps,
-    // });
+    fn({
+      state,
+      stateUpd,
+    });
 
     // console.log('zz', JSON.stringify(stateUpd));
     stateUpd.forceUpdate === undefined &&
-    forceUpdate();
+      forceUpdate();
 
+
+    return Promise.resolve();
 
     // -----------------------
     
@@ -111,18 +111,17 @@ export function useMyReducer({
       state,
       stateUpd,
       reducer,
-    }) {
-      if (stateUpd.autoUpdate) {
-        stateUpd.autoUpdate();
-        return;
-      }
-      const stateReduced = reducer ? reducer(state, stateUpd) : undefined;
+    }) {      
+      const stateReduced = reducer ? 
+        reducer({ 
+          state, 
+          stateUpd
+        }) : 
+        undefined;
+        
       Object.assign(
         state,
         stateReduced || stateUpd,
-        {
-          forceUpdate: true,
-        }
       );
     }
   }
@@ -190,8 +189,8 @@ export function objCrop({
 export function isCatalogSelected({
   windowName,
 }) {
-  const resumeObj = new ResumeObj();
   if (!windowName) return false;
+  const resumeObj = new ResumeObj();
   const resumeState = resumeObj.state;
   return Boolean(_get(resumeState[windowName], 'App.browseState.path'));
 }
@@ -223,4 +222,41 @@ export function refreshOppositeWindow() {
 export function getCurDate() {
   const dateISO = new Date().toISOString();
   return dateISO.slice(0, dateISO.indexOf('T'));
+}
+
+export function encodeFile({
+  file,
+}
+) {
+  return encodeURI(file);
+}
+
+export function getBackgroundImageStyle({
+  file,
+}) {
+  return { 'backgroundImage': `url('${encodeFile({ file })}')` };
+}
+
+export function getFilesWithStatuses() {
+  const resumeObj = new ResumeObj();
+  const resumeState = resumeObj.state;
+  const res = _get(resumeState, resumeObjConstants.filesWithStatuses, {});
+  return res;
+}
+
+export function updateFilesWithStatuses({
+  stateUpd,
+}) {
+  const resumeObj = new ResumeObj();
+  resumeObj.saveCustom({
+    stateUpd: {
+      [resumeObjConstants.filesWithStatuses]: stateUpd,
+    },
+  });
+}
+
+export function addHandlers({
+  fns,
+}) {
+  return fns.reduce((res, fn) => { res[fn.name] = fn; return res; }, {});
 }

@@ -1,11 +1,10 @@
 import React from 'react';
 import { 
   PhotoStatusIcons,
-  photoStatusIconsEntity, 
 } from './constants';
 
 import './styles.css';
-import { useMyReducer } from '../../functions';
+import { getFilesWithStatuses, updateFilesWithStatuses, useMyReducer } from '../../functions';
 import { ResumeObj } from '../../resumeObj';
 import { channel } from '../../Channel';
 
@@ -20,39 +19,61 @@ const PhotoStatusesComp = channel.addComp({
 });
 
 export function PhotoStatuses({
-  curPhoto,
+  id,
 }) {
-  const initState = React.useMemo(() => {
-    return resumeObj.load({
-      props: stateInit(),
-    });
-  }, []);
-  
-  const [state, setState] = useMyReducer({
-    initialState: initState,
-    comp: {
-      setDeps: PhotoStatusesComp.setDeps,
-      deps: {
-        curPhoto,
-      },
+  const [state] = useMyReducer({
+    initialState: {
+      ...getStateInit(),
     },
-    fn: (stateUpd) => resumeObj.save({ 
-      stateUpd,
+    setCompDeps: ({
+      deps,
+    }) => PhotoStatusesComp.setCompDeps({
+      deps: {
+        ...deps,
+        id,
+      },
     }),
+    fn: ({
+      state,
+      stateUpd,
+    }) => {
+      const stateUpdNext = {
+        ...state,
+      };
+      delete stateUpdNext.filesWithStatuses;
+      resumeObj.save({ 
+        stateUpd: stateUpdNext,
+      });
+      stateUpd.filesWithStatuses !== undefined && updateFilesWithStatuses({
+        stateUpd: stateUpd.filesWithStatuses,
+      });
+    },
   });
 
-  const statuses = state.filesWithStatuses[curPhoto];
+  const statuses = getStatuses();
 
-  return (statuses === undefined) ? null : (
+  return (statuses.length === 0) ? null : (
     <div className="PhotoStatusIcons">
-      { Object.entries(statuses)
-        .filter(([status, flag]) => flag)
-        .map(([status]) => (
-          <img key={status} width="32" height="32" src={`${status}.png`} />
-        )) 
-      }
+      { statuses }
     </div>
   );
+
+
+  // ----------------------------------
+  function getStatuses() {
+    return Object.entries(state.filesWithStatuses[id] || {})
+    .map(([status, val]) => {
+      if (PhotoStatusIcons.checkHide({
+        status,
+        val,
+      })) {
+        return null;
+      }
+      return <img key={status} src={`${status}.png`} />;        
+    })
+    .filter((item) => item);
+      
+  }
 }
 
 function getReqProps({
@@ -70,15 +91,14 @@ function getAPI({
   return {
     changeShareStatus: () => {      
       changeStatus({
-        actionName: photoStatusIconsEntity.setToShare.name,
+        actionName: PhotoStatusIcons.setToShare.name,
       });
     }, 
     changePrintStatus: () => {
       changeStatus({
-        actionName: photoStatusIconsEntity.setToPrint.name,
+        actionName: PhotoStatusIcons.setToPrint.name,
       });
     }, 
-    getFilesWithStatuses,
   }
 
 
@@ -88,32 +108,37 @@ function getAPI({
     actionName,
   }) {    
     const {
+      id,
       state,
       setState,
-      curPhoto,
     } = PhotoStatusesComp.deps;
 
     setState({
-      autoUpdate: () => {
-        const status = state.filesWithStatuses[curPhoto];
-        if (status === undefined) {
-          state.filesWithStatuses[curPhoto] = new PhotoStatusIcons();
-        }
-        state.filesWithStatuses[curPhoto][actionName]();
-      }
+      filesWithStatuses: updateFileWithStatuses(),
     });
-  }
 
-  function getFilesWithStatuses() {
-    const {
-      state,
-    } = PhotoStatusesComp.deps;
-    return state ? state.filesWithStatuses : [];
+
+    // -----------------------------------------------------
+    function updateFileWithStatuses() {
+      const status = state.filesWithStatuses[id];
+      if (status === undefined) {
+        state.filesWithStatuses[id] = new PhotoStatusIcons()
+      }
+      PhotoStatusIcons[actionName].call(
+        state.filesWithStatuses[id],
+      )
+      return state.filesWithStatuses;
+    }
   }
 };
 
-function stateInit() {
+function getStateInit() {
+  const loaded = resumeObj.load({});
+      
   return {
-    filesWithStatuses: {},
+    filesWithStatuses: getFilesWithStatuses(),
+  
+    ...loaded,
   };
 }
+

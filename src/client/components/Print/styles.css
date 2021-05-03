@@ -1,20 +1,23 @@
-.Print {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  overflow-y: scroll;
-}
-
 .PrintItems {
   display: flex;
   flex-flow: wrap;
 }
 
+.PrintItems .fitPreview.file {
+  margin-bottom: var(--print-gap-between-rows);
+}
+
 .rowData {
+  position: relative;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
+}
+
+.controls {
+  position: absolute;
+  bottom: 0px;
 }
 
 .changePhotoCount {

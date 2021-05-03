@@ -1,5 +1,6 @@
 :root {
   --main-browse-size: 300px;
+  --print-gap-between-rows: 120px;
 }
 
 html,
@@ -34,11 +35,6 @@ body {
   display: flex;
   flex-direction: column;
   font-size: 24px;
-}
-
-.Print .file,
-.Share .file {
-  width: 100px;
 }
 
 .action .title {
@@ -130,3 +126,45 @@ body {
 .fontSize20 {
   font-size: 20px;
 }
+
+.fitPreview {
+  height: var(--main-browse-size);
+  width: var(--main-browse-size);
+}
+
+.fitPreview100 {
+  width: 100px;
+  height: 100px;
+}
+
+.fitPreview100,
+.fitPreview {  
+  padding: 5px;
+  margin-right: 5px;
+  margin-top: 5px;
+  background-color: white;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.2), 0 1px 11px 0 rgba(0, 0, 0, 0.19);
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: contain;
+}
+
+.layout {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.itemSelector {  
+  --size: 40px;
+
+  left: 4px;
+  bottom: 4px; 
+  width: var(--size);
+  height: var(--size);
+  opacity: 0.5;
+} 

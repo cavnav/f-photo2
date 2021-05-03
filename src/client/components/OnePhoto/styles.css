@@ -1,4 +1,5 @@
 .fitScreen {
+  position: relative;
   display: flex;
   overflow: hidden;
   justify-content: center;

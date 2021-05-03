@@ -24,9 +24,7 @@ export function MoveSelections(
   const itemsCount = ComponentAPI.getCountSelections();  
 
   useMyReducer({
-    comp: {
-      setDeps: MoveSelectionsComp.setDeps,
-    },
+    setCompDeps: MoveSelectionsComp.setCompDeps,
   });
 
   React.useEffect(
@@ -41,14 +39,16 @@ export function MoveSelections(
 
   if (
     !oppositeWindowObj ||
+    itemsCount === 0 ||
     (
+
       itemsCount > 0 &&
-      oppositeWindowObj &&
+      oppositeWindowObj && 
       isCatalogSelected({
-        windowName: oppositeWindowObj.name
-      }) &&
-      isSameWindowPaths() === false
-    ) === false
+          windowName: oppositeWindowObj.name
+        }) &&
+      isSameWindowPaths()
+    )
   ) return null;
 
   const title = `Переместить ${itemsCount}`;

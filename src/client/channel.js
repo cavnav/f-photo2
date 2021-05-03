@@ -33,6 +33,7 @@ function ChannelWrap(props) {
         }),
       });
     }
+
     addAPI = (compAPI) => {
       const comps = this.API.comps;
       Object.entries(compAPI).map(([newComp, api]) => Object.assign(comps[newComp] || (comps[newComp] = {}), api));
@@ -52,18 +53,14 @@ function ChannelWrap(props) {
 
       const comp = this.comps[fn.name] = {
         deps: {}, // Component own props for API methods.
-        setDeps(deps) {
-          Object.assign(
-            comp.deps,
-            deps,
-          );
-        },
+        setCompDeps: undefined, // Set state, setState, others deps to component.
         getReqProps() {
           return getReqProps({ // shared Apps props.
             channel,          
           })
         },
       };
+      comp.setCompDeps = setCompDeps.bind(comp);
 
       Object.defineProperty(comp, 'API', {
         get: () => getAPI({ // Component API.
@@ -147,4 +144,23 @@ function ChannelWrap(props) {
   }
 
   return new Channel(props);
+}
+
+function setCompDeps({
+  deps,
+}) {
+  Object.assign(
+    this.deps,
+    deps,
+  );
+}
+
+export function createSetCompDeps() {
+  let state = {};
+  state = {
+    deps: {},
+    setCompDeps: setCompDeps.bind(state),
+  };
+
+  return state.setCompDeps;
 }

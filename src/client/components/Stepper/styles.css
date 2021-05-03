@@ -23,6 +23,8 @@
 
 .Stepper .step .imgBlock {
   display: flex;
+  max-height: 80%;
+  max-width: 80%;
   overflow: hidden;
   justify-content: center;
   margin-bottom: 10px;

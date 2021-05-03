@@ -2,7 +2,29 @@
   position: absolute;
   display: flex;
   flex-direction: column;
-  right: 100px;
-  bottom: 100px;
+  right: 0px;
+  bottom: 0px;
+  padding: 20px;
+  background-color: white;
+  border-radius: 40px;
+  animation: iconStatusAttention 5s infinite;
+  animation-delay: 5s;  
+}
 
+:root {
+  --iconStatusSize: 64px;
+}
+
+.PhotoStatusIcons img {
+  width: var(--iconStatusSize);
+  height: var(--iconStatusSize);
+}
+
+@keyframes iconStatusAttention {
+  0% { 
+    opacity: 1; 
+  }
+  100% {
+    opacity: 0;
+  }
 }

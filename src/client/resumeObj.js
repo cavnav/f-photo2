@@ -2,84 +2,91 @@ import {
   get as _get,
   set as _set, 
 } from 'lodash';
+
+export const resumeObjConstants = {
+  storageItemName:'resume',
+  filesWithStatuses: 'filesWithStatuses',
+  browserCount: 'browserCount',
+};
 export class ResumeObj {
-  constructor(props) {
+  constructor({
+    compName,
+    isGlobal,
+  } = {}) {
     Object.assign(
       this,
-      props,
+      {
+        compName,
+        isGlobal,
+      },
     );
+
+    if (this.state === null) {
+      this.saveCustom({
+        stateUpd: this.defAppState,
+      });
+    }
   }
-  storageItemName = 'resume';
+
   compName = '';
-  defAppState = this.state || {
+  defAppState = {
+    [resumeObjConstants.browserCount]: 1,
     leftWindow: {
       // OnePhoto: {},
     },
     rightWindow: {
     },
-    browserCount: 1,
-    toPrint: {},
-    toShare: {},
+    [resumeObjConstants.filesWithStatuses]: {},
+    // [Print.name]: {},
+    // [Share.name]: {},
   };
-
 
   save({ 
     stateUpd, 
-    windowName = window.name
+    compName,
   }) { 
-    const appStateUpd = this.state;
-    Object.assign(
-      appStateUpd[windowName], 
-      {
-        [this.compName]: stateUpd,
-      },
-    );      
+    const compNameFullSrc = this.isGlobal === true ? 
+        [this.compName] : 
+        [window.name, this.compName]
+        .concat(compName ? compName.split('.') : []);
+
+    let appStateUpd = this.state;
+    _set(appStateUpd, compNameFullSrc, stateUpd);
+    
     localStorage.setItem(
-      this.storageItemName, 
+      resumeObjConstants.storageItemName, 
       JSON.stringify(appStateUpd)
     );
   }
-  saveCustom(stateUpd) {
+
+  saveCustom({
+    stateUpd
+  }) {
     localStorage.setItem(
-      this.storageItemName, 
+      resumeObjConstants.storageItemName, 
       JSON.stringify({
         ...this.state,
-        ...stateUpd
-      })
+        ...stateUpd,
+      }),
     );
   }
+
   load({
     compName = '',
-    props,
-    helper,
   }) {
-    const compNameFullSrc = [window.name, this.compName].concat(compName ? compName.split('.') : []);
+    const compNameFullSrc = this.isGlobal === true ? 
+        [this.compName] : 
+        [window.name, this.compName]
+          .concat(compName ? compName.split('.') : []);
+
     const appState = this.state;   
-    if (appState) {      
-      let compState = _get(appState, compNameFullSrc); 
-      if (compState) {
-        if (helper) {
-          compState = helper(compState);
-        }
-        return compState;
-      }  
-    }
-    
-    
-    const newAppState = _set(
-      { ...this.defAppState },
-      compNameFullSrc,
-      props
-    );
-    localStorage.setItem(
-      this.storageItemName, 
-      JSON.stringify(
-        newAppState
-      )
-    );
-    return props;
+    let compState = _get(appState, compNameFullSrc); 
+    if (compState) {
+      return compState;
+    }  
+    return {};
   }
   get state() {
-    return JSON.parse(localStorage.getItem(this.storageItemName));
+    return JSON.parse(localStorage.getItem(resumeObjConstants.storageItemName));
   }  
 }
