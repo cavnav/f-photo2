@@ -4,10 +4,10 @@ import { Stepper, Actions } from '../';
 
 import 'antd/dist/antd.css';
 import './styles.css';
+import { resumeObjConstants } from '../../resumeObj';
 
 export function Copy({
   setAppState,
-  setBrowseState,
   serverAPI,
 }) {
   
@@ -127,8 +127,12 @@ export function Copy({
     return serverAPI.$copyPhotos({
       userDirName: '',
     }).then((res) => {
-      setBrowseState({
-        path: res.destDir,
+      setToResumeObj({
+        stateUpd: {
+          [resumeObjConstants.Browse]: {
+            path: res.destDir,
+          },
+        },
       });
       $checkCopyProgressWrap();
     });
@@ -151,8 +155,7 @@ export function Copy({
 Copy.getReqProps = ({ channel }) => {
   return channel.crop({
     d: {
-      setAppState: 1,
-      setBrowseState: 1,
+      setAppState: 1,      
     },
     API: {
       comps: {

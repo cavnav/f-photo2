@@ -8,9 +8,6 @@ import { Browse } from '../Browse/Browse';
 import { eventNames } from '../../constants';
 import { OnePhoto } from '../OnePhoto/OnePhoto';
 
-const resumeObj = new ResumeObj({
-  compName: MoveSelections.name,
-});
 
 const MoveSelectionsComp = channel.addComp({
   fn: MoveSelections,

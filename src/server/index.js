@@ -35,7 +35,7 @@ let state = {
 
 let timeoutIdImg
 
-// ------------------------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------------------------
 
 app.use(express.static(ALBUM_DIR));
 app.use(express.static('public'));
@@ -208,7 +208,6 @@ app.get('/api/browseFiles', (req, res) => {
       const myPath = state[state.curWindow] === ALBUM_DIR ? '' : 
         path.join(state[state.curWindow]).replace(ALBUM_DIR, '');
 
-        console.log(112233, dirs);
       res.send({
         files,
         dirs,

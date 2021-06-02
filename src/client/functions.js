@@ -1,3 +1,4 @@
+import { crop } from 'jimp';
 import { get as _get } from 'lodash';
 import React from 'react';
 import { eventNames } from './constants';
@@ -170,22 +171,6 @@ export function myArray({
 //   );
 // }
 
-export function createPropCrop({
-  source,
-}) {
-  return (items) => objCrop({
-    source,
-    items,
-  });
-}
-
-export function objCrop({
-  source,
-  items,
-}) {
-  return Object.keys(items).reduce((res, item) => { res[item] = source[item]; return res; }, {});
-}
-
 export function isCatalogSelected({
   windowName,
 }) {
@@ -237,21 +222,14 @@ export function getBackgroundImageStyle({
   return { 'backgroundImage': `url('${encodeFile({ file })}')` };
 }
 
-export function getFilesWithStatuses() {
-  const resumeObj = new ResumeObj();
-  const resumeState = resumeObj.state;
-  const res = _get(resumeState, resumeObjConstants.filesWithStatuses, {});
-  return res;
-}
-
-export function updateFilesWithStatuses({
-  stateUpd,
+export function getFromResumeObj({
+  selector,
 }) {
   const resumeObj = new ResumeObj();
-  resumeObj.saveCustom({
-    stateUpd: {
-      [resumeObjConstants.filesWithStatuses]: stateUpd,
-    },
+  const resumeState = resumeObj.state;
+  return myCrop({
+    from: resumeState,
+    selector,
   });
 }
 
@@ -259,4 +237,114 @@ export function addHandlers({
   fns,
 }) {
   return fns.reduce((res, fn) => { res[fn.name] = fn; return res; }, {});
+}
+
+export function updFromObj({
+  obj,
+  objUpd,
+  stack,
+}) {
+  // debugger;
+  if (stack && stack.length === 0) {
+      return obj;
+  }
+  else if (stack === undefined) {
+      stack = getUpdatedItems({
+          obj,
+          objUpd,
+      });
+  }
+  let [{
+      objRef,
+      propName,
+      isPropExists,
+      propUpd,
+  }] = stack;
+
+  if (
+    propUpd === undefined ||
+    isPropExists === false || 
+    propUpd.constructor !== Object
+  ) {
+    objRef[propName] = propUpd;
+  }
+  else {
+      stack.push(
+          ...getUpdatedItems({
+              obj: objRef[propName],
+              objUpd: propUpd,
+          })
+      );
+  }
+  return updFromObj({
+      obj,
+      stack: stack.slice(1),
+  });
+}
+
+function getUpdatedItems({
+  obj,
+  objUpd,
+}) {
+  return Object.entries(objUpd).map((item) => {
+    const [propName, propUpd] = item;
+    const isPropExists = obj.hasOwnProperty(propName);
+    return {
+      objRef: obj,
+      propName,
+      isPropExists,
+      propUpd,
+    };
+  });
+}
+
+export function myCrop({
+  from,
+  selector,
+  stack,
+  res = {},
+}) {
+  if (stack && stack.length === 0) return res;
+  if (!stack) {
+    stack = getSelectorItems({
+      from,
+      selector,
+    });
+  }
+  let [
+    [
+      propName,
+      propVal,
+      sourceVal,
+      alias = propVal,
+    ]
+  ] = stack;
+
+  if (propVal.constructor !== Object) {
+    res[propVal === 1 ? propName : alias] = sourceVal;
+  } else if (sourceVal && sourceVal.constructor === Object) {
+    stack.push(...getSelectorItems({
+      from: sourceVal,
+      selector: propVal,
+    }))
+  }
+
+  return myCrop({
+    stack: stack.slice(1),
+    res,
+  });
+}
+
+function getSelectorItems({
+  selector,
+  from,
+}) {
+  return Object.entries(selector).map((item) => {
+    const [propName, propVal] = item;
+    return [
+      propName,
+      propVal,
+      from[propName],
+    ];
+  });
 }

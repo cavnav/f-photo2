@@ -44,7 +44,7 @@ function ChannelWrap(props) {
       getAPI = () => {},
       getReqProps = () => {},
     }) {
-      // For geIting CompAPI.
+      // For getting CompAPI.
       fn.API = {
         [fn.name]: {
           API: `${fn.name}API`,
@@ -88,10 +88,14 @@ function ChannelWrap(props) {
         }),
       };
     }
-    crop(source, context, {
-      stack,
-      res = {}
-    } = {}) {
+    crop(
+      source, 
+      context, 
+      {
+        stack,
+        res = {}
+      } = {},
+    ) {
       // По заданному пути возвращает соответствующие значения this.    
       if (stack && stack.length === 0) return res;
       if (!stack) {
@@ -118,10 +122,15 @@ function ChannelWrap(props) {
         }));
       }));
 
-      return this.crop(null, null, {
-        stack: stack.slice(1),
-        res
-      });
+      return this.crop(
+        null, 
+        null, 
+        {
+          stack: stack.slice(1),
+          res,
+        }
+      );
+
 
       // ------------------------
       function subscribe({
@@ -163,4 +172,57 @@ export function createSetCompDeps() {
   };
 
   return state.setCompDeps;
+}
+
+function crop({
+    from, 
+    selector,
+    stack,
+    res = [],
+}) {   
+  if (stack && stack.length === 0) return res;
+  if (!stack) {       
+    stack = getSelectorItems({
+        from,
+        selector,
+    });
+  }
+  let [
+    [
+        propName, 
+        propVal, 
+        sourceVal, 
+        alias = propVal,
+    ]
+  ] = stack;
+
+  if (propVal.constructor !== Object) {
+    res[propVal === 1 ? propName : alias] = sourceVal;          
+  }
+  else {
+    stack.push(...getSelectorItems({
+        from: sourceVal,
+        selector: propVal,              
+    }));
+  }
+
+  return crop({
+    stack: stack.slice(1),
+    res,
+  });
+}      
+  
+  
+function getSelectorItems({
+  selector,
+  from,
+}) {
+  return Object.entries(selector).map((item) => {
+    const [propName, propVal] = item;
+    return [
+      propName,
+      propVal,
+      from[propName],
+    ];
+  });
 }

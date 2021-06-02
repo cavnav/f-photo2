@@ -5,13 +5,13 @@ import React from 'react';
 import { 
   Stepper,
 } from '../';
-import { addHandlers, getBackgroundImageStyle, getFilesWithStatuses, updateFilesWithStatuses, useMyReducer } from '../../functions';
+import { addHandlers, getBackgroundImageStyle, useMyReducer } from '../../functions';
 import { createSteps } from './createSteps';
 import { getCurDate } from '../../functions';
 import { channel } from '../../Channel';
 import { Copying } from './components/Copying';
-import { ResumeObj } from '../../resumeObj';
 import { Dirs } from '../Dirs/Dirs';
+import { ResumeObj } from '../compNames';
 
 const resumeObj = new ResumeObj({
   compName: Print.name,
@@ -309,11 +309,15 @@ function getAPI(
 
 function getStateInit(
 ) {
-  const loaded = resumeObj.load({});
+  const loaded = resumeOb.load();
 
   return {
     loading: false,
-    filesToPrint: getFilesWithStatuses(),
+    filesToPrint: getFromResumeObj({
+      selector: {
+        [resumeObjConstants.filesWithStatuses]: 1,
+      },
+    }),
     dirs: [],
     activeInput: undefined,
     isSavePhotosToFlash: false,

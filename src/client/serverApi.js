@@ -73,12 +73,6 @@ export class AppServerAPI {
       url: 'backward', 
     });
   }
-  
-  printedBackward = () => {
-    this.printedNavigate({ 
-      url: 'backward', 
-    });
-  }
 
   resetNavigation = ({
     curWindow,
@@ -109,19 +103,6 @@ export class AppServerAPI {
     });
   }
 
-  printedToward = ({
-    dir,
-    curWindow,
-   } = {}) => {
-    return this.printedNavigate({ 
-      url: 'toward', 
-      params: { 
-        dir,
-        curWindow,
-      }, 
-    });
-  }
-
   navigate = ({ url, params = {} }) => {
     return fetch(
       this.getFullUrl({ url }),
@@ -132,34 +113,7 @@ export class AppServerAPI {
         },
       })
     )
-    .then(res => res.json())
-    .then((res) => {
-      const { files, dirs, path, sep } = res;
-      this.d.setBrowseState({
-        path,
-        sep,
-      }); 
-      this.d.setPhotosState({
-        files,
-        dirs,
-      });         
-    });
-  }
-
-  printedNavigate = ({ 
-    url, 
-    params = {},
-  }) => {
-    return fetch(
-      this.getFullUrl({ url }),
-      new PostObjTmp({
-        body: {
-          ...params,
-          ...(!params.curWindow && { curWindow: window.name }),
-        },
-      })
-    )
-    .then(res => res.json());
+    .then(res => res.json())    
   }
 
   addAlbum = ({

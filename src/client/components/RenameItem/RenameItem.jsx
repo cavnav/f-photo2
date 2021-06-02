@@ -55,9 +55,6 @@ export function AddAlbum({
 
 AddAlbum.getReqProps = function ({ channel }) {
   return channel.crop({
-    s: { 
-      browseState: 1 
-    },
     comps: { 
       ...Browse.API,
     }

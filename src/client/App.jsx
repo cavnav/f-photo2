@@ -3,7 +3,7 @@
 // ctg file
 // add loading
 // Failed to load resource
-// rename folder
+// rename folder by id on serverSide
 // remove folder error in two  windows mode. trouble in server side.
 // help
 // scroll to selected folder
@@ -51,7 +51,7 @@ const resumeObj = new ResumeObj({
 
 export function App() {
   const [d] = React.useState({}); // dispatch.
-  const [s] = React.useState(resumeObj.load({}));
+  const [{ [App.name]: s = {} }] = React.useState(resumeObj.load());
 
   channel.preset({
     s,
@@ -67,21 +67,11 @@ export function App() {
       files: [],
       dirs: [],
       ...resumeObj.load({
-        compName: 'photosState',
+        selector: {
+          'photosState': 1,
+        },
       }),      
     };
-  }, []);
-
-  const browseStateInit = React.useMemo(() => {
-    return {      
-      sep: undefined,
-      path: '',
-      curPhotoInd: -1,
-      scrollY: 0,
-      ...resumeObj.load({
-        compName: 'browseState',
-      }),
-    };    
   }, []);
 
   const resumeSaveFn = React.useCallback(
@@ -98,11 +88,6 @@ export function App() {
 
   [s.photosState, d.setPhotosState] = useMyReducer({
     initialState: photosStateInit,
-    fn: resumeSaveFn, 
-  });
-
-  [s.browseState, d.setBrowseState] = useMyReducer({
-    initialState: browseStateInit,
     fn: resumeSaveFn, 
   });
 
@@ -175,7 +160,9 @@ function getAppStateInit({
       // }
     },
     ...resumeObj.load({
-      compName: 'appState',
+      selector: {
+        'appState': 1,
+      },
     }),
   };
 };

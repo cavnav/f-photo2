@@ -69,7 +69,7 @@ export function Browse(
     []
   );
 
-  React.useEffect(oppositeWindowCheckSamePaths, [rp.browseState.path]);
+  React.useEffect(oppositeWindowCheckSamePaths, [state.path]);
 
   const dispatcher = React.useMemo(
     () => addHandlers({
@@ -78,11 +78,15 @@ export function Browse(
           event
         }) {
           const rp = BrowseComp.getReqProps();
+          const {
+            onNavigate,
+          } = BrowseComp.API;
           setState({
             loading: true,
           });
           const subdir = event.target.getAttribute('src');
           rp.server.toward({ subdir })
+          .then(onNavigate)
           .then(() => {
             changeSelections();
             setState({
@@ -107,7 +111,7 @@ export function Browse(
         }) {
           const rp = BrowseComp.getReqProps();
           
-          rp.setBrowseState({      
+          rp.setState({      
             curPhotoInd: +event.target.getAttribute('ind'),
           });
       
@@ -131,7 +135,7 @@ export function Browse(
 
   useEffect(resetTo, []);
 
-  useEffect(scrollToSelectedImage, [rp.browseState.curPhotoInd]);
+  useEffect(scrollToSelectedImage, [state.curPhotoInd]);
   
   useEffect(boostPerfImgRender, [rp.photosState.files]);
 
@@ -188,14 +192,17 @@ export function Browse(
   }
 
   function scrollToSelectedImage() {
-    if (rp.browseState.curPhotoInd === -1) {
+    const {
+      state,
+    } = BrowseComp.deps;
+    if (state.curPhotoInd === -1) {
       const curPhotoEl = document.querySelector(`.${Browse.name} .file.curFile`);
       if (curPhotoEl) {
         curPhotoEl.classList.remove('curFile');
       }
       return;
     }
-    const curPhotoEl = document.querySelector(`.${Browse.name} .file[ind='${rp.browseState.curPhotoInd}']`);
+    const curPhotoEl = document.querySelector(`.${Browse.name} .file[ind='${state.curPhotoInd}']`);
     if (curPhotoEl) {
       curPhotoEl.scrollIntoView();
       curPhotoEl.classList.add('curFile');
@@ -203,13 +210,21 @@ export function Browse(
   }
 
   function resetTo() {
+    const {
+      state,
+    } = BrowseComp.deps;
     const rp = BrowseComp.getReqProps();
+    const {
+      onNavigate,
+    } = BrowseComp.API;
+
     setState({
       loading: true,
     });
     rp.server.toward({
-      resetTo: rp.browseState.path,
+      resetTo: state.path,
     })
+    .then(onNavigate)
     .then(() => setState({
       loading: false,
     }));
@@ -226,8 +241,11 @@ export function Browse(
   }
 
   function getFilesToRender() {
+    const {
+      state,
+    } = BrowseComp.deps;
     const rp = BrowseComp.getReqProps();
-    const browsePath = rp.browseState.path + rp.browseState.sep;
+    const browsePath = state.path + state.sep;
     return rp.photosState.files.map((file, ind) => {
       const style = getBackgroundImageStyle({
         file: `${browsePath}${file}`,
@@ -309,11 +327,9 @@ function getReqProps({
     s: { 
       appState: 1,
       photosState: 1,
-      browseState: 1,
     },
     d: {
       setAppState: 1,
-      setBrowseState: 1,
       setPhotosState: 1,
     },
     API: {
@@ -333,6 +349,8 @@ function getAPI({
 }) {
   return {
     getCountSelections,
+    onNavigate,
+    setToResumeObj,
     toggleRightWindow,
     moveSelections,
     addAlbum,
@@ -341,6 +359,42 @@ function getAPI({
   };
 
   // ----------------------------------------
+  function setToResumeObj({
+    stateUpd,
+  }) {
+    resumeObj.save({
+      stateUpd,
+    });
+  }
+
+  function onNavigate({
+    files, 
+    dirs, 
+    path, 
+    sep,
+  }) {
+    const rp = BrowseComp.getReqProps();
+    const {
+      setState,
+    } = BrowseComp.deps;
+    resumeObj.save({
+      stateUpd: {
+        path,
+        sep,
+      }
+    });
+
+    setState({
+      path,
+      sep,
+    });
+    
+    rp.setPhotosState({
+      files,
+      dirs,
+    });   
+  }
+
   function getCountSelections() {
     const {
       state,
@@ -586,7 +640,10 @@ function htmlResetSelections() {
 
 function refreshWindow() {
   const rp = BrowseComp.getReqProps();
-  return rp.server.toward();
+  const {
+    onNavigate,
+  } = BrowseComp.API;
+  return rp.server.toward().then(onNavigate);
 }
 
 async function refreshWindows() {
@@ -599,7 +656,7 @@ async function refreshWindows() {
 }
 
 function getStateInit() {
-  const loaded = resumeObj.load({});
+  const { [Browse.name]: loaded = {} } = resumeObj.load();
       
   return {
     loading: true,
@@ -608,8 +665,12 @@ function getStateInit() {
     isDialogEnabled: false,
     dialogTitle: '',
     isDialogRemoveItem: false,
-    progress: 100,
-    
+    progress: 100,    
+    sep: undefined,
+    path: '',
+    curPhotoInd: -1,
+    scrollY: 0,
+
     ...loaded,
     selections: new Set(loaded.selections),
   };

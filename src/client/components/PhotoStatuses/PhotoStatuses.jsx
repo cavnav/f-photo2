@@ -4,7 +4,7 @@ import {
 } from './constants';
 
 import './styles.css';
-import { getFilesWithStatuses, updateFilesWithStatuses, useMyReducer } from '../../functions';
+import { useMyReducer } from '../../functions';
 import { ResumeObj } from '../../resumeObj';
 import { channel } from '../../Channel';
 
@@ -136,7 +136,11 @@ function getStateInit() {
   const loaded = resumeObj.load({});
       
   return {
-    filesWithStatuses: getFilesWithStatuses(),
+    filesWithStatuses: getFromResumeObj({
+      selector: {
+        [resumeObjConstants.filesWithStatuses]: 1,
+      },
+    }),
   
     ...loaded,
   };

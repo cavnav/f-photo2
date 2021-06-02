@@ -1,8 +1,10 @@
+import './styles.css';
 import React from 'react';
 import { channel } from '../../Channel';
+import { resumeObjConstants } from '../../resumeObj';
 import { Browse } from '../Browse/Browse';
+import { getFromResumeObj, setToResumeObj } from '../../functions';
 
-import './styles.css';
 
 const ExitFromAlbumComp = channel.addComp({
   fn: ExitFromAlbum,
@@ -11,12 +13,12 @@ const ExitFromAlbumComp = channel.addComp({
 export function ExitFromAlbum(
 ) {
   const {
-    browseState,
+    browsePath,
     BrowseAPI,
     server,
   } = ExitFromAlbumComp.getReqProps();
 
-  const albumName = browseState.path.slice(1);
+  const albumName = browsePath.slice(1);
   if (!albumName) return null;
 
   const title = `Закрыть альбом ${albumName}`;
@@ -34,32 +36,45 @@ export function ExitFromAlbum(
   function onClick(e) {
     BrowseAPI.changeSelections();
     const rp = ExitFromAlbumComp.getReqProps();
-    rp.setBrowseState({      
-      curPhotoInd: -1,
+    rp.BrowseAPI.setToResumeObj({
+      stateUpd: {
+        curPhotoInd: -1,
+      },
     });
-    server.backward();
+    server.backward()
+    .then(rp.BrowseCompAPI.onNavigate);
   };
 }
 
-function getReqProps({ channel }) {
-  return channel.crop({
-    s: { 
-      browseState: 1, 
-    },
-    d: {
-      setBrowseState: 1,
-    },
-    API: { 
+function getReqProps({ channel }) {  
+  const croped = channel.crop(
+    {    
+      API: { 
+        comps: {
+          server: 1,        
+        },
+      },
       comps: {
-        server: 1,        
-      },
-    },
-    comps: {
-      [Browse.name]: {
-        API: 'BrowseAPI',
-      },
+        ...Browse.API,
+      },      
     }
-  });
+  );
+
+  return {
+    ...croped,
+    get browsePath() {
+      const { path = '' } = getFromResumeObj({
+        selector: {
+          [window.name]: {
+            [resumeObjConstants.Browse]: {
+              path: 1,
+            },
+          },
+        }
+      });
+      return path;
+    },
+  };
 }
 
 const stateInit = {

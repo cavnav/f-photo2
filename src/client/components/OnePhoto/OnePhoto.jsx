@@ -4,7 +4,7 @@ import React from 'react';
 import { PhotoStatuses } from '..';
 import { additionalActions, } from '../../constants';
 import { Dialog } from '../';
-import { ResumeObj } from '../../resumeObj';
+import { ResumeObj, resumeObjConstants } from '../../resumeObj';
 import { myArray, refreshOppositeWindow, useMyReducer } from '../../functions';
 import { channel } from '../../Channel';
 import { Browse } from '../Browse/Browse';
@@ -24,8 +24,7 @@ export function OnePhoto(
 ) { 
   const {
     photosState,
-    browseState,
-    setBrowseState,
+    curPhotoInd,
     server,
   } = OnePhotoComp.getReqProps();
   const myFiles = React.useMemo(() => myArray({
@@ -35,9 +34,9 @@ export function OnePhoto(
   );
 
   const [props] = React.useState({
-    curPhotoInd: browseState.curPhotoInd,
+    curPhotoInd: curPhotoInd,
     files: myFiles,
-    path: browseState.path,
+    path: path,
   });
 
   const [state, setState] = useMyReducer({
@@ -75,9 +74,12 @@ export function OnePhoto(
 
   React.useEffect(() => {
     if (state.action === onTogglePhoto.name) {
-      setBrowseState({
-        forceUpdate: false,
-        curPhotoInd: state.curPhotoInd,
+      setToResumeObj({
+        stateUpd: {
+          [resumeObjConstants.Browse]: {
+            curPhotoInd: state.curPhotoInd,
+          },
+        },
       });
     }
   }, [state.curPhotoInd]);
@@ -87,7 +89,7 @@ export function OnePhoto(
   //--------------------------------------------------------------------------
   function getRender() {
     const rp = OnePhotoComp.getReqProps();
-    const id = `${rp.browseState.path}${rp.browseState.sep}${state.curPhoto}`;
+    const id = `${rp.path}${rp.sep}${state.curPhoto}`;
     return (
       <div 
         className="OnePhoto fitScreen"
@@ -361,24 +363,30 @@ function onImgServerRotate({
 }
 
 function getReqProps({ channel }) { 
-  const props = channel.crop({
-    s: {
-      photosState: 1,
-      browseState: 1,
-    },
-    d: {
-      setBrowseState: 1,
-    },
-    API: {
+  const props = channel.crop(
+    {
+      s: {
+        photosState: 1,
+      },
+      API: {
+        comps: {
+          server: 1
+        }
+      },
       comps: {
-        server: 1
-      }
+        ...PhotoStatuses.API,
+        ...Browse.API,
+      },
+      [resumeObjConstants.Browse]: {
+        path: 1,
+        sep: 1,
+        curPhotoInd: 1,
+      },
     },
-    comps: {
-      ...PhotoStatuses.API,
-      ...Browse.API,
+    {
+      [resumeObjConstants.Browse]: resumeObj.state[resumeObjConstants.Browse],    
     },
-  }); 
+  ); 
   
   return props;
 };

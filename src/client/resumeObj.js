@@ -2,33 +2,39 @@ import {
   get as _get,
   set as _set, 
 } from 'lodash';
+import { updFromObj, myCrop } from './functions';
 
 export const resumeObjConstants = {
   storageItemName:'resume',
   filesWithStatuses: 'filesWithStatuses',
   browserCount: 'browserCount',
+  Browse: 'Browse',
 };
 export class ResumeObj {
   constructor({
     compName,
-    isGlobal,
+    selector = ({
+      val,
+    }) => ({
+      [window.name]: {
+        [compName]: val,
+      },
+    }),
   } = {}) {
+    if (this.state === null) {
+      this.save({
+        selector: this.defAppState,
+      });
+    }
+
     Object.assign(
       this,
       {
-        compName,
-        isGlobal,
+        selector,
       },
-    );
-
-    if (this.state === null) {
-      this.saveCustom({
-        stateUpd: this.defAppState,
-      });
-    }
+    );    
   }
 
-  compName = '';
   defAppState = {
     [resumeObjConstants.browserCount]: 1,
     leftWindow: {
@@ -43,49 +49,32 @@ export class ResumeObj {
 
   save({ 
     stateUpd, 
-    compName,
+    selector,
   }) { 
-    const compNameFullSrc = this.isGlobal === true ? 
-        [this.compName] : 
-        [window.name, this.compName]
-        .concat(compName ? compName.split('.') : []);
-
-    let appStateUpd = this.state;
-    _set(appStateUpd, compNameFullSrc, stateUpd);
-    
     localStorage.setItem(
       resumeObjConstants.storageItemName, 
-      JSON.stringify(appStateUpd)
-    );
-  }
-
-  saveCustom({
-    stateUpd
-  }) {
-    localStorage.setItem(
-      resumeObjConstants.storageItemName, 
-      JSON.stringify({
-        ...this.state,
-        ...stateUpd,
-      }),
+      JSON.stringify(
+        updFromObj({
+          obj: { ...this.state },
+          objUpd: selector || this.selector({
+            val: stateUpd,
+          })
+        }),
+      ),
     );
   }
 
   load({
-    compName = '',
-  }) {
-    const compNameFullSrc = this.isGlobal === true ? 
-        [this.compName] : 
-        [window.name, this.compName]
-          .concat(compName ? compName.split('.') : []);
-
-    const appState = this.state;   
-    let compState = _get(appState, compNameFullSrc); 
-    if (compState) {
-      return compState;
-    }  
-    return {};
+    selector = 1,
+  } = {}) {
+    return myCrop({
+      from: { ...this.state },
+      selector: this.selector({
+        val: selector,
+      }),
+    });
   }
+
   get state() {
     return JSON.parse(localStorage.getItem(resumeObjConstants.storageItemName));
   }  
