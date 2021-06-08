@@ -5,16 +5,23 @@ import React from 'react';
 import { 
   Stepper,
 } from '../';
-import { addHandlers, getBackgroundImageStyle, useMyReducer } from '../../functions';
+import { addHandlers, getBackgroundImageStyle, myCrop, useMyReducer } from '../../functions';
 import { createSteps } from './createSteps';
-import { getCurDate } from '../../functions';
 import { channel } from '../../Channel';
 import { Copying } from './components/Copying';
 import { Dirs } from '../Dirs/Dirs';
 import { ResumeObj } from '../compNames';
+import { Spin } from 'antd';
+import { ExitFromFolder, Empty } from '../';
+import { Label } from '../Label/Label';
+import { Dialog } from '../Dialog/Dialog';
+import { Select } from '../Dialog';
 
 const resumeObj = new ResumeObj({
-  compName: Print.name,
+  selector: [
+    Print.name,
+  ],
+  val: getStateDefault(),
 });
 
 
@@ -26,26 +33,82 @@ const PrintComp = channel.addComp({
 
 export function Print({  
 }) {
+  setTimeout(() => {
+    const rp = PrintComp.getReqProps();
+    rp.LabelAPI.forceUpdate({
+      title: '123',
+    });
+  }, 10000);
+  function render() {
+    return (
+      <div 
+        className="Print layout"
+        onClick={onClickDispatcher}
+      >
+        <Label
+          id="d1"
+        >1</Label>
+        <Label
+          id="d2"
+        >2</Label>
+        { state.loading && <Spin size="large" /> }
+        { Object.keys(state.filesToPrint).length === 0 && (
+          <Dirs
+            dirs={state.dirs}
+            onClickDirFnName={dispatcher.onClickDir.name}
+          ></Dirs>
+        )}
+        
+        { state.isSavePhotosToFlash ? 
+          <Stepper 
+            steps={steps}
+          /> : 
+          renderPrintState() 
+        }
+  
+        <Empty
+          isTrue={state.dirs.length === 0 && Object.keys(state.filesToPrint).length === 0}
+        />
+
+        {state.isDialogSavePrint && (
+          <Dialog  
+            type={Select.name}
+            title='Сохранить список?'
+            autoClose={false}
+            onAgree={async () => {                           
+              const rp = PrintComp.getReqProps();
+              await rp.savePrinted({
+                files: state.filesToPrint
+              });
+              setState({
+                isDialogSavePrint: false,
+              }); 
+              rp.backwardPrinted().then(PrintComp.API.onNavigate);
+            }}    
+            onCancel={() => {
+              setState({
+                isDialogSavePrint: false,
+              }); 
+              rp.backwardPrinted().then(PrintComp.API.onNavigate);
+            }}
+          >
+          </Dialog>
+        )}
+      </div>    
+    );
+  }
+
   const rp = PrintComp.getReqProps();
 
   const [state, setState] = useMyReducer({    
-    initialState: {
-      ...getStateInit(),
-    },
+    initialState: getStateInit(),
+    isFirstFnCall: true,
     setCompDeps: PrintComp.setCompDeps,
     fn: ({
-      state,
       stateUpd,
     }) => {      
-      const stateUpdNext = {
-        ...state,
-      };
-      delete stateUpdNext.filesToPrint;
-      resumeObj.save({ 
-        stateUpd: stateUpdNext,
-      });
-      stateUpd.filesToPrint !== undefined && updateFilesWithStatuses({
-        stateUpd: stateUpd.filesToPrint,
+      resumeObj.save({
+        val: stateUpd,
       });
     }
   });
@@ -85,19 +148,22 @@ export function Print({
           function onClickDir({
             event
           }) {
-            const rp = Print.getReqProps();
+            const rp = PrintComp.getReqProps();
             setState({
               loading: true,
             });
             const dir = event.target.getAttribute('src');
-            rp.server.printedNavigate({ 
+            rp.towardPrinted({ 
               dir, 
-            })
-            .then((res) => {
+            })            
+            .then(PrintComp.API.onNavigate) 
+            .then(() => {
               setState({
-                loading: false,
+                ...setGivenFilesToPrint({
+                  val: state.filesToPrint,
+                }),
               });
-            });
+            })           
           }, 
         ]
       },
@@ -124,22 +190,7 @@ export function Print({
     []
   );
 
-  return (
-    <div 
-      className="Print layout"
-      onClick={onClickDispatcher}
-    >
-      <Dirs
-        dirs={rp.photosState.dirs}
-        onClickDirFnName={dispatcher.onClickDir.name}
-      ></Dirs>
-      
-      { state.isSavePhotosToFlash ? <Stepper 
-          steps={steps}
-        /> : renderPrintState() 
-      }
-    </div>    
-  );
+  return render();  
 
   // --------------------------------------------------------------------
 
@@ -163,29 +214,19 @@ export function Print({
 
     const photoSrc = input.getAttribute('keyid');
     const cntSource = Number(input.value);
-    let cntUpd = cntSource;
-
-    switch (e.which) {
-      case 38: // +1
-        cntUpd = cntSource + 1;
-        break;
-
-      case 40: // -1
-        cntUpd = cntSource > 0 ? cntSource - 1 : cntSource;
-        break;
-      default: return;
-    }
-
+    const getCntUpd = {
+      38: () => (cntSource + 1),
+      40: () => (cntSource > 0 ? cntSource - 1 : cntSource),
+    }[e.which] ?? (() => cntSource);
+    
     setState({
-      filesToPrint: updateFilesToPrint(),
+      filesToPrint: updateFilesToPrint.update({
+        photoSrc,
+        val: {
+          cnt: getCntUpd(),
+        },
+      }),
     });
-
-
-    // --------------------------------------
-    function updateFilesToPrint() {
-      state.filesToPrint[photoSrc].toPrint = cntUpd;
-      return state.filesToPrint;
-    }
   }  
 
   function renderPrintState(    
@@ -197,9 +238,9 @@ export function Print({
       <>
         <div className="PrintItems">
           {
-            Object.entries(state.filesToPrint).map(([photoSrc, statuses]) => { 
-              const key = photoSrc;  
-              if (statuses.toPrint < 0) return null;
+            Object.entries(state.filesToPrint).map(([src, {cnt}]) => { 
+              const key = src;  
+              if (cnt < 0) return null;
 
               return <div 
                 className="rowData"
@@ -208,18 +249,18 @@ export function Print({
                 <div
                   className='fitPreview file'
                   style={getBackgroundImageStyle({
-                    file: photoSrc,
+                    file: src,
                   })}
                 >                  
                 </div>               
                 <div 
                   className='controls'
-                  photosrc={photoSrc}
+                  photosrc={src}
                 >           
                   <input 
                     className="changePhotoCount" 
                     keyid={key}
-                    value={statuses.toPrint} 
+                    value={cnt} 
                     onChange={onChangePhotoCount} 
                   />
                   <input type="button" className="marginRight10" onClick={onClickErasePhotoCount} value="Стереть" />
@@ -254,15 +295,14 @@ export function Print({
     const { photoSrc } = getDataPrint({ element: input.parentElement });    
 
     setState({
-      filesToPrint: updateFilesToPrint(),
+      filesToPrint: updateFilesToPrint.update({
+        photoSrc,
+        val: {
+          cnt: input.value,
+        },
+      }),
       activeInput: photoSrc,
     });
-
-    // --------------------------------------------
-    function updateFilesToPrint() {
-      state.filesToPrint[photoSrc].toPrint = input.value;
-      return state.filesToPrint;
-    }
   }
 
   function getDataPrint({ element }) {
@@ -277,19 +317,22 @@ export function Print({
 
 function getReqProps({ channel }) {
   return channel.crop({
-    s: {
-      photosState: 1,
-    },
     API: {
       comps: {
         server: {
           $getUsbDevices: 1,
           $checkCopyProgress: 1,
-          $saveFilesToFlash: 1,
-          toward: 1,
+          $saveFilesToFlash: 1,          
+          towardPrinted: 1,
+          backwardPrinted: 1,
+          savePrinted: 1,
         },
       },
-    },  
+    }, 
+    comps: {
+      ...ExitFromFolder.API,
+      ...Label.API,
+    }, 
   });
 };
 
@@ -303,40 +346,224 @@ function getAPI(
       setState({
         isSavePhotosToFlash: true,
       });
+    },
+    onNavigate,
+    getFilesToPrint,
+    togglePrint,
+    isFileToPrint,
+  };
+
+
+  // ------------------------
+  function isFileToPrint({
+    src,
+  }) {
+    return isToPrint({
+      val: resumeObj.get().filesToPrint?.[src],
+    });
+  }
+
+  function togglePrint({
+    src,
+  }) {
+    const resumed = resumeObj.get();
+    // 0 - not to print, but show in list.
+    // 1 - to print.
+    const printed = isToPrint({
+      val: resumed.filesToPrint[src]?.cnt
+    });
+
+    // toggle.
+    if (printed) {
+      resumed.filesToPrint = updateFilesToPrint.delete({
+        filesToPrint: resumed.filesToPrint,      
+        photoSrc: src,  
+      });
     }
+    else {
+      resumed.filesToPrint = updateFilesToPrint.add({
+        filesToPrint: resumed.filesToPrint,
+        photoSrc: src,
+        val: {
+          cnt: 1,
+        },
+      });
+    }
+    
+    resumeObj.save({
+      val: {
+        filesToPrint: resumed.filesToPrint,
+      },
+    });
+
+    return !printed;
+  }
+
+  function getFilesToPrint(props = {}) {
+    const {
+      state,
+    } = PrintComp.deps;
+    return props.photoSrc ? state.filesToPrint[props.photoSrc] : state.filesToPrint;
+  }
+
+  function onNavigate({
+    dirs,
+    path,
+    sep,
+    files,
+  }) {
+    // Fires on set from storage, open dir, close dir.
+    const {
+      deps,
+    } = PrintComp;    
+    const rp = PrintComp.getReqProps();
+
+    const filesToPrintUpd = files.pop() || {};
+    deps.setState({
+      dirs,
+      path, 
+      filesToPrint: filesToPrintUpd,     
+      sep,
+      loading: false,
+    });
+
+    rp.ExitFromFolderAPI.forceUpdate({
+      folderName: path ? path : undefined,
+      onClick: () => { 
+        if (isNeedToSaveFilesToPrint().result) {
+          deps.setState({
+            isDialogSavePrint: true,
+          });          
+        }
+        else {  
+          rp.backwardPrinted().then(PrintComp.API.onNavigate);
+        }
+      },
+    });
+  }
+}
+
+function getStateDefault() {
+  return {
+    loading: false,
+    filesToPrint: {},
+    givenFilesToPrint: {},
+    dirs: [],
+    sep: '',
+    path: '',
+    activeInput: undefined,
+    isSavePhotosToFlash: false,
+    isCopyCompleted: false,
+    isDialogSavePrint: false,
   };
 }
 
 function getStateInit(
 ) {
-  const loaded = resumeOb.load();
-
+  const resumed = resumeObj.get();
   return {
-    loading: false,
-    filesToPrint: getFromResumeObj({
-      selector: {
-        [resumeObjConstants.filesWithStatuses]: 1,
-      },
-    }),
-    dirs: [],
-    activeInput: undefined,
-    isSavePhotosToFlash: false,
-    isCopyCompleted: false,
-
-    ...loaded,
+    ...getStateDefault(),
+    ...resumed,
   };
 }
 
 function resetTo() {
   const rp = PrintComp.getReqProps();
-  const { deps } = PrintComp;
+  const { 
+    deps,
+   } = PrintComp;
+
+  const { path } = deps.state;
+
+  const filesToPrint = deps.state.filesToPrint;
+
   deps.setState({
     loading: true,
   });
-  rp.toward({
-    resetTo: '\printed',
+
+  rp.towardPrinted({
+    resetTo: path,
   })
-  .then((res) => deps.setState({
-    loading: false,    
-  }));
+  .then(PrintComp.API.onNavigate)
+  .then(() => {
+  // set filesToPrint from storage.
+    const answer = isNeedToSaveFilesToPrint({
+      filesToPrint,
+    });
+    if (answer.result === false) return;
+
+    if (answer.listNotSaved) {
+      rp.ExitFromFolderAPI.forceUpdate({
+        folderName: '',
+      });
+      deps.setState({
+        filesToPrint,
+        ...setGivenFilesToPrint({ val: filesToPrint }),
+      });
+    }
+    else if (answer.listChanged) {
+      deps.setState({
+        filesToPrint,
+      });
+    }
+  });  
+}
+
+function isToPrint({
+  val,
+}) {
+  return [undefined, 0].includes(val) ? false : true;
+}
+
+function isNeedToSaveFilesToPrint(props) {
+  const {
+    deps,
+  } = PrintComp;
+  const filesToPrint = props?.filesToPrint || deps.state.filesToPrint;
+  const listNotSaved = Object.keys(filesToPrint).length && deps.state.path === '';
+  const listChanged = JSON.stringify(filesToPrint) !== JSON.stringify(deps.state.givenFilesToPrint);
+
+  return {
+    result: listNotSaved || listChanged,
+    listNotSaved,
+    listChanged,
+  };
+}
+
+export const updateFilesToPrint = {
+  update(props) {
+    const filesToPrint = this.getFilesToPrint(props);
+    filesToPrint[props.photoSrc] = {
+      ...filesToPrint[props.photoSrc],
+      cnt: props.val.cnt,
+    };
+    return filesToPrint;
+  },
+  add(props) {
+    const filesToPrint = this.getFilesToPrint(props);
+    filesToPrint[props.photoSrc] = {
+      cnt: props.val.cnt,
+    };
+    return filesToPrint;
+
+  },
+  delete(props) {
+    const filesToPrint = this.getFilesToPrint(props);
+    delete filesToPrint[props.photoSrc];
+    return filesToPrint;
+  },
+  getFilesToPrint(props) {
+    const { deps } = PrintComp;
+    return props.filesToPrint || deps.state.filesToPrint;
+  }
+}
+
+function setGivenFilesToPrint({
+  val,
+}) {
+  return {
+    givenFilesToPrint: {
+      ...val,
+    },
+  };
 }

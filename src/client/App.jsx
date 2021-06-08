@@ -3,10 +3,18 @@
 // ctg file
 // add loading
 // Failed to load resource
-// rename folder by id on serverSide
+  // add icon
+// rename folder by id on serverSide. Rename reset otherside path to root.
+    // need update files, dirs, printed, shared
 // remove folder error in two  windows mode. trouble in server side.
 // help
 // scroll to selected folder
+// Two ExitFromFolder.
+// Highlight current action.
+// +Action = Browse/OnePhoto
+  // onePhoto mode reset on reopen.
+// +print change count not working.
+// +error Browse resetTo path=""
 // +save files after create printFlash to appropriate folder
 // +active menu item
 // +remove cardreader from pc
@@ -39,57 +47,48 @@ import { useMyReducer } from './functions';
 import { get as _get } from 'lodash';
 import { channel } from './Channel';
 import { ResumeObj } from './resumeObj';
-import { ExitFromAlbum } from './components/ExitFromAlbum/ExitFromAlbum';
+import { ExitFromFolder } from './components/ExitFromFolder/ExitFromFolder';
 import { ToggleRightWindow } from './components/ToggleRightWindow/ToggleRightWindow';
 import { MoveSelections } from './components/MoveSelections/MoveSelections';
 import { AddAlbum } from './components/AddAlbum/AddAlbum';
 import { RemoveSelections } from './components/RemoveSelections/RemoveSelections';
 
+
 const resumeObj = new ResumeObj({
-  compName: App.name,
+  selector: [
+    window.name,
+    App.name,
+  ],
+});
+
+const Comp = channel.addComp({
+  fn: App,
 });
 
 export function App() {
+  let s; // state
   const [d] = React.useState({}); // dispatch.
-  const [{ [App.name]: s = {} }] = React.useState(resumeObj.load());
+
+  [s, d.setAppState] = useMyReducer({
+    initialState: getAppStateInit(),
+    setCompDeps: Comp.setCompDeps,
+    fn: resumeUpdFn,
+  });
 
   channel.preset({
     s,
     d,
   });
-  
-  const appStateInit = React.useMemo(() => getAppStateInit({
-    resumeObj,
-  }), []);
 
-  const photosStateInit = React.useMemo(() => {
-    return {
-      files: [],
-      dirs: [],
-      ...resumeObj.load({
-        selector: {
-          'photosState': 1,
-        },
-      }),      
-    };
-  }, []);
-
-  const resumeSaveFn = React.useCallback(
-    () => resumeObj.save({
-      stateUpd: s,
-    }),
-    [],
+  React.useEffect(() => 
+    {
+      document.addEventListener('mouseup', onMouseUp);
+      return () => document.removeEventListener('mouseup', onMouseUp);
+    },
+    []
   );
-  
-  [s.appState, d.setAppState] = useMyReducer({
-    initialState: appStateInit,
-    fn: resumeSaveFn, // for silent setting case.
-  });
 
-  [s.photosState, d.setPhotosState] = useMyReducer({
-    initialState: photosStateInit,
-    fn: resumeSaveFn, 
-  });
+
 
   return (    
     <div className="f-photo">     
@@ -108,13 +107,26 @@ export function App() {
   //--------------------------------------------------------------------------
 }
 
-function getAppStateInit({
-  resumeObj,
+function resumeUpdFn({
+  state,
 }) {
+  resumeObj.save({
+    val: state,
+  });
+};
+
+function getAppStateInit(
+) {
+  const resumed = resumeObj.get();
+
   return {
     action: Actions.Welcome.name,
     forceUpdate: false,
     doNeedHelp: false, // move to Help module.
+    mouse: {
+      x: 0,
+      y: 0,
+    },
     actions: {
       Copy: {
         title: 'Копировать',
@@ -124,7 +136,7 @@ function getAppStateInit({
         title: 'Смотреть',
         isActive: true,
         additionalActions: [
-          additionalActions[ExitFromAlbum.name], 
+          additionalActions[ExitFromFolder.name], 
           additionalActions[ToggleRightWindow.name],
           additionalActions[MoveSelections.name],
           additionalActions[AddAlbum.name],
@@ -144,6 +156,8 @@ function getAppStateInit({
         title: 'Печатать',
         isActive: true,
         additionalActions: [
+          additionalActions.Label,
+          additionalActions.ExitFromFolder,
           additionalActions.SavePhotosToFlash,
         ],
       },
@@ -159,10 +173,16 @@ function getAppStateInit({
       //   isActive: true,
       // }
     },
-    ...resumeObj.load({
-      selector: {
-        'appState': 1,
-      },
-    }),
+    ...resumed,    
   };
 };
+
+function onMouseUp(e) {
+  Comp.deps.setState({
+    forceUpdate: false,
+    mouse: {
+      x: e.clientX,
+      y: e.clientY,
+    }
+  });
+}

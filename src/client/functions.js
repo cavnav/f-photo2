@@ -1,8 +1,13 @@
-import { crop } from 'jimp';
-import { get as _get } from 'lodash';
+import {
+  get as _get
+} from 'lodash';
 import React from 'react';
-import { eventNames } from './constants';
-import { ResumeObj, resumeObjConstants } from './resumeObj';
+import {
+  eventNames
+} from './constants';
+import {
+  ResumeObj,
+} from './resumeObj';
 
 class MyItems {
   constructor({
@@ -17,22 +22,6 @@ class MyItems {
     this.items = this.items.filter((i) => i);
   }
 }
-// class Items extends Array {
-//   cnt = 0;
-//   removed = 0;
-//   inc = 0;
-
-//   constructor(...props) {
-//     super(...props);
-//     this.cnt = props.length;
-//   }
-
-//   delete(ind) {
-//     this.cnt -= 1;
-//     this.removed = ind;
-//     this.inc += 1;
-//   }
-// }
 
 export function setItSilent({
   state,
@@ -63,13 +52,18 @@ export function useMyReducer({
   reducer,
   props, // props will inject to state.
   setCompDeps,
+  isFirstFnCall = false,
   fn = () => {},
-  init = () => ({ ...initialState }),
+  init = () => ({
+    ...initialState
+  }),
 }) {
   const [forceUpdate] = React.useReducer((x) => !x, false).slice(1);
+  const [isFirstFnCallState] = React.useState(isFirstFnCall);
   const [state] = React.useState(init(initialState));
+  
   props && React.useMemo(
-    () => {      
+    () => {
       const stateUpd = {
         ...props,
         forceUpdate: false,
@@ -78,12 +72,19 @@ export function useMyReducer({
     },
     Object.values(props),
   );
+  
   setCompDeps && setCompDeps({
     deps: {
       state,
       setState: dispatch,
     },
   });
+
+  if (isFirstFnCallState === true) fn({
+    state,
+    stateUpd: state,
+  });
+
   return [state, dispatch];
 
   // ---
@@ -107,19 +108,19 @@ export function useMyReducer({
     return Promise.resolve();
 
     // -----------------------
-    
+
     function updateState({
       state,
       stateUpd,
       reducer,
-    }) {      
-      const stateReduced = reducer ? 
-        reducer({ 
-          state, 
+    }) {
+      const stateReduced = reducer ?
+        reducer({
+          state,
           stateUpd
-        }) : 
+        }) :
         undefined;
-        
+
       Object.assign(
         state,
         stateReduced || stateUpd,
@@ -182,14 +183,14 @@ export function isCatalogSelected({
 export function isSameWindowPaths() {
   const resumeObj = new ResumeObj();
   const resumeState = resumeObj.state;
-  const res = _get(resumeState.leftWindow, 'App.browseState.path', 1) === 
+  const res = _get(resumeState.leftWindow, 'App.browseState.path', 1) ===
     _get(resumeState.rightWindow, 'App.browseState.path', 2)
 
   return res;
 }
 
 export function getOppositeWindowObj() {
-  return window.self === window.top ? window.frames[0] : window.parent;
+  return window.self === window.top ? window.parent : window.frames[0];
 }
 
 export function oppositeWindowCheckSamePaths() {
@@ -211,15 +212,16 @@ export function getCurDate() {
 
 export function encodeFile({
   file,
-}
-) {
+}) {
   return encodeURI(file);
 }
 
 export function getBackgroundImageStyle({
   file,
 }) {
-  return { 'backgroundImage': `url('${encodeFile({ file })}')` };
+  return {
+    'backgroundImage': `url('${encodeFile({ file })}')`
+  };
 }
 
 export function getFromResumeObj({
@@ -236,7 +238,10 @@ export function getFromResumeObj({
 export function addHandlers({
   fns,
 }) {
-  return fns.reduce((res, fn) => { res[fn.name] = fn; return res; }, {});
+  return fns.reduce((res, fn) => {
+    res[fn.name] = fn;
+    return res;
+  }, {});
 }
 
 export function updFromObj({
@@ -246,39 +251,37 @@ export function updFromObj({
 }) {
   // debugger;
   if (stack && stack.length === 0) {
-      return obj;
-  }
-  else if (stack === undefined) {
-      stack = getUpdatedItems({
-          obj,
-          objUpd,
-      });
+    return obj;
+  } else if (stack === undefined) {
+    stack = getUpdatedItems({
+      obj,
+      objUpd,
+    });
   }
   let [{
-      objRef,
-      propName,
-      isPropExists,
-      propUpd,
+    objRef,
+    propName,
+    isPropExists,
+    propUpd,
   }] = stack;
 
   if (
     propUpd === undefined ||
-    isPropExists === false || 
+    isPropExists === false ||
     propUpd.constructor !== Object
   ) {
     objRef[propName] = propUpd;
-  }
-  else {
-      stack.push(
-          ...getUpdatedItems({
-              obj: objRef[propName],
-              objUpd: propUpd,
-          })
-      );
+  } else {
+    stack.push(
+      ...getUpdatedItems({
+        obj: objRef[propName],
+        objUpd: propUpd,
+      })
+    );
   }
   return updFromObj({
-      obj,
-      stack: stack.slice(1),
+    obj,
+    stack: stack.slice(1),
   });
 }
 
@@ -347,4 +350,29 @@ function getSelectorItems({
       from[propName],
     ];
   });
+}
+
+export function getExistsProps({
+  obj,
+  rp,
+}) {
+  const hasObjKey = Object.prototype.hasOwnProperty.bind(obj);
+  return Object.keys(rp).reduce((res, key) => 
+    {
+      if (hasObjKey(key)) res[key] = obj[key];
+      return res;
+    },
+    {}
+  );
+}
+
+export function getStateInit({
+  resumeObj,
+  stateDefault,
+}) {
+  const resumed = resumeObj.get();
+  return {
+    ...stateDefault,
+    ...resumed,
+  };
 }

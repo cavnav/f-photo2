@@ -7,8 +7,7 @@
   padding: 20px;
   background-color: white;
   border-radius: 40px;
-  animation: iconStatusAttention 5s infinite;
-  animation-delay: 5s;  
+  opacity: 0.5;
 }
 
 :root {

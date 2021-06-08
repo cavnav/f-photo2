@@ -5,9 +5,3 @@
 .Browse .scrollwait {
   visibility: hidden;
 }
-
-.Browse .ant-spin {
-  position: absolute;
-  top: 40px;
-  width: 100%;
-}

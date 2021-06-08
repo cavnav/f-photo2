@@ -1,39 +1,96 @@
-import { 
-  get as _get,
-  set as _set, 
-} from 'lodash';
-import { updFromObj, myCrop } from './functions';
+import { myCrop, updFromObj } from './functions';
+import { get as _get, set as _set } from 'lodash';
 
 export const resumeObjConstants = {
   storageItemName:'resume',
-  filesWithStatuses: 'filesWithStatuses',
   browserCount: 'browserCount',
   Browse: 'Browse',
 };
 export class ResumeObj {
-  constructor({
-    compName,
-    selector = ({
+  constructor(
+    props = {},
+    {
+      selector = [],
       val,
-    }) => ({
-      [window.name]: {
-        [compName]: val,
-      },
-    }),
-  } = {}) {
+    } = props,
+  ) {
+
+    this.selector = selector;
     if (this.state === null) {
+      this.saveCore({
+        val: this.defAppState,
+      });      
+    }   
+    
+    if (Object.keys(this.get()).length === 0 &&
+      props.hasOwnProperty('selector') && 
+      props.hasOwnProperty('val')
+    ) {
       this.save({
-        selector: this.defAppState,
+        val,
       });
     }
-
-    Object.assign(
-      this,
-      {
-        selector,
-      },
-    );    
   }
+
+  save({ 
+    val, 
+    selector = this.selector,
+  }) { 
+    const resumeObj = this.state;
+    const selectorObj = _get(
+      resumeObj,
+      selector,  
+      {},    
+    ); 
+    Object.assign(
+      selectorObj,
+      val,
+    ); 
+    _set(
+      resumeObj,
+      selector,
+      selectorObj,
+    );
+
+    this.saveCore({
+      val: resumeObj,
+    });
+  }
+
+  saveCore({
+    val,
+  }) {
+    localStorage.setItem(
+      resumeObjConstants.storageItemName, 
+      JSON.stringify(
+        val,
+      ),
+    );
+  }
+
+  load({
+    selector,
+  }) {
+    return myCrop({
+      from: this.state,
+      selector,
+    });
+  }
+
+  get({
+    selector = this.selector,
+    defVal = {},
+  } = {}) {
+    return _get(
+      this.state,
+      selector,
+      defVal,
+    );
+  }
+
+  get state() {
+    return JSON.parse(localStorage.getItem(resumeObjConstants.storageItemName));
+  }  
 
   defAppState = {
     [resumeObjConstants.browserCount]: 1,
@@ -42,40 +99,7 @@ export class ResumeObj {
     },
     rightWindow: {
     },
-    [resumeObjConstants.filesWithStatuses]: {},
     // [Print.name]: {},
     // [Share.name]: {},
   };
-
-  save({ 
-    stateUpd, 
-    selector,
-  }) { 
-    localStorage.setItem(
-      resumeObjConstants.storageItemName, 
-      JSON.stringify(
-        updFromObj({
-          obj: { ...this.state },
-          objUpd: selector || this.selector({
-            val: stateUpd,
-          })
-        }),
-      ),
-    );
-  }
-
-  load({
-    selector = 1,
-  } = {}) {
-    return myCrop({
-      from: { ...this.state },
-      selector: this.selector({
-        val: selector,
-      }),
-    });
-  }
-
-  get state() {
-    return JSON.parse(localStorage.getItem(resumeObjConstants.storageItemName));
-  }  
 }

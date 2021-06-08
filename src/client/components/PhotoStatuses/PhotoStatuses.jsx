@@ -1,15 +1,15 @@
-import React from 'react';
-import { 
-  PhotoStatusIcons,
-} from './constants';
-
 import './styles.css';
+import React from 'react';
 import { useMyReducer } from '../../functions';
 import { ResumeObj } from '../../resumeObj';
 import { channel } from '../../Channel';
+import { Print } from '../';
 
 const resumeObj = new ResumeObj({
-  compName: PhotoStatuses.name,
+  selector: [
+    PhotoStatuses.name,
+  ],
+  val: getStateInit(),
 });
 
 const PhotoStatusesComp = channel.addComp({
@@ -18,9 +18,9 @@ const PhotoStatusesComp = channel.addComp({
   getReqProps,
 });
 
-export function PhotoStatuses({
-  id,
-}) {
+export function PhotoStatuses(
+  props,
+) {
   const [state] = useMyReducer({
     initialState: {
       ...getStateInit(),
@@ -30,25 +30,33 @@ export function PhotoStatuses({
     }) => PhotoStatusesComp.setCompDeps({
       deps: {
         ...deps,
-        id,
+        id: props.id,
       },
     }),
     fn: ({
-      state,
       stateUpd,
     }) => {
-      const stateUpdNext = {
-        ...state,
-      };
-      delete stateUpdNext.filesWithStatuses;
       resumeObj.save({ 
-        stateUpd: stateUpdNext,
-      });
-      stateUpd.filesWithStatuses !== undefined && updateFilesWithStatuses({
-        stateUpd: stateUpd.filesWithStatuses,
+        val: stateUpd,
       });
     },
   });
+
+  React.useEffect(
+    () => {
+      const rp = PhotoStatusesComp.getReqProps();
+      const statusesUpd = rp.checkStatuses.reduce((res, check) => {
+        const status = Object.keys(getStateInit()).find((status) => new RegExp(status, 'i').test(check.name));
+        res[status] = check({
+          src: props.id,
+        });
+        return res;
+      },
+      {});
+      PhotoStatusesComp.deps.setState(statusesUpd);
+    },
+    [props.id]
+  );
 
   const statuses = getStatuses();
 
@@ -61,88 +69,56 @@ export function PhotoStatuses({
 
   // ----------------------------------
   function getStatuses() {
-    return Object.entries(state.filesWithStatuses[id] || {})
-    .map(([status, val]) => {
-      if (PhotoStatusIcons.checkHide({
-        status,
-        val,
-      })) {
-        return null;
-      }
-      return <img key={status} src={`${status}.png`} />;        
-    })
-    .filter((item) => item);
-      
+    return Object.entries(state)
+      .map(([status, val]) => {
+        return val === false ? null : (
+          <img key={status} src={`${status}.png`} />
+        );
+      })
+      .filter((status) => status);     
   }
 }
 
 function getReqProps({
   channel,
 }) {
-  return channel.crop({
-    d: {
-      setPhotosState: 1,
+  const compsAPI = channel.crop({
+    comps: {
+      ...Print.API,
     },
   });
+
+  return {
+    ...compsAPI,
+    checkStatuses: [
+      compsAPI.PrintAPI.isFileToPrint,
+    ],
+  };
 }
 
 function getAPI({
 }) {
+  // Create auto-generated list of fns to toggle status.
   return {
-    changeShareStatus: () => {      
-      changeStatus({
-        actionName: PhotoStatusIcons.setToShare.name,
-      });
-    }, 
+
     changePrintStatus: () => {
-      changeStatus({
-        actionName: PhotoStatusIcons.setToPrint.name,
+      const rp = PhotoStatusesComp.getReqProps();
+      const { deps } = PhotoStatusesComp;
+      const statusUpd = rp.PrintAPI.togglePrint({
+        src: deps.id,
+      });
+      deps.setState({
+        toPrint: statusUpd,
       });
     }, 
-  }
-
-
-  // ----------------------
-
-  function changeStatus({
-    actionName,
-  }) {    
-    const {
-      id,
-      state,
-      setState,
-    } = PhotoStatusesComp.deps;
-
-    setState({
-      filesWithStatuses: updateFileWithStatuses(),
-    });
-
-
-    // -----------------------------------------------------
-    function updateFileWithStatuses() {
-      const status = state.filesWithStatuses[id];
-      if (status === undefined) {
-        state.filesWithStatuses[id] = new PhotoStatusIcons()
-      }
-      PhotoStatusIcons[actionName].call(
-        state.filesWithStatuses[id],
-      )
-      return state.filesWithStatuses;
-    }
   }
 };
 
 function getStateInit() {
-  const loaded = resumeObj.load({});
-      
   return {
-    filesWithStatuses: getFromResumeObj({
-      selector: {
-        [resumeObjConstants.filesWithStatuses]: 1,
-      },
-    }),
-  
-    ...loaded,
+    toPrint: false,
+    toShare: false,
   };
 }
+
 

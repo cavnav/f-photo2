@@ -5,10 +5,17 @@ import { Stepper, Actions } from '../';
 import 'antd/dist/antd.css';
 import './styles.css';
 import { resumeObjConstants } from '../../resumeObj';
+import { Browse } from '../Browse/Browse';
+import { channel } from '../../Channel';
 
+const CopyComp = channel.addComp({
+  fn: Copy,
+  getReqProps,
+})
 export function Copy({
   setAppState,
   serverAPI,
+  BrowseAPI,
 }) {
   
   const [state, setState] = useState(stateInit);
@@ -127,11 +134,10 @@ export function Copy({
     return serverAPI.$copyPhotos({
       userDirName: '',
     }).then((res) => {
-      setToResumeObj({
-        stateUpd: {
-          [resumeObjConstants.Browse]: {
-            path: res.destDir,
-          },
+      const rp = CopyComp.getReqProps();
+      rp.BrowseAPI.setToResumeObj({
+        val: {
+          path: res.destDir,
         },
       });
       $checkCopyProgressWrap();
@@ -152,7 +158,9 @@ export function Copy({
   }
 }
 
-Copy.getReqProps = ({ channel }) => {
+function getReqProps ({
+  channel,
+}) {
   return channel.crop({
     d: {
       setAppState: 1,      
@@ -161,7 +169,10 @@ Copy.getReqProps = ({ channel }) => {
       comps: {
         server: 'serverAPI',
       }
-    }
+    },
+    comps: {
+      ...Browse.API,
+    },
   })
 }
 

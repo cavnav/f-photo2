@@ -1,7 +1,7 @@
 import React from 'react';
 
 export function RemoveItems({
-
+  title = 'Удалить?',
 }) {
   return (
     <dialog 
@@ -10,7 +10,7 @@ export function RemoveItems({
       <div 
         className="flexCenter"        
       >
-        <div>Удалить? Нажми еще раз</div>      
+        <div>{`${title} Нажми еще раз`}</div>      
       </div>
     </dialog> 
   )

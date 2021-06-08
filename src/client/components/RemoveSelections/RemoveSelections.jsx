@@ -42,9 +42,7 @@ function getReqProps({
 }) {
   const { action } = channel.crop({
     s: {
-      appState: {
-        action: 1, 
-      },
+      action: 1, 
     },
   });
 

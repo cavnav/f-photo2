@@ -6,11 +6,11 @@
   "scripts": {
     "build": "webpack --mode production",
     "buildLocal": "",
-    "start": "npm run build && node src/server/index.js",
+    "startb": "npm run build && node src/server/index.js",
     "startLocal": "",
     "client": "webpack-dev-server --mode development --devtool inline-source-map --hot",
     "server": "nodemon src/server/index.js",
-    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "start": "concurrently \"npm run server\" \"npm run client\"",
     "test": "jest"
   },
   "author": "J0101",

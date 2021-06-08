@@ -31,6 +31,7 @@ let state = {
   leftWindow: ALBUM_DIR,
   rightWindow: ALBUM_DIR,
   usbDriveLetter: undefined,
+  reqBody: {},
 };
 
 let timeoutIdImg
@@ -108,20 +109,20 @@ app.get('/api/getNewPhotos', async (req, res) => {
     return;
   }
 
-  findFiles({
+  const { files } = await findFiles({
     reqPath: state.usbDriveLetter,
     doNeedTopLevelSearch: false,
     doNeedFullPath: true,
-    onResolve({ files }) {
-      setState({
-        newPhotos: [...files],
-        countNewPhotos: files.length,
-      });
-      res.send({
-        countNewPhotos: state.countNewPhotos,
-      }); 
-    }
   });
+
+  setState({
+    newPhotos: [...files],
+    countNewPhotos: files.length,
+  });
+  res.send({
+    countNewPhotos: state.countNewPhotos,
+  }); 
+
 });
 
 app.post(
@@ -198,26 +199,6 @@ app.post(
   }
 );
 
-app.get('/api/browseFiles', (req, res) => {
-  findFiles({ 
-    doNeedDirs: true,
-    onResolve({ 
-      files, 
-      dirs 
-    }) {      
-      const myPath = state[state.curWindow] === ALBUM_DIR ? '' : 
-        path.join(state[state.curWindow]).replace(ALBUM_DIR, '');
-
-      res.send({
-        files,
-        dirs,
-        path: myPath,
-        sep: path.sep,
-      });
-    }
-  });
-});
-
 app.post('/api/resetNavigation', (req, res) => {
   let { 
     resetTo, 
@@ -232,39 +213,15 @@ app.post('/api/resetNavigation', (req, res) => {
   res.send(req.body);
 });
 
-app.post('/api/toward', (req, res) => {
-  let { 
-    subdir = '',
-    resetTo, 
-    curWindow,
-  } = req.body;
-
-  const resetToUpd = resetTo ? path.join(ALBUM_DIR, resetTo) : undefined;
-  const pathUpd = resetTo ? undefined : path.join(state[curWindow], path.basename(subdir));
-   
-  state[curWindow] && setState({
-    [curWindow]: resetToUpd || pathUpd,
-    curWindow,
-  });
-
-  res.redirect('browseFiles');
-});
-
-app.post('/api/backward', (req, res) => {
-  const {
-    curWindow
-  } = req.body;
-  const path = getBackwardPath({
-    curWindow,
-  });
-
-  setState({
-    [curWindow]: path,
-    curWindow,
-  });
-
-  res.redirect('browseFiles');  
-});
+app.post('/api/towardPrinted', getToward({
+  rootDir: PRINTED_DIR,
+  mapResponse: mapResponsePrinted
+}));
+app.post('/api/toward', getToward());
+app.post('/api/backward', getBackward());
+app.post('/api/backwardPrinted', getBackward({
+  rootDir: PRINTED_DIR,
+}));
 
 app.get('/api/checkCopyProgress', (req, res) => {
   res.send({
@@ -310,31 +267,37 @@ app.get('/api/imgRotate', (req, response) => {
   .catch(console.error);
 });
 
+app.post('/api/savePrinted', async (req, response) => {
+  const {
+    dest,
+    files,
+  } = req.body;
+  await createPrintedFolder({
+    dest,
+    files,
+  });
+  response.send(req.body);
+});
+
 app.post('/api/saveFilesToFlash', async (req, response) => {
   response.send(req.body);
   clearUpUSB()
-  .then(async (res) => {
+  .then(async () => {
     setState({
       copyProgress: 0,
       countCopiedPhotos: 0,
     });
-    const { files } = req.body;
+    const { 
+      files,
+      isNeedLocalCopy = true,
+    } = req.body;
     const total = Object.keys(files).length;
 
     // create appropriate folder in printedFolder
-    {
-      const dest = path.join(PRINTED_DIR, getCurMoment());
-      await fs.mkdirs(
-        dest,
-      );
-      await fs.writeJSON(
-        path.join(dest, PRINT_JSON),
+    if (isNeedLocalCopy) {
+      await createPrintedFolder({
         files,
-      );
-
-      await fs.remove(
-        path.join(PRINTED_NEW, PRINT_JSON),
-      );
+      });
     }
 
     // copy to flash
@@ -447,16 +410,11 @@ app.post('/api/moveToPath',
       item,
       source,
     }) {              
-      const { files } = await new Promise((
-        resolve
-      ) => {
-        findFiles({
-          reqPath: item,
-          doNeedFullPath: true,
-          doNeedTopLevelSearch: false,
-          doNeedDirs: false,
-          onResolve: resolve,
-        })
+      const { files } = await findFiles({
+        reqPath: item,
+        doNeedFullPath: true,
+        doNeedTopLevelSearch: false,
+        doNeedDirs: false,
       });
 
       // case when empty dir.
@@ -640,13 +598,14 @@ function calcProgress({
 }
 
 function getBackwardPath({
+  rootDir,
   curWindow,
 }) {
   const a = state[curWindow]
   .split(path.sep)
   .slice(0, -1);
 
-  if (ALBUM_DIR === state[curWindow]) return ALBUM_DIR;
+  if (rootDir === state[curWindow]) return rootDir;
   return path.join(
     ...state[curWindow]
     .split(path.sep)
@@ -662,34 +621,40 @@ function saveToFile({
   fs.writeFileSync(path, contentStr);
 }
 
-function findFiles({ 
+async function findFiles({ 
   reqPath = state[state.curWindow],
 
   doNeedTopLevelSearch = true,
   doNeedDirs = false,
   doNeedFullPath = false,
-  onResolve = () => {} 
 }) {
-  find.file('', reqPath, (files) => {
-    let browseFiles = files; 
+  
+  const files = await new Promise((resolve) => find.file(reqPath, resolve));
+  let browseFiles = files; 
 
-    if (doNeedTopLevelSearch) browseFiles = browseFiles.filter(isTopLevelFile);
-    if (!doNeedFullPath) browseFiles = browseFiles.map((file) => {
-      const fileUpd = path.basename(file);
-      return `${fileUpd}`;
-    });  
+  if (doNeedTopLevelSearch) browseFiles = browseFiles.filter(isTopLevelFile);
+  if (!doNeedFullPath) browseFiles = browseFiles.map((file) => {
+    const fileUpd = path.basename(file);
+    return `${fileUpd}`;
+  });  
 
-    if (!doNeedDirs) return onResolve({ files: browseFiles, dirs: [] });
+  if (!doNeedDirs) return { 
+    files: browseFiles, 
+    dirs: [] 
+  };
     
-    find.dir('', reqPath, (dirs) => {
-      const { sep } = path;
-      const browseDirs = dirs
-        .filter(isTopLevelFile)
-        .map((dir) => path.join(sep, path.basename(dir))); 
+  const dirs = await new Promise((resolve) => find.dir(reqPath, resolve));
+  
+  const { sep } = path;
+  const browseDirs = dirs
+    .filter(isTopLevelFile)
+    .map((dir) => path.join(sep, path.basename(dir))); 
 
-      onResolve({ files: browseFiles, dirs: browseDirs });
-    });  
-  });
+  return { 
+    files: browseFiles, 
+    dirs: browseDirs 
+  };
+  
 
   // ------------------------------------------- 
   function isTopLevelFile(file) {
@@ -728,5 +693,120 @@ function setState(propsUpd) {
   state = {
     ...state,
     ...propsUpd,
+  };
+}
+
+function getPathWithoutRoot({
+  path,
+}) {
+  return path.replace(ALBUM_DIR, '');
+}
+
+function getToward({
+  rootDir = ALBUM_DIR,
+  reqPath,
+  mapResponse, 
+} = {}) {
+  return async (
+    {
+      body: {
+        dir = '',
+        resetTo, 
+        curWindow,
+      },
+    },
+    res,
+  ) => {  
+    const pathUpd = getReqPath();
+    const result = await browseFiles({
+      curWindow,
+      reqPath: pathUpd,
+      rootDir,
+    });
+
+    setState({
+      [curWindow]: pathUpd,
+      curWindow,
+    });
+
+    const mappedResult = mapResponse && await mapResponse({
+      result,
+      reqPath: pathUpd,
+    });
+    
+    res.send(mappedResult || result);
+
+    // --------------------------------------------------------------
+    function getReqPath() {
+      return (reqPath !== undefined && reqPath) ||
+        (resetTo !== undefined && path.join(rootDir, resetTo)) ||
+        path.join(state[curWindow], path.basename(dir));
+    }
+  }
+}
+
+function getBackward({
+  rootDir,
+} = {}) {
+  return (req, res) => getToward(
+    {
+      rootDir,
+      reqPath: getBackwardPath({
+        rootDir,
+        curWindow: req.body.curWindow,
+      }),
+      mapResponse: mapResponsePrinted,
+    },
+  )(req, res);
+};
+
+async function browseFiles({
+  reqPath,
+  rootDir,
+}) {
+  const {
+    files,
+    dirs,
+  } = await findFiles({ 
+    reqPath,
+    doNeedDirs: true,       
+  });
+     
+  const myPath = reqPath === rootDir ? '' : 
+    path.join(reqPath).replace(rootDir, '');
+
+  return ({
+    files,
+    dirs,
+    path: myPath,
+    sep: path.sep,
+  });
+}
+
+async function createPrintedFolder({
+  files,
+}) {
+  const dest = path.join(PRINTED_DIR, getCurMoment());
+  await fs.mkdirs(
+    dest,
+  );
+  return await fs.writeJSON(
+    path.join(dest, PRINT_JSON),
+    files,
+  );
+}
+
+async function mapResponsePrinted({
+  result,
+  reqPath,
+}) {
+  const jsonSrc = result.files[0] || '';
+  const json = await fs.readJson(
+    path.join(reqPath, jsonSrc),
+  ).catch(e => undefined);
+
+  return {
+    ...result,
+    files: json ? [json] : [],
   };
 }

@@ -154,6 +154,7 @@ body {
 .layout {
   position: relative;
   display: flex;
+  align-content: flex-start;
   flex-wrap: wrap;
   height: 100%;
   overflow-y: auto;
@@ -168,3 +169,10 @@ body {
   height: var(--size);
   opacity: 0.5;
 } 
+
+.ant-spin {
+  position: absolute;
+  top: 40px;
+  width: 100%;
+  z-index: 10000;
+}

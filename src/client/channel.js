@@ -44,7 +44,7 @@ function ChannelWrap(props) {
       getAPI = () => {},
       getReqProps = () => {},
     }) {
-      // For getting CompAPI.
+      // For getting CompAPI from channel.
       fn.API = {
         [fn.name]: {
           API: `${fn.name}API`,
@@ -52,7 +52,9 @@ function ChannelWrap(props) {
       };
 
       const comp = this.comps[fn.name] = {
-        deps: {}, // Component own props for API methods.
+        deps: {
+          default: {},
+        }, // Component own props for API methods.
         setCompDeps: undefined, // Set state, setState, others deps to component.
         getReqProps() {
           return getReqProps({ // shared Apps props.
@@ -60,10 +62,16 @@ function ChannelWrap(props) {
           })
         },
       };
-      comp.setCompDeps = setCompDeps.bind(comp);
+      comp.createSetCompDeps = createSetCompDeps.bind(comp);
 
       Object.defineProperty(comp, 'API', {
         get: () => getAPI({ // Component API.
+          channel: this,
+        }),
+      });
+
+      Object.defineProperty(comp, 'deps', {
+        get: () => this.deps[({ // Component API.
           channel: this,
         }),
       });
@@ -110,7 +118,11 @@ function ChannelWrap(props) {
         [propName, prop, sourceVal, alias = prop]
       ] = stack;
       // 
-      if (prop.constructor !== Object) res[prop === 1 ? propName : alias] = sourceVal;
+      if (prop.constructor === Function) Object.assign(
+        res,
+        prop(sourceVal),
+      );
+      else if (prop.constructor !== Object) res[prop === 1 ? propName : alias] = sourceVal;
       else stack.push(...Object.entries(prop).map((e) => {
         if (
           sourceVal[e[0]] !== undefined ||
@@ -155,23 +167,16 @@ function ChannelWrap(props) {
   return new Channel(props);
 }
 
-function setCompDeps({
-  deps,
-}) {
-  Object.assign(
-    this.deps,
+function createSetCompDeps({ props }) {
+  return function ({
     deps,
-  );
-}
-
-export function createSetCompDeps() {
-  let state = {};
-  state = {
-    deps: {},
-    setCompDeps: setCompDeps.bind(state),
+  }) {
+    const depsId = props.depsId ?? 'default';
+    Object.assign(
+      this.deps[depsId],
+      deps,
+    );
   };
-
-  return state.setCompDeps;
 }
 
 function crop({

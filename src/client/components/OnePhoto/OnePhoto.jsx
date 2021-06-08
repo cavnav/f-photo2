@@ -5,13 +5,16 @@ import { PhotoStatuses } from '..';
 import { additionalActions, } from '../../constants';
 import { Dialog } from '../';
 import { ResumeObj, resumeObjConstants } from '../../resumeObj';
-import { myArray, refreshOppositeWindow, useMyReducer } from '../../functions';
+import { getStateInit, myArray, refreshOppositeWindow, useMyReducer } from '../../functions';
 import { channel } from '../../Channel';
 import { Browse } from '../Browse/Browse';
 import { getCurDate } from '../../functions';
 
 const resumeObj = new ResumeObj({
-  compName: OnePhoto.name,
+  selector: [
+    window.name,
+    OnePhoto.name,
+  ],
 });
 
 const OnePhotoComp = channel.addComp({
@@ -23,30 +26,28 @@ export function OnePhoto(
   {}
 ) { 
   const {
-    photosState,
-    curPhotoInd,
+    resumeBrowse,
     server,
   } = OnePhotoComp.getReqProps();
   const myFiles = React.useMemo(() => myArray({
-      items: photosState.files,
+      items: resumeBrowse.files,
     }),
     []
   );
 
-  const [props] = React.useState({
-    curPhotoInd: curPhotoInd,
-    files: myFiles,
-    path: path,
-  });
-
   const [state, setState] = useMyReducer({
     reducer: selfReducer,
     setCompDeps: OnePhotoComp.setCompDeps,
-    props,
-    initialState: {
-      ...stateInit,
-      ...resumeObj.load({}),      
-    }, 
+    initialState: selfReducer({
+      state: {
+        ...getStateInit({
+          resumeObj,
+          stateDefault: stateInit,
+        }),
+        files: myFiles,
+        curPhotoInd: resumeBrowse.curPhotoInd,   
+      }, 
+    }),
   });
 
   const onDialogRemoveCancel = React.useCallback(() => {
@@ -73,12 +74,13 @@ export function OnePhoto(
   });
 
   React.useEffect(() => {
+    const {
+      BrowseAPI,
+    } = OnePhotoComp.getReqProps();
     if (state.action === onTogglePhoto.name) {
-      setToResumeObj({
-        stateUpd: {
-          [resumeObjConstants.Browse]: {
-            curPhotoInd: state.curPhotoInd,
-          },
+      BrowseAPI.setToResumeObj({
+        val: {
+          curPhotoInd: state.curPhotoInd,
         },
       });
     }
@@ -89,7 +91,10 @@ export function OnePhoto(
   //--------------------------------------------------------------------------
   function getRender() {
     const rp = OnePhotoComp.getReqProps();
-    const id = `${rp.path}${rp.sep}${state.curPhoto}`;
+    const {
+      resumeBrowse,
+    } = rp;
+    const id = `${resumeBrowse.path}${resumeBrowse.sep}${state.curPhoto}`;
     return (
       <div 
         className="OnePhoto fitScreen"
@@ -98,7 +103,7 @@ export function OnePhoto(
           <>
             <img 
               ref={imgRef}
-              src={`${state.path}/${state.curPhotoWithTime}`}        
+              src={`${resumeBrowse.path}/${state.curPhotoWithTime}`}        
               style={{
                 transform: `rotate(${state.curPhotoRotateDeg}deg)`,
                 opacity: state.opacity,
@@ -237,7 +242,7 @@ export function OnePhoto(
 
 function selfReducer({
   state,
-  stateUpd,
+  stateUpd = {},
 }) {
 
   let stateReduced = { 
@@ -259,7 +264,7 @@ function selfReducer({
   };
 
   resumeObj.save({
-    stateUpd: stateReduced
+    val: stateReduced
   });
 
   return stateReduced;
@@ -364,31 +369,30 @@ function onImgServerRotate({
 
 function getReqProps({ channel }) { 
   const props = channel.crop(
-    {
-      s: {
-        photosState: 1,
-      },
+    {    
       API: {
         comps: {
-          server: 1
-        }
+          server: 1,
+        },
       },
       comps: {
         ...PhotoStatuses.API,
         ...Browse.API,
-      },
-      [resumeObjConstants.Browse]: {
+      },         
+    },
+  ); 
+  
+  return {
+    ...props,
+    resumeBrowse: props.BrowseAPI.getResumeObj({
+      selector: {
+        files: 1,
         path: 1,
         sep: 1,
         curPhotoInd: 1,
       },
-    },
-    {
-      [resumeObjConstants.Browse]: resumeObj.state[resumeObjConstants.Browse],    
-    },
-  ); 
-  
-  return props;
+    }),
+  };
 };
 
 function getAPI({  
@@ -402,7 +406,6 @@ function getAPI({
         setState,
       } = OnePhotoComp.deps;
       const {
-        BrowseAPI,
         server,
       } = OnePhotoComp.getReqProps();
 
@@ -487,4 +490,6 @@ const stateInit = {
   action: onTogglePhoto.name,
   removedItems: new Set(),
   isNoItems: false,
+  resumeBrowse: {},
 };
+

@@ -1,13 +1,23 @@
-import React from 'react';
-import { tempReducer } from '../../functions';
-import { RemoveItems, Default } from './';
-import * as Types from './';
-
 import './styles.css';
 
+import React from 'react';
+import { tempReducer } from '../../functions';
+import { RemoveItems, Default, Select } from './';
+import * as Types from './';
+import { channel } from '../../Channel';
+
+
+const Comp = channel.addComp({
+  fn: Dialog,
+  getReqProps,
+});
+
 export function Dialog({ 
+  title,
   type = Dialog.Default,
+  autoClose = true,
   children, 
+  onAgree = () => {},
   onCancel = () => {},
 }) {  
 
@@ -15,24 +25,44 @@ export function Dialog({
 
   React.useEffect(() => {
       setTimeout(() => { 
-        onCancel();         
-      }, 1000);
+        autoClose && onCancel();         
+      }, 2000);
     }, 
     []
   );
 
   const res = ({
     [Default.name]: (
-      <Default>
+      <Default
+      >
         {children}
       </Default>
     ),
+    [Select.name]: (
+      <Select
+        onAgree={onAgree}
+        onCancel={onCancel}
+      >
+        {children}
+      </Select>
+    ),
     [RemoveItems.name]: (
-      <RemoveItems />
+      <RemoveItems title={title} />
     ),
   })[type];
 
-  return res;
+  const rp = Comp.getReqProps();
+  return (
+    <div 
+      className='DialogWrap' 
+      style={{
+        left: rp.mouse.x,
+        top: rp.mouse.y,
+      }}
+    >
+      {res}
+    </div>
+  );
 }
 
 Object.assign(
@@ -43,3 +73,20 @@ Object.assign(
 const initState = {
   isEnabled: false,
 };
+
+function getReqProps({
+  channel,
+}) {
+  const props = channel.crop({
+    s: {
+      mouse: 1,
+    },
+  });
+
+  return {
+    mouse: {
+      x: props.mouse.x + 10,
+      y: props.mouse.y + 10,
+    },
+  };
+}

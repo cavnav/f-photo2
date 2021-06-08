@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Actions } from '..';
 import './styles.css';
 
@@ -19,9 +19,7 @@ export function Action({
 Action.getReqProps = function ({ channel }) {
   return channel.crop({
     s: { 
-      appState: { 
-        action: 1, 
-      } 
-    },
+      action: 1, 
+    } 
   });
 };

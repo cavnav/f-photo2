@@ -3,5 +3,9 @@
   display: block;
 }
 
+.DialogWrap {
+  position: fixed;
+};
+
 
 
