@@ -16,11 +16,26 @@ export class AppServerAPI {
     this.s = s;
   }
 
+  urls = Object.keys({
+    towardPrinted: 1,
+    backwardPrinted: 1,
+  }).reduce((res, key) => { res[key] = key; return res; }, {});
+  
   getFullUrl({ url }) {
     return `/api/${url}`;
   }
 
   // нельзя использовать function - declaration. В channel.addAPI контекст теряется.
+
+  getAppData = () => {
+    return fetch(
+      this.getFullUrl({
+        url: 'appData',
+      })
+    )
+    .then(res => res.json());
+  }
+
   $share = (params) => {
     return fetch(
       this.getFullUrl({ url: 'share' }),
@@ -68,9 +83,11 @@ export class AppServerAPI {
     return `?${arr.join('&')}`;
   }
 
-  backward = () => {
-    this.navigate({ 
-      url: 'backward', 
+  backward = ({
+    url = 'backward',
+  } = {}) => {
+    return this.navigate({ 
+      url, 
     });
   }
 
@@ -88,15 +105,33 @@ export class AppServerAPI {
     );
   }
 
+  savePrinted = ({
+    dest,
+    files,
+  }) => {
+    return fetch(
+      this.getFullUrl({
+        url: 'savePrinted',
+      }),
+      new PostObjTmp({
+        body: {
+          dest,
+          files,
+        },
+      }),
+    ); 
+  };
+
   toward = ({
     resetTo,
-    subdir,
+    dir,
     curWindow,
+    url = 'toward',
    } = {}) => {
     return this.navigate({ 
-      url: 'toward', 
+      url, 
       params: { 
-        subdir,
+        dir,
         resetTo, 
         curWindow,
       } 
@@ -195,10 +230,6 @@ export class AppServerAPI {
         url: 'checkCopyProgress' 
       }))
       .then(res => res.json());
-  }
-
-  browsePhotos = () => {
-    return fetch(fullUrl).then(res => res.json());
   }
 
   $getUsbDevices = (params = {}) => {

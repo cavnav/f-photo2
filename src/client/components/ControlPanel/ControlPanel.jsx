@@ -1,18 +1,18 @@
+import './styles.css';
 import React, { useReducer, } from 'react';
 
-import './styles.css';
-import { Actions } from '../';
 import { ResumeObj } from '../../resumeObj';
 import { getOppositeWindowObj } from '../../functions';
 import { Print } from '../compNames';
 import { Dialog } from '../Dialog/Dialog';
+import { get as _get } from 'lodash';
 
 const resumeObj = new ResumeObj();
 
 export function ControlPanel({
   tempReducer,
-  appState,
-  isWelcome,
+  actions,
+  appStateAction,
   setAppState,
 }) {
   const [state, setState] = useReducer(tempReducer, stateInit);
@@ -26,12 +26,12 @@ export function ControlPanel({
       className="controlPanel flex"
       onClick={onClickAction}
     >
-      {Object.entries(appState.actions)
+      {Object.entries(actions)
         .filter(([action, actionProps]) => actionProps.isActive)
         .map(([action, actionProps]) => {
           const classNames = Object.keys({
             action: true,
-            ...(action === appState.action && { 'active' : true }),
+            ...(action === appStateAction && { 'active' : true }),
           }).join(' ');
           return (
             <div key={action} className={classNames} data-id={action}>
@@ -76,26 +76,28 @@ export function ControlPanel({
     }) {
       if (actionId !== Print.name) return false;
       const oppositeWindowName = getOppositeWindowObj().name;
-      const resumeState = resumeObj.state;      
-      return actionId === resumeState[oppositeWindowName].App.appState.action;
+      const oppositeWindowActionId = resumeObj.get({        
+        selector: [
+          oppositeWindowName,
+          'App',
+          'action',
+        ],
+      });
+      return actionId === oppositeWindowActionId;
     }
   };
 }
 
 ControlPanel.getReqProps = ({ channel }) => {
-  const cropped = channel.crop({
-    s: { 
-      appState: 1,  
-    },      
+  return channel.crop({
+    s: {
+      action: 'appStateAction',
+      actions: 1,
+    },     
     d: {
       setAppState: 1,
     },
   });
-  
-  return {
-    ...cropped,
-    isWelcome: cropped.appState.action === Actions.Welcome.name,
-  };
 };
 
 const stateInit = {

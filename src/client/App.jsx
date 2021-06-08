@@ -2,12 +2,18 @@
 // content-visibility
 // ctg file
 // add loading
+// print >< share
 // Failed to load resource
-// rename folder by id on serverSide
+// rename folder by id on serverSide. Rename reset otherside path to root.
+    // need update files, dirs, printed, shared
 // remove folder error in two  windows mode. trouble in server side.
 // help
 // scroll to selected folder
-// +save files after create printFlash to appropriate folder
+// Print why delete filesWithStates
+// Dont rewrite files in Printed/New when rewrite old list.
+// Two ExitFromFolder. One is only Label.
+// +error Browse resetTo path=""
+// -+save files after create printFlash to appropriate folder
 // +active menu item
 // +remove cardreader from pc
 // +checkbox and remove
@@ -39,57 +45,42 @@ import { useMyReducer } from './functions';
 import { get as _get } from 'lodash';
 import { channel } from './Channel';
 import { ResumeObj } from './resumeObj';
-import { ExitFromAlbum } from './components/ExitFromAlbum/ExitFromAlbum';
+import { ExitFromFolder } from './components/ExitFromFolder/ExitFromFolder';
 import { ToggleRightWindow } from './components/ToggleRightWindow/ToggleRightWindow';
 import { MoveSelections } from './components/MoveSelections/MoveSelections';
 import { AddAlbum } from './components/AddAlbum/AddAlbum';
 import { RemoveSelections } from './components/RemoveSelections/RemoveSelections';
 
+
 const resumeObj = new ResumeObj({
-  compName: App.name,
+  selector: [
+    window.name,
+    App.name,
+  ],
 });
 
+
 export function App() {
+  let s; // state
   const [d] = React.useState({}); // dispatch.
-  const [{ [App.name]: s = {} }] = React.useState(resumeObj.load());
+
+  [s, d.setAppState] = useMyReducer({
+    initialState: getAppStateInit(),
+    fn: resumeUpdFn,
+  });
 
   channel.preset({
     s,
     d,
   });
-  
-  const appStateInit = React.useMemo(() => getAppStateInit({
-    resumeObj,
-  }), []);
 
-  const photosStateInit = React.useMemo(() => {
-    return {
-      files: [],
-      dirs: [],
-      ...resumeObj.load({
-        selector: {
-          'photosState': 1,
-        },
-      }),      
-    };
-  }, []);
-
-  const resumeSaveFn = React.useCallback(
-    () => resumeObj.save({
-      stateUpd: s,
-    }),
-    [],
+  React.useEffect(() => {
+    channel.API.comps.server.getAppData()
+    .then((res) => {
+      d.setAppState(res);
+    })},
+    []
   );
-  
-  [s.appState, d.setAppState] = useMyReducer({
-    initialState: appStateInit,
-    fn: resumeSaveFn, // for silent setting case.
-  });
-
-  [s.photosState, d.setPhotosState] = useMyReducer({
-    initialState: photosStateInit,
-    fn: resumeSaveFn, 
-  });
 
   return (    
     <div className="f-photo">     
@@ -108,9 +99,18 @@ export function App() {
   //--------------------------------------------------------------------------
 }
 
-function getAppStateInit({
-  resumeObj,
+function resumeUpdFn({
+  state,
 }) {
+  resumeObj.save({
+    val: state,
+  });
+};
+
+function getAppStateInit(
+) {
+  const resumed = resumeObj.get();
+
   return {
     action: Actions.Welcome.name,
     forceUpdate: false,
@@ -124,7 +124,7 @@ function getAppStateInit({
         title: 'Смотреть',
         isActive: true,
         additionalActions: [
-          additionalActions[ExitFromAlbum.name], 
+          additionalActions[ExitFromFolder.name], 
           additionalActions[ToggleRightWindow.name],
           additionalActions[MoveSelections.name],
           additionalActions[AddAlbum.name],
@@ -144,6 +144,8 @@ function getAppStateInit({
         title: 'Печатать',
         isActive: true,
         additionalActions: [
+          additionalActions.Label,
+          additionalActions.ExitFromFolder,
           additionalActions.SavePhotosToFlash,
         ],
       },
@@ -159,10 +161,6 @@ function getAppStateInit({
       //   isActive: true,
       // }
     },
-    ...resumeObj.load({
-      selector: {
-        'appState': 1,
-      },
-    }),
+    ...resumed,    
   };
 };

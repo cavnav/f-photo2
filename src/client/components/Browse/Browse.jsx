@@ -11,14 +11,18 @@ import {
 } from 'antd';
 
 import './styles.css';
-import { addHandlers, getBackgroundImageStyle, getOppositeWindowObj, oppositeWindowCheckSamePaths, useMyReducer } from '../../functions';
+import { addHandlers, getBackgroundImageStyle, getOppositeWindowObj, myCrop, oppositeWindowCheckSamePaths, useMyReducer } from '../../functions';
 import { channel } from '../../Channel';
 import { MoveSelections } from '../MoveSelections/MoveSelections';
 import { ResumeObj } from '../../resumeObj';
 import { eventNames } from '../../constants';
+import { ExitFromFolder, Empty } from '../';
 
 const resumeObj = new ResumeObj({
-  compName: Browse.name,
+  selector: [
+    window.name,
+    Browse.name,
+  ],
 });
 
 const BrowseComp = channel.addComp({
@@ -38,7 +42,7 @@ export function Browse(
       state,
     }) => {
       resumeObj.save({
-        stateUpd: {
+        val: {
           ...state,
           selections: Array.from(state.selections),
         },
@@ -84,8 +88,8 @@ export function Browse(
           setState({
             loading: true,
           });
-          const subdir = event.target.getAttribute('src');
-          rp.server.toward({ subdir })
+          const dir = event.target.getAttribute('src');
+          rp.server.toward({ dir })
           .then(onNavigate)
           .then(() => {
             changeSelections();
@@ -110,8 +114,11 @@ export function Browse(
           event
         }) {
           const rp = BrowseComp.getReqProps();
+          const {
+            setState,
+          } = BrowseComp.deps;
           
-          rp.setState({      
+          setState({      
             curPhotoInd: +event.target.getAttribute('ind'),
           });
       
@@ -137,7 +144,7 @@ export function Browse(
 
   useEffect(scrollToSelectedImage, [state.curPhotoInd]);
   
-  useEffect(boostPerfImgRender, [rp.photosState.files]);
+  useEffect(boostPerfImgRender, [state.files]);
 
   useEffect(htmlResetSelections, [state.selections]);
 
@@ -161,11 +168,14 @@ export function Browse(
         )}
 
         <Dirs
-          dirs={rp.photosState.dirs}
+          dirs={state.dirs}
           onClickDirFnName={dispatcher.onClickDir.name}
           onClickItemSelectorFnName={dispatcher.onClickItemSelector.name}
         ></Dirs>
-        { getFilesToRender() }   
+        { getFilesToRender() } 
+        <Empty 
+          isTrue={state.dirs.length === 0 && state.files.length === 0}
+        />
 
         {state.isDialogEnabled && (
           <Dialog       
@@ -224,7 +234,7 @@ export function Browse(
     rp.server.toward({
       resetTo: state.path,
     })
-    .then(onNavigate)
+    .then(onNavigate)    
     .then(() => setState({
       loading: false,
     }));
@@ -246,7 +256,7 @@ export function Browse(
     } = BrowseComp.deps;
     const rp = BrowseComp.getReqProps();
     const browsePath = state.path + state.sep;
-    return rp.photosState.files.map((file, ind) => {
+    return state.files.map((file, ind) => {
       const style = getBackgroundImageStyle({
         file: `${browsePath}${file}`,
       });
@@ -324,10 +334,6 @@ function getReqProps({
   // const props = channel.crop(reqProps);
   
   return channel.crop({
-    s: { 
-      appState: 1,
-      photosState: 1,
-    },
     d: {
       setAppState: 1,
       setPhotosState: 1,
@@ -338,9 +344,8 @@ function getReqProps({
       },
     },
     comps: {
-      [MoveSelections.name]: {
-        API: 'MoveSelectionsAPI',
-      },
+      ...MoveSelections.API,
+      ...ExitFromFolder.API,
     },
   });
 };
@@ -351,6 +356,7 @@ function getAPI({
     getCountSelections,
     onNavigate,
     setToResumeObj,
+    getResumeObj,
     toggleRightWindow,
     moveSelections,
     addAlbum,
@@ -359,40 +365,62 @@ function getAPI({
   };
 
   // ----------------------------------------
+  function getResumeObj({
+    selector,
+  } = {}) {
+    const resumed = resumeObj.get();
+    if (selector && selector.constructor === Object) {      
+      return myCrop({
+        from: resumed,
+        selector,
+      });
+    }
+    return resumed;
+  }
+
   function setToResumeObj({
-    stateUpd,
+    val,
   }) {
     resumeObj.save({
-      stateUpd,
+      val,
     });
   }
 
-  function onNavigate({
-    files, 
-    dirs, 
-    path, 
-    sep,
-  }) {
-    const rp = BrowseComp.getReqProps();
+  function onNavigate(
+    res,
+  ) {
     const {
       setState,
     } = BrowseComp.deps;
-    resumeObj.save({
-      stateUpd: {
-        path,
-        sep,
-      }
-    });
 
     setState({
-      path,
-      sep,
+      ...res,
+      loading: false,
     });
-    
-    rp.setPhotosState({
-      files,
-      dirs,
-    });   
+
+    const rp = BrowseComp.getReqProps();
+    rp.ExitFromFolderAPI.forceUpdate({
+      folderName: res.path,
+      onClick: onExitFolder,
+    });
+
+
+    // --------------------------------------------
+    function onExitFolder() {
+      const {
+        changeSelections,
+        onNavigate,
+      } = BrowseComp.API;
+      changeSelections();
+      resumeObj.save({
+        val: {
+          curPhotoInd: -1,
+        },
+      });
+      const rp = BrowseComp.getReqProps();
+      rp.server.backward()
+      .then(onNavigate);
+    }
   }
 
   function getCountSelections() {
@@ -559,8 +587,8 @@ function getAPI({
     const browserCount = appState.browserCount;
     const browserCountUpd = states[browserCount];
 
-    resumeObj.saveCustom({ 
-      stateUpd: {   
+    resumeObj.save({ 
+      val: {   
         browserCount: browserCountUpd,
         rightWindow: {},
       },
@@ -655,9 +683,8 @@ async function refreshWindows() {
   return promise;
 }
 
-function getStateInit() {
-  const { [Browse.name]: loaded = {} } = resumeObj.load();
-      
+function getStateInit() {  
+  const resumed = resumeObj.get();     
   return {
     loading: true,
     previewWidth: 100,
@@ -670,8 +697,10 @@ function getStateInit() {
     path: '',
     curPhotoInd: -1,
     scrollY: 0,
+    files: [],
+    dirs: [],
 
-    ...loaded,
-    selections: new Set(loaded.selections),
+    ...resumed,
+    selections: new Set(resumed.selections),
   };
 }

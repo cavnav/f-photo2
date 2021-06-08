@@ -122,16 +122,9 @@ export function Share({
   }
 }
 
-Share.getReqProps = ({ 
-  channel,
-}) => {
-  return channel.crop({
-    API: {
-      comps: {
-        PhotoStatuses: 'PhotoStatusesAPI',
-      },
-    },
-  });
+Share.getReqProps = (
+) => {
+  return {};
 }
 
 Share.getAPI = () => ({

@@ -3,7 +3,6 @@ import './styles.css';
 import React from 'react';
 import { channel } from '../../Channel';
 import { getOppositeWindowObj, isCatalogSelected, isSameWindowPaths, useMyReducer } from '../../functions';
-import { ResumeObj } from '../../resumeObj';
 import { Browse } from '../Browse/Browse';
 import { eventNames } from '../../constants';
 import { OnePhoto } from '../OnePhoto/OnePhoto';
@@ -70,9 +69,7 @@ function getReqProps({
 }) {
   const { action } = channel.crop({
     s: {
-      appState: {
-        action: 1, 
-      },
+      action: 1, 
     },
   });
 

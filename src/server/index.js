@@ -6,8 +6,8 @@ const bodyParser = require('body-parser');
 const fs = require('fs-extra');
 const Jimp = require('jimp');
 const path = require('path');
-const usbDetect = require('usb-detection');
-const drivelist = require('drivelist');
+// const usbDetect = require('usb-detection');
+// const drivelist = require('drivelist');
 const find = require('find');
 
 
@@ -31,6 +31,7 @@ let state = {
   leftWindow: ALBUM_DIR,
   rightWindow: ALBUM_DIR,
   usbDriveLetter: undefined,
+  reqBody: {},
 };
 
 let timeoutIdImg
@@ -43,6 +44,14 @@ app.use(express.static('dist'));
 app.use(bodyParser.json());
 
 app.listen(process.env.PORT || 8080, () => console.log(`Listening on port ${process.env.PORT || 8080}!`));
+
+app.get('/api/appData', async(req, res) => {
+  res.send({
+    PRINTED_DIR: getPathWithoutRoot({
+      path: PRINTED_DIR,
+    }),
+  });
+});
 
 app.post('/api/share', async(req, response) => {
   response.send(req.body);
@@ -198,18 +207,22 @@ app.post(
   }
 );
 
-app.get('/api/browseFiles', (req, res) => {
+app.get('/api/browsePrinted', (req, res) => {
   findFiles({ 
     doNeedDirs: true,
     onResolve({ 
       files, 
       dirs 
     }) {      
-      const myPath = state[state.curWindow] === ALBUM_DIR ? '' : 
-        path.join(state[state.curWindow]).replace(ALBUM_DIR, '');
+      const myPath = state[state.curWindow] === PRINTED_DIR ? '' : 
+        path.join(state[state.curWindow]).replace(PRINTED_DIR, '');
 
+      const filesToPrint = JSON.parse(
+        fs.readFileSync(path.join(state[state.curWindow], files[0]))
+      );
+      
       res.send({
-        files,
+        files: filesToPrint,
         dirs,
         path: myPath,
         sep: path.sep,
@@ -232,39 +245,14 @@ app.post('/api/resetNavigation', (req, res) => {
   res.send(req.body);
 });
 
-app.post('/api/toward', (req, res) => {
-  let { 
-    subdir = '',
-    resetTo, 
-    curWindow,
-  } = req.body;
-
-  const resetToUpd = resetTo ? path.join(ALBUM_DIR, resetTo) : undefined;
-  const pathUpd = resetTo ? undefined : path.join(state[curWindow], path.basename(subdir));
-   
-  state[curWindow] && setState({
-    [curWindow]: resetToUpd || pathUpd,
-    curWindow,
-  });
-
-  res.redirect('browseFiles');
-});
-
-app.post('/api/backward', (req, res) => {
-  const {
-    curWindow
-  } = req.body;
-  const path = getBackwardPath({
-    curWindow,
-  });
-
-  setState({
-    [curWindow]: path,
-    curWindow,
-  });
-
-  res.redirect('browseFiles');  
-});
+app.post('/api/towardPrinted', getToward({
+  rootDir: PRINTED_DIR,
+}));
+app.post('/api/toward', getToward());
+app.post('/api/backward', getBackward());
+app.post('/api/backwardPrinted', getBackward({
+  rootDir: PRINTED_DIR,
+}));
 
 app.get('/api/checkCopyProgress', (req, res) => {
   res.send({
@@ -310,6 +298,18 @@ app.get('/api/imgRotate', (req, response) => {
   .catch(console.error);
 });
 
+app.post('/api/savePrinted', async (req, response) => {
+  const {
+    dest,
+    files,
+  } = req.body;
+  await createPrintedFolder({
+    dest,
+    files,
+  });
+  response.send(req.body);
+});
+
 app.post('/api/saveFilesToFlash', async (req, response) => {
   response.send(req.body);
   clearUpUSB()
@@ -318,23 +318,18 @@ app.post('/api/saveFilesToFlash', async (req, response) => {
       copyProgress: 0,
       countCopiedPhotos: 0,
     });
-    const { files } = req.body;
+    const { 
+      files,
+      isNeedLocalCopy = true,
+    } = req.body;
     const total = Object.keys(files).length;
 
     // create appropriate folder in printedFolder
-    {
-      const dest = path.join(PRINTED_DIR, getCurMoment());
-      await fs.mkdirs(
+    if (isNeedLocalCopy) {
+      await createPrintedFolder({
         dest,
-      );
-      await fs.writeJSON(
-        path.join(dest, PRINT_JSON),
         files,
-      );
-
-      await fs.remove(
-        path.join(PRINTED_NEW, PRINT_JSON),
-      );
+      });
     }
 
     // copy to flash
@@ -640,13 +635,14 @@ function calcProgress({
 }
 
 function getBackwardPath({
+  rootDir,
   curWindow,
 }) {
   const a = state[curWindow]
   .split(path.sep)
   .slice(0, -1);
 
-  if (ALBUM_DIR === state[curWindow]) return ALBUM_DIR;
+  if (rootDir === state[curWindow]) return rootDir;
   return path.join(
     ...state[curWindow]
     .split(path.sep)
@@ -729,4 +725,101 @@ function setState(propsUpd) {
     ...state,
     ...propsUpd,
   };
+}
+
+function getPathWithoutRoot({
+  path,
+}) {
+  return path.replace(ALBUM_DIR, '');
+}
+
+function getToward({
+  rootDir = ALBUM_DIR,
+  reqPath,
+} = {}) {
+  return (
+    {
+      body: {
+        dir = '',
+        resetTo, 
+        curWindow,
+      },
+    },
+    res,
+  ) => {
+
+    browseFiles({
+      curWindow,
+      reqPath: getReqPath(),
+      rootDir,
+      send: res.send.bind(res),
+    });
+
+    function getReqPath() {
+      return (reqPath !== undefined && reqPath) ||
+        (resetTo !== undefined && path.join(rootDir, resetTo)) ||
+        path.join(state[curWindow], path.basename(dir));
+    }
+  }
+}
+
+function getBackward({
+  rootDir,
+} = {}) {
+  return (req, res) => getToward({
+    rootDir,
+    reqPath: getBackwardPath({
+      rootDir,
+      curWindow: req.body.curWindow,
+    }),
+  })(req, res);
+};
+
+function browseFiles({
+  curWindow,
+  reqPath,
+  rootDir,
+  send,
+}) {
+  setState({
+    [curWindow]: reqPath,
+    curWindow,
+  });
+
+  findFiles({ 
+    reqPath,
+    doNeedDirs: true,       
+    onResolve,
+  })
+  
+
+  // ----------------------------------------
+  function onResolve({
+    files,
+    dirs,
+  }) {    
+    const myPath = reqPath === rootDir ? '' : 
+      path.join(reqPath).replace(rootDir, '');
+
+    send({
+      files,
+      dirs,
+      path: myPath,
+      sep: path.sep,
+    });
+  };
+}
+
+async function createPrintedFolder({
+  dest,
+  files,
+}) {
+  const dest = path.join(PRINTED_DIR, getCurMoment());
+  await fs.mkdirs(
+    dest,
+  );
+  return await fs.writeJSON(
+    path.join(dest, PRINT_JSON),
+    files,
+  );
 }

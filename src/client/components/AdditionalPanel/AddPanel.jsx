@@ -44,11 +44,14 @@ AdditionalPanel.forceUpdate = () => {};
 AdditionalPanel.getReqProps = ({ channel }) => { 
   const {
     API: { _get }, 
-    s: { appState }
+    s: { 
+      action,
+      actions,
+    },
   } = channel;
   
   return {
-    activeComponentActions: _get(appState, ['actions', appState.action, 'additionalActions'], []),
+    activeComponentActions: _get(actions, [action, 'additionalActions'], []),
   };
 }
 

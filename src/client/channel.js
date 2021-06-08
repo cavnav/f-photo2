@@ -44,7 +44,7 @@ function ChannelWrap(props) {
       getAPI = () => {},
       getReqProps = () => {},
     }) {
-      // For getting CompAPI.
+      // For getting CompAPI from channel.
       fn.API = {
         [fn.name]: {
           API: `${fn.name}API`,
@@ -110,7 +110,11 @@ function ChannelWrap(props) {
         [propName, prop, sourceVal, alias = prop]
       ] = stack;
       // 
-      if (prop.constructor !== Object) res[prop === 1 ? propName : alias] = sourceVal;
+      if (prop.constructor === Function) Object.assign(
+        res,
+        prop(sourceVal),
+      );
+      else if (prop.constructor !== Object) res[prop === 1 ? propName : alias] = sourceVal;
       else stack.push(...Object.entries(prop).map((e) => {
         if (
           sourceVal[e[0]] !== undefined ||

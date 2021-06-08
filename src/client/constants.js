@@ -9,7 +9,7 @@ export const eventNames = {
 };
 
 const {
-  ExitFromAlbum,
+  ExitFromFolder,
   ToggleRightWindow,
   SaveChanges,
   SavePhotosToFlash,
@@ -18,6 +18,7 @@ const {
   MoveSelections,
   AddAlbum,
   RemoveSelections,
+  Label,
 } = AdditionalActionsComps;
 
 class Action {
@@ -57,10 +58,10 @@ class AdditionalActions {
     });
   }
 
-  [ExitFromAlbum.name] = new Action({ 
+  [ExitFromFolder.name] = new Action({ 
     title: 'Закрыть альбом',
     isActive: true,
-    componentName: ExitFromAlbum.name,    
+    componentName: ExitFromFolder.name,    
   });
   [ExitFromOnePhoto.name] = new Action({
     title: 'Вернуть фото',
@@ -98,6 +99,10 @@ class AdditionalActions {
   [RemoveSelections.name] = new Action({
     isActive: true,
     componentName: RemoveSelections.name,
+  });
+  [Label.name] = new Action({
+    isActive: true,
+    componentName: Label.name,
   });
 }
 
