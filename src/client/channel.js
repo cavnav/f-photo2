@@ -10,6 +10,8 @@ import {
 
 export const channel = ChannelWrap();
 
+const compDepsDefaultId = 'default';
+
 function ChannelWrap(props) {
   class Channel {
     s; // states;
@@ -52,18 +54,21 @@ function ChannelWrap(props) {
       };
 
       const comp = this.comps[fn.name] = {
-        deps: {
+        depends: {
           default: {},
-        }, // Component own props for API methods.
-        setCompDeps: undefined, // Set state, setState, others deps to component.
+        }, // Component own props for API methods.      
+        createSetCompDeps, // Set state, setState, others deps to component.
+        getCompDeps,
         getReqProps() {
           return getReqProps({ // shared Apps props.
             channel,          
           })
         },
       };
-      comp.createSetCompDeps = createSetCompDeps.bind(comp);
 
+      Object.defineProperty(comp, 'setCompDeps', {
+        get: () => setCompDeps.bind(comp),
+      });
       Object.defineProperty(comp, 'API', {
         get: () => getAPI({ // Component API.
           channel: this,
@@ -71,9 +76,7 @@ function ChannelWrap(props) {
       });
 
       Object.defineProperty(comp, 'deps', {
-        get: () => this.deps[({ // Component API.
-          channel: this,
-        }),
+        get: getCompDeps.bind(comp),
       });
 
       return comp;
@@ -167,15 +170,32 @@ function ChannelWrap(props) {
   return new Channel(props);
 }
 
-function createSetCompDeps({ props }) {
-  return function ({
+function getCompDeps(props = {}) {
+  if (
+    props.hasOwnProperty('compId') && 
+    this.depends[props.compId] === undefined
+  ) {
+    return this.depends[props.compId] = {};
+  } 
+  return this.depends[props.compId] || this.depends.default;
+} 
+
+function setCompDeps(props) {
+  Object.assign(
+    this.getCompDeps(props),
+    props?.deps,
+  );
+}
+
+function createSetCompDeps(props) {
+  const that = this;
+  return ({
     deps,
-  }) {
-    const depsId = props.depsId ?? 'default';
-    Object.assign(
-      this.deps[depsId],
+  }) => {        
+    that.setCompDeps({
+      ...(props.compId && { compId: props.compId }),
       deps,
-    );
+    });
   };
 }
 

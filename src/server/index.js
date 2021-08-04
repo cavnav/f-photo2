@@ -6,8 +6,8 @@ const bodyParser = require('body-parser');
 const fs = require('fs-extra');
 const Jimp = require('jimp');
 const path = require('path');
-const usbDetect = require('usb-detection');
-const drivelist = require('drivelist');
+// const usbDetect = require('usb-detection');
+// const drivelist = require('drivelist');
 const find = require('find');
 
 

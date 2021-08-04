@@ -15,7 +15,7 @@ export function Label(
   const [state] = useMyReducer({
     initialState: stateInit,
     setCompDeps: Comp.createSetCompDeps({
-      depsId: props.id,
+      compId: props.id,
     }),
   });
 
@@ -40,7 +40,8 @@ function getAPI({
 }) {
   return {
     forceUpdate: (props) => {
-      Comp.deps.setState(getExistsProps({
+      const deps = Comp.getCompDeps(props);
+      deps.setState(getExistsProps({
         obj: props,
         rp: {
           title: 1,

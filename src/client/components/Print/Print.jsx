@@ -36,9 +36,25 @@ export function Print({
   setTimeout(() => {
     const rp = PrintComp.getReqProps();
     rp.LabelAPI.forceUpdate({
-      title: '123',
+      compId: 'd1',
+      title: 'd1',
     });
   }, 10000);
+
+  setTimeout(() => {
+    const rp = PrintComp.getReqProps();
+    rp.LabelAPI.forceUpdate({
+      title: 'default',
+    });
+  }, 7000);
+
+  setTimeout(() => {
+    const rp = PrintComp.getReqProps();
+    rp.LabelAPI.forceUpdate({
+      compId: 'd2',
+      title: 'd2',
+    });
+  }, 15000);
   function render() {
     return (
       <div 
@@ -47,10 +63,10 @@ export function Print({
       >
         <Label
           id="d1"
-        >1</Label>
+        >x1</Label>
         <Label
           id="d2"
-        >2</Label>
+        >x2</Label>
         { state.loading && <Spin size="large" /> }
         { Object.keys(state.filesToPrint).length === 0 && (
           <Dirs
@@ -338,6 +354,9 @@ function getReqProps({ channel }) {
 
 function getAPI(
 ) {
+  const getCompDeps = () => Comp.deps({
+    compId: props.compId,
+  });
   return {
     saveToFlash() {
       const { 
@@ -515,7 +534,7 @@ function isToPrint({
   return [undefined, 0].includes(val) ? false : true;
 }
 
-function isNeedToSaveFilesToPrint(props) {
+function isNeedToSaveFilesToPrint(props) { 
   const {
     deps,
   } = PrintComp;
