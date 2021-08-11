@@ -5,7 +5,14 @@
 
 .DialogWrap {
   position: fixed;
-};
+}
 
+.Dialog .title {
+  white-space: nowrap;
+}
+
+.Dialog input {
+  margin-right: var(--base-gap);
+}
 
 

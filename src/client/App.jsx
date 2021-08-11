@@ -2,6 +2,7 @@
 // content-visibility
 // ctg file
 // add loading
+// +NaN
 // Failed to load resource
   // add icon
 // rename folder by id on serverSide. Rename reset otherside path to root.
@@ -9,8 +10,8 @@
 // remove folder error in two  windows mode. trouble in server side.
 // help
 // scroll to selected folder
-// Two ExitFromFolder.
-// Highlight current action.
+// +Two ExitFromFolder.
+// Highlight current action in case OnePhoto
 // +Action = Browse/OnePhoto
   // onePhoto mode reset on reopen.
 // +print change count not working.
@@ -42,7 +43,7 @@ import './app.css';
 
 import React from 'react';
 import { additionalActions } from './constants';
-import { Actions, ControlPanel, Action, AdditionalPanel} from './components';
+import { Actions, ControlPanel, Action, AdditionalPanel, Print} from './components';
 import { useMyReducer } from './functions';
 import { get as _get } from 'lodash';
 import { channel } from './Channel';
@@ -95,9 +96,7 @@ export function App() {
       <ControlPanel 
         {...channel.essentials(ControlPanel)}
       />
-      <AdditionalPanel
-        {...channel.essentials(AdditionalPanel)}
-      />
+      <AdditionalPanel/>
       <Action 
         {...channel.essentials(Action)}
       />
@@ -155,18 +154,10 @@ function getAppStateInit(
       Print: {
         title: 'Печатать',
         isActive: true,
-        additionalActions: [
-          additionalActions.Label,
-          additionalActions.ExitFromFolder,
-          additionalActions.SavePhotosToFlash,
-        ],
       },
       Share: {
         title: 'Отправить',
         isActive: true,
-        additionalActions: [
-          additionalActions.SharePhotos,
-        ],
       },
       // Help: {
       //   title: '?',

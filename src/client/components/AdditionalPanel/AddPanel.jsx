@@ -1,47 +1,44 @@
-import React, { useState, useEffect, useReducer } from 'react';
+import React from 'react';
 import { AdditionalActionsComps } from '../';
+import { channel } from '../../Channel';
+import { useMyReducer } from '../../functions';
 
 import './styles.css';
 
-export function AdditionalPanel({
-  channel,
-  tempReducer,
-  activeComponentActions,
-}) {
-  const [state, setState] = useReducer(tempReducer, stateInit);
-  const [ignored, forceUpdate] = useReducer(x => !x, false);
+const Comp = channel.addComp({
+  fn: AdditionalPanel,
+  getReqProps,
+  getAPI,
+});
 
-  AdditionalPanel.forceUpdate = forceUpdate;
+export function AdditionalPanel(
+) {
+  useMyReducer({ 
+    initialState: getInitialState(),
+    setCompDeps: Comp.setCompDeps,
+  });
 
-  if (activeComponentActions.length === 0) return null;
+  const rp = Comp.getReqProps();  
+  if (rp.activeComponentActions.length === 0) return null;
 
   return (
     <div 
       className='AdditionalPanel'       
     >
-      { getItems() }
+    {
+      rp.activeComponentActions
+      .map((
+        Action,
+        ind,
+       ) => <Action key={ind} />)
+    }
     </div>
   );
 
   // ----------------
-
-  function getItems() {
-    return activeComponentActions
-      .map(action => {
-        const Action = action.isActive ? AdditionalActionsComps[action.componentName] : () => null;
-      
-        return (
-          <Action 
-            {...channel.essentials(Action, { parentProps: action })}
-          />
-        );
-      });
-  }
 }
 
-AdditionalPanel.forceUpdate = () => {};
-
-AdditionalPanel.getReqProps = ({ channel }) => { 
+function getReqProps({ channel }) { 
   const {
     API: { _get }, 
     s: { 
@@ -51,14 +48,22 @@ AdditionalPanel.getReqProps = ({ channel }) => {
   } = channel;
   
   return {
-    activeComponentActions: _get(actions, [action, 'additionalActions'], []),
+    activeComponentActions: _get(
+      actions, 
+      [action, 'additionalActions'], 
+      channel.comps[action].API?.getAdditionalActions?.() || []
+    ),
   };
 }
 
-AdditionalPanel.getAPI = () => {
+function getAPI() {
   return {
-    forceUpdate: AdditionalPanel.forceUpdate,
+    forceUpdate: () => {
+      Comp.deps.setState?.({});
+    },
   };
 };
 
-const stateInit = {};
+function getInitialState() {
+  return {};
+};

@@ -3,6 +3,7 @@ import './styles.css';
 import React from 'react';
 
 import { 
+  AdditionalPanel,
   Stepper,
 } from '../';
 import { addHandlers, getBackgroundImageStyle, myCrop, useMyReducer } from '../../functions';
@@ -16,6 +17,7 @@ import { ExitFromFolder, Empty } from '../';
 import { Label } from '../Label/Label';
 import { Dialog } from '../Dialog/Dialog';
 import { Select } from '../Dialog';
+import { SavePhotosToFlash } from '../SavePhotosToFlash/SavePhotosToFlash';
 
 const resumeObj = new ResumeObj({
   selector: [
@@ -32,41 +34,13 @@ const PrintComp = channel.addComp({
 });
 
 export function Print({  
-}) {
-  setTimeout(() => {
-    const rp = PrintComp.getReqProps();
-    rp.LabelAPI.forceUpdate({
-      compId: 'd1',
-      title: 'd1',
-    });
-  }, 10000);
-
-  setTimeout(() => {
-    const rp = PrintComp.getReqProps();
-    rp.LabelAPI.forceUpdate({
-      title: 'default',
-    });
-  }, 7000);
-
-  setTimeout(() => {
-    const rp = PrintComp.getReqProps();
-    rp.LabelAPI.forceUpdate({
-      compId: 'd2',
-      title: 'd2',
-    });
-  }, 15000);
+}) {  
   function render() {
     return (
       <div 
         className="Print layout"
         onClick={onClickDispatcher}
-      >
-        <Label
-          id="d1"
-        >x1</Label>
-        <Label
-          id="d2"
-        >x2</Label>
+      >        
         { state.loading && <Spin size="large" /> }
         { Object.keys(state.filesToPrint).length === 0 && (
           <Dirs
@@ -202,7 +176,11 @@ export function Print({
     input && input.focus();
   });
   React.useEffect(
-    resetTo,
+    () => {
+      const rp = PrintComp.getReqProps();
+      rp.AdditionalPanelAPI.forceUpdate();
+      resetTo();
+    },
     []
   );
 
@@ -226,7 +204,7 @@ export function Print({
   function onKeyDown(e) {     
     const input = document.activeElement;
 
-    if (input === undefined) return;
+    if (input === document.body) return;
 
     const photoSrc = input.getAttribute('keyid');
     const cntSource = Number(input.value);
@@ -348,6 +326,7 @@ function getReqProps({ channel }) {
     comps: {
       ...ExitFromFolder.API,
       ...Label.API,
+      ...AdditionalPanel.API,
     }, 
   });
 };
@@ -370,10 +349,19 @@ function getAPI(
     getFilesToPrint,
     togglePrint,
     isFileToPrint,
+    getAdditionalActions,
   };
 
 
   // ------------------------
+  function getAdditionalActions() {
+    return [
+      Label,
+      ExitFromFolder,
+      SavePhotosToFlash,
+    ];
+  }
+
   function isFileToPrint({
     src,
   }) {
@@ -447,6 +435,7 @@ function getAPI(
     });
 
     rp.ExitFromFolderAPI.forceUpdate({
+      title: 'Закрыть ',
       folderName: path ? path : undefined,
       onClick: () => { 
         if (isNeedToSaveFilesToPrint().result) {

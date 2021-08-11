@@ -66,9 +66,8 @@ function ChannelWrap(props) {
         },
       };
 
-      Object.defineProperty(comp, 'setCompDeps', {
-        get: () => setCompDeps.bind(comp),
-      });
+      comp.setCompDeps = setCompDeps.bind(comp);
+
       Object.defineProperty(comp, 'API', {
         get: () => getAPI({ // Component API.
           channel: this,

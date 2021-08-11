@@ -40,6 +40,7 @@ export function Dialog({
     ),
     [Select.name]: (
       <Select
+        title={title}
         onAgree={onAgree}
         onCancel={onCancel}
       >

@@ -1,6 +1,7 @@
 import React from 'react';
 
 export function Select({
+  title,
   children,
   agreeTitle = 'Да',
   cancelTitle = 'Нет',
@@ -9,11 +10,10 @@ export function Select({
 }) {
   return (
     <dialog 
-      className="Dialog fontSize20"
+      className="Dialog fontSize20 flexCenter flexDirColumn"
     >        
-      <div 
-        className="flexCenter"        
-      >
+      <div className='title'>{title}</div>
+      <div>
         {children} 
         <input 
             type='button' 
