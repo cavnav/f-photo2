@@ -3,9 +3,8 @@ import './styles.css';
 import React from 'react';
 import { channel } from '../../Channel';
 import { getOppositeWindowObj, isCatalogSelected, isSameWindowPaths, useMyReducer } from '../../functions';
-import { Browse } from '../Browse/Browse';
+import { Browse, OnePhoto } from '../compNames';
 import { eventNames } from '../../constants';
-import { OnePhoto } from '../OnePhoto/OnePhoto';
 
 
 const MoveSelectionsComp = channel.addComp({

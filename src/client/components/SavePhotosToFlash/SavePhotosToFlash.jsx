@@ -1,6 +1,5 @@
 import React from 'react';
 import { channel } from '../../Channel';
-import { additionalActions } from '../../constants';
 import { useMyReducer } from '../../functions';
 import { Print } from '../Print/Print';
 import './styles.css';
@@ -38,18 +37,10 @@ function getReqProps({
   channel,
 }) {
   return channel.crop({
-      parentProps: { 
-        title: 1,
-        className: 1,
-      },
-      channel: {
-        comps: {
-          ...Print.API,
-        },
-      },
+    comps: {
+      ...Print.API,
     },
-    { parentProps: additionalActions.SavePhotosToFlash } // TODO. add props to use without parent.
-  );
+  });
 };
 
 const stateInit = {

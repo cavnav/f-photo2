@@ -42,17 +42,11 @@ import 'antd/dist/antd.css';
 import './app.css';
 
 import React from 'react';
-import { additionalActions } from './constants';
 import { Actions, ControlPanel, Action, AdditionalPanel, Print} from './components';
 import { useMyReducer } from './functions';
 import { get as _get } from 'lodash';
 import { channel } from './Channel';
 import { ResumeObj } from './resumeObj';
-import { ExitFromFolder } from './components/ExitFromFolder/ExitFromFolder';
-import { ToggleRightWindow } from './components/ToggleRightWindow/ToggleRightWindow';
-import { MoveSelections } from './components/MoveSelections/MoveSelections';
-import { AddAlbum } from './components/AddAlbum/AddAlbum';
-import { RemoveSelections } from './components/RemoveSelections/RemoveSelections';
 
 
 const resumeObj = new ResumeObj({
@@ -93,9 +87,7 @@ export function App() {
 
   return (    
     <div className="f-photo">     
-      <ControlPanel 
-        {...channel.essentials(ControlPanel)}
-      />
+      <ControlPanel />
       <AdditionalPanel/>
       <Action 
         {...channel.essentials(Action)}
@@ -129,39 +121,26 @@ function getAppStateInit(
     actions: {
       Copy: {
         title: 'Копировать',
-        isActive: true
+        isEnabled: true
       },
       Browse: {
         title: 'Смотреть',
-        isActive: true,
-        additionalActions: [
-          additionalActions[ExitFromFolder.name], 
-          additionalActions[ToggleRightWindow.name],
-          additionalActions[MoveSelections.name],
-          additionalActions[AddAlbum.name],
-          additionalActions[RemoveSelections.name],
-        ],
+        isEnabled: true,
       },
       OnePhoto: {
-        isActive: false,
-        additionalActions: [       
-          additionalActions.ExitFromOnePhoto,
-          additionalActions.SaveChanges,
-          additionalActions.RemoveSelections,
-          additionalActions[MoveSelections.name],
-        ],
+        isEnabled: false,
       },
       Print: {
         title: 'Печатать',
-        isActive: true,
+        isEnabled: true,
       },
       Share: {
         title: 'Отправить',
-        isActive: true,
+        isEnabled: true,
       },
       // Help: {
       //   title: '?',
-      //   isActive: true,
+      //   isEnabled: true,
       // }
     },
     ...resumed,    

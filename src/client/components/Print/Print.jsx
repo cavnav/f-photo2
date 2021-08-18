@@ -6,12 +6,12 @@ import {
   AdditionalPanel,
   Stepper,
 } from '../';
-import { addHandlers, getBackgroundImageStyle, myCrop, useMyReducer } from '../../functions';
+import { addHandlers, getBackgroundImageStyle, useMyReducer } from '../../functions';
 import { createSteps } from './createSteps';
 import { channel } from '../../Channel';
 import { Copying } from './components/Copying';
 import { Dirs } from '../Dirs/Dirs';
-import { ResumeObj } from '../compNames';
+import { ResumeObj } from '../../resumeObj';
 import { Spin } from 'antd';
 import { ExitFromFolder, Empty } from '../';
 import { Label } from '../Label/Label';
@@ -356,9 +356,14 @@ function getAPI(
   // ------------------------
   function getAdditionalActions() {
     return [
-      Label,
-      ExitFromFolder,
-      SavePhotosToFlash,
+      {
+        comp: ExitFromFolder,
+        isEnabled: true,
+      },
+      {
+        comp: SavePhotosToFlash,
+        isEnabled: true,
+      }
     ];
   }
 

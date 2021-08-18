@@ -177,3 +177,14 @@ body {
   width: 100%;
   z-index: 10000;
 }
+
+.btn {
+  padding: 5px;
+  user-select: none;
+  margin-right: 5px;
+  margin-top: 5px;
+  background-color: white;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.2), 0 1px 11px 0 rgba(0, 0, 0, 0.19);
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}

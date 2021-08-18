@@ -2,20 +2,27 @@ import './styles.css';
 import React, { useReducer, } from 'react';
 
 import { ResumeObj } from '../../resumeObj';
-import { getOppositeWindowObj } from '../../functions';
+import { getOppositeWindowObj, useMyReducer } from '../../functions';
 import { Print } from '../compNames';
 import { Dialog } from '../Dialog/Dialog';
 import { get as _get } from 'lodash';
+import { channel } from '../../Channel';
+import cn from 'classnames';
 
 const resumeObj = new ResumeObj();
+const Comp = channel.addComp({
+  fn: ControlPanel,
+  getReqProps,
+});
 
 export function ControlPanel({
-  tempReducer,
-  actions,
-  appStateAction,
-  setAppState,
 }) {
-  const [state, setState] = useReducer(tempReducer, stateInit);
+  const [state, setState] = useMyReducer({
+    initialState: stateInit,
+    setCompDeps: Comp.setCompDeps,
+  });
+
+  const rp = Comp.getReqProps();
   const onCancelDialogPrint = () => {
     setState({
       isDialogPrint: false,
@@ -26,13 +33,14 @@ export function ControlPanel({
       className="controlPanel flex"
       onClick={onClickAction}
     >
-      {Object.entries(actions)
-        .filter(([action, actionProps]) => actionProps.isActive)
+      {Object.entries(rp.actions)
+        .filter(([action, actionProps]) => actionProps.isEnabled)
         .map(([action, actionProps]) => {
-          const classNames = Object.keys({
+          const classNames = cn({
             action: true,
-            ...(action === appStateAction && { 'active' : true }),
-          }).join(' ');
+            active: action === rp.appStateAction,
+            btn: true,
+          });          
           return (
             <div key={action} className={classNames} data-id={action}>
               {actionProps.title}
@@ -65,7 +73,7 @@ export function ControlPanel({
       return;
     }
 
-    setAppState({
+    rp.setAppState({
       action: actionId,
     });
 
@@ -88,7 +96,7 @@ export function ControlPanel({
   };
 }
 
-ControlPanel.getReqProps = ({ channel }) => {
+function getReqProps ({ channel }) {
   return channel.crop({
     s: {
       action: 'appStateAction',

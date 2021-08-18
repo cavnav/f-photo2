@@ -39,7 +39,7 @@ const stateInit = {
 function getAPI({
 }) {
   return {
-    forceUpdate: (props) => {
+    forceUpdate: (props) => {      
       ExitFromFolderComp.deps.setState(getExistsProps({
         obj: props,
         rp: {

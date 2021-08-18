@@ -2,13 +2,13 @@ import './styles.css';
 
 import React from 'react';
 import { PhotoStatuses } from '..';
-import { additionalActions, } from '../../constants';
 import { Dialog } from '../';
-import { ResumeObj, resumeObjConstants } from '../../resumeObj';
+import { ResumeObj } from '../../resumeObj';
 import { getStateInit, myArray, refreshOppositeWindow, useMyReducer } from '../../functions';
 import { channel } from '../../Channel';
-import { Browse } from '../Browse/Browse';
+import { ExitFromFolder, RemoveSelections, MoveSelections } from '../';
 import { getCurDate } from '../../functions';
+import { Browse } from '../compNames';
 
 const resumeObj = new ResumeObj({
   selector: [
@@ -305,7 +305,6 @@ function getFitSize({ width, height }) {
 }
 
 function onTogglePhoto() {
-  additionalActions.SaveChanges.reset();
 }
 
 function getIndexes({
@@ -338,34 +337,7 @@ function onToggleNextPhoto({
 }
 
 function onImgServerRotate({
-  server,
-  state: { 
-    curPhoto,
-  },
-  stateUpd: {
-    curPhotoRotateDeg,
-  },
-  setState,
-}) { return;
-  additionalActions.SaveChanges.change({ 
-    set: {                                 
-      isActive: curPhotoRotateDeg !== 0,
-      onAction: {
-        API: () => server.imgRotate({
-          deg: curPhotoRotateDeg,
-          img: curPhoto,
-          path: curPhoto,
-        })
-        .then(res => {
-          setState({
-            action: onImgServerRotate,
-          });
-          additionalActions.SaveChanges.reset();
-        })                 
-      },
-    },
-  });
-}
+}) {}
 
 function getReqProps({ channel }) { 
   const props = channel.crop(
@@ -427,10 +399,28 @@ function getAPI({
     moveSelections,
     getCountSelections() {
       return 1;
-    }
+    },
+    getAdditionalActions,
   };
 
   // -------------------------
+  function getAdditionalActions() {
+    return [
+      {
+        isEnabled: true,
+        comp: ExitFromFolder,
+      },
+      {
+        isEnabled: false,
+        comp: RemoveSelections,        
+      },
+      {
+        isEnabled: false,
+        comp: MoveSelections,
+      },
+    ];
+  }
+
   function moveSelections() {
     const rp = OnePhotoComp.getReqProps();
     const deps = OnePhotoComp.deps;

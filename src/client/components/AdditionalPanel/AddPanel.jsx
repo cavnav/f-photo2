@@ -1,5 +1,4 @@
 import React from 'react';
-import { AdditionalActionsComps } from '../';
 import { channel } from '../../Channel';
 import { useMyReducer } from '../../functions';
 
@@ -16,6 +15,7 @@ export function AdditionalPanel(
   useMyReducer({ 
     initialState: getInitialState(),
     setCompDeps: Comp.setCompDeps,
+    fn: () => console.log('after dispatch'),
   });
 
   const rp = Comp.getReqProps();  
@@ -30,7 +30,14 @@ export function AdditionalPanel(
       .map((
         Action,
         ind,
-       ) => <Action key={ind} />)
+      ) => {
+        const Component = Action.comp({});
+        return Component ? (
+          <div key={`${Action.name}-${Action.compId ?? ind}`} className='btn'>
+            { Component }
+          </div>
+        ) : null;
+      })
     }
     </div>
   );
@@ -40,19 +47,14 @@ export function AdditionalPanel(
 
 function getReqProps({ channel }) { 
   const {
-    API: { _get }, 
     s: { 
       action,
-      actions,
     },
   } = channel;
   
   return {
-    activeComponentActions: _get(
-      actions, 
-      [action, 'additionalActions'], 
-      channel.comps[action].API?.getAdditionalActions?.() || []
-    ),
+    activeComponentActions: (channel.comps[action]?.API?.getAdditionalActions?.() || [])
+    .filter((action) => action.isEnabled),
   };
 }
 
