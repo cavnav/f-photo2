@@ -12,31 +12,27 @@ const Comp = channel.addComp({
 
 export function AdditionalPanel(
 ) {
-  useMyReducer({ 
+  const [state] = useMyReducer({ 
     initialState: getInitialState(),
     setCompDeps: Comp.setCompDeps,
-    fn: () => console.log('after dispatch'),
   });
 
-  const rp = Comp.getReqProps();  
-  if (rp.activeComponentActions.length === 0) return null;
+  if (state.actions.length === 0) return null;
 
   return (
     <div 
-      className='AdditionalPanel'       
+      className='AdditionalPanel btns'       
     >
     {
-      rp.activeComponentActions
+      state.actions
       .map((
         Action,
-        ind,
-      ) => {
-        const Component = Action.comp({});
-        return Component ? (
-          <div key={`${Action.name}-${Action.compId ?? ind}`} className='btn'>
-            { Component }
-          </div>
-        ) : null;
+      ) => {        
+        return (
+          <Action.comp 
+            key={Action.compId}
+          />        
+        );
       })
     }
     </div>
@@ -46,26 +42,23 @@ export function AdditionalPanel(
 }
 
 function getReqProps({ channel }) { 
-  const {
-    s: { 
-      action,
-    },
-  } = channel;
-  
-  return {
-    activeComponentActions: (channel.comps[action]?.API?.getAdditionalActions?.() || [])
-    .filter((action) => action.isEnabled),
-  };
+  return {};
 }
 
-function getAPI() {
+function getAPI({
+  deps,
+}) {
   return {
-    forceUpdate: () => {
-      Comp.deps.setState?.({});
+    renderIt: (props) => {
+      deps.setState({
+        actions: props.actions,
+      });
     },
   };
 };
 
 function getInitialState() {
-  return {};
+  return {
+    actions: [],
+  };
 };

@@ -1,11 +1,3 @@
 .AdditionalPanel {
   display: flex;
 }
-
-.AdditionalPanel > div {
-  display: flex;
-}
-
-.AdditionalPanel >div.btn:has(*) {
-  display: none;
-}

@@ -77,6 +77,7 @@ export function useMyReducer({
     deps: {
       state,
       setState: dispatch,
+      
     },
   });
 
@@ -375,4 +376,47 @@ export function getStateInit({
     ...stateDefault,
     ...resumed,
   };
+}
+
+export function getReqComps(props) { 
+  const compsMetaArr = getCompsMeta({
+    comps: props.comps,
+  });
+
+  return {
+    compsAPI: compsMetaArr.reduce(
+      (res, compMeta) => {
+        return {
+          ...res,
+          ...compMeta.comp.API,
+        };
+      }, 
+      {}
+    ),
+    compsMetaArr,
+    compsId: compsMetaArr.reduce((res, compMeta) => {
+      return {
+        ...res,
+        [compMeta.compId]: compMeta.compId,
+      };
+    }),
+  };
+
+  // ----------------------------------
+  function getCompsMeta(props) {
+    let compNum = 0;
+    let compName = '';
+    getCompsMeta = (Component) => {
+      if (compName !== Component.name) {
+        compNum = 0;
+      }
+      compNum = compNum + 1;
+      compName = Component.name;
+      return {
+        comp: Component,
+        compId: `${compName}-${compNum}`,      
+      };
+    };
+    return props.comps.map(getCompsMeta);
+  }
 }

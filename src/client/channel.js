@@ -10,8 +10,6 @@ import {
 
 export const channel = ChannelWrap();
 
-const compDepsDefaultId = 'default';
-
 function ChannelWrap(props) {
   class Channel {
     s; // states;
@@ -43,42 +41,25 @@ function ChannelWrap(props) {
 
     addComp({
       fn,
-      getAPI = () => {},
-      getReqProps = () => {},
+      getAPI,
+      getReqProps,
     }) {
-      // For getting CompAPI from channel.
+      // For getting CompAPI from channel.comps.
       fn.API = {
         [fn.name]: {
           API: `${fn.name}API`,
         },
       };
 
-      const comp = this.comps[fn.name] = {
-        depends: {
-          default: {},
-        }, // Component own props for API methods.      
-        createSetCompDeps, // Set state, setState, others deps to component.
-        getCompDeps,
-        getReqProps() {
-          return getReqProps({ // shared Apps props.
-            channel,          
-          })
-        },
-      };
-
-      comp.setCompDeps = setCompDeps.bind(comp);
-
-      Object.defineProperty(comp, 'API', {
-        get: () => getAPI({ // Component API.
-          channel: this,
-        }),
+      const baseComp = getNewChannelComp({
+        comp: fn,
+        getAPI,
+        getReqProps,
       });
+      this.comps[fn.name] = baseComp;
+      fn.baseComp = baseComp;
 
-      Object.defineProperty(comp, 'deps', {
-        get: getCompDeps.bind(comp),
-      });
-
-      return comp;
+      return baseComp;
     }
 
     essentials = (component, {
@@ -249,4 +230,43 @@ function getSelectorItems({
       from[propName],
     ];
   });
+}
+
+function getNewChannelComp({
+  comp,
+  getAPI,
+  getReqProps,
+}) {
+  return new class ChannelComp {
+    deps = {};
+    setCompDeps = (props) => {
+      Object.assign(
+        this.deps,
+        props.deps,
+      );
+    };
+
+    replicate() {
+      return {
+        comp,
+        chComp: new ChannelComp(),
+      };
+    }
+
+    getDeps() {
+      return this.deps;
+    }
+  
+    getAPI() {
+      return getAPI({
+        deps: this.deps,
+      });
+    }
+
+    getReqProps() {
+      return getReqProps({
+        deps: this.deps,
+      });
+    }
+  }
 }

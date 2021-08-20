@@ -9,14 +9,11 @@ const Comp = channel.addComp({
 });
 
 export function Label(
-  props,
 ) {
 
   const [state] = useMyReducer({
     initialState: stateInit,
-    setCompDeps: Comp.createSetCompDeps({
-      compId: props.id,
-    }),
+    setCompDeps: Comp.setCompDeps,
   });
 
   if (state.title === undefined) return null;
@@ -37,10 +34,10 @@ const stateInit = {
 };
 
 function getAPI({
+  deps,
 }) {
   return {
     forceUpdate: (props) => {
-      const deps = Comp.getCompDeps(props);
       deps.setState(getExistsProps({
         obj: props,
         rp: {

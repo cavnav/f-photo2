@@ -11,12 +11,18 @@ import {
 } from 'antd';
 
 import './styles.css';
-import { addHandlers, getBackgroundImageStyle, getOppositeWindowObj, myCrop, oppositeWindowCheckSamePaths, useMyReducer } from '../../functions';
+import { addHandlers, getBackgroundImageStyle, getOppositeWindowObj, getReqComps, myCrop, oppositeWindowCheckSamePaths, useMyReducer } from '../../functions';
 import { channel } from '../../Channel';
 import { ResumeObj } from '../../resumeObj';
 import { eventNames } from '../../constants';
-import { MoveSelections, ExitFromFolder, Empty, AddAlbum, RemoveSelections, ToggleRightWindow } from '../';
+import { ExitFromFolder } from '../ExitFromFolder/ExitFromFolder';
+import { ToggleRightWindow } from '../ToggleRightWindow/ToggleRightWindow';
+import { AddAlbum } from '../AddAlbum/AddAlbum';
+import { MoveSelections } from '../MoveSelections/MoveSelections';
+import { RemoveSelections } from '../RemoveSelections/RemoveSelections';
+import { Empty } from '../Empty/Empty';
 import { AdditionalPanel } from '../AdditionalPanel/AddPanel';
+
 
 const resumeObj = new ResumeObj({
   selector: [
@@ -104,9 +110,6 @@ export function Browse(
           event
         }) {
           const rp = Comp.getReqProps();
-          const {
-            setState,
-          } = Comp.deps;
           
           setState({      
             curPhotoInd: +event.target.getAttribute('ind'),
@@ -133,7 +136,9 @@ export function Browse(
 
   React.useEffect(() => {
     const rp = Comp.getReqProps();
-    rp.AdditionalPanelAPI.forceUpdate();
+    rp.AdditionalPanelAPI.renderIt({
+      actions: getAdditionalActionsObj().compsMeta,
+    });
     resetTo();
   }, []);
 
@@ -207,9 +212,6 @@ export function Browse(
   }
 
   function scrollToSelectedImage() {
-    const {
-      state,
-    } = Comp.deps;
     if (state.curPhotoInd === -1) {
       const curPhotoEl = document.querySelector(`.${Browse.name} .file.curFile`);
       if (curPhotoEl) {
@@ -225,9 +227,6 @@ export function Browse(
   }
 
   function resetTo() {
-    const {
-      state,
-    } = Comp.deps;
     const rp = Comp.getReqProps();
     const {
       onNavigate,
@@ -262,9 +261,6 @@ export function Browse(
   }
 
   function getFilesToRender() {
-    const {
-      state,
-    } = Comp.deps;
     const rp = Comp.getReqProps();
     const browsePath = state.path + state.sep;
     return state.files.map((file, ind) => {
@@ -344,6 +340,14 @@ function getReqProps({
   
   // const props = channel.crop(reqProps);
   
+  const additionalActions = [
+    ExitFromFolder,
+    ToggleRightWindow,
+    AddAlbum,
+    MoveSelections,
+    RemoveSelections,
+  ];
+
   return channel.crop({
     d: {
       setAppState: 1,
@@ -355,14 +359,22 @@ function getReqProps({
       },
     },
     comps: {
-      ...MoveSelections.API,
-      ...ExitFromFolder.API,
+      ...Label.API({ id: 'a1' }),
+      ...Label.API({ id: 'a2' }),
+      ...additionalActions.reduce((res, action) => {
+        const {comp = action, id} = action;
+
+        ...res,
+        ...comp.API,
+      },
+      {}),
       ...AdditionalPanel.API,
     },
   });
 };
 
 function getAPI({
+  deps,
 }) {
   return {
     getCountSelections,
@@ -375,37 +387,12 @@ function getAPI({
     removeSelections,
     changeSelections,
     resetAction,
-    getAdditionalActions,
   };
 
   // ----------------------------------------
-  function getAdditionalActions() {
-    return [
-      {
-        isEnabled: true,
-        comp: ExitFromFolder,
-      },
-      {
-        isEnabled: true,
-        comp: ToggleRightWindow,
-      },
-      {
-        isEnabled: true,
-        comp: MoveSelections,
-      },
-      {
-        isEnabled: true,
-        comp: AddAlbum,
-      },
-      {
-        isEnabled: true,
-        comp: RemoveSelections,
-      },
-    ];
-  }
 
   function resetAction() {
-    Comp.deps.setState({
+    deps.setState({
       action: '',
     });
   }
@@ -435,7 +422,7 @@ function getAPI({
   ) {
     const {
       setState,
-    } = Comp.deps;
+    } = deps;
 
     setState({
       ...res,
@@ -470,7 +457,7 @@ function getAPI({
   function getCountSelections() {
     const {
       state,
-    } = Comp.deps;
+    } = deps;
     return state ? state.selections.size : 0;
   }
 
@@ -478,7 +465,7 @@ function getAPI({
     const {
       state,
       setState,
-    } = Comp.deps;
+    } = deps;
 
     const rp = Comp.getReqProps();
 
@@ -522,7 +509,7 @@ function getAPI({
   }) {
     const {
       setState,
-    } = Comp.deps;
+    } = deps;
     const rp = Comp.getReqProps();
     if (albumName === '') {
       setState({
@@ -560,7 +547,7 @@ function getAPI({
     const {
       state,
       setState,
-    } = Comp.deps;
+    } = deps;
     const rp = Comp.getReqProps();
     
     if (state.selections.size === 0) {
@@ -670,7 +657,7 @@ function changeSelections({
   const {
     state,
     setState,
-  } = Comp.deps;
+  } = deps;
   
   setState({
     forceUpdate: false,
@@ -702,7 +689,7 @@ function changeSelections({
 function htmlResetSelections() {
   const { 
     state: { selections },
-  } = Comp.deps;
+  } = deps;
 
   [...document.querySelectorAll('.itemSelector')].forEach((item) => {
     const src = item.getAttribute('src');

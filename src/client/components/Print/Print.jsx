@@ -178,7 +178,9 @@ export function Print({
   React.useEffect(
     () => {
       const rp = PrintComp.getReqProps();
-      rp.AdditionalPanelAPI.forceUpdate();
+      rp.AdditionalPanelAPI.renderId({
+        actions: getAdditionalActions(),
+      });
       resetTo();
     },
     []
@@ -227,7 +229,7 @@ export function Print({
   ) {
     const {
       state,
-    } = PrintComp.deps;
+    } = deps;
     return (
       <>
         <div className="PrintItems">
@@ -310,7 +312,7 @@ export function Print({
 }
 
 function getReqProps({ channel }) {
-  return channel.crop({
+  const cropped = channel.crop({
     API: {
       comps: {
         server: {
@@ -323,24 +325,23 @@ function getReqProps({ channel }) {
         },
       },
     }, 
-    comps: {
-      ...ExitFromFolder.API,
-      ...Label.API,
-      ...AdditionalPanel.API,
-    }, 
   });
+
+  return {
+    ...cropped,
+    ExitFromFolderAPI: ExitFromFolder.chComp.getAPI(),
+    AdditionalPanelAPI: AdditionalPanel.chComp.getAPI(),
+  }
 };
 
-function getAPI(
-) {
-  const getCompDeps = () => Comp.deps({
-    compId: props.compId,
-  });
+function getAPI({
+  deps
+}) {
   return {
     saveToFlash() {
       const { 
         setState,
-      } = PrintComp.deps;
+      } = deps;
       setState({
         isSavePhotosToFlash: true,
       });
@@ -349,23 +350,10 @@ function getAPI(
     getFilesToPrint,
     togglePrint,
     isFileToPrint,
-    getAdditionalActions,
   };
 
 
-  // ------------------------
-  function getAdditionalActions() {
-    return [
-      {
-        comp: ExitFromFolder,
-        isEnabled: true,
-      },
-      {
-        comp: SavePhotosToFlash,
-        isEnabled: true,
-      }
-    ];
-  }
+  // -----------------------
 
   function isFileToPrint({
     src,
@@ -414,7 +402,7 @@ function getAPI(
   function getFilesToPrint(props = {}) {
     const {
       state,
-    } = PrintComp.deps;
+    } = deps;
     return props.photoSrc ? state.filesToPrint[props.photoSrc] : state.filesToPrint;
   }
 
@@ -579,4 +567,21 @@ function setGivenFilesToPrint({
       ...val,
     },
   };
+}
+
+function getAdditionalActions() {
+  return [
+    {
+      comp: <ExitFromFolder id='1' />,
+    },
+    {
+      comp: <ExitFromFolder id='2' />,
+    },
+    {
+      comp: <ExitFromFolder id='3' />,
+    },
+    {
+      comp: SavePhotosToFlash,
+    }
+  ];
 }

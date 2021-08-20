@@ -178,7 +178,7 @@ body {
   z-index: 10000;
 }
 
-.btn {
+.btns > div {
   padding: 5px;
   user-select: none;
   margin-right: 5px;
