@@ -1,33 +1,29 @@
 import './styles.css';
-import React, { useReducer, } from 'react';
+import React from 'react';
 
 import { ResumeObj } from '../../resumeObj';
 import { getOppositeWindowObj, useMyReducer } from '../../functions';
 import { Print } from '../compNames';
-import { Dialog } from '../Dialog/Dialog';
 import { get as _get } from 'lodash';
 import { channel } from '../../Channel';
 import cn from 'classnames';
+import { Notification } from '..';
 
 const resumeObj = new ResumeObj();
-const Comp = channel.addComp({
-  fn: ControlPanel,
+export const ControlPanel = channel.addComp({
+  name: 'ControlPanel',
+  render,
   getReqProps,
 });
 
-export function ControlPanel({
-}) {
+function render() {
+  const Comp = this;
   const [state, setState] = useMyReducer({
     initialState: stateInit,
-    setCompDeps: Comp.setCompDeps,
+    setCompDeps: Comp.bindSetCompDeps(),
   });
 
   const rp = Comp.getReqProps();
-  const onCancelDialogPrint = () => {
-    setState({
-      isDialogPrint: false,
-    });
-  }
   return (
     <div 
       className="controlPanel flex"
@@ -48,56 +44,37 @@ export function ControlPanel({
           );
         })
       }
-
-      {state.isDialogPrint &&
-        <Dialog
-          onCancel={onCancelDialogPrint}
-        >
-          <div>Печатать уже активно в противоположном окне</div>
-        </Dialog>
-      }
     </div>
   );
 
   // -----------------------------------------------------------------------
   function onClickAction(e) {
     const actionId = e.target.getAttribute('data-id');
-    const isSecondPrint = isTryToActiveSecondPrint({
-      actionId,
-    });
 
-    if (isSecondPrint) {
-      setState({
-        isDialogPrint: true,
-      });
-      return;
+    if (actionId === Print.name) {
+      // Чтобы не открывалась вторая печать.
+      const resumeData = resumeObj.state;
+      const { browserCount } = resumeData; 
+      if (browserCount > 1) {
+        const oppositeWindow = getOppositeWindowObj();
+        if (resumeData[oppositeWindow.name].App.action === Print.name) {
+          const rp = Comp.getReqProps();
+          rp.NotificationAPI.forceUpdate({
+            title: 'Нельзя открыть вторую печать',
+          });
+          return;
+        }
+      }
     }
 
     rp.setAppState({
       action: actionId,
     });
-
-    
-    // ---------------------------------------------------
-    function isTryToActiveSecondPrint({
-      actionId,
-    }) {
-      if (actionId !== Print.name) return false;
-      const oppositeWindowName = getOppositeWindowObj().name;
-      const oppositeWindowActionId = resumeObj.get({        
-        selector: [
-          oppositeWindowName,
-          'App',
-          'action',
-        ],
-      });
-      return actionId === oppositeWindowActionId;
-    }
   };
 }
 
 function getReqProps ({ channel }) {
-  return channel.crop({
+  const cropped = channel.crop({
     s: {
       action: 'appStateAction',
       actions: 1,
@@ -106,6 +83,11 @@ function getReqProps ({ channel }) {
       setAppState: 1,
     },
   });
+
+  return {
+    ...cropped,
+    NotificationAPI: Notification.getAPI(),
+  };
 };
 
 const stateInit = {

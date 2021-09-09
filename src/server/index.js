@@ -6,14 +6,14 @@ const bodyParser = require('body-parser');
 const fs = require('fs-extra');
 const Jimp = require('jimp');
 const path = require('path');
-// const usbDetect = require('usb-detection');
-// const drivelist = require('drivelist');
+const usbDetect = require('usb-detection');
+const drivelist = require('drivelist');
 const find = require('find');
 
 
 const app = express();
 
-const ALBUM_DIR = path.join('z:', 'album');
+const ALBUM_DIR = path.join('D:', 'album');
 const PRINTED_DIR = path.join(ALBUM_DIR, 'printed');
 const PRINTED_NEW = path.join(PRINTED_DIR, 'Новая');
 const SHARED_DIR = path.join(ALBUM_DIR, 'shared');
@@ -205,6 +205,7 @@ app.post('/api/resetNavigation', (req, res) => {
     curWindow,
   } = req.body;
 
+  // Not only ALBUM_DIR, PRINTED_DIR too.
   const resetToUpd = path.join(ALBUM_DIR, resetTo);
   state[curWindow] && setState({
     [curWindow]: resetToUpd,
@@ -213,15 +214,21 @@ app.post('/api/resetNavigation', (req, res) => {
   res.send(req.body);
 });
 
+app.post('/api/toward', getToward());
+app.post('/api/backward', getToward({
+  isBackward: true,
+}));
 app.post('/api/towardPrinted', getToward({
   rootDir: PRINTED_DIR,
   mapResponse: mapResponsePrinted
 }));
-app.post('/api/toward', getToward());
-app.post('/api/backward', getBackward());
-app.post('/api/backwardPrinted', getBackward({
-  rootDir: PRINTED_DIR,
-}));
+app.post('/api/backwardPrinted', getToward(
+  {
+    rootDir: PRINTED_DIR,
+    isBackward: true, 
+    mapResponse: mapResponsePrinted,
+  },
+));
 
 app.get('/api/checkCopyProgress', (req, res) => {
   res.send({
@@ -279,8 +286,7 @@ app.post('/api/savePrinted', async (req, response) => {
   response.send(req.body);
 });
 
-app.post('/api/saveFilesToFlash', async (req, response) => {
-  response.send(req.body);
+app.post('/api/saveFilesToFlash', async (req, response) => { 
   clearUpUSB()
   .then(async () => {
     setState({
@@ -289,35 +295,41 @@ app.post('/api/saveFilesToFlash', async (req, response) => {
     });
     const { 
       files,
-      isNeedLocalCopy = true,
+      folderNameField,
     } = req.body;
+
     const total = Object.keys(files).length;
 
     // create appropriate folder in printedFolder
-    if (isNeedLocalCopy) {
-      await createPrintedFolder({
-        files,
-      });
-    }
+    let { destDir } = await createPrintedFolder({
+      files,
+    });      
 
-    // copy to flash
-    {
-      const source = path.join(ALBUM_DIR);
-      const dest = path.join(state.usbDriveLetter);
-      copy({
-        source,
-        dest,
-        total,
-      });
-    }
+    response.send({
+      ...req.body,
+      destDir,
+    });
+
+    // copy to flash  
+    const source = path.join(ALBUM_DIR);
+    const dest = path.join(state.usbDriveLetter);
+    copy({
+      source,
+      dest,
+      total,
+      files,
+    });
 
     // ---------------------------------------
     async function copy({
       source,
       dest,
+      total,
+      files,
     }) {
       for (const file in files) {
-        const folder = String(files[file]);
+        const folder = String(files[file][folderNameField]);
+        if (folder === '0') continue;
         const fileName = path.basename(file);
         const sourceUpd = path.join(source, file);
         const destUpd = path.join(dest, folder, fileName);
@@ -331,6 +343,7 @@ app.post('/api/saveFilesToFlash', async (req, response) => {
           cntProcessed: countProcessed, 
           total,
         });
+
         setState({
           copyProgress: progress,
           countCopiedPhotos: countProcessed,
@@ -338,9 +351,6 @@ app.post('/api/saveFilesToFlash', async (req, response) => {
       }
     }
   })
-  .then(res => setState({
-    copyProgress: 100, 
-  }))
   .catch(console.error);
 });
 
@@ -601,10 +611,6 @@ function getBackwardPath({
   rootDir,
   curWindow,
 }) {
-  const a = state[curWindow]
-  .split(path.sep)
-  .slice(0, -1);
-
   if (rootDir === state[curWindow]) return rootDir;
   return path.join(
     ...state[curWindow]
@@ -638,6 +644,8 @@ async function findFiles({
     return `${fileUpd}`;
   });  
 
+  browseFiles = browseFiles.filter(isNotSVI);
+
   if (!doNeedDirs) return { 
     files: browseFiles, 
     dirs: [] 
@@ -657,6 +665,9 @@ async function findFiles({
   
 
   // ------------------------------------------- 
+  function isNotSVI(file) {
+    return !file.includes('System Volume Information');
+  }
   function isTopLevelFile(file) {
     return reqPath.length === file.lastIndexOf(path.sep);
   }
@@ -704,7 +715,7 @@ function getPathWithoutRoot({
 
 function getToward({
   rootDir = ALBUM_DIR,
-  reqPath,
+  isBackward,
   mapResponse, 
 } = {}) {
   return async (
@@ -717,7 +728,11 @@ function getToward({
     },
     res,
   ) => {  
-    const pathUpd = getReqPath();
+    const pathUpd = isBackward ? getBackwardPath({
+      rootDir,
+      curWindow,
+    }) : getReqPath();
+    
     const result = await browseFiles({
       curWindow,
       reqPath: pathUpd,
@@ -736,10 +751,10 @@ function getToward({
     
     res.send(mappedResult || result);
 
+
     // --------------------------------------------------------------
     function getReqPath() {
-      return (reqPath !== undefined && reqPath) ||
-        (resetTo !== undefined && path.join(rootDir, resetTo)) ||
+      return (resetTo !== undefined && path.join(rootDir, resetTo)) ||
         path.join(state[curWindow], path.basename(dir));
     }
   }
@@ -786,14 +801,17 @@ async function browseFiles({
 async function createPrintedFolder({
   files,
 }) {
-  const dest = path.join(PRINTED_DIR, getCurMoment());
+  const destDir = path.join(PRINTED_DIR, getCurMoment());
   await fs.mkdirs(
-    dest,
+    destDir,
   );
-  return await fs.writeJSON(
-    path.join(dest, PRINT_JSON),
+  await fs.writeJSON(
+    path.join(destDir, PRINT_JSON),
     files,
   );
+  return {
+    destDir,
+  };
 }
 
 async function mapResponsePrinted({

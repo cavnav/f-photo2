@@ -4,19 +4,23 @@ import { useMyReducer } from '../../functions';
 
 import './styles.css';
 
-const Comp = channel.addComp({
-  fn: AdditionalPanel,
+export const AdditionalPanel = channel.addComp({
+  name: 'AdditionalPanel',
+  render,
   getReqProps,
   getAPI,
 });
 
-export function AdditionalPanel(
+function render(
 ) {
   const [state] = useMyReducer({ 
     initialState: getInitialState(),
-    setCompDeps: Comp.setCompDeps,
+    setCompDeps: this.bindSetCompDeps(),
   });
 
+  React.useEffect(() => state.resolve(), [state.resolve]);
+
+  console.log('addPanel render', state.actions.length)
   if (state.actions.length === 0) return null;
 
   return (
@@ -29,7 +33,7 @@ export function AdditionalPanel(
         Action,
       ) => {        
         return (
-          <Action.comp 
+          <Action.r 
             key={Action.compId}
           />        
         );
@@ -50,8 +54,15 @@ function getAPI({
 }) {
   return {
     renderIt: (props) => {
-      deps.setState({
-        actions: props.actions,
+      console.log('addPanelRenderIt', props.actions)
+            
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          deps.setState({
+            actions: props.actions,
+            resolve,
+          });
+        });
       });
     },
   };
@@ -60,5 +71,6 @@ function getAPI({
 function getInitialState() {
   return {
     actions: [],
+    resolve: () => {},
   };
 };

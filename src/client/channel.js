@@ -40,45 +40,69 @@ function ChannelWrap(props) {
     }
 
     addComp({
-      fn,
+      name,
+      render,
       getAPI,
       getReqProps,
-    }) {
-      // For getting CompAPI from channel.comps.
-      fn.API = {
-        [fn.name]: {
-          API: `${fn.name}API`,
-        },
+    }) {      
+      const baseComp = new class ChannelComp {
+        r = render.bind(this);
+        name = name;        
+        deps = {};
+        // For getting CompAPI from channel.comps.
+        API = {
+          [name]: {
+            API: `${name}API`,
+          },
+        };
+
+        constructor({
+          compId = this.name,
+        } = {}) {
+          this.compId = compId ?? this.name;
+        }
+
+        bindSetCompDeps() {
+          return this.setCompDeps.bind(this);
+        }        
+
+        setCompDeps(props) {
+          Object.assign(
+            this.deps,
+            props.deps,
+          );
+        };
+    
+        clone({
+          compId,
+        }) {
+          return new ChannelComp({
+            compId,
+          });
+        }
+    
+        getDeps() {
+          return this.deps;
+        }
+      
+        getAPI() {
+          return getAPI({
+            Comp: this,
+            deps: this.deps,
+          });
+        }
+
+        getReqProps() {
+          return getReqProps({
+            channel,
+            deps: this.deps,
+          });
+        }
       };
-
-      const baseComp = getNewChannelComp({
-        comp: fn,
-        getAPI,
-        getReqProps,
-      });
-      this.comps[fn.name] = baseComp;
-      fn.baseComp = baseComp;
-
+      this.comps[name] = baseComp;      
       return baseComp;
     }
 
-    essentials = (component, {
-      parentProps = {}
-    } = {}) => {
-      if (component.getAPI) this.addAPI({
-        [component.name]: component.getAPI({
-          channel: this,
-        }),
-      });
-      if (component.getReqProps) return {
-        channel: this,
-        tempReducer,
-        ...component.getReqProps({
-          channel: this,
-          parentProps,
-        }),
-      };
-    }
     crop(
       source, 
       context, 
@@ -230,43 +254,4 @@ function getSelectorItems({
       from[propName],
     ];
   });
-}
-
-function getNewChannelComp({
-  comp,
-  getAPI,
-  getReqProps,
-}) {
-  return new class ChannelComp {
-    deps = {};
-    setCompDeps = (props) => {
-      Object.assign(
-        this.deps,
-        props.deps,
-      );
-    };
-
-    replicate() {
-      return {
-        comp,
-        chComp: new ChannelComp(),
-      };
-    }
-
-    getDeps() {
-      return this.deps;
-    }
-  
-    getAPI() {
-      return getAPI({
-        deps: this.deps,
-      });
-    }
-
-    getReqProps() {
-      return getReqProps({
-        deps: this.deps,
-      });
-    }
-  }
 }

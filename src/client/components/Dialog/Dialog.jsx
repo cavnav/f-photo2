@@ -2,74 +2,30 @@ import './styles.css';
 
 import React from 'react';
 import { tempReducer } from '../../functions';
-import { RemoveItems, Default, Select } from './';
-import * as Types from './';
 import { channel } from '../../Channel';
 
 
-const Comp = channel.addComp({
-  fn: Dialog,
+export const Dialog = channel.addComp({
+  name: 'Dialog',
+  render,
   getReqProps,
 });
 
-export function Dialog({ 
-  title,
-  type = Dialog.Default,
-  autoClose = true,
-  children, 
-  onAgree = () => {},
-  onCancel = () => {},
-}) {  
-
+function render() {  
   const [state] = React.useReducer(tempReducer, initState);
 
-  React.useEffect(() => {
-      setTimeout(() => { 
-        autoClose && onCancel();         
-      }, 2000);
-    }, 
-    []
-  );
-
-  const res = ({
-    [Default.name]: (
-      <Default
-      >
-        {children}
-      </Default>
-    ),
-    [Select.name]: (
-      <Select
-        title={title}
-        onAgree={onAgree}
-        onCancel={onCancel}
-      >
-        {children}
-      </Select>
-    ),
-    [RemoveItems.name]: (
-      <RemoveItems title={title} />
-    ),
-  })[type];
-
-  const rp = Comp.getReqProps();
+  const rp = this.getReqProps();
   return (
     <div 
       className='DialogWrap' 
-      style={{
-        left: rp.mouse.x,
-        top: rp.mouse.y,
-      }}
+      // style={{
+      //   top: rp.mouse.y,
+      // }}
     >
-      {res}
+      {this.props.children}
     </div>
   );
 }
-
-Object.assign(
-  Dialog,
-  Object.keys(Types).reduce((res, type) => { res[type] = type; return res; }, {})
-);
 
 const initState = {
   isEnabled: false,

@@ -1,8 +1,7 @@
-// TODO 
+// Переход на копирование после копирования
 // content-visibility
 // ctg file
 // add loading
-// +NaN
 // Failed to load resource
   // add icon
 // rename folder by id on serverSide. Rename reset otherside path to root.
@@ -10,44 +9,23 @@
 // remove folder error in two  windows mode. trouble in server side.
 // help
 // scroll to selected folder
-// +Two ExitFromFolder.
 // Highlight current action in case OnePhoto
-// +Action = Browse/OnePhoto
-  // onePhoto mode reset on reopen.
-// +print change count not working.
-// +error Browse resetTo path=""
-// +save files after create printFlash to appropriate folder
-// +active menu item
-// +remove cardreader from pc
-// +checkbox and remove
-// +print
-// +move
-// +Next on copy from flash
-// +extract files, then open new folder.
-// +OnePhoto error after f5
-// +ban print in two windows
-// +highlight statusIcons
-// +error location showing statusIcons  
-// +add checks to show/hide status icons.
-// -.toPrint, .toShare methode must get val.
-// -may be create global object filesWithStatuses
-// +zero print problem
-// +multiple changing status error
-// +save statuses on global resume object level
-// +forbid insert non number symbols
-// +progress
-// +fix layout
 
 import 'antd/dist/antd.css';
 import './app.css';
 
 import React from 'react';
-import { Actions, ControlPanel, Action, AdditionalPanel, Print} from './components';
-import { useMyReducer } from './functions';
+import { Actions, ControlPanel, AdditionalPanel, Notification} from './components';
+import { updFromObj, useMyReducer } from './functions';
 import { get as _get } from 'lodash';
 import { channel } from './Channel';
 import { ResumeObj } from './resumeObj';
 
+
+export const App = channel.addComp({
+  name: 'App',
+  render,
+});
 
 const resumeObj = new ResumeObj({
   selector: [
@@ -56,17 +34,14 @@ const resumeObj = new ResumeObj({
   ],
 });
 
-const Comp = channel.addComp({
-  fn: App,
-});
-
-export function App() {
+function render() {
+  const Comp = this;
   let s; // state
   const [d] = React.useState({}); // dispatch.
 
   [s, d.setAppState] = useMyReducer({
     initialState: getAppStateInit(),
-    setCompDeps: Comp.setCompDeps,
+    setCompDeps: Comp.bindSetCompDeps(),
     fn: resumeUpdFn,
   });
 
@@ -77,21 +52,24 @@ export function App() {
 
   React.useEffect(() => 
     {
-      document.addEventListener('mouseup', onMouseUp);
-      return () => document.removeEventListener('mouseup', onMouseUp);
+      const onMouseUpWrap = (e) => onMouseUp({ Comp, e });
+      document.addEventListener('mouseup', onMouseUpWrap);
+      return () => document.removeEventListener('mouseup', onMouseUpWrap);
     },
     []
   );
 
 
+  const Action = Actions[s.action];
 
   return (    
     <div className="f-photo">     
-      <ControlPanel />
-      <AdditionalPanel/>
-      <Action 
-        {...channel.essentials(Action)}
-      />
+      <ControlPanel.r />
+      <AdditionalPanel.r/>
+      <div className="Action">
+        <Action.r />
+      </div>
+      <Notification.r />
     </div>
   );
 
@@ -112,6 +90,7 @@ function getAppStateInit(
 
   return {
     action: Actions.Welcome.name,
+    notification: '',
     forceUpdate: false,
     doNeedHelp: false, // move to Help module.
     mouse: {
@@ -120,7 +99,7 @@ function getAppStateInit(
     },
     actions: {
       Copy: {
-        title: 'Копировать',
+        title: 'Добавить',
         isEnabled: true
       },
       Browse: {
@@ -128,6 +107,7 @@ function getAppStateInit(
         isEnabled: true,
       },
       OnePhoto: {
+        title: 'Смотреть',
         isEnabled: false,
       },
       Print: {
@@ -147,7 +127,12 @@ function getAppStateInit(
   };
 };
 
-function onMouseUp(e) {
+
+// Need to be sameFunction and App must be 'this'.
+function onMouseUp({
+  Comp, 
+  e
+}) {
   Comp.deps.setState({
     forceUpdate: false,
     mouse: {
@@ -155,4 +140,38 @@ function onMouseUp(e) {
       y: e.clientY,
     }
   });
+}
+
+export function getAppAPI(
+) {
+  const { deps } = App;
+  return {
+    setState: deps.setState,
+    toggleActions,
+    toggleNotification,
+  };
+
+  function toggleNotification({
+    title,
+    time = 2000,
+  }) {
+    const { deps } = App;
+    deps.setState({
+      notification: title,
+    });
+  }
+
+  function toggleActions({
+    action,
+    actions = {},
+  }) {
+    const { deps } = App;
+    deps.setState({
+      action,
+      actions: updFromObj({
+        obj: deps.state.actions,
+        objUpd: actions,      
+      }),
+    });
+  }
 }

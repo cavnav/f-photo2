@@ -4,7 +4,6 @@ import { get as _get, set as _set } from 'lodash';
 export const resumeObjConstants = {
   storageItemName:'resume',
   browserCount: 'browserCount',
-  Browse: 'Browse',
 };
 export class ResumeObj {
   constructor(
@@ -65,6 +64,18 @@ export class ResumeObj {
       JSON.stringify(
         val,
       ),
+    );
+  }
+
+  saveMerge({
+    val,
+  }) {
+    localStorage.setItem(
+      resumeObjConstants.storageItemName,
+      JSON.stringify({
+        ...this.state,
+        ...val,
+      }),
     );
   }
 

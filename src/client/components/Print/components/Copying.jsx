@@ -1,6 +1,7 @@
 import React from 'react';
 import { useMyReducer } from "../../../functions";
 import { Progress } from 'antd';
+import { Select } from '../../Dialog/';
 
 export const Copying = React.memo(function ({
   filesToPrint,
@@ -13,65 +14,45 @@ export const Copying = React.memo(function ({
     initialState: getStateInit(),
   });
 
-  const onAcceptCb = React.useCallback(() => onAccept(), [state.timer]);
-  
-  React.useEffect(() => timer(state.timer), [state.timer]);
-  React.useEffect(() => { if (state.isCopyCompleted === true) onCopyCompleted() }, [state.isCopyCompleted]);
+  React.useEffect(() => { 
+    if (state.isCopyCompleted === true) onCopyCompleted({
+      destDir: state.destDir,
+    }); 
+  }, [state.isCopyCompleted]);
 
   return (
     <div className="flexCenter flexDirColumn">
-      { (state.copyProgress === 0) && (
-          <>
-            <div>Внимание! Флешка будет очищена перед копированием, <span style={{fontSize: '30px'}}>{state.timer}</span></div> 
-            <input className="acceptBtn" type="button" value="ok" onClick={onAcceptCb}/>
-          </>
-        )
-      }
+      { (state.copyProgress === 0 && state.isDialogEraseFlash) && (
+        <Select
+          type={Select.name}
+          title='Внимание! Флешка будет очищена перед копированием. Продолжить'
+          onAgree={onAgree}
+          onCancel={onCopyCanceled}
+        />
+      )}
       <Progress className="copyProgress" type="circle" percent={state.copyProgress} />  
       { (state.isCopyCompleted) && <div>Все файлы успешно скопированы</div> }    
     </div>
-  );  
+  );
 
-  function timer(val) { 
-    if (val === 0) {
-      onCopyCanceled();
-      return;
-    }
-
-    if (state.clearTimerId) return;
-    const timerId = setTimeout(() => setState({ timer: val - 1 }), 1000);
-    
+  function onAgree() {
     setState({
-      timerId,
-    });
-  }
-
-  function getDataForCopyFiles({
-    filesToPrint,
-  }) {
-    return {
-      files: Object.entries(filesToPrint)
-      .filter(([_i, statuses]) => statuses.toPrint > 0)
-      .reduce((res, [fileSrc, cntCopies]) => { 
-          res[fileSrc] = cntCopies.toPrint;
-          return res; 
-        }, 
-        {}
-      ),
-    };
-  };
-
-  function onAccept() {
-    setState({
-      clearTimerId: state.timerId
+      isDialogEraseFlash: false,
     });
     
-    $saveFilesToFlash(
-      getDataForCopyFiles({
-        filesToPrint,
-      })    
-    )
-    .then(checkCopyProgress);
+    $saveFilesToFlash({
+      files: filesToPrint,
+      folderNameField: 'cnt',
+    })
+    .then(({
+      destDir,
+    }) => {
+      destDir && setState({
+        destDir,
+        forceUpdate: false,
+      });
+      checkCopyProgress();
+    });
 
     function checkCopyProgress() {
       $checkCopyProgress()
@@ -91,10 +72,9 @@ export const Copying = React.memo(function ({
   
 function getStateInit() {
   return {
+    destDir: undefined,
     copyProgress: 0,
     isCopyCompleted: false,
-    timer: 10,
-    timerId: 0,
-    clearTimerId: 0,
+    isDialogEraseFlash: true,
   };
 }

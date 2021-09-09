@@ -58,7 +58,7 @@ export function useMyReducer({
     ...initialState
   }),
 }) {
-  const [forceUpdate] = React.useReducer((x) => !x, false).slice(1);
+  const [_, forceUpdate] = React.useReducer((x) => !x, false);
   const [isFirstFnCallState] = React.useState(isFirstFnCall);
   const [state] = React.useState(init(initialState));
   
@@ -76,8 +76,7 @@ export function useMyReducer({
   setCompDeps && setCompDeps({
     deps: {
       state,
-      setState: dispatch,
-      
+      setState: dispatch,      
     },
   });
 
@@ -105,8 +104,7 @@ export function useMyReducer({
     stateUpd.forceUpdate === undefined &&
       forceUpdate();
 
-
-    return Promise.resolve();
+    return;
 
     // -----------------------
 
@@ -191,7 +189,7 @@ export function isSameWindowPaths() {
 }
 
 export function getOppositeWindowObj() {
-  return window.self === window.top ? window.parent : window.frames[0];
+  return window.self === window.top ? window.frames[0] : window.parent;
 }
 
 export function oppositeWindowCheckSamePaths() {

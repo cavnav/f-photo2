@@ -3,26 +3,46 @@ import {
   Help, 
   Actions,
   Dialog,
-  Dirs, 
+  Dirs,
+  Notification,
 } from '../';
 import { 
   Spin,
   Progress,
 } from 'antd';
 
+
+
 import './styles.css';
 import { addHandlers, getBackgroundImageStyle, getOppositeWindowObj, getReqComps, myCrop, oppositeWindowCheckSamePaths, useMyReducer } from '../../functions';
 import { channel } from '../../Channel';
 import { ResumeObj } from '../../resumeObj';
 import { eventNames } from '../../constants';
-import { ExitFromFolder } from '../ExitFromFolder/ExitFromFolder';
-import { ToggleRightWindow } from '../ToggleRightWindow/ToggleRightWindow';
-import { AddAlbum } from '../AddAlbum/AddAlbum';
 import { MoveSelections } from '../MoveSelections/MoveSelections';
-import { RemoveSelections } from '../RemoveSelections/RemoveSelections';
 import { Empty } from '../Empty/Empty';
 import { AdditionalPanel } from '../AdditionalPanel/AddPanel';
+import { Label } from '../Label/Label';
+import { AddAlbum  } from '../AddAlbum/AddAlbum';
+import { getAppAPI } from '../../App';
+import { Select } from '../Dialog';
 
+const ExitFromFolder = Label.clone({ compId: 'ExitFromFolder' });
+const ToggleRightWindow = Label.clone({ compId: 'ToggleRightWindow' });
+const RemoveSelections = Label.clone({ compId: 'RemoveSelections' });
+const additionalActions = [
+  ExitFromFolder,
+  ToggleRightWindow,
+  AddAlbum,
+  MoveSelections,
+  RemoveSelections,
+];
+
+export const Browse = channel.addComp({ 
+  name: 'Browse',
+  render,
+  getAPI,
+  getReqProps,
+});
 
 const resumeObj = new ResumeObj({
   selector: [
@@ -31,16 +51,11 @@ const resumeObj = new ResumeObj({
   ],
 });
 
-const Comp = channel.addComp({
-  fn: Browse,
-  getAPI,
-  getReqProps,
-});
-
-export function Browse(
+function render(
 ) {
+  const Comp = this;
   const [state, setState] = useMyReducer({
-    setCompDeps: Comp.setCompDeps,
+    setCompDeps: Comp.bindSetCompDeps(),
     initialState: {
       ...getStateInit(),     
     },
@@ -55,8 +70,6 @@ export function Browse(
       });
     }
   });
-
-  const rp = Comp.getReqProps();
 
   const onDialogCancel = React.useCallback(() => {
     setState({
@@ -80,15 +93,18 @@ export function Browse(
           const rp = Comp.getReqProps();
           const {
             onNavigate,
-          } = Comp.API;
+          } = Comp.getAPI();
           setState({
             loading: true,
           });
           const dir = event.target.getAttribute('src');
+          console.log('dispatch')
           rp.server.toward({ dir })
           .then(onNavigate)
           .then(() => {
-            changeSelections();
+            changeSelections({
+              Comp,
+            });
             setState({
               loading: false,
             });
@@ -101,6 +117,7 @@ export function Browse(
           const src = target.getAttribute('src');
           const { checked } = target;
           changeSelections({
+            Comp,
             src,
             checked,
           });
@@ -111,14 +128,21 @@ export function Browse(
         }) {
           const rp = Comp.getReqProps();
           
-          setState({      
+          setState({     
             curPhotoInd: +event.target.getAttribute('ind'),
-            action: Actions.OnePhoto.name,
           });
       
-          rp.setAppState({
+          rp.AppAPI.toggleActions({
             action: Actions.OnePhoto.name,
-          });
+            actions: {
+              [Actions.OnePhoto.name]: {
+                isEnabled: true,
+              },
+              [Browse.name]: {
+                isEnabled: false,
+              },
+            }
+          });          
         },
       ],
     }),
@@ -137,15 +161,48 @@ export function Browse(
   React.useEffect(() => {
     const rp = Comp.getReqProps();
     rp.AdditionalPanelAPI.renderIt({
-      actions: getAdditionalActionsObj().compsMeta,
-    });
+      actions: additionalActions,
+    })
+    .then(() => {
+      rp.AddAlbumAPI.forceUpdate({
+        onClick: (props) => onAddAlbum({
+          ...props,
+          Comp,
+        }),
+      });
+      rp.ToggleRightWindowAPI.forceUpdate({
+        title: 'Отобразить второе окно',
+        onClick: () => onToggleRightWindow({
+          Comp,
+        }),
+      });
+      rp.MoveSelectionsAPI.forceUpdate({
+        itemsCount: state.selections.size,
+        onClick: () => onMoveSelections({ Comp }),
+      });
+      rp.RemoveSelectionsAPI.forceUpdate({
+        title: getRemoveSelectionsTitle({
+          count: state.selections.size,
+        }),
+        onClick: () => Comp.getAPI().removeSelections(),
+      });
+    });    
+
     resetTo();
+
+    return () => {
+      console.log('browse unmount')
+      rp.AdditionalPanelAPI.renderIt({
+        actions: [],
+      });
+    };   
   }, []);
 
   React.useEffect(
     () => {      
-      document.addEventListener(eventNames.refreshWindow, refreshWindow);
-      return () => document.removeEventListener(eventNames.refreshWindow, refreshWindow);
+      const refreshWindowWrap = () => refreshWindow({ Comp });
+      document.addEventListener(eventNames.refreshWindow, refreshWindowWrap);
+      return () => document.removeEventListener(eventNames.refreshWindow, refreshWindowWrap);
     },
     []
   );
@@ -156,7 +213,9 @@ export function Browse(
   
   React.useEffect(boostPerfImgRender, [state.files]);
 
-  React.useEffect(htmlResetSelections, [state.selections]);
+  React.useEffect(() => htmlResetSelections({
+    Comp,
+  }), [state.selections]);
 
   return getRender();
 
@@ -188,19 +247,11 @@ export function Browse(
         />
 
         {state.isDialogEnabled && (
-          <Dialog       
+          <Dialog.r       
             onCancel={onDialogCancel}    
           >
             <div>{state.dialogTitle}</div>
-          </Dialog>
-        )}
-
-        {state.isDialogRemoveItem && (
-          <Dialog 
-            type={Dialog.RemoveItems}      
-            onCancel={onDialogRemoveCancel}    
-          >
-          </Dialog>
+          </Dialog.r>
         )}
 
         {/* <Help
@@ -230,14 +281,8 @@ export function Browse(
     const rp = Comp.getReqProps();
     const {
       onNavigate,
-    } = Comp.API;
+    } = Comp.getAPI();
 
-    if (state.action) {
-      rp.setAppState({
-        action: state.action,
-      });
-      return;
-    }
     setState({
       loading: true,
     });
@@ -311,91 +356,41 @@ function boostPerfImgRender() {
 function getReqProps({ 
   channel, 
 }) {
-  // 
-  // 1. list of all props
-  // 2. suggestion of every prop
-
-  // const BrowseProps = Comp.getAllProps();
-  // const rp = Comp.getReqProps({
-  //   [BrowseProps.appState]: 1,
-  //   [BrowseProps.photosState]: 1,            
-  // });
-  // rp.appState();
-  // rp.photosState();       
-  //
-
-  // function newObjFromNames({
-  //   names,
-  // }) {
-  //   return names.reduce((res, name) => { res[name] = name; return res; }, {});
-  // }  
-  
-  // const BrowseProps = newObjFromNames({
-  //   names: [
-  //     'appState',
-  //     'photoState',
-  //     'browseState',
-  //   ],
-  // });
-  
-  // const props = channel.crop(reqProps);
-  
-  const additionalActions = [
-    ExitFromFolder,
-    ToggleRightWindow,
-    AddAlbum,
-    MoveSelections,
-    RemoveSelections,
-  ];
-
-  return channel.crop({
-    d: {
-      setAppState: 1,
-      setPhotosState: 1,
-    },
+  const cropped = channel.crop({
     API: {
       comps: {
         server: 1, 
       },
     },
-    comps: {
-      ...Label.API({ id: 'a1' }),
-      ...Label.API({ id: 'a2' }),
-      ...additionalActions.reduce((res, action) => {
-        const {comp = action, id} = action;
-
-        ...res,
-        ...comp.API,
-      },
-      {}),
-      ...AdditionalPanel.API,
-    },
   });
+
+  return {
+    ...cropped,
+    NotificationAPI: Notification.getAPI(),
+    AppAPI: getAppAPI(),
+    RemoveSelectionsAPI: RemoveSelections.getAPI(),
+    ExitFromFolderAPI: ExitFromFolder.getAPI(),
+    ToggleRightWindowAPI: ToggleRightWindow.getAPI(),
+    AddAlbumAPI: AddAlbum.getAPI(),
+    MoveSelectionsAPI: MoveSelections.getAPI(),
+    AdditionalPanelAPI: AdditionalPanel.getAPI(),
+  };
 };
 
 function getAPI({
+  Comp,
   deps,
 }) {
   return {
-    getCountSelections,
     onNavigate,
     setToResumeObj,
     getResumeObj,
-    toggleRightWindow,
-    moveSelections,
-    addAlbum,
     removeSelections,
     changeSelections,
-    resetAction,
   };
 
   // ----------------------------------------
 
-  function resetAction() {
-    deps.setState({
-      action: '',
-    });
-  }
   function getResumeObj({
     selector,
   } = {}) {
@@ -431,18 +426,22 @@ function getAPI({
 
     const rp = Comp.getReqProps();
     rp.ExitFromFolderAPI.forceUpdate({
-      folderName: res.path,
-      onClick: onExitFolder,
+      title: res.path ? `Закрыть альбом ${res.path}` : '',
+      onClick: () => onExitFolder({ Comp }),
     });
 
 
     // --------------------------------------------
-    function onExitFolder() {
+    function onExitFolder({
+      Comp,
+    }) {
       const {
         changeSelections,
         onNavigate,
-      } = Comp.API;
-      changeSelections();
+      } = Comp.getAPI();
+      changeSelections({
+        Comp,
+      });
       resumeObj.save({
         val: {
           curPhotoInd: -1,
@@ -452,93 +451,6 @@ function getAPI({
       rp.server.backward()
       .then(onNavigate);
     }
-  }
-
-  function getCountSelections() {
-    const {
-      state,
-    } = deps;
-    return state ? state.selections.size : 0;
-  }
-
-  function moveSelections() {
-    const {
-      state,
-      setState,
-    } = deps;
-
-    const rp = Comp.getReqProps();
-
-    rp.server.moveToPath({
-      items: [...state.selections],
-      destWindow: window.oppositeWindow,
-    });
-
-    setState({
-      progress: 0, 
-    });
-
-    checkCopyProgressWrap();
-
-    // ---------------------------------------
-    function checkCopyProgressWrap({
-    } = {}) {
-      rp.server.$checkCopyProgress()
-        .then(({
-          copyProgress,
-        }) => {
-          setTimeout(() => (copyProgress === 100 ? null : checkCopyProgressWrap()), 500);
-          setState({
-            progress: copyProgress,
-          });
-
-          if (copyProgress === 100) {
-            changeSelections();
-            setState({
-              selections: new Set(),
-            });   
-                 
-            refreshWindows();
-          }
-        });
-    };
-  }
-
-  async function addAlbum({
-    albumName
-  }) {
-    const {
-      setState,
-    } = deps;
-    const rp = Comp.getReqProps();
-    if (albumName === '') {
-      setState({
-        isDialogEnabled: true,
-        dialogTitle: `Дай альбому название!`,
-      }); 
-      return;  
-    }
-    const res = await rp.server.addAlbum({
-      albumName,
-    });
-
-    if (!res) {
-      setState({
-        isDialogEnabled: true,
-        dialogTitle: `Альбом ${albumName} уже есть!`,
-      }); 
-      return;               
-    }
-
-    setState({
-      loading: true,
-    });
-    refreshWindows()
-    .then(() => {
-      setState({
-        loading: false,
-      });
-    });
   }
 
   function removeSelections(
@@ -557,6 +469,13 @@ function getAPI({
     if (state.isDialogRemoveItem === false) {
       setState({
         isDialogRemoveItem: true,
+      });
+
+      rp.NotificationAPI.forceUpdate({
+        title: 'Действительно удалить? Нажми еще раз',
+        onCancel: () => setState({
+          isDialogRemoveItem: false,
+        }),
       });
       return;
     }  
@@ -596,9 +515,13 @@ function getAPI({
           setState({
             loading: true,
           });
-          refreshWindows()
+          refreshWindows({
+            Comp,
+          })
           .then(() => {
-            changeSelections();
+            changeSelections({
+              Comp,
+            });
             setState({
               loading: false,              
             });
@@ -607,34 +530,37 @@ function getAPI({
       });
     }
   }
-
-  async function toggleRightWindow() {            
-    const states = {
-      1: 2,
-      2: 1,
-    };
-    const rp = Comp.getReqProps();
-    const appState = resumeObj.state;
-    const browserCount = appState.browserCount;
-    const browserCountUpd = states[browserCount];
-
-    resumeObj.save({ 
-      val: {   
-        browserCount: browserCountUpd,
-        rightWindow: {},
-      },
-    });    
-
-    if (browserCountUpd === 1) {      
-      await rp.server.resetNavigation({
-        curWindow: window.oppositeWindow,
-      });
-    }
-    window.location.reload();
-  }
 }
 
 // ------------------------------
+
+async function onToggleRightWindow({
+  Comp,
+}) {            
+  const states = {
+    1: 2,
+    2: 1,
+  };
+  const rp = Comp.getReqProps();
+  const appState = resumeObj.state;
+  const browserCount = appState.browserCount;
+  const browserCountUpd = states[browserCount];
+
+  resumeObj.saveMerge({ 
+    val: {   
+      browserCount: browserCountUpd,
+      rightWindow: {},
+    },
+  });    
+
+  // Чтобы сбросить путь с другой стороны и в следующий раз открывалось с начала.
+  if (browserCountUpd === 1) {      
+    await rp.server.resetNavigation({
+      curWindow: window.oppositeWindow,
+    });
+  }
+  window.location.reload();
+}
 
 function getCheckedAction(
   {
@@ -650,6 +576,7 @@ function getCheckedAction(
 }
 
 function changeSelections({
+  Comp,
   src,
   checked,
 } = {}
@@ -657,18 +584,25 @@ function changeSelections({
   const {
     state,
     setState,
-  } = deps;
+  } = Comp.getDeps();
   
   setState({
     forceUpdate: false,
     selections: updateSelections(),
-  })
-  .then(() => {
+  });
     const {
       MoveSelectionsAPI,
+      RemoveSelectionsAPI,
     } = Comp.getReqProps();
-    MoveSelectionsAPI.forceUpdate(); 
-  });
+
+    MoveSelectionsAPI.forceUpdate({
+      itemsCount: state.selections.size,
+    }); 
+    RemoveSelectionsAPI.forceUpdate({
+      title: getRemoveSelectionsTitle({
+        count: state.selections.size,
+      }),
+    });
 
 
   // ------------------------------------
@@ -686,10 +620,12 @@ function changeSelections({
   }
 }
 
-function htmlResetSelections() {
+function htmlResetSelections({
+  Comp,
+}) {
   const { 
     state: { selections },
-  } = deps;
+  } = Comp.getDeps();
 
   [...document.querySelectorAll('.itemSelector')].forEach((item) => {
     const src = item.getAttribute('src');
@@ -697,16 +633,23 @@ function htmlResetSelections() {
   });
 }
 
-function refreshWindow() {
+function refreshWindow({
+  Comp,
+}) {
+  console.log('refreshWindow');
   const rp = Comp.getReqProps();
   const {
     onNavigate,
-  } = Comp.API;
+  } = Comp.getAPI();
   return rp.server.toward().then(onNavigate);
 }
 
-async function refreshWindows() {
-  const promise = await refreshWindow();
+async function refreshWindows({
+  Comp,
+}) {
+  const promise = await refreshWindow({
+    Comp,
+  });
   const oppositeWindowObj = getOppositeWindowObj();
   oppositeWindowObj && oppositeWindowObj.document.dispatchEvent(
     new Event(eventNames.refreshWindow)
@@ -714,10 +657,101 @@ async function refreshWindows() {
   return promise;
 }
 
+async function onAddAlbum({
+  Comp,
+  albumName,
+}) {
+  console.log('onAddAlbum')
+  const {
+    setState,
+  } = Comp.getDeps();
+  const rp = Comp.getReqProps();
+  if (albumName === '') {
+    setState({
+      isDialogEnabled: true,
+      dialogTitle: `Дай альбому название!`,
+    }); 
+    return;  
+  }
+  const res = await rp.server.addAlbum({
+    albumName,
+  });
+
+  if (!res) {
+    setState({
+      isDialogEnabled: true,
+      dialogTitle: `Альбом ${albumName} уже есть!`,
+    }); 
+    return;               
+  }
+
+  setState({
+    loading: true,
+  });
+  refreshWindows({
+    Comp,
+  })
+  .then(() => {
+    setState({
+      loading: false,
+    });
+  });
+}
+
+function onMoveSelections({
+  Comp,
+}) {
+  const {
+    state,
+    setState,
+  } = Comp.getDeps();
+
+  const rp = Comp.getReqProps();
+
+  rp.server.moveToPath({
+    items: [...state.selections],
+    destWindow: window.oppositeWindow,
+  });
+
+  setState({
+    progress: 0, 
+    loading: true,
+  });
+
+  checkCopyProgressWrap();
+
+  // ---------------------------------------
+  function checkCopyProgressWrap({
+  } = {}) {
+    rp.server.$checkCopyProgress()
+      .then(({
+        copyProgress,
+      }) => {
+        setTimeout(() => (copyProgress === 100 ? null : checkCopyProgressWrap()), 500);
+        setState({
+          progress: copyProgress,
+        });
+
+        if (copyProgress === 100) {
+          refreshWindows({
+            Comp,
+          })
+          .then(() => {
+            changeSelections({
+              Comp,
+            });
+            setState({
+              loading: false,              
+            });
+          }); 
+        }
+      });
+  };
+}
+
 function getStateInit() {  
   const resumed = resumeObj.get();     
   return {
-    action: '',
     loading: true,
     previewWidth: 100,
     previewHeight: 100,
@@ -735,4 +769,10 @@ function getStateInit() {
     ...resumed,
     selections: new Set(resumed.selections),
   };
+}
+
+function getRemoveSelectionsTitle({
+  count,
+}) {
+  return count ? `Удалить ${count}` : '';
 }

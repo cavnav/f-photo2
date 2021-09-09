@@ -3,17 +3,18 @@ import React from 'react';
 import { channel } from '../../Channel';
 import { getExistsProps, useMyReducer } from '../../functions';
 
-const Comp = channel.addComp({
-  fn: ExitFromFolder,
+export const ExitFromFolder = channel.addComp({
+  name: 'ExitFromFolder',
+  render,
   getAPI,
 });
 
-export function ExitFromFolder(
+function render(
 ) {
 
   const [state] = useMyReducer({
     initialState: stateInit,
-    setCompDeps: Comp.setCompDeps,
+    setCompDeps: this.bindSetCompDeps(),
   });
 
   if (state.folderName === undefined) return null;

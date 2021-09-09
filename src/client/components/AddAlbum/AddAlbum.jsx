@@ -1,15 +1,22 @@
 import React from 'react';
-import { Browse } from '../Browse/Browse';
+import { channel } from '../../Channel';
+import { getExistsProps, useMyReducer } from '../../functions';
 
 import './styles.css';
 
-export function AddAlbum({
-  BrowseAPI,
-}) {
+export const AddAlbum = channel.addComp({
+  render,
+  name: 'AddAlbum',
+  getAPI,
+});
+
+function render() {
+  const Comp = this;
   const title = `Добавить альбом`;
 
-  const [state, setState] = React.useState({
-    ...stateInit,
+  const [state, setState] = useMyReducer({
+    setCompDeps: Comp.bindSetCompDeps(),
+    initialState: stateInit,
   });
 
   const onChangeAlbumName = React.useCallback(changeAlbumName, []);
@@ -37,7 +44,7 @@ export function AddAlbum({
 
   // -----------------------------------------------------------------------
   function onClick() {
-    BrowseAPI.addAlbum({
+    state.onClick({
       albumName: state.albumName,
     });
     setState({
@@ -53,16 +60,24 @@ export function AddAlbum({
   }
 }
 
-AddAlbum.getReqProps = function ({ channel }) {
-  return channel.crop({
-    comps: { 
-      ...Browse.API,
-    }
-  });
+function getAPI({
+  deps,
+}) {
+  return {
+    forceUpdate: (props) => {
+      deps.setState(getExistsProps({
+        obj: props,
+        rp: {
+          onClick: 1,
+        },
+      }));
+    },
+  };
 }
 
 const stateInit = {
   albumName: '',
   target: undefined,
+  onClick: () => {},
 };
 

@@ -1,24 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Progress, } from 'antd';
 import { Stepper, Actions } from '../';
 
 import 'antd/dist/antd.css';
 import './styles.css';
-import { resumeObjConstants } from '../../resumeObj';
-import { Browse } from '../Browse/Browse';
 import { channel } from '../../Channel';
+import { Browse } from '../compNames';
 
-const CopyComp = channel.addComp({
-  fn: Copy,
+export const Copy = channel.addComp({
+  name: 'Copy',
+  render,
   getReqProps,
 })
-export function Copy({
-  setAppState,
-  serverAPI,
-  BrowseAPI,
-}) {
-  
-  const [state, setState] = useState(stateInit);
+
+function render() {
+  const Comp = this;
+  const [state, setState] = React.useState(stateInit);
 
   return getRender();
 
@@ -99,7 +96,8 @@ export function Copy({
         stepNumDelta: -2,
       }, {
         trigger: () => {
-          setAppState({
+          const rp = Comp.getReqProps();
+          rp.setAppState({
             action: Actions.Browse.name,            
           });
         } 
@@ -116,12 +114,14 @@ export function Copy({
   }
 
   function $waitUSBconnectWrap() {
-    return serverAPI.$getUsbDevices()
+    const rp = Comp.getReqProps();
+    return rp.serverAPI.$getUsbDevices()
     .then(res => res.driveLetter);
   }
 
   function $getNewPhotosWrap() {
-    return serverAPI.$getNewPhotos()
+    const rp = Comp.getReqProps();    
+    return rp.serverAPI.$getNewPhotos()
       .then((res) => {
         setState({
           ...state,
@@ -131,10 +131,11 @@ export function Copy({
   }
 
   function $onCopyWrap() {
-    return serverAPI.$copyPhotos({
+    const rp = Comp.getReqProps();
+    return rp.serverAPI.$copyPhotos({
       userDirName: '',
     }).then((res) => {
-      const rp = CopyComp.getReqProps();
+      const rp = Comp.getReqProps();
       rp.BrowseAPI.setToResumeObj({
         val: {
           path: res.destDir,
@@ -145,7 +146,8 @@ export function Copy({
   }
 
   function $checkCopyProgressWrap() {
-    serverAPI.$checkCopyProgress()
+    const rp = Comp.getReqProps();
+    rp.serverAPI.$checkCopyProgress()
       .then((res) => {
         const isCopyCompleted = res.copyProgress === 100;
         setTimeout(() => (isCopyCompleted ? null : $checkCopyProgressWrap()), 500);        
@@ -161,7 +163,7 @@ export function Copy({
 function getReqProps ({
   channel,
 }) {
-  return channel.crop({
+  const cropped = channel.crop({
     d: {
       setAppState: 1,      
     },
@@ -170,10 +172,12 @@ function getReqProps ({
         server: 'serverAPI',
       }
     },
-    comps: {
-      ...Browse.API,
-    },
-  })
+  });
+
+  return {
+    ...cropped,
+    BrowseAPI: Browse.getAPI(),
+  };
 }
 
 const stateInit = {

@@ -1,14 +1,22 @@
 import './styles.css';
 
 import React from 'react';
-import { PhotoStatuses } from '..';
+import { Actions, AdditionalPanel, PhotoStatuses } from '..';
 import { Dialog } from '../';
 import { ResumeObj } from '../../resumeObj';
 import { getStateInit, myArray, refreshOppositeWindow, useMyReducer } from '../../functions';
 import { channel } from '../../Channel';
-import { ExitFromFolder, RemoveSelections, MoveSelections } from '../';
+import { MoveSelections } from '../';
 import { getCurDate } from '../../functions';
-import { Browse } from '../compNames';
+import { Label } from '../Label/Label';
+import { getAppAPI } from '../../App';
+
+export const OnePhoto = channel.addComp({
+  name: 'OnePhoto',
+  render,
+  getAPI,
+  getReqProps,
+});
 
 const resumeObj = new ResumeObj({
   selector: [
@@ -17,18 +25,21 @@ const resumeObj = new ResumeObj({
   ],
 });
 
-const OnePhotoComp = channel.addComp({
-  fn: OnePhoto,
-  getAPI,
-  getReqProps,
-});
-export function OnePhoto(
+const ExitFromOnePhoto = Label.clone({ compId: 'ExitFromOnePhoto '});
+const additionalActions = {
+  ExitFromOnePhoto,
+  // RemoveSelections,
+  // MoveSelections,
+};
+
+function render(
   {}
 ) { 
+  const Comp = this;
   const {
     resumeBrowse,
     server,
-  } = OnePhotoComp.getReqProps();
+  } = Comp.getReqProps();
   const myFiles = React.useMemo(() => myArray({
       items: resumeBrowse.files,
     }),
@@ -37,7 +48,7 @@ export function OnePhoto(
 
   const [state, setState] = useMyReducer({
     reducer: selfReducer,
-    setCompDeps: OnePhotoComp.setCompDeps,
+    setCompDeps: Comp.bindSetCompDeps(),
     initialState: selfReducer({
       state: {
         ...getStateInit({
@@ -59,7 +70,6 @@ export function OnePhoto(
   const imgRef = React.useRef(null);
 
   React.useEffect(addKeyDownListener);
-  React.useEffect(fitCurPhotoSize, [state.curPhotoInd]);
   React.useEffect(() => {
     if ({
       onTogglePhoto: 1, 
@@ -76,7 +86,7 @@ export function OnePhoto(
   React.useEffect(() => {
     const {
       BrowseAPI,
-    } = OnePhotoComp.getReqProps();
+    } = Comp.getReqProps();
     if (state.action === onTogglePhoto.name) {
       BrowseAPI.setToResumeObj({
         val: {
@@ -86,11 +96,45 @@ export function OnePhoto(
     }
   }, [state.curPhotoInd]);
 
+  React.useEffect(() => {
+    console.log('OnePhoto mount')
+    const rp = Comp.getReqProps();
+    rp.AdditionalPanelAPI.renderIt({
+      actions: Object.values(additionalActions),
+    })
+    .then(() => {
+      rp.ExitFromOnePhotoAPI.forceUpdate({
+        title: 'Вернуться в альбом',
+        onClick: () => {
+          rp.AppAPI.toggleActions({
+            action: Actions.Browse.name,
+            actions: {
+              [OnePhoto.name]: {
+                isEnabled: false,
+              },
+              [Actions.Browse.name]: {
+                isEnabled: true,
+              },
+            }
+          });  
+        },
+      });
+    }); 
+    
+    return () => {
+      const rp = Comp.getReqProps();
+      rp.AdditionalPanelAPI.renderIt({
+        actions: [],
+      });
+    };
+  }, []);
+
+
   return getRender();
 
   //--------------------------------------------------------------------------
   function getRender() {
-    const rp = OnePhotoComp.getReqProps();
+    const rp = Comp.getReqProps();
     const {
       resumeBrowse,
     } = rp;
@@ -109,18 +153,19 @@ export function OnePhoto(
                 opacity: state.opacity,
                 visibility: state.visibility,
               }} 
+              onLoad={fitCurPhotoSize}
             />
-            <PhotoStatuses 
+            <PhotoStatuses.r 
               id={id}
             />
           </>
         )}        
         {state.isDialogRemoveItem && (
-          <Dialog
+          <Dialog.r
             type={Dialog.RemoveItems}   
             onCancel={onDialogRemoveCancel}    
           >          
-          </Dialog>
+          </Dialog.r>
         )}
         {state.isNoItems && 'Пусто'}
       </div>
@@ -149,12 +194,10 @@ export function OnePhoto(
     };
   }
 
-  function fitCurPhotoSize() {
-    const photoEl = imgRef.current;  
-    if (!photoEl) return;  
+  function fitCurPhotoSize(e) {   
     Object.assign(
-      photoEl.style,
-      getFitSize(photoEl.getBoundingClientRect()),
+      e.target.style,
+      getFitSize(e.target.getBoundingClientRect()),
     );
   }
 
@@ -168,7 +211,7 @@ export function OnePhoto(
       curPhotoInd: state.curPhotoInd,
       filesLength: files.items.length,
     });
-    const rp = OnePhotoComp.getReqProps();
+    const rp = Comp.getReqProps();
     const stateUpd = {};
 
     switch (e.which) {  
@@ -293,15 +336,10 @@ function selfReducer({
 };
 
 function getFitSize({ width, height }) {
-  const res = {};
-  if (width > height * 2) {
-    res.width = '100%';
-    res.height = undefined;
-  } else {
-    res.width = undefined;
-    res.height = '100%';
-  }
-  return res;
+  return {
+    width: 'auto',
+    height: '100%',
+  };
 }
 
 function onTogglePhoto() {
@@ -347,16 +385,20 @@ function getReqProps({ channel }) {
           server: 1,
         },
       },
-      comps: {
-        ...PhotoStatuses.API,
-        ...Browse.API,
-      },         
     },
   ); 
   
+  const BrowseAPI = Actions.Browse.getAPI();
+
   return {
     ...props,
-    resumeBrowse: props.BrowseAPI.getResumeObj({
+    
+    AppAPI: getAppAPI(),
+    ExitFromOnePhotoAPI: ExitFromOnePhoto.getAPI(),
+    PhotoStatusesAPI: PhotoStatuses.getAPI(),
+    BrowseAPI,
+    AdditionalPanelAPI: AdditionalPanel.getAPI(),
+    resumeBrowse: BrowseAPI.getResumeObj({
       selector: {
         files: 1,
         path: 1,
@@ -368,6 +410,7 @@ function getReqProps({ channel }) {
 };
 
 function getAPI({  
+  deps,
 }) {
   return {
     removeSelections(
@@ -376,10 +419,10 @@ function getAPI({
       const {
         state,
         setState,
-      } = OnePhotoComp.deps;
+      } = deps;
       const {
         server,
-      } = OnePhotoComp.getReqProps();
+      } = OnePhoto.getReqProps();
 
       if (!state.curPhoto) return;
       
@@ -400,30 +443,10 @@ function getAPI({
     getCountSelections() {
       return 1;
     },
-    getAdditionalActions,
   };
 
-  // -------------------------
-  function getAdditionalActions() {
-    return [
-      {
-        isEnabled: true,
-        comp: ExitFromFolder,
-      },
-      {
-        isEnabled: false,
-        comp: RemoveSelections,        
-      },
-      {
-        isEnabled: false,
-        comp: MoveSelections,
-      },
-    ];
-  }
-
   function moveSelections() {
-    const rp = OnePhotoComp.getReqProps();
-    const deps = OnePhotoComp.deps;
+    const rp = OnePhoto.getReqProps();
     rp.server.moveToPath({
       items: [deps.state.curPhotoWithTime],
       destWindow: window.oppositeWindow,
@@ -438,8 +461,8 @@ function getAPI({
     const {
       state,
       setState,
-    } = OnePhotoComp.deps;
-    const rp = OnePhotoComp.getReqProps();
+    } = deps;
+    const rp = OnePhoto.getReqProps();
 
     state.files.delete(state.curPhotoInd);
 

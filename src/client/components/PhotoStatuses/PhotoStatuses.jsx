@@ -5,6 +5,15 @@ import { ResumeObj } from '../../resumeObj';
 import { channel } from '../../Channel';
 import { Print } from '../';
 
+
+
+export const PhotoStatuses = channel.addComp({
+  name: 'PhotoStatuses',
+  render,
+  getAPI,
+  getReqProps,
+});
+
 const resumeObj = new ResumeObj({
   selector: [
     PhotoStatuses.name,
@@ -12,13 +21,7 @@ const resumeObj = new ResumeObj({
   val: getStateInit(),
 });
 
-const PhotoStatusesComp = channel.addComp({
-  fn: PhotoStatuses,
-  getAPI,
-  getReqProps,
-});
-
-export function PhotoStatuses(
+function render(
   props,
 ) {
   const [state] = useMyReducer({
@@ -27,7 +30,7 @@ export function PhotoStatuses(
     },
     setCompDeps: ({
       deps,
-    }) => PhotoStatusesComp.setCompDeps({
+    }) => this.setCompDeps({
       deps: {
         ...deps,
         id: props.id,
@@ -44,7 +47,7 @@ export function PhotoStatuses(
 
   React.useEffect(
     () => {
-      const rp = PhotoStatusesComp.getReqProps();
+      const rp = this.getReqProps();
       const statusesUpd = rp.checkStatuses.reduce((res, check) => {
         const status = Object.keys(getStateInit()).find((status) => new RegExp(status, 'i').test(check.name));
         res[status] = check({
@@ -53,7 +56,7 @@ export function PhotoStatuses(
         return res;
       },
       {});
-      PhotoStatusesComp.deps.setState(statusesUpd);
+      this.deps.setState(statusesUpd);
     },
     [props.id]
   );
@@ -82,28 +85,23 @@ export function PhotoStatuses(
 function getReqProps({
   channel,
 }) {
-  const compsAPI = channel.crop({
-    comps: {
-      ...Print.API,
-    },
-  });
-
+  const PrintAPI = Print.getAPI();
   return {
-    ...compsAPI,
+    PrintAPI,
     checkStatuses: [
-      compsAPI.PrintAPI.isFileToPrint,
+      PrintAPI.isFileToPrint,
     ],
   };
 }
 
 function getAPI({
+  deps,
 }) {
   // Create auto-generated list of fns to toggle status.
   return {
 
     changePrintStatus: () => {
-      const rp = PhotoStatusesComp.getReqProps();
-      const { deps } = PhotoStatusesComp;
+      const rp = PhotoStatuses.getReqProps();
       const statusUpd = rp.PrintAPI.togglePrint({
         src: deps.id,
       });
