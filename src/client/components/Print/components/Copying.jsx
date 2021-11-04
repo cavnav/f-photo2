@@ -1,7 +1,7 @@
 import React from 'react';
-import { useMyReducer } from "../../../functions";
 import { Progress } from 'antd';
 import { Select } from '../../Dialog/';
+import { useMutedReducer } from '../../../mutedReducer';
 
 export const Copying = React.memo(function ({
   filesToPrint,
@@ -10,7 +10,7 @@ export const Copying = React.memo(function ({
   $checkCopyProgress,
   $saveFilesToFlash,  
 }) {
-  const [state, setState] = useMyReducer({
+  const [state, setState] = useMutedReducer({
     initialState: getStateInit(),
   });
 

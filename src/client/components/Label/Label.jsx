@@ -1,7 +1,7 @@
 import './styles.css';
 import React from 'react';
 import { channel } from '../../Channel';
-import { getExistsProps, useMyReducer } from '../../functions';
+import { useMutedReducer } from '../../mutedReducer';
 
 export const Label = channel.addComp({
   name: 'Label',
@@ -9,11 +9,11 @@ export const Label = channel.addComp({
   getAPI,
 });
 
-function render(
-) {
+function render(props) {
   const Comp = this;
-  const [state] = useMyReducer({
+  const [state] = useMutedReducer({
     initialState: stateInit,
+    props,
     setCompDeps: Comp.bindSetCompDeps(),
   });
 
@@ -39,13 +39,7 @@ function getAPI({
 }) {
   return {
     forceUpdate: (props) => {
-      deps.setState?.(getExistsProps({
-        obj: props,
-        rp: {
-          title: 1,
-          onClick: 1,
-        },
-      }));
+      deps.setState?.(props);
     },
   };
 }

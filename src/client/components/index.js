@@ -1,10 +1,11 @@
-export { MoveSelections } from './MoveSelections/MoveSelections';
 export { ActionSharePhotos } from './ActionSharePhotos/ActionSharePhotos';
 export { SaveChanges } from './SaveChanges/SaveChanges';
-export { AddAlbum } from './AddAlbum/AddAlbum';
-export { Print } from './Print/Print';
 export { Share } from './Share/Share';
+export { Print } from './Print/Print';
+export { Notification } from './Notification/Notification';
 export { Label } from './Label/Label';
+export { AddAlbum } from './AddAlbum/AddAlbum';
+export { CustomAction } from '../common/additionalActions/CustomAction';
 export { Dirs } from './Dirs/Dirs';
 export { Copying } from './Copying/Copying';
 export { ControlPanel } from './ControlPanel/ControlPanel';
@@ -16,7 +17,6 @@ export { OnePhoto } from './OnePhoto/OnePhoto';
 export { Dialog } from './Dialog/Dialog';
 export { Selector } from './Selector/Selector';
 export { Empty } from './Empty/Empty';
-export { Notification } from './Notification/Notification';
 
 import { Print } from './Print/Print';
 import { Share } from './Share/Share';

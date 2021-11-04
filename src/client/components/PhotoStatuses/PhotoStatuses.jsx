@@ -1,9 +1,9 @@
 import './styles.css';
 import React from 'react';
-import { useMyReducer } from '../../functions';
 import { ResumeObj } from '../../resumeObj';
 import { channel } from '../../Channel';
 import { Print } from '../';
+import { useMutedReducer } from '../../mutedReducer';
 
 
 
@@ -24,7 +24,7 @@ const resumeObj = new ResumeObj({
 function render(
   props,
 ) {
-  const [state] = useMyReducer({
+  const [state] = useMutedReducer({
     initialState: {
       ...getStateInit(),
     },

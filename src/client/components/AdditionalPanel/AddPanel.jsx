@@ -1,6 +1,6 @@
 import React from 'react';
 import { channel } from '../../Channel';
-import { useMyReducer } from '../../functions';
+import { useMutedReducer } from '../../mutedReducer';
 
 import './styles.css';
 
@@ -13,7 +13,7 @@ export const AdditionalPanel = channel.addComp({
 
 function render(
 ) {
-  const [state] = useMyReducer({ 
+  const [state] = useMutedReducer({ 
     initialState: getInitialState(),
     setCompDeps: this.bindSetCompDeps(),
   });
@@ -34,7 +34,7 @@ function render(
       ) => {        
         return (
           <Action.r 
-            key={Action.compId}
+            key={Action.name}
           />        
         );
       })

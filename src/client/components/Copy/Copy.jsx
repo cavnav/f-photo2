@@ -1,16 +1,15 @@
 import React from 'react';
-import { Progress, } from 'antd';
 import { Stepper, Actions } from '../';
 
-import 'antd/dist/antd.css';
 import './styles.css';
 import { channel } from '../../Channel';
-import { Browse } from '../compNames';
+import { ProgressNotification } from '../../functions';
 
 export const Copy = channel.addComp({
   name: 'Copy',
   render,
   getReqProps,
+  getComps,
 })
 
 function render() {
@@ -37,10 +36,7 @@ function render() {
         desc: 'нажми пальцем на синюю карту памяти, и, вдавив внутрь, отпусти.',
       }, {
         photoSrc: 'wizardCopy/002_insertIntoCardReader.jpg',
-        desc: 'Вставь карту памяти в кардРидер, как показано ниже:',
-      }, {
-        photoSrc: 'wizardCopy/004_plugInPC.jpg',
-        desc: 'Вставь кардРидер в компьютер, как показано ниже, чтобы совпал ключ.',
+        desc: 'Вставь карту памяти в ноутбук, как показано ниже:',
       }, {    
         desc: 'Ищу карту памяти...',
         trigger: ({ setStepNum }) => {
@@ -65,7 +61,6 @@ function render() {
       {
         toRender: () => {
           return (<>
-            <Progress type="circle" percent={state.copyProgress} />
             {state.isCopyCompleted && <div>Все фотографии успешно скопированы!</div>}   
           </>);
         },        
@@ -73,12 +68,9 @@ function render() {
         isNextBtn: state.isCopyCompleted,
       },
       {
-        desc: 'Вытащи картридер из компьютера',
+        desc: 'Вытащи карту памяти из ноутбука',
       },
       {
-        photoSrc: 'wizardCopy/005_returnMemCardInPhoto.jpg',
-        desc: 'Вытащи карту памяти из кардРидера и вставь обратно в фотоаппарат до щелчка, как показано ниже:',
-      }, {
         desc: 'Проверяю, что карта памяти извлечена...',
         trigger: ({ setStepNum }) => {
           setTimeout(async () => {
@@ -115,13 +107,13 @@ function render() {
 
   function $waitUSBconnectWrap() {
     const rp = Comp.getReqProps();
-    return rp.serverAPI.$getUsbDevices()
+    return rp.server.$getUsbDevices()
     .then(res => res.driveLetter);
   }
 
   function $getNewPhotosWrap() {
     const rp = Comp.getReqProps();    
-    return rp.serverAPI.$getNewPhotos()
+    return rp.server.$getNewPhotos()
       .then((res) => {
         setState({
           ...state,
@@ -132,7 +124,7 @@ function render() {
 
   function $onCopyWrap() {
     const rp = Comp.getReqProps();
-    return rp.serverAPI.$copyPhotos({
+    return rp.server.$copyPhotos({
       userDirName: '',
     }).then((res) => {
       const rp = Comp.getReqProps();
@@ -147,36 +139,47 @@ function render() {
 
   function $checkCopyProgressWrap() {
     const rp = Comp.getReqProps();
-    rp.serverAPI.$checkCopyProgress()
+    rp.server.checkProgress()
       .then((res) => {
-        const isCopyCompleted = res.copyProgress === 100;
+        const isCopyCompleted = res.progress === 100;
         setTimeout(() => (isCopyCompleted ? null : $checkCopyProgressWrap()), 500);        
-        setState({
-          ...state,
-          copyProgress: res.copyProgress,
-          isCopyCompleted,
+        
+        rp.NotificationAPI.forceUpdate({
+          title: ProgressNotification({
+            progress: res.progress,
+          }),
         });
+
+        if (isCopyCompleted) {
+          rp.NotificationAPI.setInit();          
+          setState({
+            ...state,
+            isCopyCompleted,
+          });
+        }
       });
   }
 }
 
 function getReqProps ({
+  comps,
   channel,
 }) {
-  const cropped = channel.crop({
-    d: {
-      setAppState: 1,      
-    },
-    API: {
-      comps: {
-        server: 'serverAPI',
-      }
-    },
-  });
-
   return {
-    ...cropped,
-    BrowseAPI: Browse.getAPI(),
+    setAppState: channel.d.setAppState,
+    server: channel.server,
+    ...comps,
+  };
+}
+
+function getComps({
+  channelComps,
+}) {
+  return {
+    items: {
+      Browse: channelComps.Browse,
+      Notification: channelComps.Notification,
+    },
   };
 }
 

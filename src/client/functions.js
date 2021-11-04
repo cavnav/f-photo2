@@ -1,14 +1,11 @@
 import {
-  get as _get
-} from 'lodash';
-import React from 'react';
-import {
   eventNames
 } from './constants';
 import {
   ResumeObj,
 } from './resumeObj';
 
+import { BTN_MOVE, BTN_REMOVE, setBtnTitle } from './common/additionalActions/const';
 class MyItems {
   constructor({
     items,
@@ -46,87 +43,6 @@ export function tempReducer(
     ...newState,
   };
 };
-
-export function useMyReducer({
-  initialState = {},
-  reducer,
-  props, // props will inject to state.
-  setCompDeps,
-  isFirstFnCall = false,
-  fn = () => {},
-  init = () => ({
-    ...initialState
-  }),
-}) {
-  const [_, forceUpdate] = React.useReducer((x) => !x, false);
-  const [isFirstFnCallState] = React.useState(isFirstFnCall);
-  const [state] = React.useState(init(initialState));
-  
-  props && React.useMemo(
-    () => {
-      const stateUpd = {
-        ...props,
-        forceUpdate: false,
-      };
-      dispatch(stateUpd);
-    },
-    Object.values(props),
-  );
-  
-  setCompDeps && setCompDeps({
-    deps: {
-      state,
-      setState: dispatch,      
-    },
-  });
-
-  if (isFirstFnCallState === true) fn({
-    state,
-    stateUpd: state,
-  });
-
-  return [state, dispatch];
-
-  // ---
-  function dispatch(stateUpd) {
-    updateState({
-      state,
-      stateUpd,
-      reducer,
-    });
-
-    fn({
-      state,
-      stateUpd,
-    });
-
-    // console.log('zz', JSON.stringify(stateUpd));
-    stateUpd.forceUpdate === undefined &&
-      forceUpdate();
-
-    return;
-
-    // -----------------------
-
-    function updateState({
-      state,
-      stateUpd,
-      reducer,
-    }) {
-      const stateReduced = reducer ?
-        reducer({
-          state,
-          stateUpd
-        }) :
-        undefined;
-
-      Object.assign(
-        state,
-        stateReduced || stateUpd,
-      );
-    }
-  }
-}
 
 export function getFileDateSrcKey({
   date,
@@ -337,7 +253,7 @@ export function myCrop({
   });
 }
 
-function getSelectorItems({
+export function getSelectorItems({
   selector,
   from,
 }) {
@@ -356,18 +272,17 @@ export function getExistsProps({
   rp,
 }) {
   const hasObjKey = Object.prototype.hasOwnProperty.bind(obj);
-  return Object.keys(rp).reduce((res, key) => 
-    {
-      if (hasObjKey(key)) res[key] = obj[key];
-      return res;
-    },
+  return Object.keys(rp).reduce((res, key) => {
+    if (hasObjKey(key)) res[key] = obj[key];
+    return res;
+  },
     {}
   );
 }
 
 export function getStateInit({
-  resumeObj,
   stateDefault,
+  resumeObj,
 }) {
   const resumed = resumeObj.get();
   return {
@@ -376,45 +291,124 @@ export function getStateInit({
   };
 }
 
-export function getReqComps(props) { 
-  const compsMetaArr = getCompsMeta({
-    comps: props.comps,
-  });
-
+export function getDefaultAPI({
+  deps,
+}) {
   return {
-    compsAPI: compsMetaArr.reduce(
-      (res, compMeta) => {
-        return {
-          ...res,
-          ...compMeta.comp.API,
-        };
-      }, 
-      {}
-    ),
-    compsMetaArr,
-    compsId: compsMetaArr.reduce((res, compMeta) => {
+    forceUpdate(props) {
+      deps.setState?.(props);
+    },
+    setInit() {
+      deps.setState?.(deps.initialState);
+    },
+  };
+}
+
+export function getCompsAPI({
+  items = {},
+  toClone = {},
+}) {
+  const comps = Object.entries(items?? {}).concat(Object.entries(toClone ?? {}));
+  return comps && comps.reduce((res, [name, comp]) => {
+      const compUpd = toClone[name] ? comp.clone({
+        name,
+      }) : comp;
       return {
         ...res,
-        [compMeta.compId]: compMeta.compId,
+        [name]: compUpd,
+        [`${name}API`]: compUpd.getAPI(),
       };
-    }),
-  };
+    },
+    {}
+  );
+}
 
-  // ----------------------------------
-  function getCompsMeta(props) {
-    let compNum = 0;
-    let compName = '';
-    getCompsMeta = (Component) => {
-      if (compName !== Component.name) {
-        compNum = 0;
-      }
-      compNum = compNum + 1;
-      compName = Component.name;
-      return {
-        comp: Component,
-        compId: `${compName}-${compNum}`,      
-      };
+export function refreshWindows(
+) {
+  window.document.dispatchEvent(
+    new Event(eventNames.refreshWindow),
+  );
+
+  const oppositeWindowObj = getOppositeWindowObj();
+  oppositeWindowObj && oppositeWindowObj.document.dispatchEvent(
+    new Event(eventNames.refreshWindow),
+  );
+}
+
+export function checkServerProgress({
+  service,
+  onResponse,
+}) {
+  return new Promise((resolve) => {
+    fn();
+
+    function fn() {
+      service()
+        .then(({
+          progress,
+        }) => {
+          onResponse({
+            progress,
+          });
+
+          if (progress < 100) {
+            setTimeout(
+              () => fn(),
+              500,
+            );
+            return;
+          }
+
+          resolve();
+        });
+    }
+  });
+}
+
+export function updateAddPanelComps({
+  Comp,
+  selector,
+  items = {},
+}) {
+  const {
+    state,
+  } = Comp.getDeps();
+
+  const rp = Comp.getReqProps();
+  const allComps = getComps();
+  const selectorUpd = selector ? selector : allComps;
+
+  Object.entries(selectorUpd).forEach(([compName, update]) => {
+    if (allComps[compName]) {
+      rp[`${compName}API`].forceUpdate(update);
+    }
+  });
+  
+  // -------------------
+  function getComps() {
+    return {
+      [rp.ToggleSecondWindow.name]: {
+        title: 'Отобразить второе окно',
+      },
+      [rp.MoveSelections.name]: {
+        title: setBtnTitle({
+          prefix: BTN_MOVE,
+          title: state.selections.size,
+        }),
+      },
+      [rp.RemoveSelections.name]: {
+        title: setBtnTitle({
+          prefix: BTN_REMOVE,
+          title: state.selections.size,
+        }),
+      },
+      ...items,
     };
-    return props.comps.map(getCompsMeta);
-  }
+  }  
+}
+
+export function ProgressNotification({
+  progress,
+}) {
+  return `Подожди. ${progress} %`;
 }

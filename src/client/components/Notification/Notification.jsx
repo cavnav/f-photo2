@@ -1,7 +1,8 @@
 import './styles.css';
 import React from 'react';
 import { channel } from '../../Channel';
-import { getExistsProps, useMyReducer } from '../../functions';
+import { getDefaultAPI, } from '../../functions';
+import { useMutedReducer } from '../../mutedReducer';
 
 export const Notification = channel.addComp({
   name: 'Notification',
@@ -11,56 +12,54 @@ export const Notification = channel.addComp({
 
 function render(props) {
   const Comp = this;
-  const [state, setState] = useMyReducer({
-    initialState: stateInit,
+  const [state, setState] = useMutedReducer({
+    initialState,
     props,
     setCompDeps: Comp.bindSetCompDeps(),
   });
 
-  React.useEffect(
-    () => {
-      setTimeout(
-        () => {
-          setState({
-            title: '', 
-          });
-          state.onCancel();
-        }, 
-        state.timer,
-      );
-    }, 
-    [state.title]
-  );
-
-  if (!state.title) return null;
+  //if (!state.title) return null;
   return (
-    <div 
+    <div
       className={`${Notification.name}`}
     >
-      <div className='title'>{state.title}</div>  
+      <div className='title'>{state.title}</div>
+      {state.isConfirm && (
+        <div>
+          <input type='button' value='Да' onClick={() => {
+            setState({
+              isConfirm: false,
+            });
+            state.onConfirm();
+          }} />
+          <input type='button' value='Нет' onClick={() => {
+            setState({
+              isConfirm: false,
+            });
+            state.onCancel();
+          }} />
+          {/* <span className='closeEl' onClik={() => {
+            setState({
+              isConfirm: false,
+            });
+            state.onCancel();
+          }}>X</span> */}
+        </div>
+      )}
     </div>
   );
 }
 
-const stateInit = {
+const initialState = {
   title: '',
+  isConfirm: false,
   timer: 2000,
+  onConfirm: () => {},
   onCancel: () => {},
 };
 
-function getAPI({
-  deps,
-}) {
+function getAPI(props) {
   return {
-    forceUpdate: (props) => {
-      deps.setState?.(getExistsProps({
-        obj: props,
-        rp: {
-          title: 1,
-          timer: 1,
-          onCancel: 1,
-        },
-      }));
-    },
+    ...getDefaultAPI(props),
   };
 }

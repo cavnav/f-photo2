@@ -6,7 +6,7 @@ import {
   AdditionalPanel,
   Stepper,
 } from '../';
-import { addHandlers, getBackgroundImageStyle, useMyReducer } from '../../functions';
+import { addHandlers, getBackgroundImageStyle } from '../../functions';
 import { createSteps } from './createSteps';
 import { channel } from '../../Channel';
 import { Copying } from './components/Copying';
@@ -17,6 +17,7 @@ import { Empty } from '../';
 import { Label } from '../Label/Label';
 import { Dialog } from '../Dialog/Dialog';
 import { Select } from '../Dialog';
+import { useMutedReducer } from '../../mutedReducer';
 
 export const Print = channel.addComp({
   name: 'Print',
@@ -50,7 +51,7 @@ function render({
   const Comp = this;
   const rp = Comp.getReqProps();
 
-  const [state, setState] = useMyReducer({    
+  const [state, setState] = useMutedReducer({    
     initialState: getStateInit(),
     setCompDeps: Comp.bindSetCompDeps(),
     fn: ({
@@ -351,18 +352,14 @@ function render({
 
 function getReqProps({ channel }) {
   const cropped = channel.crop({
-    API: {
-      comps: {
-        server: {
-          $getUsbDevices: 1,
-          $checkCopyProgress: 1,
-          $saveFilesToFlash: 1,          
-          towardPrinted: 1,
-          backwardPrinted: 1,
-          savePrinted: 1,
-        },
-      },
-    }, 
+    server: {
+      $getUsbDevices: 1,
+      $checkCopyProgress: 1,
+      $saveFilesToFlash: 1,          
+      towardPrinted: 1,
+      backwardPrinted: 1,
+      savePrinted: 1,
+    },
   });
 
   return {

@@ -54,11 +54,9 @@ export function AddAlbum({
 }
 
 AddAlbum.getReqProps = function ({ channel }) {
-  return channel.crop({
-    comps: { 
-      ...Browse.API,
-    }
-  });
+  return {
+    BrowseAPI: Browse.getAPI(),
+  };
 }
 
 const stateInit = {

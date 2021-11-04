@@ -1,4 +1,6 @@
-// Переход на копирование после копирования
+// inside Print a lot of images. how it print?
+// same layout for all actions - Browse, Print.
+// add create resumeObj in channel.addComp().
 // content-visibility
 // ctg file
 // add loading
@@ -6,25 +8,24 @@
   // add icon
 // rename folder by id on serverSide. Rename reset otherside path to root.
     // need update files, dirs, printed, shared
-// remove folder error in two  windows mode. trouble in server side.
 // help
 // scroll to selected folder
-// Highlight current action in case OnePhoto
 
 import 'antd/dist/antd.css';
 import './app.css';
 
 import React from 'react';
-import { Actions, ControlPanel, AdditionalPanel, Notification} from './components';
-import { updFromObj, useMyReducer } from './functions';
+import { Notification, Actions, ControlPanel, AdditionalPanel } from './components';
+import { updFromObj } from './functions';
 import { get as _get } from 'lodash';
 import { channel } from './Channel';
 import { ResumeObj } from './resumeObj';
-
+import { useMutedReducer } from './mutedReducer';
 
 export const App = channel.addComp({
   name: 'App',
   render,
+  getAPI,
 });
 
 const resumeObj = new ResumeObj({
@@ -39,7 +40,7 @@ function render() {
   let s; // state
   const [d] = React.useState({}); // dispatch.
 
-  [s, d.setAppState] = useMyReducer({
+  [s, d.setAppState] = useMutedReducer({
     initialState: getAppStateInit(),
     setCompDeps: Comp.bindSetCompDeps(),
     fn: resumeUpdFn,
@@ -142,9 +143,9 @@ function onMouseUp({
   });
 }
 
-export function getAppAPI(
-) {
-  const { deps } = App;
+export function getAPI({
+  deps,
+}) {
   return {
     setState: deps.setState,
     toggleActions,
@@ -155,7 +156,6 @@ export function getAppAPI(
     title,
     time = 2000,
   }) {
-    const { deps } = App;
     deps.setState({
       notification: title,
     });
@@ -165,7 +165,6 @@ export function getAppAPI(
     action,
     actions = {},
   }) {
-    const { deps } = App;
     deps.setState({
       action,
       actions: updFromObj({

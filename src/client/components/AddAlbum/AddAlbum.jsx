@@ -1,12 +1,13 @@
 import React from 'react';
 import { channel } from '../../Channel';
-import { getExistsProps, useMyReducer } from '../../functions';
+import { getExistsProps } from '../../functions';
+import { useMutedReducer } from '../../mutedReducer';
 
 import './styles.css';
 
 export const AddAlbum = channel.addComp({
-  render,
   name: 'AddAlbum',
+  render,
   getAPI,
 });
 
@@ -14,7 +15,7 @@ function render() {
   const Comp = this;
   const title = `Добавить альбом`;
 
-  const [state, setState] = useMyReducer({
+  const [state, setState] = useMutedReducer({
     setCompDeps: Comp.bindSetCompDeps(),
     initialState: stateInit,
   });
@@ -65,12 +66,7 @@ function getAPI({
 }) {
   return {
     forceUpdate: (props) => {
-      deps.setState(getExistsProps({
-        obj: props,
-        rp: {
-          onClick: 1,
-        },
-      }));
+      deps.setState(props);
     },
   };
 }

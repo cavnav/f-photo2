@@ -13,7 +13,7 @@ const find = require('find');
 
 const app = express();
 
-const ALBUM_DIR = path.join('D:', 'album');
+const ALBUM_DIR = path.join('Z:', 'album');
 const PRINTED_DIR = path.join(ALBUM_DIR, 'printed');
 const PRINTED_NEW = path.join(PRINTED_DIR, 'Новая');
 const SHARED_DIR = path.join(ALBUM_DIR, 'shared');
@@ -25,7 +25,7 @@ let state = {
   browseFiles: [],
   browseDirs: [],
   countNewPhotos: 0,
-  copyProgress: 0,
+  progress: 0,
   countCopiedPhotos: 0,
   curWindow: 'leftWindow',
   leftWindow: ALBUM_DIR,
@@ -60,7 +60,7 @@ app.post('/api/share', async(req, response) => {
   })();
   
   setState({
-    copyProgress: 100, 
+    progress: 100, 
   });
 
   const whatsappBot = new WhatsappBot({
@@ -158,7 +158,7 @@ app.post(
     } = req.body;
 
     setState({
-      copyProgress: 0,
+      progress: 0,
       countCopiedPhotos: 0,
     });
 
@@ -192,7 +192,7 @@ app.post(
       }
 
       setState({
-        copyProgress: progress,
+        progress: progress,
         countCopiedPhotos: countProcessed,
       });
     }  
@@ -230,9 +230,9 @@ app.post('/api/backwardPrinted', getToward(
   },
 ));
 
-app.get('/api/checkCopyProgress', (req, res) => {
+app.get('/api/checkProgress', (req, res) => {
   res.send({
-    copyProgress: state.copyProgress,
+    progress: state.progress,
   });
 });
 
@@ -290,7 +290,7 @@ app.post('/api/saveFilesToFlash', async (req, response) => {
   clearUpUSB()
   .then(async () => {
     setState({
-      copyProgress: 0,
+      progress: 0,
       countCopiedPhotos: 0,
     });
     const { 
@@ -345,7 +345,7 @@ app.post('/api/saveFilesToFlash', async (req, response) => {
         });
 
         setState({
-          copyProgress: progress,
+          progress: progress,
           countCopiedPhotos: countProcessed,
         });
       }
@@ -368,7 +368,7 @@ app.post('/api/moveToPath',
     const dest = state[destWindow];
 
     setState({
-      copyProgress: 0,
+      progress: 0,
       countCopiedPhotos: 0,
     });
 
@@ -457,7 +457,7 @@ app.post('/api/moveToPath',
       );
 
       setState({
-        copyProgress: progress - 10,
+        progress,
         countCopiedPhotos: countProcessed,
       });
       
@@ -503,7 +503,7 @@ app.post('/api/moveToPath',
           }
           else {
             setState({
-              copyProgress: 100,
+              progress: 100,
             });
           }
         },           
@@ -529,7 +529,7 @@ app.post('/api/copyPhotos', (req, res) => {
   }
 
   setState({
-    copyProgress: 0,
+    progress: 0,
     countCopiedPhotos: 0,
   });
 
@@ -545,14 +545,14 @@ app.post('/api/copyPhotos', (req, res) => {
 
       const countCopiedPhotosUpd = state.countCopiedPhotos + 1;
         
-      const copyProgress = calcCopyProgress({ countCopiedPhotos: countCopiedPhotosUpd });
+      const progress = calcprogress({ countCopiedPhotos: countCopiedPhotosUpd });
 
       setState({
-        copyProgress,
+        progress,
         countCopiedPhotos: countCopiedPhotosUpd,
       });
 
-      if (copyProgress !== 100) {
+      if (progress !== 100) {
         startCopy({ photos: photos.slice(1), destDir });
       } else {
         await clearUpUSB();
@@ -595,7 +595,7 @@ app.post('/api/saveSettings', (req, res) => {
     });
 });
 
-function calcCopyProgress({ countCopiedPhotos }) {
+function calcprogress({ countCopiedPhotos }) {
   const { countNewPhotos, } = state;
   return Math.floor(countCopiedPhotos * 100 / countNewPhotos);
 }

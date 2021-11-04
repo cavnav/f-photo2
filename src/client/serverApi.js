@@ -229,10 +229,10 @@ export class AppServerAPI {
     return fetch(this.getFullUrl({ url: 'getNewPhotos' })).then(res => res.json());
   }
 
-  $checkCopyProgress = () => {
+  checkProgress = () => {
     return fetch(
       this.getFullUrl({ 
-        url: 'checkCopyProgress' 
+        url: 'checkProgress' 
       }))
       .then(res => res.json());
   }

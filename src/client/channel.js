@@ -2,7 +2,8 @@ import {
   AppServerAPI
 } from './ServerApi';
 import {
-  tempReducer
+  getClones,
+  getCompsAPI,
 } from './functions';
 import {
   get as _get
@@ -15,10 +16,6 @@ function ChannelWrap(props) {
     s; // states;
     d; // dispatches;
     comps = {};
-    API = {
-      _get,
-      comps: {},
-    };
 
     preset({
       s,
@@ -26,17 +23,10 @@ function ChannelWrap(props) {
     }) {
       this.s = s;
       this.d = d;
-      this.addAPI({
-        server: new AppServerAPI({
-          s,
-          d
-        }),
+      this.server = new AppServerAPI({
+        s,
+        d
       });
-    }
-
-    addAPI = (compAPI) => {
-      const comps = this.API.comps;
-      Object.entries(compAPI).map(([newComp, api]) => Object.assign(comps[newComp] || (comps[newComp] = {}), api));
     }
 
     addComp({
@@ -44,22 +34,18 @@ function ChannelWrap(props) {
       render,
       getAPI,
       getReqProps,
+      getComps = () => ({}),
     }) {      
       const baseComp = new class ChannelComp {
         r = render.bind(this);
         name = name;        
         deps = {};
-        // For getting CompAPI from channel.comps.
-        API = {
-          [name]: {
-            API: `${name}API`,
-          },
-        };
+        comps = undefined;
 
         constructor({
-          compId = this.name,
+          name,
         } = {}) {
-          this.compId = compId ?? this.name;
+          if (name) this.name = name;
         }
 
         bindSetCompDeps() {
@@ -74,10 +60,10 @@ function ChannelWrap(props) {
         };
     
         clone({
-          compId,
-        }) {
+          name,
+        } = {}) {
           return new ChannelComp({
-            compId,
+            name,
           });
         }
     
@@ -92,10 +78,18 @@ function ChannelWrap(props) {
           });
         }
 
-        getReqProps() {
+        getReqProps() {     
+          if (!this.comps) {
+            this.comps = {
+              ...getCompsAPI(getComps({
+                channelComps: channel.comps,
+              })),
+            };
+          };
           return getReqProps({
             channel,
             deps: this.deps,
+            comps: this.comps,
           });
         }
       };
@@ -158,7 +152,7 @@ function ChannelWrap(props) {
         // Create object with methods wrapper which will be rewriten with real API methods.    
         const compAPI = {};
         // Object.keys(compAPI).forEach(methodName => compAPI[methodName] = (...args) => compAPI[methodName](...args));
-        this.API.comps[compName] = compAPI;
+        this.comps[compName] = compAPI;
 
         return compAPI;
       }
@@ -172,86 +166,5 @@ function ChannelWrap(props) {
   }
 
   return new Channel(props);
-}
+}  
 
-function getCompDeps(props = {}) {
-  if (
-    props.hasOwnProperty('compId') && 
-    this.depends[props.compId] === undefined
-  ) {
-    return this.depends[props.compId] = {};
-  } 
-  return this.depends[props.compId] || this.depends.default;
-} 
-
-function setCompDeps(props) {
-  Object.assign(
-    this.getCompDeps(props),
-    props?.deps,
-  );
-}
-
-function createSetCompDeps(props) {
-  const that = this;
-  return ({
-    deps,
-  }) => {        
-    that.setCompDeps({
-      ...(props.compId && { compId: props.compId }),
-      deps,
-    });
-  };
-}
-
-function crop({
-    from, 
-    selector,
-    stack,
-    res = [],
-}) {   
-  if (stack && stack.length === 0) return res;
-  if (!stack) {       
-    stack = getSelectorItems({
-        from,
-        selector,
-    });
-  }
-  let [
-    [
-        propName, 
-        propVal, 
-        sourceVal, 
-        alias = propVal,
-    ]
-  ] = stack;
-
-  if (propVal.constructor !== Object) {
-    res[propVal === 1 ? propName : alias] = sourceVal;          
-  }
-  else {
-    stack.push(...getSelectorItems({
-        from: sourceVal,
-        selector: propVal,              
-    }));
-  }
-
-  return crop({
-    stack: stack.slice(1),
-    res,
-  });
-}      
-  
-  
-function getSelectorItems({
-  selector,
-  from,
-}) {
-  return Object.entries(selector).map((item) => {
-    const [propName, propVal] = item;
-    return [
-      propName,
-      propVal,
-      from[propName],
-    ];
-  });
-}

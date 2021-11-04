@@ -2,23 +2,23 @@ import './styles.css';
 import React from 'react';
 
 import { ResumeObj } from '../../resumeObj';
-import { getOppositeWindowObj, useMyReducer } from '../../functions';
-import { Print } from '../compNames';
+import { getOppositeWindowObj } from '../../functions';
 import { get as _get } from 'lodash';
 import { channel } from '../../Channel';
 import cn from 'classnames';
-import { Notification } from '..';
+import { useMutedReducer } from '../../mutedReducer';
 
 const resumeObj = new ResumeObj();
 export const ControlPanel = channel.addComp({
   name: 'ControlPanel',
   render,
   getReqProps,
+  getComps,
 });
 
 function render() {
   const Comp = this;
-  const [state, setState] = useMyReducer({
+  const [state, setState] = useMutedReducer({
     initialState: stateInit,
     setCompDeps: Comp.bindSetCompDeps(),
   });
@@ -51,13 +51,13 @@ function render() {
   function onClickAction(e) {
     const actionId = e.target.getAttribute('data-id');
 
-    if (actionId === Print.name) {
+    if (actionId === rp.Print.name) {
       // Чтобы не открывалась вторая печать.
       const resumeData = resumeObj.state;
       const { browserCount } = resumeData; 
       if (browserCount > 1) {
         const oppositeWindow = getOppositeWindowObj();
-        if (resumeData[oppositeWindow.name].App.action === Print.name) {
+        if (resumeData[oppositeWindow.name].App.action === rp.Print.name) {
           const rp = Comp.getReqProps();
           rp.NotificationAPI.forceUpdate({
             title: 'Нельзя открыть вторую печать',
@@ -73,7 +73,7 @@ function render() {
   };
 }
 
-function getReqProps ({ channel }) {
+function getReqProps ({ comps, channel }) {
   const cropped = channel.crop({
     s: {
       action: 'appStateAction',
@@ -86,9 +86,24 @@ function getReqProps ({ channel }) {
 
   return {
     ...cropped,
-    NotificationAPI: Notification.getAPI(),
+    ...comps,
   };
 };
+
+function getComps({
+  channelComps,
+}) {
+  const {
+    Print,
+    Notification,
+  } = channelComps;
+  return {
+    items: {
+      Print,
+      Notification,
+    },
+  };
+}
 
 const stateInit = {
   isDialogPrint: false,

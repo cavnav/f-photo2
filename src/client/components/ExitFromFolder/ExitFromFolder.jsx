@@ -1,7 +1,8 @@
 import './styles.css';
 import React from 'react';
 import { channel } from '../../Channel';
-import { getExistsProps, useMyReducer } from '../../functions';
+import { getExistsProps } from '../../functions';
+import { useMutedReducer } from '../../mutedReducer';
 
 export const ExitFromFolder = channel.addComp({
   name: 'ExitFromFolder',
@@ -12,7 +13,7 @@ export const ExitFromFolder = channel.addComp({
 function render(
 ) {
 
-  const [state] = useMyReducer({
+  const [state] = useMutedReducer({
     initialState: stateInit,
     setCompDeps: this.bindSetCompDeps(),
   });
