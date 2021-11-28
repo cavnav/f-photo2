@@ -386,7 +386,7 @@ export function updateAddPanelComps({
   
   // -------------------
   function getComps() {
-    return {
+    return {      
       [rp.ToggleSecondWindow.name]: {
         title: 'Отобразить второе окно',
       },
@@ -411,4 +411,54 @@ export function ProgressNotification({
   progress,
 }) {
   return `Подожди. ${progress} %`;
+}
+
+export function onUpdateSrc({
+  Comp,
+  dest,
+}) {
+  // move
+  // remove
+  // rename folder
+
+  const resumeObj = new ResumeObj();
+  const appState = resumeObj.state;
+  const {
+    Print: {
+      filesToPrint,
+    },
+    Share: {
+      filesToShare = {},
+    } = {},
+  } = appState;
+
+  const {
+    state,
+  } = Comp.getDeps();
+
+  const rp = Comp.getReqProps();
+
+  // for files.
+  state.selections.forEach((src) => {  
+    const slashSrc = state.path.concat(state.sep).concat(src);  
+    [
+      filesToPrint,
+      filesToShare,
+    ].forEach((files) => {
+      if (dest !== undefined && files[slashSrc]) {
+        const [fileName] = slashSrc.split(state.sep).slice(-1);
+        files[dest.concat(state.sep, fileName)] = files[slashSrc];
+      }
+      delete files[slashSrc];
+    });
+  });
+
+  const appStateUpd = {
+    ...appState,
+  };
+  appStateUpd.Print.filesToPrint = filesToPrint;
+  if (appStateUpd.Share) appStateUpd.Share.filesToShare = filesToShare;
+  resumeObj.saveCore({
+    val: appStateUpd,
+  });
 }

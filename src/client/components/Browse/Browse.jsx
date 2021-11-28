@@ -10,7 +10,7 @@ import {
 
 
 import './styles.css';
-import { addHandlers, checkServerProgress, getBackgroundImageStyle, myCrop, oppositeWindowCheckSamePaths, ProgressNotification, refreshWindows, updateAddPanelComps } from '../../functions';
+import { addHandlers, checkServerProgress, getBackgroundImageStyle, myCrop, onUpdateSrc, oppositeWindowCheckSamePaths, ProgressNotification, refreshWindows, updateAddPanelComps } from '../../functions';
 import { channel } from '../../Channel';
 import { ResumeObj } from '../../resumeObj';
 import { eventNames } from '../../constants';
@@ -502,6 +502,7 @@ function renderAddPanel({
     rp.ExitFromFolder,
     rp.ToggleSecondWindow,
     rp.AddAlbum,
+    rp.Rename,
     rp.MoveSelections,
     rp.RemoveSelections,
   ];
@@ -511,6 +512,12 @@ function renderAddPanel({
     .then(() => {
       rp.AddAlbumAPI.forceUpdate({
         onClick: (props) => onAddAlbum({
+          ...props,
+          Comp,
+        }),
+      });
+      rp.RenameAPI.forceUpdate({
+        onClick: (props) => onRename({
           ...props,
           Comp,
         }),
@@ -526,7 +533,9 @@ function renderAddPanel({
             items: [...state.selections.values()],
             destWindow: window.oppositeWindow,
           })
-          .then(() => onMoveSelections({ Comp }));
+          .then(({
+            dest,
+          }) => onMoveSelections({ Comp, dest }));
         }
       });
       rp.RemoveSelectionsAPI.forceUpdate({
@@ -540,6 +549,11 @@ function renderAddPanel({
 
       updateAddPanelComps({
         Comp,
+        items: {
+          [rp.Rename.name]: {
+            title: 'Переименовать',
+          },
+        }
       });
     });
 
@@ -557,6 +571,7 @@ function renderAddPanel({
 
 function onMoveSelections({
   Comp,
+  dest,
 }) {
   const rp = Comp.getReqProps();
   return checkServerProgress({
@@ -572,13 +587,17 @@ function onMoveSelections({
       },
     })
     .then(() => {
+      onUpdateSrc({
+        Comp,
+        dest,
+      });
       changeSelections({
         Comp,
       });
       refreshWindows({
         Comp,
       });
-      rp.NotificationAPI.setInit({});
+      rp.NotificationAPI.setInit({});      
     });
 }
 
@@ -602,6 +621,7 @@ function getComps({
       RemoveSelections: CustomAction,
       ExitFromFolder: Label,
       ToggleSecondWindow: Label,
+      Rename: Label,
     },
     items: {
       App,

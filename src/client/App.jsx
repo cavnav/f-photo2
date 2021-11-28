@@ -1,15 +1,22 @@
 // inside Print a lot of images. how it print?
 // same layout for all actions - Browse, Print.
+// add loading
+// add icon
+// share print, share file status
+// sync between browse, print, share, onePhoto
+  // z100 error
+// remove move rename and action status (print, share)
+// ban move file on Welcome screen
+// hide printed, shared folders
+// scroll to selected folder
+// help
+
+// ban move to print 
+// 
+// Failed to load resource
+// ctg file
 // add create resumeObj in channel.addComp().
 // content-visibility
-// ctg file
-// add loading
-// Failed to load resource
-  // add icon
-// rename folder by id on serverSide. Rename reset otherside path to root.
-    // need update files, dirs, printed, shared
-// help
-// scroll to selected folder
 
 import 'antd/dist/antd.css';
 import './app.css';

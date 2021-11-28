@@ -356,16 +356,27 @@ app.post('/api/saveFilesToFlash', async (req, response) => {
 
 app.post('/api/moveToPath', 
   async(req, res) => {
-    res.send(req.body);
-
     const {
-      destWindow,
       items,
       curWindow,
+      destWindow,
     } = req.body;
 
     const source = state[curWindow];
     const dest = state[destWindow];
+
+    res.send({
+      ...req.body,
+      dest: dest.replace(ALBUM_DIR, ''),
+    });
+
+    if (source === dest) {
+      setState({
+        progress: 100,
+        countCopiedPhotos: 0,
+      });
+      return;
+    };
 
     setState({
       progress: 0,
