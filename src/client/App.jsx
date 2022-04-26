@@ -6,6 +6,8 @@
 // sync between browse, print, share, onePhoto
   // z100 error
 // remove move rename and action status (print, share)
+// add path to onePhoto, it is understand where this photo is
+// add status icon to preview image
 // ban move file on Welcome screen
 // hide printed, shared folders
 // scroll to selected folder

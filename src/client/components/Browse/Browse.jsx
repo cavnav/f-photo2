@@ -10,7 +10,7 @@ import {
 
 
 import './styles.css';
-import { addHandlers, checkServerProgress, getBackgroundImageStyle, myCrop, onUpdateSrc, oppositeWindowCheckSamePaths, ProgressNotification, refreshWindows, updateAddPanelComps } from '../../functions';
+import { addHandlers, checkServerProgress, getBackgroundImageStyle, myCrop, onMoveSelections, onUpdateSrc, oppositeWindowCheckSamePaths, ProgressNotification, refreshWindow, refreshWindows, updateAddPanelComps } from '../../functions';
 import { channel } from '../../Channel';
 import { ResumeObj } from '../../resumeObj';
 import { eventNames } from '../../constants';
@@ -142,7 +142,8 @@ function render(
 
   React.useEffect(
     () => {
-      const refreshWindowWrap = () => refreshWindow({ Comp });
+      const rp = Comp.getReqProps();
+      const refreshWindowWrap = () => rp.server.toward().then((res) => setState(res));
       document.addEventListener(eventNames.refreshWindow, refreshWindowWrap);
       return () => document.removeEventListener(eventNames.refreshWindow, refreshWindowWrap);
     },
@@ -418,6 +419,7 @@ function changeSelections({
 
   // ------------------------------------
   function updateSelections() {
+    // i.e. clickFolder event or exitFromFolder.
     if (src === undefined) return new Set();
 
     const action = ({ true: 'add', false: 'delete' })[checked];
@@ -438,16 +440,6 @@ function htmlResetSelections({
     const src = item.getAttribute('src');
     item.checked = selections.has(src);
   });
-}
-
-function refreshWindow({
-  Comp,
-}) {
-  const {
-    setState,
-  } = Comp.getDeps();
-  const rp = Comp.getReqProps();
-  return rp.server.toward().then((res) => setState(res));
 }
 
 async function onAddAlbum({
@@ -506,6 +498,8 @@ function renderAddPanel({
     rp.MoveSelections,
     rp.RemoveSelections,
   ];
+  const src = state.path.concat(state.sep);
+
   rp.AdditionalPanelAPI.renderIt({
     actions: additionalActions,
   })
@@ -529,21 +523,41 @@ function renderAddPanel({
       });
       rp.MoveSelectionsAPI.forceUpdate({
         onClick: () => {
+          const selections = [...state.selections.values()];
           rp.server.moveToPath({
-            items: [...state.selections.values()],
+            items: selections,
             destWindow: window.oppositeWindow,
           })
           .then(({
             dest,
-          }) => onMoveSelections({ Comp, dest }));
+          }) => onMoveSelections({ 
+            Comp, 
+            dest, 
+            selections, 
+            src,
+            sep: state.sep,
+            onChangeSelections: () => changeSelections({
+              Comp,
+            }),
+         }));
         }
       });
       rp.RemoveSelectionsAPI.forceUpdate({
         onClick: () => {
+          const selections = [...state.selections.values()];
           rp.server.removeItems({
-            items: [...state.selections.values()],
+            items: selections,
           })
-          .then(() => onMoveSelections({ Comp }));
+          .then(({
+          }) => onMoveSelections({ 
+            Comp, 
+            selections, 
+            src,
+            sep: state.sep,
+            onChangeSelections: () => changeSelections({
+              Comp,
+            }),
+          }));
         },
       });
 
@@ -567,38 +581,6 @@ function renderAddPanel({
       actions: [],
     });      
   };
-}
-
-function onMoveSelections({
-  Comp,
-  dest,
-}) {
-  const rp = Comp.getReqProps();
-  return checkServerProgress({
-      service: rp.server.checkProgress,
-      onResponse: ({
-        progress,
-      }) => {
-        rp.NotificationAPI.forceUpdate({
-          title: ProgressNotification({
-            progress,
-          }),
-        });
-      },
-    })
-    .then(() => {
-      onUpdateSrc({
-        Comp,
-        dest,
-      });
-      changeSelections({
-        Comp,
-      });
-      refreshWindows({
-        Comp,
-      });
-      rp.NotificationAPI.setInit({});      
-    });
 }
 
 function getComps({

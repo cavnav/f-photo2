@@ -413,14 +413,53 @@ export function ProgressNotification({
   return `Подожди. ${progress} %`;
 }
 
-export function onUpdateSrc({
+export function onMoveSelections({
   Comp,
   dest,
+  src,
+  sep,
+  selections,
+  onChangeSelections,
 }) {
-  // move
-  // remove
-  // rename folder
+  const rp = Comp.getReqProps();
+  return checkServerProgress({
+      service: rp.server.checkProgress,
+      onResponse: ({
+        progress,
+      }) => {
+        rp.NotificationAPI.forceUpdate({
+          title: ProgressNotification({
+            progress,
+          }),
+        });
+      },
+    })
+    .then(() => {
+      onUpdateSrc({
+        dest,
+        src,
+        sep,
+        selections,
+      });
+      onChangeSelections?.();
+      refreshWindows({
+        Comp,
+      });
+      rp.NotificationAPI.setInit({});      
+    });
+}
 
+/**
+ * For folder and file.
+  
+  actions: move, remove, renameFolder
+ */
+export function onUpdateSrc({
+  dest,
+  src,
+  sep,
+  selections,
+}) {
   const resumeObj = new ResumeObj();
   const appState = resumeObj.state;
   const {
@@ -432,33 +471,24 @@ export function onUpdateSrc({
     } = {},
   } = appState;
 
-  const {
-    state,
-  } = Comp.getDeps();
-
-  const rp = Comp.getReqProps();
+  const updatedLists = [ 
+    filesToPrint, 
+    filesToShare,
+  ];
 
   // for files.
-  state.selections.forEach((src) => {  
-    const slashSrc = state.path.concat(state.sep).concat(src);  
-    [
-      filesToPrint,
-      filesToShare,
-    ].forEach((files) => {
-      if (dest !== undefined && files[slashSrc]) {
-        const [fileName] = slashSrc.split(state.sep).slice(-1);
-        files[dest.concat(state.sep, fileName)] = files[slashSrc];
+  selections.forEach((selSrc) => {  
+    const slashSrc = src.concat(selSrc);  
+    updatedLists.forEach((files) => {
+      if (dest && files[slashSrc]) {
+        const [fileName] = slashSrc.split(sep).slice(-1);
+        files[dest.concat(sep, fileName)] = files[slashSrc];
       }
       delete files[slashSrc];
     });
   });
 
-  const appStateUpd = {
-    ...appState,
-  };
-  appStateUpd.Print.filesToPrint = filesToPrint;
-  if (appStateUpd.Share) appStateUpd.Share.filesToShare = filesToShare;
   resumeObj.saveCore({
-    val: appStateUpd,
+    val: appState,
   });
 }

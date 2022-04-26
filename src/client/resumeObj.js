@@ -87,7 +87,6 @@ export class ResumeObj {
       selector,
     });
   }
-
   get({
     selector = this.selector,
     defVal = {},
@@ -100,7 +99,8 @@ export class ResumeObj {
   }
 
   get state() {
-    return JSON.parse(localStorage.getItem(resumeObjConstants.storageItemName));
+    const storage = localStorage.getItem(resumeObjConstants.storageItemName);
+    return storage ? JSON.parse(storage) : this.defAppState;
   }  
 
   defAppState = {

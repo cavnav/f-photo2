@@ -3,7 +3,6 @@ import './styles.css';
 import React from 'react';
 
 import { 
-  AdditionalPanel,
   Stepper,
 } from '../';
 import { addHandlers, getBackgroundImageStyle } from '../../functions';
@@ -14,16 +13,17 @@ import { Dirs } from '../Dirs/Dirs';
 import { ResumeObj } from '../../resumeObj';
 import { Spin } from 'antd';
 import { Empty } from '../';
-import { Label } from '../Label/Label';
 import { Dialog } from '../Dialog/Dialog';
 import { Select } from '../Dialog';
 import { useMutedReducer } from '../../mutedReducer';
+import { eventNames } from '../../constants';
 
 export const Print = channel.addComp({
   name: 'Print',
   render,
   getAPI,
   getReqProps,
+  getComps,
 });
 
 const resumeObj = new ResumeObj({
@@ -32,19 +32,6 @@ const resumeObj = new ResumeObj({
   ],
   val: getStateDefault(),
 });
-
-const ExitFromFolder = Label.clone({
-  compId: 'ExitFromFolder',
-});
-
-const SaveFilesToFlash = Label.clone({
-  compId: 'SaveFilesToFlash',
-});
-
-const additionalActions = [
-  // ExitFromFolder,
-  SaveFilesToFlash,
-];
 
 function render({  
 }) {  
@@ -87,7 +74,7 @@ function render({
       setState({
         loading: true,
       });
-      rp.towardPrinted({
+      rp.server.towardPrinted({
         dir: state.createdPrintFolder,
       })
       .then(Comp.getAPI().onNavigate);
@@ -123,7 +110,7 @@ function render({
               loading: true,
             });
             const dir = event.target.getAttribute('src');
-            rp.towardPrinted({ 
+            rp.server.towardPrinted({ 
               dir, 
             })            
             .then(Comp.getAPI().onNavigate)                       
@@ -152,8 +139,12 @@ function render({
     () => {
       // Задать кнопки действий.
       const rp = Comp.getReqProps();
+
       rp.AdditionalPanelAPI.renderIt({
-        actions: additionalActions,
+        actions: [
+          rp.ExitFromFolder,
+          rp.SaveFilesToFlash,
+        ],
       })
       .then(() => {
         rp.SaveFilesToFlashAPI.forceUpdate({
@@ -167,7 +158,9 @@ function render({
       });
 
       // Задать начальные значения.
-      resetTo();
+      resetTo({
+        Comp,
+      });
 
       return () => {
         rp.AdditionalPanelAPI.renderIt({
@@ -177,7 +170,21 @@ function render({
     },
     []
   );
-
+  React.useEffect(
+    () => {
+      const {
+        setState,
+      } = Comp.getDeps();
+      const refreshWindowWrap = () => {
+        setState({
+          filesToPrint: resumeObj.get().filesToPrint,
+        });
+      };
+      document.addEventListener(eventNames.refreshWindow, refreshWindowWrap);
+      return () => document.removeEventListener(eventNames.refreshWindow, refreshWindowWrap);
+    },
+    []
+  );
   return (
     <div 
       className="Print layout"
@@ -350,23 +357,13 @@ function render({
 
 }
 
-function getReqProps({ channel }) {
-  const cropped = channel.crop({
-    server: {
-      $getUsbDevices: 1,
-      $checkCopyProgress: 1,
-      $saveFilesToFlash: 1,          
-      towardPrinted: 1,
-      backwardPrinted: 1,
-      savePrinted: 1,
-    },
-  });
-
+function getReqProps({ 
+  channel, 
+  comps, 
+}) {
   return {
-    ...cropped,
-    ExitFromFolderAPI: ExitFromFolder.getAPI(),
-    SaveFilesToFlashAPI: SaveFilesToFlash.getAPI(),
-    AdditionalPanelAPI: AdditionalPanel.getAPI(),
+    server: channel.server, 
+    ...comps,   
   }
 };
 
@@ -498,8 +495,10 @@ function getStateInit(
   };
 }
 
-function resetTo() {
-  const rp = Print.getReqProps();
+function resetTo({
+  Comp,
+}) {
+  const rp = Comp.getReqProps();
   const { 
     deps,
    } = Print;
@@ -515,10 +514,10 @@ function resetTo() {
     loading: true,
   });
 
-  rp.towardPrinted({
+  rp.server.towardPrinted({
     resetTo: path,
   })
-  .then(Print.getAPI().onNavigate)
+  .then(Comp.getAPI().onNavigate)
   .then(() => {
   // set filesToPrint from storage.
     if (answer.result === false) return;
@@ -587,4 +586,24 @@ export const updateFilesToPrint = {
     const { deps } = Print;
     return props.filesToPrint || deps.state.filesToPrint;
   }
+}
+
+function getComps({
+  channelComps,
+}) {
+  const {
+    Label,
+    AdditionalPanel,
+    Notification,
+  } = channelComps;
+  return {
+    toClone: {
+      ExitFromFolder: Label,
+      SaveFilesToFlash: Label,
+    },
+    items: {
+      Notification,
+      AdditionalPanel,
+    },
+  };
 }
