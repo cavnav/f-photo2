@@ -13,10 +13,8 @@ const find = require('find');
 
 const app = express();
 
-const ALBUM_DIR = path.join('Z:', 'album');
+const ALBUM_DIR = path.join(path.resolve('../../'), 'album');
 const PRINTED_DIR = path.join(ALBUM_DIR, 'printed');
-const PRINTED_NEW = path.join(PRINTED_DIR, 'Новая');
-const SHARED_DIR = path.join(ALBUM_DIR, 'shared');
 const PRINT_JSON = 'index.json';
 
 
