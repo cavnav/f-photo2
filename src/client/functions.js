@@ -450,7 +450,7 @@ export function onMoveSelections({
 }
 
 /**
- * For folder and file.
+ * For folder and files.
   
   actions: move, remove, renameFolder
  */
@@ -476,17 +476,20 @@ export function onUpdateSrc({
     filesToShare,
   ];
 
+  // need async.
+
   // for files.
   selections.forEach((selSrc) => {  
-    const slashSrc = src.concat(selSrc);  
+    const selSrcFull = src.concat(selSrc);  
     updatedLists.forEach((files) => {
-      if (dest && files[slashSrc]) {
-        const [fileName] = slashSrc.split(sep).slice(-1);
-        files[dest.concat(sep, fileName)] = files[slashSrc];
+      if (dest !== undefined && files[selSrcFull]) {
+        files[dest.concat(sep, selSrc)] = files[selSrcFull];
       }
-      delete files[slashSrc];
+      delete files[selSrcFull];
     });
   });
+
+  // for folders.
 
   resumeObj.saveCore({
     val: appState,

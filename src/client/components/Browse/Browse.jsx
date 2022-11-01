@@ -10,7 +10,7 @@ import {
 
 
 import './styles.css';
-import { addHandlers, checkServerProgress, getBackgroundImageStyle, myCrop, onMoveSelections, onUpdateSrc, oppositeWindowCheckSamePaths, ProgressNotification, refreshWindow, refreshWindows, updateAddPanelComps } from '../../functions';
+import { addHandlers, getBackgroundImageStyle, myCrop, onMoveSelections, oppositeWindowCheckSamePaths, refreshWindows, updateAddPanelComps } from '../../functions';
 import { channel } from '../../Channel';
 import { ResumeObj } from '../../resumeObj';
 import { eventNames } from '../../constants';

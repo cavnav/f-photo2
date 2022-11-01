@@ -1,11 +1,15 @@
+// remove, move, rename (one folder) (print, share)
+  // delete actions from another side (i.e  move 2, remove 2)
+  // fix dialog
+
 // inside Print a lot of images. how it print?
-// same layout for all actions - Browse, Print.
 // add loading
-// add icon
+
+// same layout for all actions - Browse, Print.
+// add icon type for items
 // share print, share file status
 // sync between browse, print, share, onePhoto
   // z100 error
-// remove move rename and action status (print, share)
 // add path to onePhoto, it is understand where this photo is
 // add status icon to preview image
 // ban move file on Welcome screen
