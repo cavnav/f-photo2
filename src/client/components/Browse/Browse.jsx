@@ -10,7 +10,7 @@ import {
 
 
 import './styles.css';
-import { addHandlers, getBackgroundImageStyle, myCrop, onMoveSelections, oppositeWindowCheckSamePaths, refreshWindows, updateAddPanelComps } from '../../functions';
+import { addHandlers, getBackgroundImageStyle, getUpdatedActionLists, myCrop, onMoveSelections, oppositeWindowCheckSamePaths, refreshWindows, updateAddPanelComps } from '../../functions';
 import { channel } from '../../Channel';
 import { ResumeObj } from '../../resumeObj';
 import { eventNames } from '../../constants';
@@ -526,16 +526,17 @@ function renderAddPanel({
           const selections = [...state.selections.values()];
           rp.server.moveToPath({
             items: selections,
+            updatedActionLists: getUpdatedActionLists(),
             destWindow: window.oppositeWindow,
           })
-          .then(({
-            dest,
-          }) => onMoveSelections({ 
-            Comp, 
-            dest, 
-            selections, 
-            src,
-            sep: state.sep,
+          .then((props) => {
+            resumeObj.saveUpdatedActionLists({
+              lists: props.updatedActionLists,
+            });
+            return props;
+          })
+          .then(() => onMoveSelections({ 
+            Comp,           
             onChangeSelections: () => changeSelections({
               Comp,
             }),
@@ -547,6 +548,7 @@ function renderAddPanel({
           const selections = [...state.selections.values()];
           rp.server.removeItems({
             items: selections,
+            updatedActionList: getUpdatedActionList(),
           })
           .then(({
           }) => onMoveSelections({ 

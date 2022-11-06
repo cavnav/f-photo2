@@ -194,8 +194,10 @@ export class AppServerAPI {
 
   moveToPath = ({
     items,
+    updatedActionLists,
     destWindow,
   }) => {
+    console.log('updatedList', updatedActionLists)
     return fetch(
       this.getFullUrl({
         url: 'moveToPath',
@@ -203,6 +205,7 @@ export class AppServerAPI {
       new PostObjTmp({      
         body: {
           items,
+          updatedActionLists,
           destWindow,
           curWindow: window.name,
         }

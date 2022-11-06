@@ -123,8 +123,7 @@ app.get('/api/getNewPhotos', async (req, res) => {
 
 });
 
-app.post(
-  '/api/addAlbum', 
+app.post('/api/addAlbum', 
   async (req, res) => {    
     const {
       curWindow,
@@ -147,8 +146,7 @@ app.post(
   }
 );
 
-app.post(
-  '/api/removeItems',
+app.post('/api/removeItems',
   async (req, res) => {
     const {
       curWindow,
@@ -356,17 +354,16 @@ app.post('/api/moveToPath',
   async(req, res) => {
     const {
       items,
+      updatedActionLists,
       curWindow,
       destWindow,
     } = req.body;
 
+    console.log("updatedList", updatedActionLists)
     const source = state[curWindow];
     const dest = state[destWindow];
-
-    res.send({
-      ...req.body,
-      dest: dest.replace(ALBUM_DIR, ''),
-    });
+    const sourceRel = source.replace(ALBUM_DIR, '');
+    const destRel = dest.replace(ALBUM_DIR, '');
 
     if (source === dest) {
       setState({
@@ -386,6 +383,17 @@ app.post('/api/moveToPath',
       source,
     });
     const flattedItems = allItems.flat();
+
+    res.send({
+      ...req.body,
+      dest: dest.replace(ALBUM_DIR, ''),
+      updatedActionLists: updateActionLists({
+        updatedLists: updatedActionLists,
+        items: flattedItems,
+        source: sourceRel,
+        dest: destRel,
+      }),
+    });
     
     startCopy({
       sourceItems: items,
@@ -404,7 +412,7 @@ app.post('/api/moveToPath',
       let allItems = [];
       for (let index = 0; index < items.length; index++) {      
         const itemNext = items[index];
-        const basename = path.basename(itemNext)
+        const basename = path.basename(itemNext);
         if (basename === itemNext) { // if file.
           allItems = [
             ...allItems,
@@ -836,4 +844,25 @@ async function mapResponsePrinted({
     ...result,
     files: json ? [json] : [],
   };
+}
+
+function updateActionLists({
+  updatedLists,
+  items,
+  source,
+  dest,
+}) {
+  console.log('source', [source, dest]);
+  const updatedListsArr = Object.values(updatedLists);
+  items.forEach((item) => {  
+    const sourceFull = path.join(source, item);  
+    updatedListsArr.forEach((files) => {
+      if (dest !== undefined && files[sourceFull]) {
+        files[path.join(dest, item)] = files[sourceFull];
+      }
+      delete files[sourceFull];
+    });
+  });
+
+  return updatedLists;
 }

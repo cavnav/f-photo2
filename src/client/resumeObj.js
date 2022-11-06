@@ -67,6 +67,25 @@ export class ResumeObj {
     );
   }
 
+  saveUpdatedActionLists({
+    lists,
+  }) {
+    const state = this.state;
+    const sourceLists = {
+      filesToPrint: state.Print,
+      filesToShare: state.Share,
+    };
+    
+    Object.entries(lists).forEach(([listName, list]) => {
+        if (sourceLists[listName]?.[listName]) sourceLists[listName][listName] = list;
+    });
+
+    localStorage.setItem(
+      resumeObjConstants.storageItemName,
+      JSON.stringify(state),
+    );
+  }
+
   saveMerge({
     val,
   }) {
@@ -87,6 +106,7 @@ export class ResumeObj {
       selector,
     });
   }
+
   get({
     selector = this.selector,
     defVal = {},

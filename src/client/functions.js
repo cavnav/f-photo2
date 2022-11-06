@@ -415,10 +415,6 @@ export function ProgressNotification({
 
 export function onMoveSelections({
   Comp,
-  dest,
-  src,
-  sep,
-  selections,
   onChangeSelections,
 }) {
   const rp = Comp.getReqProps();
@@ -435,12 +431,6 @@ export function onMoveSelections({
       },
     })
     .then(() => {
-      onUpdateSrc({
-        dest,
-        src,
-        sep,
-        selections,
-      });
       onChangeSelections?.();
       refreshWindows({
         Comp,
@@ -449,17 +439,7 @@ export function onMoveSelections({
     });
 }
 
-/**
- * For folder and files.
-  
-  actions: move, remove, renameFolder
- */
-export function onUpdateSrc({
-  dest,
-  src,
-  sep,
-  selections,
-}) {
+export function getUpdatedActionLists() {
   const resumeObj = new ResumeObj();
   const appState = resumeObj.state;
   const {
@@ -471,27 +451,8 @@ export function onUpdateSrc({
     } = {},
   } = appState;
 
-  const updatedLists = [ 
+  return {
     filesToPrint, 
     filesToShare,
-  ];
-
-  // need async.
-
-  // for files.
-  selections.forEach((selSrc) => {  
-    const selSrcFull = src.concat(selSrc);  
-    updatedLists.forEach((files) => {
-      if (dest !== undefined && files[selSrcFull]) {
-        files[dest.concat(sep, selSrc)] = files[selSrcFull];
-      }
-      delete files[selSrcFull];
-    });
-  });
-
-  // for folders.
-
-  resumeObj.saveCore({
-    val: appState,
-  });
+  };
 }
