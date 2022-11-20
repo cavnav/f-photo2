@@ -151,6 +151,7 @@ app.post('/api/removeItems',
     const {
       curWindow,
       items,
+      updatedActionLists,
     } = req.body;
 
     setState({
@@ -158,11 +159,27 @@ app.post('/api/removeItems',
       countCopiedPhotos: 0,
     });
 
+    const source = state[curWindow];
+    const sourceRel = source.replace(ALBUM_DIR, '');
+    const allItems = await getAllItems({
+      items,
+      source,
+    });
+
+    const flattedItems = allItems.flat();
+
+    res.send({
+      ...req.body,      
+      updatedActionLists: updateActionLists({
+        updatedLists: updatedActionLists,
+        items: flattedItems,
+        source: sourceRel,
+      }),
+    });
+
     remove({
       slicedItems: items,
     });
-
-    res.send(req.body);
 
     // ----------------------
     async function remove({
@@ -181,16 +198,16 @@ app.post('/api/removeItems',
         total: items.length,
       });
 
-      if (progress !== 100 && slicedItems.length > 1) {
-        remove({ 
-          slicedItems: slicedItems.slice(1), 
-        });
-      }
-
       setState({
         progress: progress,
         countCopiedPhotos: countProcessed,
       });
+
+      if (progress !== 100 && slicedItems.length > 1) {
+        remove({ 
+          slicedItems: slicedItems.slice(1), 
+        });
+      }      
     }  
   }
 );
@@ -359,7 +376,6 @@ app.post('/api/moveToPath',
       destWindow,
     } = req.body;
 
-    console.log("updatedList", updatedActionLists)
     const source = state[curWindow];
     const dest = state[destWindow];
     const sourceRel = source.replace(ALBUM_DIR, '');
@@ -382,6 +398,7 @@ app.post('/api/moveToPath',
       items,
       source,
     });
+
     const flattedItems = allItems.flat();
 
     res.send({
@@ -402,52 +419,6 @@ app.post('/api/moveToPath',
       source,
       dest,
     });
-
-    
-    // -------------------------------------
-    async function getAllItems({
-      items,
-      source,
-    }) {
-      let allItems = [];
-      for (let index = 0; index < items.length; index++) {      
-        const itemNext = items[index];
-        const basename = path.basename(itemNext);
-        if (basename === itemNext) { // if file.
-          allItems = [
-            ...allItems,
-            itemNext,
-          ];
-          continue;
-        }
-        const itemItems = await getItemsOfItem({ // if folder.
-          item: path.resolve(source, basename),
-          source,
-        });
-
-        allItems = [
-          ...allItems,
-          ...itemItems,
-        ];        
-      }
-      return allItems;
-    }
-
-    async function getItemsOfItem({
-      item,
-      source,
-    }) {              
-      const { files } = await findFiles({
-        reqPath: item,
-        doNeedFullPath: true,
-        doNeedTopLevelSearch: false,
-        doNeedDirs: false,
-      });
-
-      // case when empty dir.
-      const relatedPathfiles = (files.length ? files : [item]).map((file) => path.relative(source, file))
-      return relatedPathfiles;
-    }
 
     async function startCopy({
       items,
@@ -869,4 +840,49 @@ function updateActionLists({
   });
 
   return updatedLists;
+}
+
+// -------------------------------------
+async function getAllItems({
+  items,
+  source,
+}) {
+  let allItems = [];
+  for (let index = 0; index < items.length; index++) {      
+    const itemNext = items[index];
+    const basename = path.basename(itemNext);
+    if (basename === itemNext) { // if file.
+      allItems = [
+        ...allItems,
+        itemNext,
+      ];
+      continue;
+    }
+    const itemItems = await getItemsOfItem({ // if folder.
+      item: path.resolve(source, basename),
+      source,
+    });
+
+    allItems = [
+      ...allItems,
+      ...itemItems,
+    ];        
+  }
+  return allItems;
+}
+
+async function getItemsOfItem({
+  item,
+  source,
+}) {              
+  const { files } = await findFiles({
+    reqPath: item,
+    doNeedFullPath: true,
+    doNeedTopLevelSearch: false,
+    doNeedDirs: false,
+  });
+
+  // case when empty dir.
+  const relatedPathfiles = (files.length ? files : [item]).map((file) => path.relative(source, file))
+  return relatedPathfiles;
 }

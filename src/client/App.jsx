@@ -1,6 +1,5 @@
-// remove, move, rename (one folder) (print, share)
-  // delete actions from another side (i.e  move 2, remove 2)
-  // fix dialog
+// when toward not exists path fire error. need check path.
+// remove, move, rename (only one folder) (print, share)  
 
 // inside Print a lot of images. how it print?
 // add loading

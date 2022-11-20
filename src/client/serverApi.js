@@ -176,6 +176,7 @@ export class AppServerAPI {
 
   removeItems = ({
     items = [],
+    updatedActionLists,
   }) => {
     if (items.length === 0) return;
     return fetch(
@@ -186,6 +187,7 @@ export class AppServerAPI {
         body: {
           items,
           curWindow: window.name,
+          updatedActionLists,
         },
       })
     )
@@ -197,7 +199,6 @@ export class AppServerAPI {
     updatedActionLists,
     destWindow,
   }) => {
-    console.log('updatedList', updatedActionLists)
     return fetch(
       this.getFullUrl({
         url: 'moveToPath',

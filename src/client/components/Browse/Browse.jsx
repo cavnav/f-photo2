@@ -548,7 +548,13 @@ function renderAddPanel({
           const selections = [...state.selections.values()];
           rp.server.removeItems({
             items: selections,
-            updatedActionList: getUpdatedActionLists(),
+            updatedActionLists: getUpdatedActionLists(),
+          })
+          .then((props) => {
+            resumeObj.saveUpdatedActionLists({
+              lists: props.updatedActionLists,
+            });
+            return props;
           })
           .then(({
           }) => onMoveSelections({ 
