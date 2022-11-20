@@ -846,16 +846,20 @@ async function mapResponsePrinted({
   };
 }
 
+
+/**
+ * 
+ * обновить списки файлов (печать, поделиться, архивПечати, архивПоделиться)
+ */
 function updateActionLists({
   updatedLists,
   items,
   source,
   dest,
 }) {
-  console.log('source', [source, dest]);
   const updatedListsArr = Object.values(updatedLists);
   items.forEach((item) => {  
-    const sourceFull = path.join(source, item);  
+    const sourceFull = path.join(source, path.sep, item);  
     updatedListsArr.forEach((files) => {
       if (dest !== undefined && files[sourceFull]) {
         files[path.join(dest, item)] = files[sourceFull];

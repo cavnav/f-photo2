@@ -548,14 +548,11 @@ function renderAddPanel({
           const selections = [...state.selections.values()];
           rp.server.removeItems({
             items: selections,
-            updatedActionList: getUpdatedActionList(),
+            updatedActionList: getUpdatedActionLists(),
           })
           .then(({
           }) => onMoveSelections({ 
             Comp, 
-            selections, 
-            src,
-            sep: state.sep,
             onChangeSelections: () => changeSelections({
               Comp,
             }),
