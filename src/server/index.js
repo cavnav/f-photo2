@@ -622,9 +622,12 @@ async function findFiles({
   doNeedDirs = false,
   doNeedFullPath = false,
 }) {
-  
-  const files = await new Promise((resolve) => find.file(reqPath, resolve));
-  let browseFiles = files; 
+  const isReqPathExists = await fs.pathExists(reqPath);
+  let browseFiles = [];
+  if (isReqPathExists) {
+    const files = await new Promise((resolve) => find.file(reqPath, resolve));
+    browseFiles = files; 
+  }
 
   if (doNeedTopLevelSearch) browseFiles = browseFiles.filter(isTopLevelFile);
   if (!doNeedFullPath) browseFiles = browseFiles.map((file) => {
@@ -639,7 +642,10 @@ async function findFiles({
     dirs: [] 
   };
     
-  const dirs = await new Promise((resolve) => find.dir(reqPath, resolve));
+  let dirs = [];
+  if (isReqPathExists) {
+   dirs = await new Promise((resolve) => find.dir(reqPath, resolve));
+  }
   
   const { sep } = path;
   const browseDirs = dirs
