@@ -1,8 +1,15 @@
-// fix createFolder error
+// set all dialogs in center
+// fix two windows mode (close opposite window)
+// create comp ToggleWindow
+// create rename folder dialog
 // remove, move, rename (only one folder) (print, share)  
-
+// hide printed, shared folders
+// scroll to selected folder
+// help (fire dialog with corresponding actions)
 // inside Print a lot of images. how it print?
-// add loading
+// ban move to print 
+// ban move file on Welcome screen
+// add loading (create Proxy Comp for loading)
 
 // same layout for all actions - Browse, Print.
 // add icon type for items
@@ -11,13 +18,6 @@
   // z100 error
 // add path to onePhoto, it is understand where this photo is
 // add status icon to preview image
-// ban move file on Welcome screen
-// hide printed, shared folders
-// scroll to selected folder
-// help
-
-// ban move to print 
-// 
 // Failed to load resource
 // ctg file
 // add create resumeObj in channel.addComp().
@@ -28,7 +28,7 @@ import './app.css';
 
 import React from 'react';
 import { Notification, Actions, ControlPanel, AdditionalPanel } from './components';
-import { updFromObj } from './functions';
+import { getOppositeWindowObj, updFromObj } from './functions';
 import { get as _get } from 'lodash';
 import { channel } from './Channel';
 import { ResumeObj } from './resumeObj';

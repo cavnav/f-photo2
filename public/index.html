@@ -2,43 +2,39 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <link rel="icon" type="favicon.png" />
-  <title>F-PHOTO</title>
-  <script>
-    if (window.self === window.top) {
-      window.name = 'leftWindow';
-      window.oppositeWindow = 'rightWindow';
-    }
-    else {
-      window.name = 'rightWindow';
-      window.oppositeWindow = 'leftWindow';
-    }
-  </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="icon" type="favicon.png" />
+    <title>F-PHOTO</title>
 </head>
 
 <body>
-  <div id="explorer">
-    <div id="root"></div>
-  </div>
-</body>
-<script>  
-  window.onload = () => { 
-    const browserCount = JSON.parse(localStorage.getItem('resume')).browserCount;
-    
-    if (
-      window.self === window.top && 
-      browserCount === 2
-    ) {
-      const container = document.createElement('div');
-      container.id = "rightSideWindow";
-      const iframe = document.createElement("iframe");
-      iframe.src = "http://localhost:3000";
-      container.append(iframe);
-      document.getElementById("explorer").append(container);
+    <div id="explorer" />
+    <script>
+
+    const browserCount = JSON.parse(localStorage.getItem('resume'))?.browserCount ?? 1;
+
+    if (window.self === window.top) {
+        const container = document.createElement('div');
+        container.id = "leftWindow";
+        const iframe = document.createElement("iframe");
+        iframe.src = "http://localhost:3000";
+        iframe.name = "leftWindow";
+        container.append(iframe);
+        document.getElementById("explorer").append(container);                
+     
+
+        if (browserCount === 2) {
+            const container = document.createElement('div');
+            container.id = "rightWindow";
+            const iframe = document.createElement("iframe");
+            iframe.src = "http://localhost:3000";
+            iframe.name = "rightWindow";
+            container.append(iframe);
+            document.getElementById("explorer").append(container);
+        }
     }
-  }
-</script>
+    </script>
+</body>
 </html>

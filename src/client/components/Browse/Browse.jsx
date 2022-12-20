@@ -38,6 +38,7 @@ const resumeObj = new ResumeObj({
 
 function render(
 ) {
+  console.log(window.self);
   const Comp = this;
   const [state, setState] = useMutedReducer({
     setCompDeps: Comp.bindSetCompDeps(),
@@ -58,12 +59,6 @@ function render(
     setState({
       isDialogEnabled: false,
       dialogTitle: '',
-    });
-  }, []);
-
-  const onDialogRemoveCancel = React.useCallback(() => {
-    setState({
-      isDialogRemoveItem: false,
     });
   }, []);
 
@@ -181,6 +176,13 @@ function render(
         className={`${Browse.name} layout`}
         onClick={onClickDispatcher}
       >
+        {state.isDialogEnabled && (
+          <Dialog.r
+            onCancel={onDialogCancel}
+          >
+            <div>{state.dialogTitle}</div>
+          </Dialog.r>
+        )}
         {state.loading && <Spin size="large" />}
         {state.progress < 100 && (
           <div className="flexCenter width100pr positionAbs">
@@ -200,14 +202,6 @@ function render(
         <Empty
           isTrue={state.dirs.length === 0 && state.files.length === 0}
         />
-
-        {state.isDialogEnabled && (
-          <Dialog.r
-            onCancel={onDialogCancel}
-          >
-            <div>{state.dialogTitle}</div>
-          </Dialog.r>
-        )}
 
         {/* <Help
           toRender={toRenderHelp()}
@@ -395,20 +389,19 @@ async function onToggleSecondWindow({
   const browserCount = appState.browserCount;
   const browserCountUpd = states[browserCount];
 
+  // Чтобы сбросить путь с другой стороны и в следующий раз открывалось с начала.
   resumeObj.saveMerge({
     val: {
       browserCount: browserCountUpd,
-      rightWindow: {},
+      ...(window.oppositeWindow && {[window.oppositeWindow]: {} }),
     },
   });
+  
+  await rp.server.resetNavigation({
+    curWindow: window.oppositeWindow,
+  });
 
-  // Чтобы сбросить путь с другой стороны и в следующий раз открывалось с начала.
-  if (browserCountUpd === 1) {
-    await rp.server.resetNavigation({
-      curWindow: window.oppositeWindow,
-    });
-  }
-  window.location.reload();
+  window.parent.location.reload();
 }
 
 function changeSelections({
@@ -521,9 +514,12 @@ function renderAddPanel({
         }),
       });
       rp.ToggleSecondWindowAPI.forceUpdate({
-        onClick: () => onToggleSecondWindow({
-          Comp,
-        }),
+        onClick: () => {
+          console.log("onToggle");
+          onToggleSecondWindow({
+            Comp,
+          });
+        }
       });
       rp.MoveSelectionsAPI.forceUpdate({
         onClick: () => {

@@ -11,7 +11,7 @@ export const Dialog = channel.addComp({
   getReqProps,
 });
 
-function render() {  
+function render(props) {  
   const [state] = React.useReducer(tempReducer, initState);
 
   const rp = this.getReqProps();
@@ -22,7 +22,7 @@ function render() {
       //   top: rp.mouse.y,
       // }}
     >
-      {this.props.children}
+      {props.children}
     </div>
   );
 }

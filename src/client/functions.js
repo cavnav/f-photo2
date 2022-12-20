@@ -104,18 +104,21 @@ export function isSameWindowPaths() {
   return res;
 }
 
+export function getWindowObject() {
+  return window.frames[0];
+}
 export function getOppositeWindowObj() {
-  return window.self === window.top ? window.frames[0] : window.parent;
+  return window.self === window.frames[0] ? window.frames[0] : window.frames[1];
 }
 
 export function oppositeWindowCheckSamePaths() {
   const oppositeWindowObj = getOppositeWindowObj();
-  oppositeWindowObj && oppositeWindowObj.document.dispatchEvent(new Event(eventNames.checkSameWindowPaths));
+  oppositeWindowObj?.document.dispatchEvent(new Event(eventNames.checkSameWindowPaths));
 }
 
 export function refreshOppositeWindow() {
   const oppositeWindowObj = getOppositeWindowObj();
-  oppositeWindowObj && oppositeWindowObj.document.dispatchEvent(
+  oppositeWindowObj?.document.dispatchEvent(
     new Event(eventNames.refreshWindow)
   );
 }
@@ -330,7 +333,7 @@ export function refreshWindows(
   );
 
   const oppositeWindowObj = getOppositeWindowObj();
-  oppositeWindowObj && oppositeWindowObj.document.dispatchEvent(
+  oppositeWindowObj?.document.dispatchEvent(
     new Event(eventNames.refreshWindow),
   );
 }
