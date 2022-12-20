@@ -1,4 +1,4 @@
-// when toward not exists path fire error. need check path.
+// fix createFolder error
 // remove, move, rename (only one folder) (print, share)  
 
 // inside Print a lot of images. how it print?

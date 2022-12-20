@@ -146,7 +146,16 @@ function render(
   React.useEffect(
     () => {
       const rp = Comp.getReqProps();
-      const refreshWindowWrap = () => rp.server.toward().then((res) => setState(res));
+      const refreshWindowWrap = () => {
+        setState({
+          loading: true,
+        });
+        rp.server.toward().then((res) => setState(res)).then(() => {
+          setState({
+            loading: false,
+          });
+        });
+      }
       document.addEventListener(eventNames.refreshWindow, refreshWindowWrap);
       return () => document.removeEventListener(eventNames.refreshWindow, refreshWindowWrap);
     },
@@ -473,17 +482,9 @@ async function onAddAlbum({
     return;
   }
 
-  setState({
-    loading: true,
-  });
   refreshWindows({
     Comp,
-  })
-    .then(() => {
-      setState({
-        loading: false,
-      });
-    });
+  });
 }
 
 function renderAddPanel({
