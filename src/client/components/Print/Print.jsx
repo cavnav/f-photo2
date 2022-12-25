@@ -7,7 +7,7 @@ import {
 } from '../';
 import { addHandlers, getBackgroundImageStyle } from '../../functions';
 import { createSteps } from './createSteps';
-import { channel } from '../../Channel';
+import { channel } from '../../channel';
 import { Copying } from './components/Copying';
 import { Dirs } from '../Dirs/Dirs';
 import { ResumeObj } from '../../resumeObj';

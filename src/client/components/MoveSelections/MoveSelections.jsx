@@ -1,7 +1,7 @@
 import './styles.css';
 
 import React from 'react';
-import { channel } from '../../Channel';
+import { channel } from '../../channel';
 import { getExistsProps, getOppositeWindowObj, isCatalogSelected, isSameWindowPaths } from '../../functions';
 import { eventNames } from '../../constants';
 import { ResumeObj } from '../../resumeObj';

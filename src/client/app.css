@@ -6,33 +6,20 @@
 
 html,
 body,
+#explorer,
 .f-photo {
   height: 100%;
 }
 
 body {
-  margin: auto;
-}
-
-iframe,
-#explorer,
-.f-photo {
-  width: 100%;
-  height: 100%;  
+  margin: 0;
 }
 
 #explorer {
-  display: flex;
+  width: 100%;  
 }
 
-#rightWindow iframe {
-  border-left: 1px solid;
-}
-
-#leftWindow,
-#rightWindow {
-  width: 100%;
-  height: 100%;  
+#explorer, #rightSideWindow {
   min-width: 50%;
   overflow: hidden;
 }

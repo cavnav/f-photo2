@@ -311,7 +311,7 @@ export function getCompsAPI({
   items = {},
   toClone = {},
 }) {
-  const comps = Object.entries(items?? {}).concat(Object.entries(toClone ?? {}));
+  const comps = Object.entries(items ?? {}).concat(Object.entries(toClone ?? {}));
   return comps && comps.reduce((res, [name, comp]) => {
       const compUpd = toClone[name] ? comp.clone({
         name,
@@ -319,7 +319,7 @@ export function getCompsAPI({
       return {
         ...res,
         [name]: compUpd,
-        [`${name}API`]: compUpd.getAPI(),
+        [`${name}API`]: compUpd.getAPI?.() ?? {},
       };
     },
     {}
@@ -389,10 +389,7 @@ export function updateAddPanelComps({
   
   // -------------------
   function getComps() {
-    return {      
-      [rp.ToggleSecondWindow.name]: {
-        title: 'Отобразить второе окно',
-      },
+    return {            
       [rp.MoveSelections.name]: {
         title: setBtnTitle({
           prefix: BTN_MOVE,

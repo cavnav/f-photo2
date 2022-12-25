@@ -2,7 +2,7 @@ import React from 'react';
 import { Stepper, Actions } from '../';
 
 import './styles.css';
-import { channel } from '../../Channel';
+import { channel } from '../../channel';
 import { ProgressNotification } from '../../functions';
 
 export const Copy = channel.addComp({

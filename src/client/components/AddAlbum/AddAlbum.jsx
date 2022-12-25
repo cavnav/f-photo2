@@ -1,6 +1,5 @@
 import React from 'react';
-import { channel } from '../../Channel';
-import { getExistsProps } from '../../functions';
+import { channel } from '../../channel';
 import { useMutedReducer } from '../../mutedReducer';
 
 import './styles.css';

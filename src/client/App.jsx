@@ -10,14 +10,14 @@
 // ban move to print 
 // ban move file on Welcome screen
 // add loading (create Proxy Comp for loading)
+// add path to onePhoto, it is understand where this photo is
+// add status icon to preview image
 
 // same layout for all actions - Browse, Print.
 // add icon type for items
 // share print, share file status
 // sync between browse, print, share, onePhoto
   // z100 error
-// add path to onePhoto, it is understand where this photo is
-// add status icon to preview image
 // Failed to load resource
 // ctg file
 // add create resumeObj in channel.addComp().
@@ -30,7 +30,7 @@ import React from 'react';
 import { Notification, Actions, ControlPanel, AdditionalPanel } from './components';
 import { getOppositeWindowObj, updFromObj } from './functions';
 import { get as _get } from 'lodash';
-import { channel } from './Channel';
+import { channel } from './channel';
 import { ResumeObj } from './resumeObj';
 import { useMutedReducer } from './mutedReducer';
 

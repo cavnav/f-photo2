@@ -2,7 +2,7 @@ import './styles.css';
 
 import React from 'react';
 import { tempReducer } from '../../functions';
-import { channel } from '../../Channel';
+import { channel } from '../../channel';
 
 
 export const Dialog = channel.addComp({

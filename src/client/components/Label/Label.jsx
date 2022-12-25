@@ -1,6 +1,6 @@
 import './styles.css';
 import React from 'react';
-import { channel } from '../../Channel';
+import { channel } from '../../channel';
 import { useMutedReducer } from '../../mutedReducer';
 
 export const Label = channel.addComp({

@@ -1,5 +1,5 @@
 import React from 'react';
-import { channel } from '../../Channel';
+import { channel } from '../../channel';
 
 import './styles.css';
 

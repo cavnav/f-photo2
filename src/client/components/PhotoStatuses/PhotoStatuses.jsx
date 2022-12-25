@@ -1,7 +1,7 @@
 import './styles.css';
 import React from 'react';
 import { ResumeObj } from '../../resumeObj';
-import { channel } from '../../Channel';
+import { channel } from '../../channel';
 import { Print } from '../';
 import { useMutedReducer } from '../../mutedReducer';
 

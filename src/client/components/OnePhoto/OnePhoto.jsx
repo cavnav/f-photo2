@@ -4,7 +4,7 @@ import React from 'react';
 import { Dialog, Empty } from '../';
 import { ResumeObj } from '../../resumeObj';
 import { myArray, refreshOppositeWindow, updateAddPanelComps } from '../../functions';
-import { channel } from '../../Channel';
+import { channel } from '../../channel';
 import { getCurDate } from '../../functions';
 import { useMutedReducer } from '../../mutedReducer';
 

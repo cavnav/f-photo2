@@ -10,11 +10,8 @@ import {
 
 
 import './styles.css';
-import { addHandlers, getBackgroundImageStyle, getUpdatedActionLists, myCrop, 
-  onMoveSelections, oppositeWindowCheckSamePaths, 
-  refreshWindows, updateAddPanelComps 
-} from '../../functions';
-import { channel } from '../../Channel';
+import { addHandlers, getBackgroundImageStyle, getUpdatedActionLists, myCrop, onMoveSelections, oppositeWindowCheckSamePaths, refreshWindows, updateAddPanelComps } from '../../functions';
+import { channel } from '../../channel';
 import { ResumeObj } from '../../resumeObj';
 import { eventNames } from '../../constants';
 import { Empty } from '../Empty/Empty';
@@ -288,14 +285,9 @@ function getReqProps({
   comps,
   channel,
 }) {
-  const {
-    browserCount,
-  } = resumeObj.state;
-
   return {
     server: channel.server,
     ...comps,
-    isSecondWindow: browserCount > 1,
   };
 };
 
@@ -373,35 +365,6 @@ function getAPI({
         .then(onNavigate);
     }
   }
-}
-
-// ------------------------------
-
-async function onToggleSecondWindow({
-  Comp,
-}) {
-  const states = {
-    1: 2,
-    2: 1,
-  };
-  const rp = Comp.getReqProps();
-  const appState = resumeObj.state;
-  const browserCount = appState.browserCount;
-  const browserCountUpd = states[browserCount];
-
-  // Чтобы сбросить путь с другой стороны и в следующий раз открывалось с начала.
-  resumeObj.saveMerge({
-    val: {
-      browserCount: browserCountUpd,
-      ...(window.oppositeWindow && {[window.oppositeWindow]: {} }),
-    },
-  });
-  
-  await rp.server.resetNavigation({
-    curWindow: window.oppositeWindow,
-  });
-
-  window.parent.location.reload();
 }
 
 function changeSelections({
@@ -489,7 +452,7 @@ function renderAddPanel({
   } = Comp.getDeps();
   const additionalActions = [
     rp.ExitFromFolder,
-    rp.ToggleSecondWindow,
+    rp.ToggleWindow,
     rp.AddAlbum,
     rp.Rename,
     rp.MoveSelections,
@@ -512,14 +475,6 @@ function renderAddPanel({
           ...props,
           Comp,
         }),
-      });
-      rp.ToggleSecondWindowAPI.forceUpdate({
-        onClick: () => {
-          console.log("onToggle");
-          onToggleSecondWindow({
-            Comp,
-          });
-        }
       });
       rp.MoveSelectionsAPI.forceUpdate({
         onClick: () => {
@@ -581,7 +536,6 @@ function renderAddPanel({
   });
 
   return () => {
-    console.log('browse unmount')
     rp.AdditionalPanelAPI.renderIt({
       actions: [],
     });      
@@ -600,14 +554,16 @@ function getComps({
     AddAlbum,
     CustomAction,
     Label,
+    ToggleWindow,
   } = channelComps;
+
   return {
     toClone: {
       AddAlbum,
-      MoveSelections: Label,
+      ToggleWindow, 
       RemoveSelections: CustomAction,
+      MoveSelections: Label,
       ExitFromFolder: Label,
-      ToggleSecondWindow: Label,
       Rename: Label,
     },
     items: {

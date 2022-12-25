@@ -4,7 +4,7 @@ import React from 'react';
 import { ResumeObj } from '../../resumeObj';
 import { getOppositeWindowObj } from '../../functions';
 import { get as _get } from 'lodash';
-import { channel } from '../../Channel';
+import { channel } from '../../channel';
 import cn from 'classnames';
 import { useMutedReducer } from '../../mutedReducer';
 

@@ -2,12 +2,13 @@ import {
   AppServerAPI
 } from './ServerApi';
 import {
-  getClones,
   getCompsAPI,
 } from './functions';
 import {
   get as _get
 } from 'lodash';
+
+import {ResumeObj} from './resumeObj';
 
 export const channel = ChannelWrap();
 
@@ -32,20 +33,22 @@ function ChannelWrap(props) {
     addComp({
       name,
       render,
+      resumeObj,
       getAPI,
       getReqProps,
       getComps = () => ({}),
     }) {      
       const baseComp = new class ChannelComp {
         r = render.bind(this);
-        name = name;        
+        name = name;
         deps = {};
-        comps = undefined;
+        comps = undefined;   
+        resumeObj = resumeObj ? new ResumeObj(resumeObj) : {};     
 
         constructor({
-          name,
+          name,          
         } = {}) {
-          if (name) this.name = name;
+          if (name) this.name = name;          
         }
 
         bindSetCompDeps() {
@@ -57,7 +60,15 @@ function ChannelWrap(props) {
             this.deps,
             props.deps,
           );
-        };
+        }
+
+        getComps() {
+          return this.comps ?? {
+            ...getCompsAPI(getComps({
+              channelComps: channel.comps,
+            })),
+          };
+        }
     
         clone({
           name,
@@ -66,34 +77,50 @@ function ChannelWrap(props) {
             name,
           });
         }
+
+        getServer() {
+          return channel.server;
+        }
     
         getDeps() {
           return this.deps;
         }
       
         getAPI() {
-          return getAPI({
+          return getAPI?.({
             Comp: this,
             deps: this.deps,
-          });
+          }) ?? {};
         }
 
-        getReqProps() {     
-          if (!this.comps) {
-            this.comps = {
-              ...getCompsAPI(getComps({
-                channelComps: channel.comps,
-              })),
-            };
+        get(props) {
+          const res = {};
+          const additionalProps = {
+            server: channel.server,   
+            comps: this.getComps(),         
           };
-          return getReqProps({
+
+          for (const prop in props) {
+            res[prop] = this[prop] || additionalProps[prop];
+          };
+
+          return res;
+        }
+
+        getReqProps() {               
+          const res = {
             channel,
             deps: this.deps,
-            comps: this.comps,
-          });
+            comps: this.getComps(),
+            resumeObj: this.resumeObj,
+          };
+
+          return getReqProps ? getReqProps(res) : res;
         }
       };
-      this.comps[name] = baseComp;      
+
+      this.comps[name] = baseComp;   
+
       return baseComp;
     }
 

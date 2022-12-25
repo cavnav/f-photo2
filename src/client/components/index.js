@@ -17,6 +17,7 @@ export { OnePhoto } from './OnePhoto/OnePhoto';
 export { Dialog } from './Dialog/Dialog';
 export { Selector } from './Selector/Selector';
 export { Empty } from './Empty/Empty';
+export { ToggleWindow  } from './ToggleWindow/ToggleWindow';
 
 import { Print } from './Print/Print';
 import { Share } from './Share/Share';
