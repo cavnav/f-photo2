@@ -7,7 +7,8 @@
 html,
 body,
 #explorer,
-.f-photo {
+.f-photo,
+iframe {
   height: 100%;
 }
 
@@ -15,13 +16,25 @@ body {
   margin: 0;
 }
 
-#explorer {
-  width: 100%;  
+iframe,
+.f-photo {
+  width: 100%;
+  border: 0;
 }
 
-#explorer, #rightSideWindow {
-  min-width: 50%;
+#explorer {
+  display: flex;
+  width: 100%;
+}
+
+#leftWindow,
+#rightWindow {
+  flex: 2 1 50%; 
   overflow: hidden;
+}
+
+#rightWindow {
+  border-left: 1px solid;
 }
 
 .positionRel {

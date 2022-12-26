@@ -464,6 +464,7 @@ function renderAddPanel({
     actions: additionalActions,
   })
     .then(() => {
+      
       rp.AddAlbumAPI.forceUpdate({
         onClick: (props) => onAddAlbum({
           ...props,
