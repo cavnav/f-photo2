@@ -63,11 +63,14 @@ function ChannelWrap(props) {
         }
 
         getComps() {
-          return this.comps ?? {
-            ...getCompsAPI(getComps({
-              channelComps: channel.comps,
-            })),
-          };
+          if (this.comps === undefined) {
+            this.comps = {
+              ...getCompsAPI(getComps({
+                channelComps: channel.comps,
+              })),
+            };
+          }
+          return this.comps;
         }
     
         clone({

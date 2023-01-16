@@ -450,6 +450,7 @@ function renderAddPanel({
   const {
     state,
   } = Comp.getDeps();
+
   const additionalActions = [
     rp.ExitFromFolder,
     rp.ToggleWindow,
@@ -463,8 +464,7 @@ function renderAddPanel({
   rp.AdditionalPanelAPI.renderIt({
     actions: additionalActions,
   })
-    .then(() => {
-      
+    .then(() => {      
       rp.AddAlbumAPI.forceUpdate({
         onClick: (props) => onAddAlbum({
           ...props,
@@ -560,11 +560,11 @@ function getComps({
 
   return {
     toClone: {
+      ExitFromFolder: Label,
       AddAlbum,
       ToggleWindow, 
       RemoveSelections: CustomAction,
       MoveSelections: Label,
-      ExitFromFolder: Label,
       Rename: Label,
     },
     items: {

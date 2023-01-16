@@ -18,7 +18,7 @@ function render(props) {
   });
 
   if (!state.title) return null;
-console.log('label render', state.title)
+  
   return (
     <div 
       className={`${Label.name}`}

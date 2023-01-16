@@ -1,6 +1,5 @@
-// set all dialogs in center
 // fix two windows mode (close opposite window)
-// create comp ToggleWindow
+// set all dialogs in center
 // create rename folder dialog
 // remove, move, rename (only one folder) (print, share)  
 // hide printed, shared folders
