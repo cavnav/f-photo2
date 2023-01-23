@@ -128,8 +128,7 @@ export class ResumeObj {
     leftWindow: {
       // OnePhoto: {},
     },
-    rightWindow: {
-    },
+    rightWindow: undefined,
     // [Print.name]: {},
     // [Share.name]: {},
   };

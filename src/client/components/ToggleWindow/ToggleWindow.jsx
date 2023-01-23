@@ -1,5 +1,6 @@
 import React from 'react';
 import {channel} from '../../channel';
+import { getOppositeWindow } from '../../functions';
 import { useMutedReducer } from '../../mutedReducer';
 
 
@@ -28,7 +29,7 @@ function render() {
 
     const [state, setState] = useMutedReducer({
         initialState: {
-            browserCount: resumeObj.get(), // browserCount
+            browserCount: resumeObj.get(),
             title: 'Доп. окно',
         },
         setCompDeps: Comp.bindSetCompDeps(),
@@ -53,21 +54,32 @@ function render() {
             2: 1,
         };
 
+        const resume = resumeObj.state;
         const browserCountUpd = toggle[state.browserCount];
-    
+        const oppositeWindowName = getOppositeWindow()?.name;
+
         // Чтобы сбросить путь с другой стороны и в следующий раз открывалось с начала.
-        resumeObj.saveMerge({
-            val: {
-                browserCount: browserCountUpd,
-                ...(window.oppositeWindow && {[window.oppositeWindow]: {} }),
-            },
+        if (browserCountUpd === 1) {            
+            resumeObj.saveMerge({
+                val: {
+                    browserCount: browserCountUpd,
+                    rightWindow: undefined,
+                    ...(window.name === "rightWindow" && { leftWindow: resume.rightWindow }),
+                }
+            })
+        } else {
+            resumeObj.saveMerge({
+                val: {
+                    browserCount: browserCountUpd,
+                },
+            });           
+        } 
+    
+        oppositeWindowName && await server.resetNavigation({
+            curWindow: oppositeWindowName,
         });
         
-        await server.resetNavigation({
-            curWindow: window.oppositeWindow,
-        });
-    
-        window.parent.location.reload();
+        window.top.location.reload();
     };
 
     return (

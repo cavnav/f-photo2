@@ -10,7 +10,7 @@ import {
 
 
 import './styles.css';
-import { addHandlers, getBackgroundImageStyle, getUpdatedActionLists, myCrop, onMoveSelections, oppositeWindowCheckSamePaths, refreshWindows, updateAddPanelComps } from '../../functions';
+import { addHandlers, getBackgroundImageStyle, getOppositeWindow, getUpdatedActionLists, myCrop, onMoveSelections, oppositeWindowCheckSamePaths, refreshWindows, updateAddPanelComps } from '../../functions';
 import { channel } from '../../channel';
 import { ResumeObj } from '../../resumeObj';
 import { eventNames } from '../../constants';
@@ -483,7 +483,7 @@ function renderAddPanel({
           rp.server.moveToPath({
             items: selections,
             updatedActionLists: getUpdatedActionLists(),
-            destWindow: window.oppositeWindow,
+            destWindow: getOppositeWindow(),
           })
           .then((props) => {
             resumeObj.saveUpdatedActionLists({

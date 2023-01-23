@@ -460,7 +460,7 @@ function renderAddPanel({
       onClick: () => {
         rp.server.moveToPath({
           items: [state.curPhotoWithTime],
-          destWindow: window.oppositeWindow,
+          destWindow: getOppositeWindow(),
         })
         .then(() => {
           deleteFiles({ Comp });

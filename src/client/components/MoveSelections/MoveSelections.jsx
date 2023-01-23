@@ -2,7 +2,7 @@ import './styles.css';
 
 import React from 'react';
 import { channel } from '../../channel';
-import { getExistsProps, getOppositeWindowObj, isCatalogSelected, isSameWindowPaths } from '../../functions';
+import { getExistsProps, getOppositeWindow, isCatalogSelected, isSameWindowPaths } from '../../functions';
 import { eventNames } from '../../constants';
 import { ResumeObj } from '../../resumeObj';
 import { useMutedReducer } from '../../mutedReducer';
@@ -34,7 +34,7 @@ function render(
     []
   );
 
-  const oppositeWindowObj = getOppositeWindowObj();
+  const oppositeWindow = getOppositeWindow();
 
   if (
     !rp.isSecondWindow ||
@@ -42,9 +42,9 @@ function render(
     (
 
       state.itemsCount > 0 &&
-      oppositeWindowObj && 
+      oppositeWindow && 
       isCatalogSelected({
-          windowName: oppositeWindowObj.name
+          windowName: oppositeWindow.name
         }) &&
       isSameWindowPaths()
     )
