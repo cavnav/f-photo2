@@ -51,13 +51,6 @@ function render(
     }
   });
 
-  const onDialogCancel = React.useCallback(() => {
-    setState({
-      isDialogEnabled: false,
-      dialogTitle: '',
-    });
-  }, []);
-
   const dispatcher = React.useMemo(
     () => addHandlers({
       fns: [
@@ -177,13 +170,6 @@ function render(
         className={`${Browse.name} layout`}
         onClick={onClickDispatcher}
       >
-        {state.isDialogEnabled && (
-          <Dialog.r
-            onCancel={onDialogCancel}
-          >
-            <div>{state.dialogTitle}</div>
-          </Dialog.r>
-        )}
         {state.loading && <Spin size="large" />}
         {state.progress < 100 && (
           <div className="flexCenter width100pr positionAbs">
@@ -424,21 +410,14 @@ async function onAddAlbum({
   } = Comp.getDeps();
   const rp = Comp.getReqProps();
   if (albumName === '') {
-    setState({
-      isDialogEnabled: true,
-      dialogTitle: `Дай альбому название!`,
-    });
+    
     return;
   }
   const res = await rp.server.addAlbum({
     albumName,
   });
 
-  if (!res) {
-    setState({
-      isDialogEnabled: true,
-      dialogTitle: `Альбом ${albumName} уже есть!`,
-    });
+  if (!res) {    
     return;
   }
 
@@ -607,9 +586,6 @@ function getStateInit() {
     loading: true,
     previewWidth: 100,
     previewHeight: 100,
-    isDialogEnabled: false,
-    dialogTitle: '',
-    isDialogRemoveItem: false,
     progress: 100,
     sep: undefined,
     path: '',
