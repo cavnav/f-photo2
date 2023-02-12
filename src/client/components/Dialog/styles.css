@@ -4,16 +4,31 @@
 }
 
 .DialogWrap {
-    position: sticky;
-    top: 0;
+    position: absolute;
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 100%;
-    height: 100%;
-    background: white;
+    padding: var(--offset-5x);
     z-index: 200;
+    transition: opacity 3s;
+    opacity: 1;
 }
+
+.Dialog__error {
+    background: var(--red);
+    color: var(--white);
+}
+
+.Dialog__notify {
+    background: var(--blue);
+    color: var(--black);
+}
+
+.Dialog__hide {
+    opacity: 0;
+}
+
+
 
 .Dialog .title {
     white-space: nowrap;

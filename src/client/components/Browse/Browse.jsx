@@ -1,6 +1,5 @@
 import React from 'react';
 import {
-  Dialog,
   Dirs,
 } from '../';
 import {
@@ -405,12 +404,12 @@ async function onAddAlbum({
   albumName,
 }) {
   console.log('onAddAlbum')
-  const {
-    setState,
-  } = Comp.getDeps();
   const rp = Comp.getReqProps();
-  if (albumName === '') {
-    
+  if (albumName === ``) {
+    rp.DialogAPI.show({
+      type: `error`,
+      message: `Дай альбому название!`, 
+    });
     return;
   }
   const res = await rp.server.addAlbum({
@@ -535,6 +534,7 @@ function getComps({
     CustomAction,
     Label,
     ToggleWindow,
+    Dialog,
   } = channelComps;
 
   return {
@@ -551,6 +551,7 @@ function getComps({
       OnePhoto,
       Notification,
       AdditionalPanel,
+      Dialog,
     }
   };
 }

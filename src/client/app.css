@@ -2,6 +2,15 @@
   --main-browse-size: 300px;
   --print-gap-between-rows: 120px;
   --base-gap: 20px;
+  --white: white;
+  --red: red;
+  --black: black;
+  --blue: lightskyblue;
+  --offset: 2px;
+  --offset-2x: 4px;
+  --offset-3x: 6px;
+  --offset-4x: 8px;
+  --offset-5x: 10px;
 }
 
 html,

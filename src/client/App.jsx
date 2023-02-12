@@ -1,5 +1,4 @@
-// fix two windows mode (close opposite window)
-// set all dialogs in center
+// magnifying glass
 // create rename folder dialog
 // remove, move, rename (only one folder) (print, share)  
 // hide printed, shared folders
@@ -26,7 +25,7 @@ import 'antd/dist/antd.css';
 import './app.css';
 
 import React from 'react';
-import { Notification, Actions, ControlPanel, AdditionalPanel } from './components';
+import { Notification, Actions, ControlPanel, AdditionalPanel, Dialog } from './components';
 import { updFromObj } from './functions';
 import { get as _get } from 'lodash';
 import { channel } from './channel';
@@ -82,6 +81,7 @@ function render() {
         <Action.r />
       </div>
       <Notification.r />
+      <Dialog.r />
     </div>
   );
 

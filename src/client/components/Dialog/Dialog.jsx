@@ -1,9 +1,9 @@
 import './styles.css';
 
-import React from 'react';
+import React, { useEffect, useRef, } from 'react';
 import { channel } from '../../channel';
 import { useMutedReducer } from '../../mutedReducer';
-
+import classnames from 'classnames';
 
 export const Dialog = channel.addComp({
   name: 'Dialog',
@@ -14,6 +14,7 @@ export const Dialog = channel.addComp({
 
 function render(props) {  
   const Comp = this;
+  const ref = useRef();
   const [state] = useMutedReducer({
     setCompDeps: Comp.bindSetCompDeps(),
     initialState: initState,
@@ -21,9 +22,28 @@ function render(props) {
 
   const rp = this.getReqProps();
 
+  const Hide = () => {
+    if (ref.current) {
+      ref.current.classList.add(`Dialog__hide`);
+    }
+  };
+
+  useEffect(() => {
+    if (state.message) {
+      setTimeout(Hide);
+    }
+  }, [state.message, Hide]);
+
   return (
     <div 
-      className='DialogWrap' 
+      ref={ref}
+      key={Math.random()}
+      className={classnames({
+        [`DialogWrap`]: true,
+        [`Dialog__error`]: state.type === `error`,
+        [`Dialog__warning`]: state.type === `warning`,
+        [`Dialog__notify`]: state.type === `notify`,
+      })} 
       style={{
         left: rp.mouse.x,
         top: rp.mouse.y,
@@ -59,18 +79,12 @@ function getAPI({
     show,
   };
 
-  function show({
-    message,
-  }) {
-    const {
-      setState,
-    } = deps;
-    setState({
-      message,
-    });
+  function show(props) {
+    deps.setState(props);
   }
 }
 
 const initState = {
+  type: undefined,
   isEnabled: false,
 };
