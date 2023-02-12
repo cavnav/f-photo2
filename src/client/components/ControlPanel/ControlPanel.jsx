@@ -2,7 +2,7 @@ import './styles.css';
 import React from 'react';
 
 import { ResumeObj } from '../../resumeObj';
-import { getOppositeWindowObj } from '../../functions';
+import { getOppositeWindow } from '../../functions';
 import { get as _get } from 'lodash';
 import { channel } from '../../channel';
 import cn from 'classnames';
@@ -56,7 +56,7 @@ function render() {
       const resumeData = resumeObj.state;
       const { browserCount } = resumeData; 
       if (browserCount > 1) {
-        const oppositeWindow = getOppositeWindowObj();
+        const oppositeWindow = getOppositeWindow();
         if (resumeData[oppositeWindow.name].App.action === rp.Print.name) {
           const rp = Comp.getReqProps();
           rp.NotificationAPI.forceUpdate({

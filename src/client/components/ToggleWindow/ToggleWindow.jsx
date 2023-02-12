@@ -1,5 +1,6 @@
 import React from 'react';
 import {channel} from '../../channel';
+import { getOppositeWindow } from '../../functions';
 import { useMutedReducer } from '../../mutedReducer';
 
 
@@ -28,7 +29,7 @@ function render() {
 
     const [state, setState] = useMutedReducer({
         initialState: {
-            browserCount: resumeObj.get(), // browserCount
+            browserCount: resumeObj.get(),
             title: 'Доп. окно',
         },
         setCompDeps: Comp.bindSetCompDeps(),
@@ -54,19 +55,35 @@ function render() {
         };
 
         const browserCountUpd = toggle[state.browserCount];
-    
-        // Чтобы сбросить путь с другой стороны и в следующий раз открывалось с начала.
-        resumeObj.saveMerge({
-            val: {
-                browserCount: browserCountUpd,
-                ...(window.oppositeWindow && {[window.oppositeWindow]: {} }),
-            },
-        });
+        const resumeState = resumeObj.state;
+        if (browserCountUpd === 1) {
+            if (window.name === 'rightWindow') {
+                resumeObj.saveMerge({
+                    val: {
+                        browserCount: browserCountUpd,
+                        leftWindow: resumeState.rightWindow,
+                        rightWindow: {},
+                    },
+                });   
+            } else {
+                resumeObj.saveMerge({
+                    val: {
+                        browserCount: browserCountUpd,
+                        rightWindow: {},
+                    },
+                });
+            }
+            await server.resetNavigation({
+                curWindow: 'rightWindow',
+            });
+        } else {
+            resumeObj.saveMerge({
+                val: {
+                    browserCount: browserCountUpd,
+                },
+            });   
+        }
         
-        await server.resetNavigation({
-            curWindow: window.oppositeWindow,
-        });
-    
         window.parent.location.reload();
     };
 

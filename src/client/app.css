@@ -172,7 +172,6 @@ iframe,
   bottom: 4px; 
   width: var(--size);
   height: var(--size);
-  opacity: 0.5;
 } 
 
 .ant-spin {

@@ -27,7 +27,7 @@ import './app.css';
 
 import React from 'react';
 import { Notification, Actions, ControlPanel, AdditionalPanel } from './components';
-import { getOppositeWindowObj, updFromObj } from './functions';
+import { updFromObj } from './functions';
 import { get as _get } from 'lodash';
 import { channel } from './channel';
 import { ResumeObj } from './resumeObj';

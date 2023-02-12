@@ -10,7 +10,7 @@ import {
 
 
 import './styles.css';
-import { addHandlers, getBackgroundImageStyle, getUpdatedActionLists, myCrop, onMoveSelections, oppositeWindowCheckSamePaths, refreshWindows, updateAddPanelComps } from '../../functions';
+import { addHandlers, getBackgroundImageStyle, getOppositeWindow, getUpdatedActionLists, myCrop, onMoveSelections, oppositeWindowCheckSamePaths, refreshWindows, updateAddPanelComps } from '../../functions';
 import { channel } from '../../channel';
 import { ResumeObj } from '../../resumeObj';
 import { eventNames } from '../../constants';
@@ -35,7 +35,6 @@ const resumeObj = new ResumeObj({
 
 function render(
 ) {
-  console.log(window.self);
   const Comp = this;
   const [state, setState] = useMutedReducer({
     setCompDeps: Comp.bindSetCompDeps(),
@@ -133,7 +132,12 @@ function render(
     });
   }, []);
 
-  React.useEffect(() => renderAddPanel({ Comp }), []);
+  React.useEffect(() => {
+    renderAddPanel({ Comp });
+    resetTo({
+      Comp,
+    });
+  }, []);
 
   React.useEffect(
     () => {
@@ -483,7 +487,7 @@ function renderAddPanel({
           rp.server.moveToPath({
             items: selections,
             updatedActionLists: getUpdatedActionLists(),
-            destWindow: window.oppositeWindow,
+            destWindow: getOppositeWindow(),
           })
           .then((props) => {
             resumeObj.saveUpdatedActionLists({
@@ -531,10 +535,6 @@ function renderAddPanel({
         }
       });
     });
-
-  resetTo({
-    Comp,
-  });
 
   return () => {
     rp.AdditionalPanelAPI.renderIt({

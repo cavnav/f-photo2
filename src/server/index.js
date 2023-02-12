@@ -224,6 +224,7 @@ app.post('/api/resetNavigation', (req, res) => {
     [curWindow]: resetToUpd,
   });
 
+  console.log("resetTo", state[curWindow])
   res.send(req.body);
 });
 
