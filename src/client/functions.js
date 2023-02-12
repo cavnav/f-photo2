@@ -329,8 +329,8 @@ export function refreshWindows(
     new Event(eventNames.refreshWindow),
   );
 
-  const oppositeWindowObj = getOppositeWindow();
-  oppositeWindowObj?.document.dispatchEvent(
+  const oppositeWindow = getOppositeWindow();
+  oppositeWindow?.document.dispatchEvent(
     new Event(eventNames.refreshWindow),
   );
 }

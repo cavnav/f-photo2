@@ -13,8 +13,11 @@
     <div id="explorer" />
     <script>
 
-    const browserCount = JSON.parse(localStorage.getItem('resume'))?.browserCount ?? 1;
-
+    const resumeObj = JSON.parse(localStorage.getItem('resume'));
+    const {
+        browserCount,
+     } = resumeObj ?? {};
+    
     if (window.self === window.top) {
         const container = document.createElement('div');
         container.id = "leftWindow";
