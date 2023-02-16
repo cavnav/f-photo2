@@ -15,29 +15,37 @@ export const Dialog = channel.addComp({
 function render(props) {  
   const Comp = this;
   const ref = useRef();
+  const timerIdRef = useRef();
   const [state] = useMutedReducer({
     setCompDeps: Comp.bindSetCompDeps(),
-    initialState: initState,
+    initialState,
   });
 
   const rp = this.getReqProps();
 
-  const Hide = () => {
-    if (ref.current) {
-      ref.current.classList.add(`Dialog__hide`);
+  const onHover = (isHover) => {
+    if (isHover) {
+      ref.current?.classList.remove(`Dialog__hide`);
+      clearTimeout(timerIdRef.current);
+    } 
+    else {
+      ref.current?.classList.add(`Dialog__hide`);
+      timerIdRef.current = setTimeout(() => {
+        ref.current?.classList.add(`Dialog__none`);
+      }, DELAY.ms); 
     }
+    
+    return () => clearTimeout(timerIdRef.current);
   };
 
   useEffect(() => {
-    if (state.message) {
-      setTimeout(Hide);
-    }
-  }, [state.message, Hide]);
+    return onHover(false);
+  });
 
   return (
     <div 
       ref={ref}
-      key={Math.random()}
+      key={new Date()}
       className={classnames({
         [`DialogWrap`]: true,
         [`Dialog__error`]: state.type === `error`,
@@ -47,9 +55,13 @@ function render(props) {
       style={{
         left: rp.mouse.x,
         top: rp.mouse.y,
+        transition: `opacity ${DELAY.s}s`,
       }}
+      onMouseEnter={() => onHover(true)}
+      onMouseLeave={() => onHover(false)}    
     >
       {state.message}
+      {state.render}
       {props.children}
     </div>
   );
@@ -80,11 +92,19 @@ function getAPI({
   };
 
   function show(props) {
-    deps.setState(props);
+    deps.setState({
+      ...props,
+    });
   }
 }
 
-const initState = {
+const initialState = {
   type: undefined,
-  isEnabled: false,
+  message: '',
+  render: undefined,
 };
+
+const DELAY = {
+  s: 5,
+};
+DELAY.ms = DELAY.s * 1000;

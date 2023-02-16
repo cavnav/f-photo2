@@ -18,42 +18,32 @@ function render(props) {
     setCompDeps: Comp.bindSetCompDeps(),
   });
 
-  //if (!state.title) return null;
-  return (
+  return !state.isEnabled ? null : (
     <div
       className={`${Notification.name}`}
     >
       <div className='title'>{state.title}</div>
-      {state.isConfirm && (
-        <div>
-          <input type='button' value='Да' onClick={() => {
-            setState({
-              isConfirm: false,
-            });
-            state.onConfirm();
-          }} />
-          <input type='button' value='Нет' onClick={() => {
-            setState({
-              isConfirm: false,
-            });
-            state.onCancel();
-          }} />
-          {/* <span className='closeEl' onClik={() => {
-            setState({
-              isConfirm: false,
-            });
-            state.onCancel();
-          }}>X</span> */}
-        </div>
-      )}
+      <div>
+        <input type='button' value='Да' onClick={() => {
+          setState({
+            isEnabled: false,
+          });
+          state.onConfirm();
+        }} />
+        <input type='button' value='Нет' onClick={() => {
+          setState({
+            isEnabled: false,
+          });
+          state.onCancel();
+        }} />          
+      </div>
     </div>
   );
 }
 
 const initialState = {
   title: '',
-  isConfirm: false,
-  timer: 2000,
+  isEnabled: false,
   onConfirm: () => {},
   onCancel: () => {},
 };

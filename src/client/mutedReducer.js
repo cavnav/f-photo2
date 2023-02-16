@@ -37,7 +37,7 @@ export function useMutedReducer({
       },
     });
   
-    return [state, dispatch];
+    return [state, dispatch, forceUpdate];
   
     // ---
     function dispatch(stateUpd) {

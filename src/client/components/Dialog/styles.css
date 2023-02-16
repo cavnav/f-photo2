@@ -8,10 +8,12 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: var(--offset-5x);
     z-index: 200;
-    transition: opacity 3s;
     opacity: 1;
+}
+
+.DialogWrap > * {
+    margin: var(--offset-5x);
 }
 
 .Dialog__error {
@@ -28,7 +30,9 @@
     opacity: 0;
 }
 
-
+.Dialog__none {
+    display: none;
+}
 
 .Dialog .title {
     white-space: nowrap;

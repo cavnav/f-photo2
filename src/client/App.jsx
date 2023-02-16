@@ -1,8 +1,12 @@
+// click between actions error
+// destWindow obj error
+// add new folder
 // magnifying glass
+// last added folder
 // create rename folder dialog
 // remove, move, rename (only one folder) (print, share)  
 // hide printed, shared folders
-// scroll to selected folder
+// after back to list to scroll to last opened folder
 // help (fire dialog with corresponding actions)
 // inside Print a lot of images. how it print?
 // ban move to print 
@@ -25,7 +29,7 @@ import 'antd/dist/antd.css';
 import './app.css';
 
 import React from 'react';
-import { Notification, Actions, ControlPanel, AdditionalPanel, Dialog } from './components';
+import { Actions, ControlPanel, AdditionalPanel, Dialog } from './components';
 import { updFromObj } from './functions';
 import { get as _get } from 'lodash';
 import { channel } from './channel';
@@ -80,7 +84,6 @@ function render() {
       <div className="Action">
         <Action.r />
       </div>
-      <Notification.r />
       <Dialog.r />
     </div>
   );
@@ -160,17 +163,7 @@ export function getAPI({
   return {
     setState: deps.setState,
     toggleActions,
-    toggleNotification,
   };
-
-  function toggleNotification({
-    title,
-    time = 2000,
-  }) {
-    deps.setState({
-      notification: title,
-    });
-  }
 
   function toggleActions({
     action,

@@ -1,13 +1,6 @@
 
 .Notification {
-  position: absolute;
-  z-index: 100;
-  bottom: 0px;
   background-color: #a7e1f8;
   font-size: 40px;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-.closeEl {
-  pointer-events: none;
-}

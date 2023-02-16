@@ -11,10 +11,6 @@ export const CustomAction = channel.addComp({
   getComps,
 });
 
-const initialState = {
-  title: '',
-  onClick: () => {},
-};
 
 function render() {
   const Comp = this;
@@ -41,10 +37,15 @@ function onClick({
 }) {
   const rp = Comp.getReqProps();
   const { state } = Comp.getDeps();
-  rp.NotificationAPI.forceUpdate({
-    isConfirm: true,
-    onConfirm: state.onClick,
-  });  
+  rp.DialogAPI.show({
+    type: `notify`,
+    render: (
+      <rp.Notify.r 
+        isEnabled
+        onConfirm={state.onClick}
+      />
+    ), 
+  });
 }
 
 function getReqProps({
@@ -70,15 +71,23 @@ function getComps({
   channelComps,
 }) {
   const {
+    Dialog,
     Notification,
     Label,
   } = channelComps;
   return {
     items: {
-      Notification, 
+      Dialog, 
     },
     toClone: {
       Btn: Label,
+      Notify: Notification,
     },
   };
 }
+
+const initialState = {
+  title: '',
+  onClick: () => {},
+  onCancel: () => {},
+};

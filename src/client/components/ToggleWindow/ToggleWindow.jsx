@@ -1,6 +1,5 @@
 import React from 'react';
 import {channel} from '../../channel';
-import { getOppositeWindow } from '../../functions';
 import { useMutedReducer } from '../../mutedReducer';
 
 
@@ -27,7 +26,7 @@ function render() {
         resumeObj: 1,
     });
 
-    const [state, setState] = useMutedReducer({
+    const [state] = useMutedReducer({
         initialState: {
             browserCount: resumeObj.get(),
             title: 'Доп. окно',
@@ -39,7 +38,6 @@ function render() {
         const {
             deps: {
                 state,
-                setState,
             },
             resumeObj,
             server,
@@ -98,13 +96,9 @@ function render() {
 function getComps({
     channelComps,
 }) {
-    const {
-        Label,
-    } = channelComps;
-
     return {
         toClone: {
-            Label,
+            Label: channelComps.Label,
         },
     };
 }
