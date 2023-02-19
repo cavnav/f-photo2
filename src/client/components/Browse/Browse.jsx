@@ -9,7 +9,9 @@ import {
 
 
 import './styles.css';
-import { addHandlers, getBackgroundImageStyle, getOppositeWindow, getUpdatedActionLists, myCrop, onMoveSelections, oppositeWindowCheckSamePaths, refreshWindows, updateAddPanelComps } from '../../functions';
+import { addHandlers, getBackgroundImageStyle, getOppositeWindow, getUpdatedActionLists, myCrop, 
+  onMoveSelections, oppositeWindowCheckSamePaths, refreshWindows, updateAddPanelComps 
+} from '../../functions';
 import { channel } from '../../channel';
 import { ResumeObj } from '../../resumeObj';
 import { eventNames } from '../../constants';
@@ -459,28 +461,30 @@ function renderAddPanel({
           Comp,
         }),
       });
-      rp.MoveSelectionsAPI.forceUpdate({
-        onClick: () => {
-          const selections = [...state.selections.values()];
-          rp.server.moveToPath({
-            items: selections,
-            updatedActionLists: getUpdatedActionLists(),
-            destWindow: getOppositeWindow(),
-          })
-          .then((props) => {
-            resumeObj.saveUpdatedActionLists({
-              lists: props.updatedActionLists,
-            });
-            return props;
-          })
-          .then(() => onMoveSelections({ 
-            Comp,           
-            onChangeSelections: () => changeSelections({
-              Comp,
-            }),
-         }));
-        }
-      });
+      if (getOppositeWindow() !== undefined) {
+        rp.MoveSelectionsAPI.forceUpdate({
+          onClick: () => {
+            const selections = [...state.selections.values()];
+            rp.server.moveToPath({
+              items: selections,
+              updatedActionLists: getUpdatedActionLists(),
+              destWindow: getOppositeWindow(),
+            })
+            .then((props) => {
+              resumeObj.saveUpdatedActionLists({
+                lists: props.updatedActionLists,
+              });
+              return props;
+            })
+            .then(() => onMoveSelections({ 
+              Comp,           
+              onChangeSelections: () => changeSelections({
+                Comp,
+              }),
+            }));
+          },
+        });
+      };
       rp.RemoveSelectionsAPI.forceUpdate({
         onClick: () => {
           const selections = [...state.selections.values()];

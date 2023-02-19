@@ -387,12 +387,14 @@ export function updateAddPanelComps({
   // -------------------
   function getComps() {
     return {            
-      [rp.MoveSelections.name]: {
-        title: setBtnTitle({
-          prefix: BTN_MOVE,
-          title: state.selections.size,
-        }),
-      },
+      ...(getOppositeWindow() !== undefined && {
+        [rp.MoveSelections.name]: {
+          title: setBtnTitle({
+            prefix: BTN_MOVE,
+            title: state.selections.size,
+          }),
+        },
+      }),
       [rp.RemoveSelections.name]: {
         title: setBtnTitle({
           prefix: BTN_REMOVE,

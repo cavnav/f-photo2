@@ -1,4 +1,3 @@
-// click between actions error
 // destWindow obj error
 // add new folder
 // magnifying glass
