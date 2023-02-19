@@ -67,9 +67,11 @@ function render() {
       }
     }
 
-    rp.setAppState({
-      action: actionId,
-    });
+    if (actionId !== null) {
+      rp.setAppState({
+        action: actionId,
+      });
+    }
   };
 }
 
