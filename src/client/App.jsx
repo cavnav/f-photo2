@@ -1,4 +1,3 @@
-// destWindow obj error
 // add new folder
 // magnifying glass
 // last added folder
