@@ -468,7 +468,7 @@ function renderAddPanel({
             rp.server.moveToPath({
               items: selections,
               updatedActionLists: getUpdatedActionLists(),
-              destWindow: getOppositeWindow(),
+              destWindow: getOppositeWindow().name,
             })
             .then((props) => {
               resumeObj.saveUpdatedActionLists({
