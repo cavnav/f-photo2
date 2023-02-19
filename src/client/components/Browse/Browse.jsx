@@ -405,7 +405,6 @@ async function onAddAlbum({
   Comp,
   albumName,
 }) {
-  console.log('onAddAlbum')
   const rp = Comp.getReqProps();
   if (albumName === ``) {
     rp.DialogAPI.show({
@@ -510,11 +509,6 @@ function renderAddPanel({
 
       updateAddPanelComps({
         Comp,
-        items: {
-          [rp.Rename.name]: {
-            title: 'Переименовать',
-          },
-        }
       });
     });
 
@@ -543,12 +537,12 @@ function getComps({
 
   return {
     toClone: {
-      ExitFromFolder: Label,
-      AddAlbum,
       ToggleWindow, 
-      RemoveSelections: CustomAction,
+      AddAlbum,
+      ExitFromFolder: Label,
       MoveSelections: Label,
       Rename: Label,
+      RemoveSelections: CustomAction,
     },
     items: {
       App,

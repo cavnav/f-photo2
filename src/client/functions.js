@@ -369,7 +369,7 @@ export function updateAddPanelComps({
   Comp,
   selector,
   items = {},
-}) {
+} = {}) {
   const {
     state,
   } = Comp.getDeps();

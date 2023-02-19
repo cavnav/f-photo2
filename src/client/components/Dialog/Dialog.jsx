@@ -93,6 +93,7 @@ function getAPI({
 
   function show(props) {
     deps.setState({
+      ...initialState,
       ...props,
     });
   }
@@ -102,6 +103,7 @@ const initialState = {
   type: undefined,
   message: '',
   render: undefined,
+  isHide: true,
 };
 
 const DELAY = {

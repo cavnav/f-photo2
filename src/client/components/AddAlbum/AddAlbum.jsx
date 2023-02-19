@@ -8,6 +8,7 @@ export const AddAlbum = channel.addComp({
   name: 'AddAlbum',
   render,
   getAPI,
+  getComps,
 });
 
 function render() {
@@ -22,28 +23,39 @@ function render() {
   const onChangeAlbumName = React.useCallback(changeAlbumName, []);
   const onInputAlbumNameClick = React.useCallback((e) => e.stopPropagation(), []);
 
+  const NameBox = (      
+    <div className='albumNameBox'>
+      Дайте название
+      <input 
+        className='albumName'
+        type='text' 
+        value={state.albumName}
+        onClick={onInputAlbumNameClick}
+        onChange={onChangeAlbumName}
+      />
+    </div>            
+  );
+
   return (
     <div 
       className='AddAlbum' 
       onClick={onClick}      
     >
-      <div className='title'>
-        {title}
-        <div className='albumNameBox'>
-          <input 
-            className='albumName'
-            type='text' 
-            value={state.albumName}
-            onClick={onInputAlbumNameClick}
-            onChange={onChangeAlbumName}
-          />
-        </div>        
-      </div>        
+        <div className='title'>{title}</div>
     </div>
   );
 
   // -----------------------------------------------------------------------
   function onClick() {
+    const {
+      DialogAPI,
+    } = Comp.getComps();
+
+    DialogAPI.show({
+      render: NameBox,
+    });
+
+    return;
     state.onClick({
       albumName: state.albumName,
     });
@@ -66,6 +78,16 @@ function getAPI({
   return {
     forceUpdate: (props) => {
       deps.setState(props);
+    },
+  };
+}
+
+function getComps({
+  channelComps,
+}) {
+  return {
+    items: {
+      Dialog: channelComps.Dialog,
     },
   };
 }
