@@ -406,20 +406,10 @@ async function onAddAlbum({
   albumName,
 }) {
   const rp = Comp.getReqProps();
-  if (albumName === ``) {
-    rp.DialogAPI.show({
-      type: `error`,
-      message: `Дай альбому название!`, 
-    });
-    return;
-  }
-  const res = await rp.server.addAlbum({
+  
+  await rp.server.addAlbum({
     albumName,
   });
-
-  if (!res) {    
-    return;
-  }
 
   refreshWindows({
     Comp,
@@ -448,12 +438,13 @@ function renderAddPanel({
     actions: additionalActions,
   })
     .then(() => {      
-      rp.AddAlbumAPI.forceUpdate({
-        onClick: (props) => onAddAlbum({
-          ...props,
-          Comp,
-        }),
-      });
+      rp.AddAlbumAPI.onSubmit(({
+        albumName,
+      }) => onAddAlbum({
+        Comp,
+        albumName,
+      }));
+      
       rp.RenameAPI.forceUpdate({
         onClick: (props) => onRename({
           ...props,

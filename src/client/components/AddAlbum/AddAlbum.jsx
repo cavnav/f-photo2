@@ -1,6 +1,7 @@
-import React, {useRef} from 'react';
+import React from 'react';
 import { channel } from '../../channel';
 import { useMutedReducer } from '../../mutedReducer';
+import { AlbumName } from './components/albumName';
 
 import './styles.css';
 
@@ -20,31 +21,12 @@ function render() {
     initialState: stateInit,
   });
 
-  const albumNameBox = useRef();
-
-  const onChangeAlbumName = React.useCallback(changeAlbumName, []);
-  const onInputAlbumNameClick = React.useCallback((e) => e.stopPropagation(), []);
-
-  const NameBox = (      
-    <div className='albumNameBox' ref={albumNameBox}>
-      Дай название
-      <input 
-        className='albumName'
-        autoFocus
-        type='text' 
-        value={state.albumName}
-        onClick={onInputAlbumNameClick}
-        onChange={onChangeAlbumName}
-      />
-    </div>            
-  );
-
   return (
     <div 
       className='AddAlbum' 
       onClick={onClick}      
     >
-        <div className='title'>{title}</div>
+      <div className='title'>{title}</div>
     </div>
   );
 
@@ -55,25 +37,10 @@ function render() {
     } = Comp.getComps();
 
     DialogAPI.show({
-      render: NameBox,
+      render: <AlbumName onSubmit={state.onSubmit} />,
       isHide: false,
     });
-
-    return;
-    state.onClick({
-      albumName: state.albumName,
-    });
-    setState({
-      albumName: '',
-    });
   };
-
-  function changeAlbumName(e) {
-    const albumName = e.target.value;
-    setState({
-      albumName,
-    });
-  }
 }
 
 function getAPI({
@@ -82,6 +49,13 @@ function getAPI({
   return {
     forceUpdate: (props) => {
       deps.setState(props);
+    },
+    onSubmit(callback) {
+      if (callback) {
+        deps.setState({
+          onSubmit: callback,
+        });
+      }
     },
   };
 }
@@ -97,8 +71,7 @@ function getComps({
 }
 
 const stateInit = {
-  albumName: '',
-  target: undefined,
-  onClick: () => {},
+  onClick: undefined,
+  onSubmit: undefined,
 };
 
