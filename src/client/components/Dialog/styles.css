@@ -10,10 +10,12 @@
     align-items: center;
     z-index: 200;
     opacity: 1;
+    border: 1px solid;
+    background: var(--white);
 }
 
 .DialogWrap > * {
-    margin: var(--offset-5x);
+    padding: var(--offset-5x);
 }
 
 .Dialog__error {

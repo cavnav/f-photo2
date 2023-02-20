@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useRef} from 'react';
 import { channel } from '../../channel';
 import { useMutedReducer } from '../../mutedReducer';
 
@@ -20,14 +20,17 @@ function render() {
     initialState: stateInit,
   });
 
+  const albumNameBox = useRef();
+
   const onChangeAlbumName = React.useCallback(changeAlbumName, []);
   const onInputAlbumNameClick = React.useCallback((e) => e.stopPropagation(), []);
 
   const NameBox = (      
-    <div className='albumNameBox'>
-      Дайте название
+    <div className='albumNameBox' ref={albumNameBox}>
+      Дай название
       <input 
         className='albumName'
+        autoFocus
         type='text' 
         value={state.albumName}
         onClick={onInputAlbumNameClick}
@@ -53,6 +56,7 @@ function render() {
 
     DialogAPI.show({
       render: NameBox,
+      isHide: false,
     });
 
     return;

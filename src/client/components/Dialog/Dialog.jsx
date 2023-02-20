@@ -24,6 +24,7 @@ function render(props) {
   const rp = this.getReqProps();
 
   const onHover = (isHover) => {
+    if (state.isHide === false) return; 
     if (isHover) {
       ref.current?.classList.remove(`Dialog__hide`);
       clearTimeout(timerIdRef.current);
