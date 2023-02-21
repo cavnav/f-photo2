@@ -15,10 +15,10 @@ export function AlbumName(props) {
     }
 
     function onSubmit() {        
+        props.onClose?.();
         props.onSubmit?.({
             albumName: state.albumName,
         });        
-        props.onClose?.();
     }
 
     return state.isEnabled === false ? null : (

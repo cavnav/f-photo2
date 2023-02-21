@@ -24,14 +24,17 @@ function render(props) {
   const rp = this.getReqProps();
   
   const onHover = (isHover) => {
-    if (!ref.current || state.isHide === false) return;
-    
+    if (state.isOpen === false || !ref.current || state.isHide === false) return;
     if (isHover) {
-      ref.current?.classList.remove(`Dialog__hide`);
+      setState({
+        isFadeout: false,
+      });
       clearTimeout(timerIdRef.current);
     } 
     else {
-      ref.current.classList.add(`Dialog__hide`);
+      setState({
+        isFadeout: true,
+      });
       timerIdRef.current = setTimeout(() => {
         setState({
           isOpen: false,
@@ -44,13 +47,15 @@ function render(props) {
 
   useEffect(() => {
     return onHover(false);
-  }, [ref.current, state.message, state.render, state.type]);
+  }, [state.type, state.render, state.message]);
+
 
   return state.isOpen === false ? null : (
     <div 
       ref={ref}
       className={classnames({
         [`DialogWrap`]: true,
+        [`Dialog__hide`]: state.isFadeout,
         [`Dialog__error`]: state.type === `error`,
         [`Dialog__warning`]: state.type === `warning`,
         [`Dialog__notify`]: state.type === `notify`,
@@ -116,9 +121,10 @@ const initialState = {
   render: undefined,
   isHide: true, // признак - исчезает ли спустя время
   isOpen: false,
+  isFadeout: false,
 };
 
 const DELAY = {
-  s: 5,
+  s: 15,
 };
 DELAY.ms = DELAY.s * 1000;
