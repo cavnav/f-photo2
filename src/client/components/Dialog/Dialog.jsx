@@ -16,23 +16,26 @@ function render(props) {
   const Comp = this;
   const ref = useRef();
   const timerIdRef = useRef();
-  const [state] = useMutedReducer({
+  const [state, setState] = useMutedReducer({
     setCompDeps: Comp.bindSetCompDeps(),
     initialState,
   });
 
   const rp = this.getReqProps();
-
+  
   const onHover = (isHover) => {
-    if (state.isHide === false) return; 
+    if (!ref.current || state.isHide === false) return;
+    
     if (isHover) {
       ref.current?.classList.remove(`Dialog__hide`);
       clearTimeout(timerIdRef.current);
     } 
     else {
-      ref.current?.classList.add(`Dialog__hide`);
+      ref.current.classList.add(`Dialog__hide`);
       timerIdRef.current = setTimeout(() => {
-        ref.current?.classList.add(`Dialog__none`);
+        setState({
+          isOpen: false,
+        });
       }, DELAY.ms); 
     }
     
@@ -41,12 +44,11 @@ function render(props) {
 
   useEffect(() => {
     return onHover(false);
-  });
+  }, [ref.current, state.message, state.render, state.type]);
 
-  return (
+  return state.isOpen === false ? null : (
     <div 
       ref={ref}
-      key={new Date()}
       className={classnames({
         [`DialogWrap`]: true,
         [`Dialog__error`]: state.type === `error`,
@@ -55,14 +57,14 @@ function render(props) {
       })} 
       style={{
         left: rp.mouse.x,
-        top: rp.mouse.y,
+        top: rp.mouse.y,      
         transition: `opacity ${DELAY.s}s`,
       }}
       onMouseEnter={() => onHover(true)}
       onMouseLeave={() => onHover(false)}    
     >
-      {state.message}
-      {state.render}
+      {state.message && <div>{state.message}</div>}
+      {state.render && state.render}
       {props.children}
     </div>
   );
@@ -90,11 +92,19 @@ function getAPI({
 }) {
   return {
     show,
+    close,
   };
+
+  function close() {
+    deps.setState({
+      isOpen: false,
+    });
+  }
 
   function show(props) {
     deps.setState({
       ...initialState,
+      isOpen: true,
       ...props,
     });
   }
@@ -104,7 +114,8 @@ const initialState = {
   type: undefined,
   message: '',
   render: undefined,
-  isHide: true,
+  isHide: true, // признак - исчезает ли спустя время
+  isOpen: false,
 };
 
 const DELAY = {

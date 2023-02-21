@@ -407,9 +407,17 @@ async function onAddAlbum({
 }) {
   const rp = Comp.getReqProps();
   
-  await rp.server.addAlbum({
+  const res = await rp.server.addAlbum({
     albumName,
   });
+
+  if (res?.error) {
+    rp.DialogAPI.show({
+      type: 'error',
+      message: res.error,
+    });
+    return;
+  } 
 
   refreshWindows({
     Comp,

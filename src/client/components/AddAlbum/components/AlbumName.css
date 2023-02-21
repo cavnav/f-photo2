@@ -1,0 +1,3 @@
+.close_btn {
+    margin-left: calc(var(--offset-5x) * 6);
+}

@@ -156,7 +156,7 @@ export class AppServerAPI {
     .then(res => res.json())    
   }
 
-  addAlbum = ({
+  addAlbum = async ({
     albumName,
   }) => {
     if (!albumName) return;

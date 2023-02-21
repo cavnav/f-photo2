@@ -134,13 +134,22 @@ app.post('/api/addAlbum',
     
     const exists = await fs.pathExists(src);
     if (exists) {
-      res.send(false);
+      res.send({
+        error: `Альбом ${albumName} уже есть`, 
+      });
       return;
     }
 
-    await fs.ensureDir(
-      src,
-    );
+    try {
+      await fs.ensureDir(
+        src,
+      );
+    } catch (e) {
+      res.send({
+        error: `Неправильное название альбома`, 
+      });
+      return;
+    }
     
     res.send(req.body);
   }

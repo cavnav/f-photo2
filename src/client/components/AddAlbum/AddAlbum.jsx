@@ -37,7 +37,7 @@ function render() {
     } = Comp.getComps();
 
     DialogAPI.show({
-      render: <AlbumName onSubmit={state.onSubmit} />,
+      render: <AlbumName onSubmit={state.onSubmit} onClose={DialogAPI.close} />,
       isHide: false,
     });
   };

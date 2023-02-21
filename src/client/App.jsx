@@ -1,9 +1,8 @@
 // magnifying glass
-// add new folder
 // create rename folder dialog
 // remove, move, rename (only one folder) (print, share)  
 // last added folder
-// hide printed, shared folders
+// *hide printed, shared folders
 // after back to list to scroll to last opened folder
 // help (fire dialog with corresponding actions)
 // inside Print a lot of images. how it print?

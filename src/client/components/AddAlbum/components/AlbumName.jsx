@@ -1,9 +1,8 @@
 import React from 'react';
 import { useMutedReducer } from '../../../mutedReducer';
+import "./AlbumName.css";
 
-export function AlbumName({
-    onSubmit,
-}) {
+export function AlbumName(props) {
     const [state, setState] = useMutedReducer({
         initialState,
     });
@@ -15,22 +14,14 @@ export function AlbumName({
         });
     }
 
-    function onSubmitName() {
-        setState({
-            isHide: true,
-        });
-        onSubmit?.({
+    function onSubmit() {        
+        props.onSubmit?.({
             albumName: state.albumName,
-        });
+        });        
+        props.onClose?.();
     }
 
-    function onClose() {
-        setState({
-            isHide: true,
-        });
-    }
-
-    return state.isHide ? null : (
+    return state.isEnabled === false ? null : (
         <div className='albumNameBox'>
             Дай название
             <input 
@@ -40,13 +31,12 @@ export function AlbumName({
                 value={state.albumName}
                 onChange={onChangeAlbumName}
             />
-            <input type="button" value="OK" onClick={onSubmitName} />
-            <input type="button" value="X" onClick={onClose} />
+            <input type="button" value="OK" onClick={onSubmit} />
+            <input className="close_btn" type="button" value="X" onClick={props?.onClose} />
         </div>            
     );
 }
 
 const initialState  = {
     albumName: '',
-    isHide: false,
 };
