@@ -10,6 +10,7 @@
     align-items: center;
     z-index: 200;
     border: 1px solid;
+    opacity: 1;
     background: var(--white);
 }
 
@@ -32,7 +33,7 @@
 }
 
 .Dialog__none {
-    display: none;
+    transform: translateX(-1000px);
 }
 
 .Dialog .title {

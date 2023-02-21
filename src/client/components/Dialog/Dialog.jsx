@@ -24,38 +24,35 @@ function render(props) {
   const rp = this.getReqProps();
   
   const onHover = (isHover) => {
-    if (state.isOpen === false || !ref.current || state.isHide === false) return;
+    if (!ref.current || state.isHide === false) return;
     if (isHover) {
-      setState({
-        isFadeout: false,
-      });
+      ref.current?.classList.remove(`Dialog__hide`);
       clearTimeout(timerIdRef.current);
     } 
     else {
-      setState({
-        isFadeout: true,
-      });
+      ref.current?.classList.add(`Dialog__hide`);
       timerIdRef.current = setTimeout(() => {
-        setState({
-          isOpen: false,
-        });
+        ref.current?.classList.add(`Dialog__none`);
       }, DELAY.ms); 
     }
-    
     return () => clearTimeout(timerIdRef.current);
   };
 
+  setState({
+    ref,
+    forceUpdate: false,
+  });
+
   useEffect(() => {
     return onHover(false);
-  }, [state.type, state.render, state.message]);
+  });
 
-
-  return state.isOpen === false ? null : (
+  return (
     <div 
       ref={ref}
+      key={Number(new Date())}
       className={classnames({
         [`DialogWrap`]: true,
-        [`Dialog__hide`]: state.isFadeout,
         [`Dialog__error`]: state.type === `error`,
         [`Dialog__warning`]: state.type === `warning`,
         [`Dialog__notify`]: state.type === `notify`,
@@ -63,7 +60,8 @@ function render(props) {
       style={{
         left: rp.mouse.x,
         top: rp.mouse.y,      
-        transition: `opacity ${DELAY.s}s`,
+        transitionProperty: `opacity`,
+        transitionDuration: `${DELAY.s}s`,
       }}
       onMouseEnter={() => onHover(true)}
       onMouseLeave={() => onHover(false)}    
@@ -101,16 +99,21 @@ function getAPI({
   };
 
   function close() {
-    deps.setState({
-      isOpen: false,
-    });
+    /**
+     * очень жестоко было с этим местом.
+     * если здесь менять какое - то значение стейт, то новое окно будет с примененным стилем __hide без учета transition. 
+     * есть библиотека специальная ReactCSSTransitionGroup.
+     * display: none не работает.
+     */
+    if (deps.state.ref?.current) {
+      deps.state.ref.current.classList.add(`Dialog__none`);
+    }
   }
 
-  function show(props) {
+  function show(props) {    
     deps.setState({
       ...initialState,
-      isOpen: true,
-      ...props,
+      ...props
     });
   }
 }
@@ -118,10 +121,9 @@ function getAPI({
 const initialState = {
   type: undefined,
   message: '',
-  render: undefined,
+  render: null,
   isHide: true, // признак - исчезает ли спустя время
-  isOpen: false,
-  isFadeout: false,
+  closeResolve: undefined,
 };
 
 const DELAY = {
