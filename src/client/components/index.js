@@ -19,6 +19,8 @@ export { Selector } from './Selector/Selector';
 export { Empty } from './Empty/Empty';
 export { ToggleWindow  } from './ToggleWindow/ToggleWindow';
 
+import Rename from './Rename/Rename';
+
 import { Print } from './Print/Print';
 import { Share } from './Share/Share';
 import { OnePhoto } from './OnePhoto/OnePhoto';

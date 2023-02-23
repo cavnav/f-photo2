@@ -316,7 +316,10 @@ export function getCompsAPI({
       return {
         ...res,
         [name]: compUpd,
-        [`${name}API`]: compUpd.getAPI?.() ?? {},
+        [`${name}API`]: {
+          ...getDefaultAPI({ deps: comp.getDeps() }),
+          ...compUpd.getAPI?.(),
+        },
       };
     },
     {}

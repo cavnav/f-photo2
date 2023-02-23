@@ -14,23 +14,12 @@ export const AddAlbum = channel.addComp({
 
 function render() {
   const Comp = this;
-  const title = `Добавить альбом`;
 
-  const [state, setState] = useMutedReducer({
+  const [state] = useMutedReducer({
     setCompDeps: Comp.bindSetCompDeps(),
     initialState: stateInit,
   });
 
-  return (
-    <div 
-      className='AddAlbum' 
-      onClick={onClick}      
-    >
-      <div className='title'>{title}</div>
-    </div>
-  );
-
-  // -----------------------------------------------------------------------
   function onClick() {
     const {
       DialogAPI,
@@ -41,6 +30,15 @@ function render() {
       isHide: false,
     });
   };
+
+  return (
+    <div 
+      className='AddAlbum' 
+      onClick={onClick}      
+    >
+      <div className='title'>Добавить альбом</div>
+    </div>
+  );  
 }
 
 function getAPI({

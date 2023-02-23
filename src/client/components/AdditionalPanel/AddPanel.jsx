@@ -20,7 +20,6 @@ function render(
 
   React.useEffect(() => state.resolve(), [state.resolve]);
 
-  console.log('addPanel render', state.actions.length)
   if (state.actions.length === 0) return null;
 
   return (

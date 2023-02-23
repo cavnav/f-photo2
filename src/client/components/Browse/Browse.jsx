@@ -452,13 +452,11 @@ function renderAddPanel({
         Comp,
         albumName,
       }));
-      
+
       rp.RenameAPI.forceUpdate({
-        onClick: (props) => onRename({
-          ...props,
-          Comp,
-        }),
+        isShow: state.selections.size === 1,
       });
+      
       if (getOppositeWindow() !== undefined) {
         rp.MoveSelectionsAPI.forceUpdate({
           onClick: () => {
@@ -532,15 +530,16 @@ function getComps({
     Label,
     ToggleWindow,
     Dialog,
+    Rename,
   } = channelComps;
 
   return {
     toClone: {
       ToggleWindow, 
       AddAlbum,
+      Rename,
       ExitFromFolder: Label,
       MoveSelections: Label,
-      Rename: Label,
       RemoveSelections: CustomAction,
     },
     items: {

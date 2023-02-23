@@ -1,14 +1,14 @@
-// magnifying glass
 // create rename folder dialog
 // remove, move, rename (only one folder) (print, share)  
+// inside Print a lot of images. how it print?
+// add loading (create Proxy Comp for loading)
+// magnifying glass
 // last added folder
 // *hide printed, shared folders
 // after back to list to scroll to last opened folder
 // help (fire dialog with corresponding actions)
-// inside Print a lot of images. how it print?
 // ban move to print 
 // ban move file on Welcome screen
-// add loading (create Proxy Comp for loading)
 // add path to onePhoto, it is understand where this photo is
 // add status icon to preview image
 
