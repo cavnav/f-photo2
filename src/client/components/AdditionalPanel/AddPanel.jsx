@@ -56,6 +56,7 @@ function getAPI({
       console.log('addPanelRenderIt', props.actions)
             
       return new Promise((resolve) => {
+        // Нужно для переключения между действиями (Смотреть все, смотреть одну). Иначе кнопки не соответствуют.
         setTimeout(() => {
           deps.setState({
             actions: props.actions,

@@ -76,6 +76,7 @@ function render(props) {
 function getReqProps({
   channel,
 }) {
+  // может сделать привязку события в этом компоненте ?
   const props = channel.crop({
     s: {
       mouse: 1,
