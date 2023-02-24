@@ -56,10 +56,12 @@ function getAPI({
       console.log('addPanelRenderIt', props.actions)
             
       return new Promise((resolve) => {
+        setTimeout(() => {
           deps.setState({
             actions: props.actions,
             resolve,
           });
+        });
       });
     },
   };

@@ -17,6 +17,7 @@ import { ResumeObj } from '../../resumeObj';
 import { eventNames } from '../../constants';
 import { Empty } from '../Empty/Empty';
 import { useMutedReducer } from '../../mutedReducer';
+import { BTN_MOVE, BTN_REMOVE, setBtnTitle } from '../../common/additionalActions/const';
 
 
 export const Browse = channel.addComp({
@@ -374,7 +375,26 @@ function changeSelections({
     selections: updateSelections(),
   });
 
-  updateAddPanelComps({ Comp });
+  const rp = Comp.getReqProps();
+  if (getOppositeWindow() !== undefined) {
+    rp.MoveSelectionsAPI.forceUpdate({
+      title: setBtnTitle({
+        prefix: BTN_MOVE,
+        title: state.selections.size,
+      }),
+    });
+  }
+
+  rp.RemoveSelectionsAPI.forceUpdate({
+    title: setBtnTitle({
+      prefix: BTN_REMOVE,
+      title: state.selections.size,
+    }),
+  });
+
+  rp.RenameAPI.forceUpdate({
+    isShow: state.selections.size === 1,
+  });
 
   // ------------------------------------
   function updateSelections() {

@@ -2,7 +2,7 @@ import {
     AppServerAPI
 } from './ServerApi';
 import {
-    getCompsAPI,
+    getCompsAPI, getDefaultAPI,
 } from './functions';
 import {
     get as _get
@@ -65,12 +65,11 @@ function ChannelWrap(props) {
                 getComps() {
                     if (this.comps === undefined) {
                         this.comps = {
-                            ...getCompsAPI({
-                                deps: this.deps,
-                                ...getComps({
+                            ...getCompsAPI(                              
+                                getComps({
                                     channelComps: channel.comps,
-                                }),
-                            }),
+                                })
+                            ),
                         };
                     }
                     return this.comps;
@@ -94,9 +93,12 @@ function ChannelWrap(props) {
 
                 getAPI() {
                     return getAPI?.({
-                        Comp: this,
-                        deps: this.deps,
-                    }) ?? {};
+                            Comp: this,
+                            deps: this.deps,
+                        }) 
+                        ?? getDefaultAPI({
+                            deps: this.deps,
+                        });
                 }
 
                 get(props) {
