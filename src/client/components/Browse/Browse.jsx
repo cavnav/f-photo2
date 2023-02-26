@@ -394,8 +394,16 @@ function changeSelections({
 	});
 
 	rp.RenameAPI.forceUpdate({
-		name: [...state.selections][0],
 		isShow: state.selections.size === 1,
+		name: [...state.selections][0],
+		onSubmit: ({
+			name, 
+		}) => {
+			onRename({
+				Comp,				
+				newName: name,
+			});
+		},
 	});
 
 	// ------------------------------------
@@ -448,13 +456,13 @@ async function onAddAlbum({
 
 async function onRename({
 	Comp,
-	name,
 	newName,
 }) {
 	const rp = Comp.getReqProps();
+	const deps = Comp.getDeps();
   
 	const res = await rp.server.rename({
-	  name,
+	  name: [...deps.state.selections][0],
 	  newName,
 	});
   
@@ -504,17 +512,7 @@ function renderAddPanel({
 			}));
 
 			rp.RenameAPI.forceUpdate({
-				isShow: state.selections.size === 1,
-				name: [...state.selections][0],
-				onSubmit: ({
-					name, 
-				}) => {
-					onRename({
-						Comp,
-						name: [...state.selections][0],
-						newName: name,
-					});
-				},
+				isShow: state.selections.size === 1,								
 			});
 
 			if (getOppositeWindow() !== undefined) {

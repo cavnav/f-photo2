@@ -9,7 +9,6 @@ channel.addComp({
     name: 'Rename',
     render,
     getComps,
-    getAPI,
 });
 
 function render() {
@@ -50,20 +49,6 @@ function getComps({
         items: {
             Dialog: channelComps.Dialog,
         },
-    };
-}
-
-function getAPI({
-    deps,
-}) {
-    return {
-        onSubmit(callback) {
-            if (callback) {
-              deps.setState({
-                onSubmit: callback,
-              });
-            }
-          },
     };
 }
 

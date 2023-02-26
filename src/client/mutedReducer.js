@@ -31,8 +31,8 @@ export function useMutedReducer({
   
     setCompDeps && setCompDeps({
       deps: {
-        state,
         initialState,
+        state,
         setState: dispatch,
       },
     });
