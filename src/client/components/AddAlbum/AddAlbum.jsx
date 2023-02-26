@@ -1,7 +1,7 @@
 import React from 'react';
 import { channel } from '../../channel';
 import { useMutedReducer } from '../../mutedReducer';
-import { AlbumName } from './components/albumName';
+import { ChangeName } from './components/ChangeName';
 
 import './styles.css';
 
@@ -26,7 +26,7 @@ function render() {
     } = Comp.getComps();
 
     DialogAPI.show({
-      render: <AlbumName onSubmit={state.onSubmit} onClose={DialogAPI.close} />,
+      render: <ChangeName onSubmit={state.onSubmit} onClose={DialogAPI.close} />,
       isHide: false,
     });
   };

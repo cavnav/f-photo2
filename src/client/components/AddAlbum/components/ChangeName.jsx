@@ -1,35 +1,33 @@
 import React from 'react';
 import { useMutedReducer } from '../../../mutedReducer';
-import "./AlbumName.css";
+import "./ChangeName.css";
 
-export function AlbumName(props) {
+export function ChangeName(props) {
     const [state, setState] = useMutedReducer({
         initialState,
     });
 
-    function onChangeAlbumName(e) {
-        const albumName = e.target.value;
+    function onChange(e) {
         setState({
-            albumName,
+            name: e.target.value,
         });
     }
 
     function onSubmit() {        
         props.onClose?.();
         props.onSubmit?.({
-            albumName: state.albumName,
+            name: state.name,
         });        
     }
 
     return state.isEnabled === false ? null : (
-        <div className='albumNameBox'>
+        <div>
             Дай название
             <input 
-                className='albumName'
                 autoFocus
                 type='text' 
-                value={state.albumName}
-                onChange={onChangeAlbumName}
+                value={state.name}
+                onChange={onChange}
             />
             <input type="button" value="OK" onClick={onSubmit} />
             <input className="close_btn" type="button" value="X" onClick={props?.onClose} />
@@ -38,5 +36,5 @@ export function AlbumName(props) {
 }
 
 const initialState  = {
-    albumName: '',
+    name: '',
 };

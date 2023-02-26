@@ -33,7 +33,7 @@
 }
 
 .Dialog__none {
-    transform: translateX(-1000px);
+    transform: translateX(-10000px);
 }
 
 .Dialog .title {

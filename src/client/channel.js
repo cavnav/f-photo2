@@ -92,13 +92,15 @@ function ChannelWrap(props) {
                 }
 
                 getAPI() {
-                    return getAPI?.({
+                    return {
+                        ...getDefaultAPI({
+                            deps: this.deps,
+                        }),
+                        ...getAPI?.({
                             Comp: this,
                             deps: this.deps,
-                        }) 
-                        ?? getDefaultAPI({
-                            deps: this.deps,
-                        });
+                        }),
+                    };
                 }
 
                 get(props) {

@@ -50,5 +50,6 @@ module.exports = {
       template: './public/index.html',
       favicon: './public/favicon.png',
     })
-  ]
+  ],
+  devtool: "cheap-module-eval-source-map"
 };
