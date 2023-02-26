@@ -652,6 +652,7 @@ async function findFiles({
 	doNeedDirs = false,
 	doNeedFullPath = false,
 }) {
+	const statSync = fs.statSync;
 	const isReqPathExists = await fs.pathExists(reqPath);
 	let browseFiles = [];
 	if (isReqPathExists) {
@@ -680,11 +681,12 @@ async function findFiles({
 	const { sep } = path;
 	const browseDirs = dirs
 		.filter(isTopLevelFile)
-		.map((dir) => path.join(sep, path.basename(dir)));
+		.sort(sortByBirthday)
+		.map((dir) => path.join(sep, path.basename(dir)));	
 
 	return {
 		files: browseFiles,
-		dirs: browseDirs
+		dirs: browseDirs,
 	};
 
 
@@ -694,6 +696,11 @@ async function findFiles({
 	}
 	function isTopLevelFile(file) {
 		return reqPath.length === file.lastIndexOf(path.sep);
+	}
+	function sortByBirthday(a, b) {		
+		const aStat = statSync(a);
+		const bStat = statSync(b);
+		return aStat.birthtime.getTime() - bStat.birthtime.getTime() ? 1 : -1;
 	}
 }
 
