@@ -394,6 +394,7 @@ function changeSelections({
 	});
 
 	rp.RenameAPI.forceUpdate({
+		name: [...state.selections][0],
 		isShow: state.selections.size === 1,
 	});
 
@@ -464,6 +465,8 @@ async function onRename({
 	  });
 	  return;
 	} 
+
+	changeSelections({ Comp });	
   
 	refreshWindows({
 	  Comp,
@@ -502,6 +505,7 @@ function renderAddPanel({
 
 			rp.RenameAPI.forceUpdate({
 				isShow: state.selections.size === 1,
+				name: [...state.selections][0],
 				onSubmit: ({
 					name, 
 				}) => {

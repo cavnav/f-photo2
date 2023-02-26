@@ -5,6 +5,7 @@ import "./ChangeName.css";
 export function ChangeName(props) {
     const [state, setState] = useMutedReducer({
         initialState,
+        props,
     });
 
     function onChange(e) {

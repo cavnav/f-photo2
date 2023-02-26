@@ -25,7 +25,11 @@ function render() {
         } = Comp.getComps();
     
         DialogAPI.show({
-            render: <ChangeName onSubmit={state.onSubmit} onClose={DialogAPI.close} />,
+            render: <ChangeName 
+                name={state.name}
+                onSubmit={state.onSubmit} 
+                onClose={DialogAPI.close} 
+            />,
             isHide: false,
         });
       };

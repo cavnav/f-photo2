@@ -700,7 +700,7 @@ async function findFiles({
 	function sortByBirthday(a, b) {		
 		const aStat = statSync(a);
 		const bStat = statSync(b);
-		return aStat.birthtime.getTime() - bStat.birthtime.getTime() ? 1 : -1;
+		return Number(aStat.birthtime) > Number(bStat.birthtime) ? 1 : -1;
 	}
 }
 

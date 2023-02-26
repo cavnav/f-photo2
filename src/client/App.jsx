@@ -1,11 +1,13 @@
 // error Dialog between change Action 
 // Warning: Can't perform a React state update on an unmounted component. This is a no-op, but it indicates a memory leak in your application. To fix, cancel all subscriptions and asynchronous tasks in a useEffect cleanup function.
 //     in bound render (created by bound render)
-// create rename folder dialog
 // remove, move, rename (only one folder) (print, share)  
 // inside Print a lot of images. how it print?
 // add loading (create Proxy Comp for loading)
 // magnifying glass
+// unselect all
+// select all
+
 // last added folder
 // *hide printed, shared folders
 // after back to list to scroll to last opened folder
