@@ -180,7 +180,7 @@ export class AppServerAPI {
 		name,
 		newName,
 	}) => {
-		if (!name || !newName) return;
+		if (!name || !newName || name === newName) return;
 
 		return fetch(
 			this.getFullUrl({

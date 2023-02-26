@@ -393,14 +393,16 @@ function changeSelections({
 		}),
 	});
 
+	const name = getItemName([...state.selections][0]);
 	rp.RenameAPI.forceUpdate({
-		isShow: state.selections.size === 1,
-		name: [...state.selections][0],
+		isShow: isShowRename(state.selections, state.sep),
+		name,
 		onSubmit: ({
 			name, 
 		}) => {
 			onRename({
-				Comp,				
+				Comp,	
+				name,	
 				newName: name,
 			});
 		},
@@ -415,6 +417,10 @@ function changeSelections({
 
 		state.selections[action](src);
 		return state.selections;
+	}
+
+	function getItemName(name) {
+		return name?.replace(state.sep, '');
 	}
 }
 
@@ -456,13 +462,14 @@ async function onAddAlbum({
 
 async function onRename({
 	Comp,
+	name,
 	newName,
 }) {
 	const rp = Comp.getReqProps();
 	const deps = Comp.getDeps();
   
 	const res = await rp.server.rename({
-	  name: [...deps.state.selections][0],
+	  name,
 	  newName,
 	});
   
@@ -512,7 +519,7 @@ function renderAddPanel({
 			}));
 
 			rp.RenameAPI.forceUpdate({
-				isShow: state.selections.size === 1,								
+				isShow: isShowRename(state.selections, state.sep),							
 			});
 
 			if (getOppositeWindow() !== undefined) {
@@ -633,6 +640,10 @@ function resetTo({
 		.then(() => setState({
 			loading: false,
 		}));
+}
+
+function isShowRename(selections, sep) {
+	return selections.size === 1 && [...selections][0].includes(sep);
 }
 
 function getStateInit() {
