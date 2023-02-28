@@ -179,6 +179,7 @@ export class AppServerAPI {
 	rename = async ({
 		name,
 		newName,
+		updatedActionLists,
 	}) => {
 		if (!name || !newName || name === newName) return;
 
@@ -190,6 +191,7 @@ export class AppServerAPI {
 				body: {
 					name,
 					newName,
+					updatedActionLists,
 					curWindow: window.name,
 				}
 			})

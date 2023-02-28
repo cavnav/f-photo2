@@ -161,17 +161,42 @@ app.post('/api/rename',
 			curWindow,
 			name,
 			newName,
+			updatedActionLists: actionLists,
 		} = req.body;
 
-		const srcName = path.join(state[curWindow], name);
-		const srcNewName = path.join(state[curWindow], newName);
+		const srcName = path.join(state[curWindow], path.sep, name, path.sep);
+		const srcNewName = path.join(state[curWindow], path.sep, newName, path.sep);
 
-		const result = await rename({
+		const error = await rename({
 			name: srcName,
 			newName: srcNewName,
 		});
 
-		res.send(result ?? true);
+		let result;
+		if (error) {
+			result = error;
+		} else {
+			const allItems = await getAllItems({
+				items: [srcNewName], // уже новое имя папки.
+				source: state[curWindow],
+			});
+	
+			const flattedItems = allItems.flat();
+	
+			const sourceRel = srcName.replace(ALBUM_DIR, '');
+			const destRel = srcNewName.replace(ALBUM_DIR, '');
+
+			result = {
+				actionLists: updateActionLists({
+					updatedLists: actionLists,
+					items: flattedItems,
+					source: sourceRel,
+					dest: destRel,
+				}),
+			};
+		}
+
+		res.send(result);
 	}
 );
 
@@ -871,12 +896,14 @@ function updateActionLists({
 	source,
 	dest,
 }) {
+	if (!dest) return updatedLists;
 	const updatedListsArr = Object.values(updatedLists);
 	items.forEach((item) => {
 		const sourceFull = path.join(source, path.sep, item);
+		const destFull = path.join(dest, path.sep, item);
 		updatedListsArr.forEach((files) => {
-			if (dest !== undefined && files[sourceFull]) {
-				files[path.join(dest, item)] = files[sourceFull];
+			if (files[sourceFull]) {
+				files[destFull] = files[sourceFull];
 			}
 			delete files[sourceFull];
 		});
@@ -885,7 +912,6 @@ function updateActionLists({
 	return updatedLists;
 }
 
-// -------------------------------------
 async function getAllItems({
 	items,
 	source,
@@ -894,7 +920,7 @@ async function getAllItems({
 	for (let index = 0; index < items.length; index++) {
 		const itemNext = items[index];
 		const basename = path.basename(itemNext);
-		if (basename === itemNext) { // if file.
+		if (basename === itemNext) { // if file. \\8.jpg -> 8.jpg; \\8\\ -> 8
 			allItems = [
 				...allItems,
 				itemNext,

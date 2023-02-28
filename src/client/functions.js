@@ -1,62 +1,62 @@
 import {
-  eventNames
+	eventNames
 } from './constants';
 import {
-  ResumeObj,
+	ResumeObj,
 } from './resumeObj';
 
 import { BTN_MOVE, BTN_REMOVE, setBtnTitle } from './common/additionalActions/const';
 class MyItems {
-  constructor({
-    items,
-  }) {
-    this.items = [...items];
-    return this;
-  }
+	constructor({
+		items,
+	}) {
+		this.items = [...items];
+		return this;
+	}
 
-  delete(ind) {
-    delete this.items[ind];
-    this.items = this.items.filter((i) => i);
-  }
+	delete(ind) {
+		delete this.items[ind];
+		this.items = this.items.filter((i) => i);
+	}
 }
 
 export function setItSilent({
-  state,
-  stateUpd,
+	state,
+	stateUpd,
 }) {
-  if (stateUpd.setItSilent) {
-    stateUpd.setItSilent.apply(state);
-  }
+	if (stateUpd.setItSilent) {
+		stateUpd.setItSilent.apply(state);
+	}
 }
 
 export function tempReducer(
-  prevState,
-  newState = {},
+	prevState,
+	newState = {},
 ) {
-  if (newState.setItSilent) {
-    newState.setItSilent.apply(prevState);
-    return prevState;
-  }
+	if (newState.setItSilent) {
+		newState.setItSilent.apply(prevState);
+		return prevState;
+	}
 
-  return {
-    ...prevState,
-    ...newState,
-  };
+	return {
+		...prevState,
+		...newState,
+	};
 };
 
 export function getFileDateSrcKey({
-  date,
-  fileSrc
+	date,
+	fileSrc
 }) {
-  return `${date}-${fileSrc}`;
+	return `${date}-${fileSrc}`;
 }
 
 export function myArray({
-  items,
+	items,
 }) {
-  return new MyItems({
-    items
-  });
+	return new MyItems({
+		items
+	});
 }
 
 // export function myArr({
@@ -88,372 +88,383 @@ export function myArray({
 // }
 
 export function isCatalogSelected({
-  windowName,
+	windowName,
 }) {
-  if (!windowName) return false;
-  const resumeObj = new ResumeObj();
-  const resumeState = resumeObj.state;
-  return Boolean(_get(resumeState[windowName], 'App.browseState.path'));
+	if (!windowName) return false;
+	const resumeObj = new ResumeObj();
+	const resumeState = resumeObj.state;
+	return Boolean(_get(resumeState[windowName], 'App.browseState.path'));
 }
 export function isSameWindowPaths() {
-  const resumeObj = new ResumeObj();
-  const resumeState = resumeObj.state;
-  const res = _get(resumeState.leftWindow, 'App.browseState.path', 1) ===
-    _get(resumeState.rightWindow, 'App.browseState.path', 2)
+	const resumeObj = new ResumeObj();
+	const resumeState = resumeObj.state;
+	const res = _get(resumeState.leftWindow, 'App.browseState.path', 1) ===
+		_get(resumeState.rightWindow, 'App.browseState.path', 2)
 
-  return res;
+	return res;
 }
 
 export function getOppositeWindow() {
-  return window.name === "rightWindow" ? window.parent.frames[0] : window.parent.frames[1];
+	return window.name === "rightWindow" ? window.parent.frames[0] : window.parent.frames[1];
 }
 
 export function oppositeWindowCheckSamePaths() {
-  const oppositeWindow = getOppositeWindow();
-  oppositeWindow?.document.dispatchEvent(new Event(eventNames.checkSameWindowPaths));
+	const oppositeWindow = getOppositeWindow();
+	oppositeWindow?.document.dispatchEvent(new Event(eventNames.checkSameWindowPaths));
 }
 
 export function refreshOppositeWindow() {
-  const oppositeWindow = getOppositeWindow();
-  oppositeWindow?.document.dispatchEvent(
-    new Event(eventNames.refreshWindow)
-  );
+	const oppositeWindow = getOppositeWindow();
+	oppositeWindow?.document.dispatchEvent(
+		new Event(eventNames.refreshWindow)
+	);
 }
 
 export function getCurDate() {
-  const dateISO = new Date().toISOString();
-  return dateISO.slice(0, dateISO.indexOf('T'));
+	const dateISO = new Date().toISOString();
+	return dateISO.slice(0, dateISO.indexOf('T'));
 }
 
 export function encodeFile({
-  file,
+	file,
 }) {
-  return encodeURI(file);
+	return encodeURI(file);
 }
 
 export function getBackgroundImageStyle({
-  file,
+	file,
 }) {
-  return {
-    'backgroundImage': `url('${encodeFile({ file })}')`
-  };
+	return {
+		'backgroundImage': `url('${encodeFile({ file })}')`
+	};
 }
 
 export function getFromResumeObj({
-  selector,
+	selector,
 }) {
-  const resumeObj = new ResumeObj();
-  const resumeState = resumeObj.state;
-  return myCrop({
-    from: resumeState,
-    selector,
-  });
+	const resumeObj = new ResumeObj();
+	const resumeState = resumeObj.state;
+	return myCrop({
+		from: resumeState,
+		selector,
+	});
 }
 
 export function addHandlers({
-  fns,
+	fns,
 }) {
-  return fns.reduce((res, fn) => {
-    res[fn.name] = fn;
-    return res;
-  }, {});
+	return fns.reduce((res, fn) => {
+		res[fn.name] = fn;
+		return res;
+	}, {});
 }
 
 export function updFromObj({
-  obj,
-  objUpd,
-  stack,
+	obj,
+	objUpd,
+	stack,
 }) {
-  // debugger;
-  if (stack && stack.length === 0) {
-    return obj;
-  } else if (stack === undefined) {
-    stack = getUpdatedItems({
-      obj,
-      objUpd,
-    });
-  }
-  let [{
-    objRef,
-    propName,
-    isPropExists,
-    propUpd,
-  }] = stack;
+	// debugger;
+	if (stack && stack.length === 0) {
+		return obj;
+	} else if (stack === undefined) {
+		stack = getUpdatedItems({
+			obj,
+			objUpd,
+		});
+	}
+	let [{
+		objRef,
+		propName,
+		isPropExists,
+		propUpd,
+	}] = stack;
 
-  if (
-    propUpd === undefined ||
-    isPropExists === false ||
-    propUpd.constructor !== Object
-  ) {
-    objRef[propName] = propUpd;
-  } else {
-    stack.push(
-      ...getUpdatedItems({
-        obj: objRef[propName],
-        objUpd: propUpd,
-      })
-    );
-  }
-  return updFromObj({
-    obj,
-    stack: stack.slice(1),
-  });
+	if (
+		propUpd === undefined ||
+		isPropExists === false ||
+		propUpd.constructor !== Object
+	) {
+		objRef[propName] = propUpd;
+	} else {
+		stack.push(
+			...getUpdatedItems({
+				obj: objRef[propName],
+				objUpd: propUpd,
+			})
+		);
+	}
+	return updFromObj({
+		obj,
+		stack: stack.slice(1),
+	});
 }
 
 function getUpdatedItems({
-  obj,
-  objUpd,
+	obj,
+	objUpd,
 }) {
-  return Object.entries(objUpd).map((item) => {
-    const [propName, propUpd] = item;
-    const isPropExists = obj.hasOwnProperty(propName);
-    return {
-      objRef: obj,
-      propName,
-      isPropExists,
-      propUpd,
-    };
-  });
+	return Object.entries(objUpd).map((item) => {
+		const [propName, propUpd] = item;
+		const isPropExists = obj.hasOwnProperty(propName);
+		return {
+			objRef: obj,
+			propName,
+			isPropExists,
+			propUpd,
+		};
+	});
 }
 
 export function myCrop({
-  from,
-  selector,
-  stack,
-  res = {},
+	from,
+	selector,
+	stack,
+	res = {},
 }) {
-  if (stack && stack.length === 0) return res;
-  if (!stack) {
-    stack = getSelectorItems({
-      from,
-      selector,
-    });
-  }
-  let [
-    [
-      propName,
-      propVal,
-      sourceVal,
-      alias = propVal,
-    ]
-  ] = stack;
+	if (stack && stack.length === 0) return res;
+	if (!stack) {
+		stack = getSelectorItems({
+			from,
+			selector,
+		});
+	}
+	let [
+		[
+			propName,
+			propVal,
+			sourceVal,
+			alias = propVal,
+		]
+	] = stack;
 
-  if (propVal.constructor !== Object) {
-    res[propVal === 1 ? propName : alias] = sourceVal;
-  } else if (sourceVal && sourceVal.constructor === Object) {
-    stack.push(...getSelectorItems({
-      from: sourceVal,
-      selector: propVal,
-    }))
-  }
+	if (propVal.constructor !== Object) {
+		res[propVal === 1 ? propName : alias] = sourceVal;
+	} else if (sourceVal && sourceVal.constructor === Object) {
+		stack.push(...getSelectorItems({
+			from: sourceVal,
+			selector: propVal,
+		}))
+	}
 
-  return myCrop({
-    stack: stack.slice(1),
-    res,
-  });
+	return myCrop({
+		stack: stack.slice(1),
+		res,
+	});
 }
 
 export function getSelectorItems({
-  selector,
-  from,
+	selector,
+	from,
 }) {
-  return Object.entries(selector).map((item) => {
-    const [propName, propVal] = item;
-    return [
-      propName,
-      propVal,
-      from[propName],
-    ];
-  });
+	return Object.entries(selector).map((item) => {
+		const [propName, propVal] = item;
+		return [
+			propName,
+			propVal,
+			from[propName],
+		];
+	});
 }
 
 export function getExistsProps({
-  obj,
-  rp,
+	obj,
+	rp,
 }) {
-  const hasObjKey = Object.prototype.hasOwnProperty.bind(obj);
-  return Object.keys(rp).reduce((res, key) => {
-    if (hasObjKey(key)) res[key] = obj[key];
-    return res;
-  },
-    {}
-  );
+	const hasObjKey = Object.prototype.hasOwnProperty.bind(obj);
+	return Object.keys(rp).reduce((res, key) => {
+		if (hasObjKey(key)) res[key] = obj[key];
+		return res;
+	},
+		{}
+	);
 }
 
 export function getStateInit({
-  stateDefault,
-  resumeObj,
+	stateDefault,
+	resumeObj,
 }) {
-  const resumed = resumeObj.get();
-  return {
-    ...stateDefault,
-    ...resumed,
-  };
+	const resumed = resumeObj.get();
+	return {
+		...stateDefault,
+		...resumed,
+	};
 }
 
 export function getDefaultAPI({
-  deps,
+	deps,
 }) {
-  return {
-    forceUpdate(props) {
-      deps.setState?.(props);
-    },
-    setInit() {
-      deps.setState?.(deps.initialState);
-    },
-  };
+	return {
+		forceUpdate(props) {
+			deps.setState?.(props);
+		},
+		setInit() {
+			deps.setState?.(deps.initialState);
+		},
+	};
 }
 
 export function getCompsAPI({
-  items = {},
-  toClone = {},
+	items = {},
+	toClone = {},
 }) {
-  const comps = Object.entries(items ?? {}).concat(Object.entries(toClone ?? {}));
-  return comps && comps.reduce((res, [name, comp]) => {
-      const compUpd = toClone[name] ? comp.clone({
-        name,
-      }) : comp;
-      return {
-        ...res,
-        [name]: compUpd,
-        [`${name}API`]: {          
-          ...compUpd.getAPI?.(),
-        },
-      };
-    },
-    {}
-  );
+	const comps = Object.entries(items ?? {}).concat(Object.entries(toClone ?? {}));
+	return comps && comps.reduce((res, [name, comp]) => {
+		const compUpd = toClone[name] ? comp.clone({
+			name,
+		}) : comp;
+		return {
+			...res,
+			[name]: compUpd,
+			[`${name}API`]: {
+				...compUpd.getAPI?.(),
+			},
+		};
+	},
+		{}
+	);
 }
 
 export function refreshWindows(
 ) {
-  window.document.dispatchEvent(
-    new Event(eventNames.refreshWindow),
-  );
+	window.document.dispatchEvent(
+		new Event(eventNames.refreshWindow),
+	);
 
-  const oppositeWindow = getOppositeWindow();
-  oppositeWindow?.document.dispatchEvent(
-    new Event(eventNames.refreshWindow),
-  );
+	const oppositeWindow = getOppositeWindow();
+	oppositeWindow?.document.dispatchEvent(
+		new Event(eventNames.refreshWindow),
+	);
 }
 
 export function checkServerProgress({
-  service,
-  onResponse,
+	service,
+	onResponse,
 }) {
-  return new Promise((resolve) => {
-    fn();
+	return new Promise((resolve) => {
+		fn();
 
-    function fn() {
-      service()
-        .then(({
-          progress,
-        }) => {
-          onResponse({
-            progress,
-          });
+		function fn() {
+			service()
+				.then(({
+					progress,
+				}) => {
+					onResponse({
+						progress,
+					});
 
-          if (progress < 100) {
-            setTimeout(
-              () => fn(),
-              500,
-            );
-            return;
-          }
+					if (progress < 100) {
+						setTimeout(
+							() => fn(),
+							500,
+						);
+						return;
+					}
 
-          resolve();
-        });
-    }
-  });
+					resolve();
+				});
+		}
+	});
 }
 
 export function updateAddPanelComps({
-  Comp,
-  selector,
-  items = {},
+	Comp,
+	selector,
+	items = {},
 } = {}) {
-  const {
-    state,
-  } = Comp.getDeps();
+	const {
+		state,
+	} = Comp.getDeps();
 
-  const rp = Comp.getReqProps();
-  const allComps = getComps();
-  const selectorUpd = selector ? selector : allComps;
+	const rp = Comp.getReqProps();
+	const allComps = getComps();
+	const selectorUpd = selector ? selector : allComps;
 
-  Object.entries(selectorUpd).forEach(([compName, update]) => {
-    if (allComps[compName]) {
-      rp[`${compName}API`].forceUpdate(update);
-    }
-  });
-  
-  // -------------------
-  function getComps() {
-    return {            
-      ...(getOppositeWindow() !== undefined && {
-        [rp.MoveSelections.name]: {
-          title: setBtnTitle({
-            prefix: BTN_MOVE,
-            title: state.selections.size,
-          }),
-        },
-      }),
-      [rp.RemoveSelections.name]: {
-        title: setBtnTitle({
-          prefix: BTN_REMOVE,
-          title: state.selections.size,
-        }),
-      },
-      ...items,
-    };
-  }  
+	Object.entries(selectorUpd).forEach(([compName, update]) => {
+		if (allComps[compName]) {
+			rp[`${compName}API`].forceUpdate(update);
+		}
+	});
+
+	// -------------------
+	function getComps() {
+		return {
+			...(getOppositeWindow() !== undefined && {
+				[rp.MoveSelections.name]: {
+					title: setBtnTitle({
+						prefix: BTN_MOVE,
+						title: state.selections.size,
+					}),
+				},
+			}),
+			[rp.RemoveSelections.name]: {
+				title: setBtnTitle({
+					prefix: BTN_REMOVE,
+					title: state.selections.size,
+				}),
+			},
+			...items,
+		};
+	}
 }
 
 export function ProgressNotification({
-  progress,
+	progress,
 }) {
-  return `Подожди. ${progress} %`;
+	return `Подожди. ${progress} %`;
 }
 
 export function onMoveSelections({
-  Comp,
-  onChangeSelections,
+	Comp,
+	onChangeSelections,
 }) {
-  const rp = Comp.getReqProps();
-  return checkServerProgress({
-      service: rp.server.checkProgress,
-      onResponse: ({
-        progress,
-      }) => {
-        rp.NotificationAPI.forceUpdate({
-          title: ProgressNotification({
-            progress,
-          }),
-        });
-      },
-    })
-    .then(() => {
-      onChangeSelections?.();
-      refreshWindows({
-        Comp,
-      });
-      rp.NotificationAPI.setInit({});      
-    });
+	const rp = Comp.getReqProps();
+	return checkServerProgress({
+		service: rp.server.checkProgress,
+		onResponse: ({
+			progress,
+		}) => {
+			rp.NotificationAPI.forceUpdate({
+				title: ProgressNotification({
+					progress,
+				}),
+			});
+		},
+	})
+		.then(() => {
+			onChangeSelections?.();
+			refreshWindows({
+				Comp,
+			});
+			rp.NotificationAPI.setInit({});
+		});
 }
 
 export function getUpdatedActionLists() {
-  const resumeObj = new ResumeObj();
-  const appState = resumeObj.state;
-  const {
-    Print: {
-      filesToPrint,
-    },
-    Share: {
-      filesToShare = {},
-    } = {},
-  } = appState;
+	const resumeObj = new ResumeObj();
+	const appState = resumeObj.state;
+	const {
+		Print: {
+			filesToPrint,
+		},
+		Share: {
+			filesToShare = {},
+		} = {},
+	} = appState;
 
-  return {
-    filesToPrint, 
-    filesToShare,
-  };
+	return {
+		updatedActionLists: {
+			filesToPrint,
+			filesToShare,
+		},
+	};
+}
+
+export function updateActionsLists({
+	lists,
+}) {
+	const resumeObj = new ResumeObj();
+	resumeObj.saveUpdatedActionLists({
+		lists,
+	});
 }

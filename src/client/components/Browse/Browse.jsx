@@ -11,7 +11,7 @@ import {
 import './styles.css';
 import {
 	addHandlers, getBackgroundImageStyle, getOppositeWindow, getUpdatedActionLists, myCrop,
-	onMoveSelections, oppositeWindowCheckSamePaths, refreshWindows, updateAddPanelComps
+	onMoveSelections, oppositeWindowCheckSamePaths, refreshWindows, updateActionsLists, updateAddPanelComps
 } from '../../functions';
 import { channel } from '../../channel';
 import { ResumeObj } from '../../resumeObj';
@@ -393,17 +393,17 @@ function changeSelections({
 		}),
 	});
 
-	const name = getItemName([...state.selections][0]);
+	const curName = getItemName([...state.selections][0]);
 	rp.RenameAPI.forceUpdate({
 		isShow: isShowRename(state.selections, state.sep),
-		name,
+		name: curName,
 		onSubmit: ({
-			name, 
+			name: newName, 
 		}) => {
 			onRename({
 				Comp,	
-				name,	
-				newName: name,
+				name: curName,	
+				newName,
 			});
 		},
 	});
@@ -466,11 +466,11 @@ async function onRename({
 	newName,
 }) {
 	const rp = Comp.getReqProps();
-	const deps = Comp.getDeps();
   
 	const res = await rp.server.rename({
 	  name,
 	  newName,
+	  ...getUpdatedActionLists(),
 	});
   
 	if (res?.error) {
@@ -482,6 +482,10 @@ async function onRename({
 	} 
 
 	changeSelections({ Comp });	
+
+	updateActionsLists({
+		lists: res.actionLists,
+	});
   
 	refreshWindows({
 	  Comp,
@@ -528,14 +532,12 @@ function renderAddPanel({
 						const selections = [...state.selections.values()];
 						rp.server.moveToPath({
 							items: selections,
-							updatedActionLists: getUpdatedActionLists(),
 							destWindow: getOppositeWindow().name,
+							...getUpdatedActionLists(),
 						})
-							.then((props) => {
-								resumeObj.saveUpdatedActionLists({
-									lists: props.updatedActionLists,
-								});
-								return props;
+							.then((result) => {
+								updateActionsLists({ lists: result.updatedActionLists });
+								return result;
 							})
 							.then(() => onMoveSelections({
 								Comp,
@@ -551,21 +553,19 @@ function renderAddPanel({
 					const selections = [...state.selections.values()];
 					rp.server.removeItems({
 						items: selections,
-						updatedActionLists: getUpdatedActionLists(),
+						...getUpdatedActionLists(),
 					})
-						.then((props) => {
-							resumeObj.saveUpdatedActionLists({
-								lists: props.updatedActionLists,
-							});
-							return props;
-						})
-						.then(({
-						}) => onMoveSelections({
+					.then((result) => {
+						updateActionsLists({ lists: result.updatedActionLists });
+						return result;
+					})
+					.then(({
+					}) => onMoveSelections({
+						Comp,
+						onChangeSelections: () => changeSelections({
 							Comp,
-							onChangeSelections: () => changeSelections({
-								Comp,
-							}),
-						}));
+						}),
+					}));
 				},
 			});
 
