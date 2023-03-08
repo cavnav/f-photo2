@@ -177,21 +177,18 @@ app.post('/api/rename',
 			result = error;
 		} else {
 			const allItems = await getAllItems({
-				items: [srcNewName], // уже новое имя папки.
-				source: state[curWindow],
+				items: '',
+				source: srcNewName,
 			});
 	
 			const flattedItems = allItems.flat();
-	
-			const sourceRel = srcName.replace(ALBUM_DIR, '');
-			const destRel = srcNewName.replace(ALBUM_DIR, '');
 
 			result = {
 				actionLists: updateActionLists({
 					updatedLists: actionLists,
 					items: flattedItems,
-					source: sourceRel,
-					dest: destRel,
+					source: srcName,
+					dest: srcNewName,
 				}),
 			};
 		}
@@ -214,7 +211,6 @@ app.post('/api/removeItems',
 		});
 
 		const source = state[curWindow];
-		const sourceRel = source.replace(ALBUM_DIR, '');
 		const allItems = await getAllItems({
 			items,
 			source,
@@ -227,7 +223,7 @@ app.post('/api/removeItems',
 			updatedActionLists: updateActionLists({
 				updatedLists: updatedActionLists,
 				items: flattedItems,
-				source: sourceRel,
+				source,
 			}),
 		});
 
@@ -433,8 +429,6 @@ app.post('/api/moveToPath',
 
 		const source = state[curWindow];
 		const dest = state[destWindow];
-		const sourceRel = source.replace(ALBUM_DIR, '');
-		const destRel = dest.replace(ALBUM_DIR, '');
 
 		if (source === dest) {
 			setState({
@@ -462,8 +456,8 @@ app.post('/api/moveToPath',
 			updatedActionLists: updateActionLists({
 				updatedLists: updatedActionLists,
 				items: flattedItems,
-				source: sourceRel,
-				dest: destRel,
+				source,
+				dest,
 			}),
 		});
 
@@ -897,10 +891,14 @@ function updateActionLists({
 	dest,
 }) {
 	if (!dest) return updatedLists;
+
+	const sourceRel = source.replace(ALBUM_DIR, '');
+	const destRel = dest.replace(ALBUM_DIR, '');
 	const updatedListsArr = Object.values(updatedLists);
+
 	items.forEach((item) => {
-		const sourceFull = path.join(source, path.sep, item);
-		const destFull = path.join(dest, path.sep, item);
+		const sourceFull = path.join(sourceRel, path.sep, item);
+		const destFull = path.join(destRel, path.sep, item);
 		updatedListsArr.forEach((files) => {
 			if (files[sourceFull]) {
 				files[destFull] = files[sourceFull];
