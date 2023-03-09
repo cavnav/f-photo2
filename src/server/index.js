@@ -177,7 +177,7 @@ app.post('/api/rename',
 			result = error;
 		} else {
 			const allItems = await getAllItems({
-				items: '',
+				items: [path.sep],
 				source: srcNewName,
 			});
 	
