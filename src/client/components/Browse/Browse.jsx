@@ -451,6 +451,7 @@ async function onAddAlbum({
 		rp.DialogAPI.show({
 			type: 'error',
 			message: res.error,
+			isModal: false,
 		});
 		return;
 	}
@@ -477,6 +478,7 @@ async function onRename({
 	  rp.DialogAPI.show({
 		type: 'error',
 		message: res.error,
+		isModal: false,
 	  });
 	  return;
 	} 
