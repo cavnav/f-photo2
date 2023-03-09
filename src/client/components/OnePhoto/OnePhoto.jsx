@@ -1,7 +1,7 @@
 import './styles.css';
 
 import React from 'react';
-import { Dialog, Empty } from '../';
+import { Empty } from '../';
 import { ResumeObj } from '../../resumeObj';
 import { myArray, refreshOppositeWindow, updateAddPanelComps } from '../../functions';
 import { channel } from '../../channel';
@@ -49,12 +49,6 @@ function render(
       files: myFiles,
     },
   });
-
-  const onDialogRemoveCancel = React.useCallback(() => {
-    setState({
-      isDialogRemoveItem: false,
-    });
-  }, []);
 
   const imgRef = React.useRef(null);
 
@@ -119,13 +113,6 @@ function render(
               id={id}
             />
           </>
-        )}        
-        {state.isDialogRemoveItem && (
-          <Dialog.r
-            type={Dialog.RemoveItems}   
-            onCancel={onDialogRemoveCancel}    
-          >          
-          </Dialog.r>
         )}
         <Empty 
           isTrue={state.isNoItems}
@@ -386,7 +373,6 @@ function deleteFiles({
 
   setState({
     action: onTogglePhoto.name,
-    isDialogRemoveItem: false,
     curPhotoInd: curPhotoIndUpd,
   });
 
@@ -506,7 +492,6 @@ function getStateInit() {
     path: undefined,
     loading: false,
     progress: 100,
-    isDialogRemoveItem: false,
     curPhoto: '',
     curPhotoWithTime: '',
     curPhotoInd: -1,   

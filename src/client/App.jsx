@@ -1,7 +1,7 @@
-// remove, move, rename (only one folder) (print, share)  
+// ++remove, move, rename (only one folder) (print, share)  
 // inside Print a lot of images. how it print?
 // fix error by move same folder - need show dialog to confirm
-// error Dialog between change Action 
+// error show Dialog between change Action 
 // check all user ways
 // update
 // I

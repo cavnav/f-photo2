@@ -42,7 +42,11 @@ function onClick({
     render: (
       <rp.Notify.r 
         isEnabled
-        onConfirm={state.onClick}
+        onConfirm={() => {
+          rp.DialogAPI.close();
+          state.onClick();
+        }}
+        onCancel={() => rp.DialogAPI.close()}
       />
     ), 
   });

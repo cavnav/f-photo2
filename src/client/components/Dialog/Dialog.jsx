@@ -47,7 +47,7 @@ function render(props) {
     return onHover(false);
   });
 
-  return (
+  return !state.isShow ? null : (
     <div 
       ref={ref}
       key={Number(new Date())}
@@ -109,22 +109,27 @@ function getAPI({
     if (deps.state.ref?.current) {
       deps.state.ref.current.classList.add(`Dialog__none`);
     }
+    deps.setState({
+      isShow: false,
+      forceUpdate: false,
+    });
   }
 
   function show(props) {    
     deps.setState({
-      ...initialState,
-      ...props
+      ...initialState,      
+      ...props,
+      isShow: true,
     });
   }
 }
 
 const initialState = {
+  isShow: false,
   type: undefined,
   message: '',
   render: null,
   isHide: true, // признак - исчезает ли спустя время
-  closeResolve: undefined,
 };
 
 const DELAY = {
