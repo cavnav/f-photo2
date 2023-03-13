@@ -511,7 +511,6 @@ function renderAddPanel({
 		rp.MoveSelections,
 		rp.RemoveSelections,
 	];
-	const src = state.path.concat(state.sep);
 
 	rp.AdditionalPanelAPI.renderIt({
 		actions: additionalActions,
@@ -529,6 +528,7 @@ function renderAddPanel({
 			});
 
 			if (getOppositeWindow() !== undefined) {
+				// Надо дублировать в двух местах - здесь в OnePhoto.
 				rp.MoveSelectionsAPI.forceUpdate({
 					onClick: () => {
 						const selections = [...state.selections.values()];
@@ -550,6 +550,7 @@ function renderAddPanel({
 					},
 				});
 			};
+			// Надо дублировать в двух местах - здесь в OnePhoto.
 			rp.RemoveSelectionsAPI.forceUpdate({
 				onClick: () => {
 					const selections = [...state.selections.values()];

@@ -3,10 +3,11 @@ import './styles.css';
 import React from 'react';
 import { Empty } from '../';
 import { ResumeObj } from '../../resumeObj';
-import { myArray, refreshOppositeWindow, updateAddPanelComps } from '../../functions';
+import { getOppositeWindow, getUpdatedActionLists, myArray, refreshOppositeWindow, updateAddPanelComps } from '../../functions';
 import { channel } from '../../channel';
 import { getCurDate } from '../../functions';
 import { useMutedReducer } from '../../mutedReducer';
+import { BTN_MOVE, BTN_REMOVE, setBtnTitle } from '../../common/additionalActions/const';
 
 export const OnePhoto = channel.addComp({
   name: 'OnePhoto',
@@ -375,8 +376,6 @@ function deleteFiles({
     action: onTogglePhoto.name,
     curPhotoInd: curPhotoIndUpd,
   });
-
-  updateAddPanelComps({ Comp });
 };
 
 function getComps({
@@ -388,13 +387,14 @@ function getComps({
     AdditionalPanel,
     PhotoStatuses,
     CustomAction,
+    ToggleWindow,
     Label,
   } = channelComps;
 
   return {
     toClone: {
       ExitFromOnePhoto: Label,
-      ToggleSecondWindow: Label,
+      ToggleWindow,
       MoveSelections: Label,
       RemoveSelections: CustomAction,
     },
@@ -419,7 +419,7 @@ function renderAddPanel({
   } = rp;
   const additionalActions = [
     rp.ExitFromOnePhoto,
-    rp.ToggleSecondWindow,
+    rp.ToggleWindow,
     rp.MoveSelections,
     rp.RemoveSelections,
   ];
@@ -442,18 +442,27 @@ function renderAddPanel({
         });  
       },
     });
-    rp.MoveSelectionsAPI.forceUpdate({
-      onClick: () => {
-        rp.server.moveToPath({
-          items: [state.curPhotoWithTime],
-          destWindow: getOppositeWindow(),
-        })
-        .then(() => {
-          deleteFiles({ Comp });
-          refreshOppositeWindow();
-        });
-      }
-    });
+
+    if (getOppositeWindow() !== undefined) {
+      rp.MoveSelectionsAPI.forceUpdate({
+        onClick: () => {
+          rp.server.moveToPath({
+            items: [state.curPhotoWithTime],
+            destWindow: getOppositeWindow().name,
+            ...getUpdatedActionLists(),
+          })
+          .then((result) => {
+            updateActionsLists({ lists: result.updatedActionLists });
+            return result;
+          })
+          .then(() => {
+            deleteFiles({ Comp });
+            refreshOppositeWindow();
+          });
+        }
+      });
+    }
+
     rp.RemoveSelectionsAPI.forceUpdate({
       onClick: () => {
         rp.server.removeItems({
@@ -471,7 +480,7 @@ function renderAddPanel({
       Comp,
       items: {
         [rp.ExitFromOnePhoto.name]: {
-          title: 'Смотреть все',
+          title: 'Вернуться',
         },
       }
     });
