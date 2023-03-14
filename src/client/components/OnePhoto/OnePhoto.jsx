@@ -3,7 +3,7 @@ import './styles.css';
 import React from 'react';
 import { Empty } from '../';
 import { ResumeObj } from '../../resumeObj';
-import { getOppositeWindow, getUpdatedActionLists, myArray, refreshOppositeWindow, updateAddPanelComps } from '../../functions';
+import { getOppositeWindow, getUpdatedActionLists, myArray, updateActionsLists, refreshOppositeWindow, updateAddPanelComps } from '../../functions';
 import { channel } from '../../channel';
 import { getCurDate } from '../../functions';
 import { useMutedReducer } from '../../mutedReducer';
@@ -82,7 +82,7 @@ function render(
 
   React.useEffect(() => renderAddPanel({
     Comp,
-  }), []);
+  }), [state.isNoItems]);
   
   return getRender();
 
@@ -443,8 +443,12 @@ function renderAddPanel({
       },
     });
 
-    if (getOppositeWindow() !== undefined) {
+    if (state.isNoItems === false && getOppositeWindow() !== undefined) {
       rp.MoveSelectionsAPI.forceUpdate({
+        title: setBtnTitle({
+          prefix: BTN_MOVE,
+          title: state.selections.size,
+        }),
         onClick: () => {
           rp.server.moveToPath({
             items: [state.curPhotoWithTime],
@@ -463,27 +467,28 @@ function renderAddPanel({
       });
     }
 
-    rp.RemoveSelectionsAPI.forceUpdate({
-      onClick: () => {
-        rp.server.removeItems({
-          items: [state.curPhotoWithTime],
-        })
-        .then(() => {
-          deleteFiles({
-            Comp,
-          });
-        });          
-      },
-    });
-
-    updateAddPanelComps({
-      Comp,
-      items: {
-        [rp.ExitFromOnePhoto.name]: {
-          title: 'Вернуться',
+    if (state.isNoItems === false) {
+      rp.RemoveSelectionsAPI.forceUpdate({
+        title: setBtnTitle({
+          prefix: BTN_REMOVE,
+          title: state.selections.size,
+        }),
+        onClick: () => {
+          rp.server.removeItems({
+            items: [state.curPhotoWithTime],
+          })
+          .then(() => {
+            deleteFiles({
+              Comp,
+            });
+          });          
         },
-      }
-    });
+      });
+    }
+
+    rp.ExitFromOnePhotoAPI.forceUpdate({
+      title: 'Вернуться',
+    });    
   }); 
   
   return () => {

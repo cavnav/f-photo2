@@ -367,47 +367,6 @@ export function checkServerProgress({
 	});
 }
 
-export function updateAddPanelComps({
-	Comp,
-	selector,
-	items = {},
-} = {}) {
-	const {
-		state,
-	} = Comp.getDeps();
-
-	const rp = Comp.getReqProps();
-	const allComps = getComps();
-	const selectorUpd = selector ? selector : allComps;
-
-	Object.entries(selectorUpd).forEach(([compName, update]) => {
-		if (allComps[compName]) {
-			rp[`${compName}API`].forceUpdate(update);
-		}
-	});
-
-	// -------------------
-	function getComps() {
-		return {
-			...(getOppositeWindow() !== undefined && {
-				[rp.MoveSelections.name]: {
-					title: setBtnTitle({
-						prefix: BTN_MOVE,
-						title: state.selections.size,
-					}),
-				},
-			}),
-			[rp.RemoveSelections.name]: {
-				title: setBtnTitle({
-					prefix: BTN_REMOVE,
-					title: state.selections.size,
-				}),
-			},
-			...items,
-		};
-	}
-}
-
 export function ProgressNotification({
 	progress,
 }) {

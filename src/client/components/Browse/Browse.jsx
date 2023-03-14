@@ -571,10 +571,6 @@ function renderAddPanel({
 					}));
 				},
 			});
-
-			updateAddPanelComps({
-				Comp,
-			});
 		});
 
 	return () => {
