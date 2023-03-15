@@ -1,9 +1,8 @@
 // ++remove, move, rename (only one folder) (print, share)  
+// ++fix modal dialog on second time
 // inside Print a lot of images. how it print?
 // fix error by move same folder - need show dialog to confirm
-// fix onePhoto addPanel
 // fix move to onePhoto
-// fix modal dialog on second time
 
 // check all user ways
 // update

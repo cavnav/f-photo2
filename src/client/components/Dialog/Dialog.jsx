@@ -23,20 +23,19 @@ function render(props) {
 
 	const rp = this.getReqProps();
 
-	const onHover = (isHover) => {
+	const onMouseEnter = () => {
+		if (!ref.current) return;
+		clearTimeout(timerIdRef.current);
+		ref.current?.classList.remove(`Dialog__hide`);			
+	};
+	const onMouseLeave = () => {
 		if (!ref.current || state.isHide === false) return;
 		clearTimeout(timerIdRef.current);
-		if (isHover) {
-			ref.current?.classList.remove(`Dialog__hide`);			
-		}
-		else {
-			ref.current?.classList.add(`Dialog__hide`);
-			timerIdRef.current = setTimeout(() => {
-				Comp.getAPI().close();
-			}, DELAY.ms);
-		}
-		return () => clearTimeout(timerIdRef.current);
-	};
+		ref.current?.classList.add(`Dialog__hide`);
+		timerIdRef.current = setTimeout(() => {
+			Comp.getAPI().close();
+		}, DELAY.ms);
+	}
 
 	setState({
 		_ref: ref,
@@ -46,11 +45,10 @@ function render(props) {
 
 	useEffect(() => {		
 		if (timerIdRef.current !== undefined) { // для случая render = null.
-			clearTimeout(timerIdRef.current);
-			timerIdRef.current = undefined;	
 			Comp.getAPI().close();
+		} else {			
+			onMouseLeave();
 		}
-		return onHover(false);
 	});
 
 
@@ -59,14 +57,14 @@ function render(props) {
 		? null 
 		: (
 		<div
+			key={Number(new Date())}
 			className={classnames({
 				[`Dialog__modalWrap`]: true,
 				[`Dialog__modal`]: state.isModal,
 			})}
 		>
 			<div
-				ref={ref}
-				key={Number(new Date())}
+				ref={ref}				
 				className={classnames({
 					[`DialogWrap`]: true,
 					[`Dialog__error`]: state.type === `error`,
@@ -79,8 +77,8 @@ function render(props) {
 					transitionProperty: `opacity`,
 					transitionDuration: `${DELAY.s}s`,
 				}}
-				onMouseEnter={() => onHover(true)}
-				onMouseLeave={() => onHover(false)}
+				onMouseEnter={onMouseEnter}
+				onMouseLeave={onMouseLeave}
 			>
 				{state.message && <div>{state.message}</div>}
 				{state.render && state.render}
@@ -128,6 +126,7 @@ function getAPI({
 			deps.state._ref.current.parentElement.classList.add(`Dialog__none`);
 		}
 		if (deps.state._timerIdRef.current) {
+			clearTimeout(deps.state._timerIdRef.current);
 			deps.state._timerIdRef.current = undefined;
 		}
 		deps.setState({
