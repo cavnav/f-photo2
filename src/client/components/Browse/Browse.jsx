@@ -9,13 +9,13 @@ import {
 
 
 import './styles.css';
+import { eventNames } from '../../constants';
 import {
-	addHandlers, getBackgroundImageStyle, getOppositeWindow, getUpdatedActionLists, myCrop,
-	onMoveSelections, oppositeWindowCheckSamePaths, refreshWindows, updateActionsLists, updateAddPanelComps
+	addHandlers, getBackgroundImageStyle, getOppositeWindow, getUpdatedActionLists, isBanMoveItems, myCrop,
+	onMoveSelections, refreshWindows, updateActionsLists,
 } from '../../functions';
 import { channel } from '../../channel';
 import { ResumeObj } from '../../resumeObj';
-import { eventNames } from '../../constants';
 import { Empty } from '../Empty/Empty';
 import { useMutedReducer } from '../../mutedReducer';
 import { BTN_MOVE, BTN_REMOVE, setBtnTitle } from '../../common/additionalActions/const';
@@ -153,8 +153,6 @@ function render(
 		},
 		[]
 	);
-
-	React.useEffect(oppositeWindowCheckSamePaths, [state.path]);
 
 	React.useEffect(scrollToSelectedImage, [state.curPhotoInd]);
 
@@ -377,14 +375,15 @@ function changeSelections({
 	});
 
 	const rp = Comp.getReqProps();
-	if (getOppositeWindow() !== undefined) {
-		rp.MoveSelectionsAPI.forceUpdate({
-			title: setBtnTitle({
-				prefix: BTN_MOVE,
-				title: state.selections.size,
-			}),
-		});
-	}
+	
+	const isMoveBtn = !isBanMoveItems();
+	rp.MoveSelectionsAPI.forceUpdate({
+		title: isMoveBtn ? setBtnTitle({
+			prefix: BTN_MOVE,
+			title: state.selections.size,
+		}) : '',
+	});
+
 
 	rp.RemoveSelectionsAPI.forceUpdate({
 		title: setBtnTitle({
@@ -527,31 +526,51 @@ function renderAddPanel({
 				isShow: isShowRename(state.selections, state.sep),							
 			});
 
-			if (getOppositeWindow() !== undefined) {
-				// Надо дублировать в двух местах - здесь в OnePhoto.
-				rp.MoveSelectionsAPI.forceUpdate({
-					onClick: () => {
-						const selections = [...state.selections.values()];
-						rp.server.moveToPath({
-							items: selections,
-							destWindow: getOppositeWindow().name,
-							...getUpdatedActionLists(),
-						})
-							.then((result) => {
-								updateActionsLists({ lists: result.updatedActionLists });
-								return result;
-							})
-							.then(() => onMoveSelections({
-								Comp,
-								onChangeSelections: () => changeSelections({
-									Comp,
-								}),
-							}));
-					},
-				});
-			};
+
+			const isMoveBtn = !isBanMoveItems();
+			// Надо дублировать в двух местах - здесь в OnePhoto.
+			rp.MoveSelectionsAPI.forceUpdate({
+				title: isMoveBtn ? setBtnTitle({
+					prefix: BTN_MOVE,
+					title: state.selections.size,
+				}) : '',
+				onClick: () => {
+					const selections = [...state.selections.values()];
+					rp.server.moveToPath({
+						items: selections,
+						destWindow: getOppositeWindow().name,
+						...getUpdatedActionLists(),
+					})
+					.then((res) => {
+						if (res?.error) {
+							rp.DialogAPI.show({
+							  type: 'error',
+							  message: res.error,
+							  isModal: false,
+							});		
+							throw new Error();					
+						} 
+					})					
+					.then((result) => {
+						updateActionsLists({ lists: result.updatedActionLists });
+						return result;
+					})
+					.then(() => onMoveSelections({
+						Comp,
+						onChangeSelections: () => changeSelections({
+							Comp,
+						}),
+					}))
+					.catch((error) => {});
+				},
+			});
+
 			// Надо дублировать в двух местах - здесь в OnePhoto.
 			rp.RemoveSelectionsAPI.forceUpdate({
+				title: setBtnTitle({
+					prefix: BTN_REMOVE,
+					title: state.selections.size,
+				}),
 				onClick: () => {
 					const selections = [...state.selections.values()];
 					rp.server.removeItems({

@@ -1,4 +1,4 @@
-import { myCrop, updFromObj } from './functions';
+import { myCrop } from './functions';
 import { get as _get, set as _set } from 'lodash';
 
 export const resumeObjConstants = {

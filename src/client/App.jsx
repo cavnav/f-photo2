@@ -1,9 +1,11 @@
 // ++remove, move, rename (only one folder) (print, share)  
 // ++fix modal dialog on second time
+// ++fix move to onePhoto
 // inside Print a lot of images. how it print?
-// fix error by move same folder - need show dialog to confirm
-// fix move to onePhoto
-
+// fix error by move same folder but diff path - need show dialog to confirm
+// fix error server on move same path
+// fix error on change name to ''
+// fix error on change name & or *
 // check all user ways
 // update
 // I

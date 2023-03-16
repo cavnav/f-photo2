@@ -3,7 +3,7 @@ import './styles.css';
 import React from 'react';
 import { Empty } from '../';
 import { ResumeObj } from '../../resumeObj';
-import { getOppositeWindow, getUpdatedActionLists, myArray, updateActionsLists, refreshOppositeWindow, updateAddPanelComps } from '../../functions';
+import { getOppositeWindow, getUpdatedActionLists, myArray, updateActionsLists, refreshOppositeWindow, isBanMoveItems } from '../../functions';
 import { channel } from '../../channel';
 import { getCurDate } from '../../functions';
 import { useMutedReducer } from '../../mutedReducer';
@@ -443,7 +443,7 @@ function renderAddPanel({
       },
     });
 
-    if (state.isNoItems === false && getOppositeWindow() !== undefined) {
+    if (state.isNoItems === false && !isBanMoveItems()) {
       rp.MoveSelectionsAPI.forceUpdate({
         title: setBtnTitle({
           prefix: BTN_MOVE,

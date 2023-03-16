@@ -435,7 +435,9 @@ app.post('/api/moveToPath',
 				progress: 100,
 				countCopiedPhotos: 0,
 			});
-			return;
+			return res.status(500).json({
+				error: 'Перемещаешь в то же место', 
+			});
 		};
 
 		setState({

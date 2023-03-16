@@ -5,7 +5,6 @@ import {
 	ResumeObj,
 } from './resumeObj';
 
-import { BTN_MOVE, BTN_REMOVE, setBtnTitle } from './common/additionalActions/const';
 class MyItems {
 	constructor({
 		items,
@@ -95,23 +94,47 @@ export function isCatalogSelected({
 	const resumeState = resumeObj.state;
 	return Boolean(_get(resumeState[windowName], 'App.browseState.path'));
 }
-export function isSameWindowPaths() {
-	const resumeObj = new ResumeObj();
-	const resumeState = resumeObj.state;
-	const res = _get(resumeState.leftWindow, 'App.browseState.path', 1) ===
-		_get(resumeState.rightWindow, 'App.browseState.path', 2)
 
-	return res;
+export function isBanMoveItems() {
+	// same path
+	// welcome
+	// onePhoto
+	// one side enabled move, then another side onePhoto
+
+
+	const destWindow = getOppositeWindow();
+
+	if (destWindow) {
+		const resumeObj = new ResumeObj();
+		const resumeState = resumeObj.state;
+		if (resumeState[destWindow.name] === undefined) {
+			return true;
+		}
+		const destAction = myCrop({
+			from: resumeState[destWindow.name],
+			selector: {
+				App: {
+					action: 1,
+				},
+			},
+		});
+		
+		if (['Welcome', 'OnePhoto'].includes(destAction.action)) {
+			return true;
+
+		}
+	} else {
+		return true;
+	}
+
+
+	return false;
 }
 
 export function getOppositeWindow() {
 	return window.name === "rightWindow" ? window.parent.frames[0] : window.parent.frames[1];
 }
 
-export function oppositeWindowCheckSamePaths() {
-	const oppositeWindow = getOppositeWindow();
-	oppositeWindow?.document.dispatchEvent(new Event(eventNames.checkSameWindowPaths));
-}
 
 export function refreshOppositeWindow() {
 	const oppositeWindow = getOppositeWindow();
@@ -218,7 +241,7 @@ function getUpdatedItems({
 
 export function myCrop({
 	from,
-	selector,
+	selector, // object tree with value 1.
 	stack,
 	res = {},
 }) {

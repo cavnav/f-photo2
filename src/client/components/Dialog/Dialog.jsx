@@ -51,6 +51,7 @@ function render(props) {
 		}
 	});
 
+	console.log("dialog", state);
 
 	return !state.isShow ||
 		timerIdRef.current !== undefined  // чтобы диалог скрывался при действиях вне диалога.
@@ -64,7 +65,7 @@ function render(props) {
 			})}
 		>
 			<div
-				ref={ref}				
+				ref={ref}		
 				className={classnames({
 					[`DialogWrap`]: true,
 					[`Dialog__error`]: state.type === `error`,

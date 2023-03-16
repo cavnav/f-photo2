@@ -60,14 +60,12 @@ function render() {
                     val: {
                         browserCount: browserCountUpd,
                         leftWindow: resumeState.rightWindow,
-                        rightWindow: {},
                     },
                 });   
             } else {
                 resumeObj.saveMerge({
                     val: {
                         browserCount: browserCountUpd,
-                        rightWindow: {},
                     },
                 });
             }
