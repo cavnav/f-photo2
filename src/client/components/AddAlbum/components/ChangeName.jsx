@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useMutedReducer } from '../../../mutedReducer';
 import "./ChangeName.css";
 
@@ -9,17 +9,27 @@ export function ChangeName(props) {
     });
 
     function onChange(e) {
+        const newName = e.target.value;
         setState({
-            name: e.target.value,
+            newName: e.target.value,
+            error: newName === '' ? 'имя не задано' : undefined,
         });
     }
 
-    function onSubmit() {        
+    function onSubmit() {     
+        console.log("onSubmit")   
         props.onClose?.();
         props.onSubmit?.({
             name: state.name,
+            newName: state.newName,
         });        
     }
+
+    useEffect(() => {
+        setState({
+            newName: state.name,
+        });
+    }, []);
 
     return state.isEnabled === false ? null : (
         <div>
@@ -27,15 +37,18 @@ export function ChangeName(props) {
             <input 
                 autoFocus
                 type='text' 
-                value={state.name}
+                value={state.newName}
                 onChange={onChange}
             />
-            <input type="button" value="OK" onClick={onSubmit} />
+            {!state.error && <input type="button" value="OK" onClick={onSubmit} />}
             <input className="close_btn" type="button" value="X" onClick={props?.onClose} />
+            {state.error && <div className="rename-error">{state.error}</div>}
         </div>            
     );
 }
 
 const initialState  = {
     name: '',
+    newName: '',
+    error: undefined,
 };

@@ -450,3 +450,7 @@ export function updateActionsLists({
 		lists,
 	});
 }
+
+export function getItemName(name, sep) {
+	return name?.replace(sep, '');
+}

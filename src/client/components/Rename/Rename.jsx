@@ -22,7 +22,7 @@ function render() {
         const {
           DialogAPI,
         } = Comp.getComps();
-    
+
         DialogAPI.show({
             render: <ChangeName 
                 name={state.name}

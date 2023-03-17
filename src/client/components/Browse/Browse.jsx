@@ -11,7 +11,7 @@ import {
 import './styles.css';
 import { eventNames } from '../../constants';
 import {
-	addHandlers, getBackgroundImageStyle, getOppositeWindow, getUpdatedActionLists, isBanMoveItems, myCrop,
+	addHandlers, getBackgroundImageStyle, getItemName, getOppositeWindow, getUpdatedActionLists, isBanMoveItems, myCrop,
 	onMoveSelections, refreshWindows, updateActionsLists,
 } from '../../functions';
 import { channel } from '../../channel';
@@ -392,16 +392,17 @@ function changeSelections({
 		}),
 	});
 
-	const curName = getItemName([...state.selections][0]);
+	const curName = getItemName([...state.selections][0], state.sep);
 	rp.RenameAPI.forceUpdate({
 		isShow: isShowRename(state.selections, state.sep),
 		name: curName,
 		onSubmit: ({
-			name: newName, 
+			name,
+			newName, 
 		}) => {
 			onRename({
 				Comp,	
-				name: curName,	
+				name,	
 				newName,
 			});
 		},
@@ -416,10 +417,6 @@ function changeSelections({
 
 		state.selections[action](src);
 		return state.selections;
-	}
-
-	function getItemName(name) {
-		return name?.replace(state.sep, '');
 	}
 }
 
@@ -522,13 +519,25 @@ function renderAddPanel({
 				name,
 			}));
 
+			const curName = getItemName([...state.selections][0], state.sep);
 			rp.RenameAPI.forceUpdate({
-				isShow: isShowRename(state.selections, state.sep),							
+				isShow: isShowRename(state.selections, state.sep),	
+				name: curName,
+				onSubmit: ({
+					name,
+					newName, 
+				}) => {
+					onRename({
+						Comp,	
+						name,	
+						newName,
+					});
+				},						
 			});
 
 
 			const isMoveBtn = !isBanMoveItems();
-			// Надо дублировать в двух местах - здесь в OnePhoto.
+			// Надо дублировать в двух местах - здесь и в OnePhoto.
 			rp.MoveSelectionsAPI.forceUpdate({
 				title: isMoveBtn ? setBtnTitle({
 					prefix: BTN_MOVE,
@@ -565,7 +574,7 @@ function renderAddPanel({
 				},
 			});
 
-			// Надо дублировать в двух местах - здесь в OnePhoto.
+			// Надо дублировать в двух местах - здесь и в OnePhoto.
 			rp.RemoveSelectionsAPI.forceUpdate({
 				title: setBtnTitle({
 					prefix: BTN_REMOVE,
