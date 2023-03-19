@@ -1,27 +1,26 @@
 // ++remove, move, rename (only one folder) (print, share)  
-// ++fix modal dialog on second time
-// ++fix move to onePhoto
-// ++fix error on change name & or *
-// ++fix error on change name to ''
 // inside Print a lot of images. how it print?
 // fix error by move same folder but diff path - need show dialog to confirm
 // fix error server on move same path
 // fix error on ban move
+// fix error move for onePhoto as Browse
+// after back to list to scroll to last opened folder
+// last added folder
+// *hide printed, shared folders
 // check all user ways
 // update
 // I
 // add loading (create Proxy Comp for loading)
 // II
 // magnifying glass
+// tablet using
 // unselect all
 // select all
-// tablet using
+
+
 // Warning: Can't perform a React state update on an unmounted component. This is a no-op, but it indicates a memory leak in your application. To fix, cancel all subscriptions and asynchronous tasks in a useEffect cleanup function.
 //     in bound render (created by bound render)
 
-// last added folder
-// *hide printed, shared folders
-// after back to list to scroll to last opened folder
 // help (fire dialog with corresponding actions)
 // ban move to print 
 // ban move file on Welcome screen

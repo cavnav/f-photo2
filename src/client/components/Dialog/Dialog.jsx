@@ -31,7 +31,7 @@ function render(props) {
 	const onMouseLeave = () => {
 		if (!ref.current || state.isHide === false) return;
 		clearTimeout(timerIdRef.current);
-		ref.current?.classList.add(`Dialog__hide`);
+		//ref.current?.classList.add(`Dialog__hide`);
 		timerIdRef.current = setTimeout(() => {
 			Comp.getAPI().close();
 		}, DELAY.ms);
@@ -158,6 +158,6 @@ const initialState = {
 };
 
 const DELAY = {
-	s: 15,
+	s: 5,
 };
 DELAY.ms = DELAY.s * 1000;
