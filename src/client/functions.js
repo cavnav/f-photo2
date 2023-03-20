@@ -132,25 +132,10 @@ export function isBanMoveItems() {
 }
 
 export function initRefreshWindowEvent({
-	Comp,
+	callback,
 }) {
-	const rp = Comp.getReqProps();
-	const {
-		setState,
-	} = Comp.getDeps();
-	
-	const refreshWindowWrap = () => {
-		setState({
-			loading: true,
-		});
-		rp.server.toward().then((res) => setState(res)).then(() => {
-			setState({
-				loading: false,
-			});
-		});
-	}
-	document.addEventListener(eventNames.refreshWindow, refreshWindowWrap);
-	return () => document.removeEventListener(eventNames.refreshWindow, refreshWindowWrap);
+	document.addEventListener(eventNames.refreshWindow, callback);
+	return () => document.removeEventListener(eventNames.refreshWindow, callback);
 }
 
 export function getOppositeWindow() {

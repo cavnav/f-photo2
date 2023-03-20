@@ -17,6 +17,8 @@ export const OnePhoto = channel.addComp({
   getComps,
 });
 
+const ON_TOGGLE_PHOTO = 'onTogglePhoto';
+
 const resumeObj = new ResumeObj({
   selector: [
     window.name,
@@ -37,7 +39,7 @@ function render(
     () => myArray({
       items: resumeBrowse.files,
     }),
-    [resumeBrowse.files,]
+    [resumeBrowse.files]
   );
 
   const [state, setState] = useMutedReducer({
@@ -56,7 +58,7 @@ function render(
   React.useEffect(addKeyDownListener);
   React.useEffect(() => {
     if ({
-      onTogglePhoto: 1, 
+      [ON_TOGGLE_PHOTO]: 1, 
       onImgServerRotate: 1
     }[state.action] === undefined) return;
 
@@ -71,7 +73,7 @@ function render(
     const {
       BrowseAPI,
     } = Comp.getReqProps();
-    if (state.action === onTogglePhoto.name) {
+    if (state.action === ON_TOGGLE_PHOTO) {
       BrowseAPI.setToResumeObj({
         val: {
           curPhotoInd: state.curPhotoInd,
@@ -85,7 +87,29 @@ function render(
   }), [state.isNoItems]);
 
   React.useEffect(
-		() => initRefreshWindowEvent({ Comp }),
+		() => initRefreshWindowEvent({ 
+			Comp,  
+			callback: () => {
+				const rp = Comp.getReqProps();
+				const deps = Comp.getDeps();
+				deps.setState({
+					loading: true,
+				});
+				rp.server.toward()
+          .then((res) => {
+            deps.setState({
+              files: myArray({
+                items: res.files,
+              }),
+            });
+
+            // i need know what id was deleted.
+            // deleteFiles({
+            //   Comp,
+            // });
+          });			
+			},
+		}),
 		[]
 	);
   
@@ -182,7 +206,7 @@ function render(
       case 37: // prev 
         stateUpd.curPhotoInd = prevPhotoInd;
         stateUpd.curPhotoRotateDeg = 0;
-        stateUpd.action = onTogglePhoto.name;
+        stateUpd.action = ON_TOGGLE_PHOTO;
 
         break; 
 
@@ -224,7 +248,7 @@ function render(
       function runTrigger({ updatedProp, }) {
         return {
           [updatedProp]: () => {},
-          curPhotoInd: onTogglePhoto,
+          curPhotoInd: () => {},
           curPhotoRotateDeg: onImgServerRotate,
         }[updatedProp]({
             server,
@@ -277,7 +301,7 @@ function selfReducer({
   }) {
     return {
       [stateReduced.action]: {},
-      [onTogglePhoto.name]: {
+      [ON_TOGGLE_PHOTO]: {
         curPhotoWithTime: curPhoto,
         opacity: '0',
         visibility: 'hidden',
@@ -298,9 +322,6 @@ function getFitSize({ width, height }) {
     width: 'auto',
     height: '100%',
   };
-}
-
-function onTogglePhoto() {
 }
 
 function getIndexes({
@@ -327,7 +348,7 @@ function onToggleNextPhoto({
     filesLength: files.items.length,
   });
   stateUpd.curPhotoInd = nextPhotoInd; 
-  stateUpd.action = onTogglePhoto.name;
+  stateUpd.action = ON_TOGGLE_PHOTO;
 
   return stateUpd;
 }
@@ -378,7 +399,7 @@ function deleteFiles({
     state.curPhotoInd;
 
   setState({
-    action: onTogglePhoto.name,
+    action: ON_TOGGLE_PHOTO,
     curPhotoInd: curPhotoIndUpd,
   });
 };
@@ -530,7 +551,7 @@ function getStateInit() {
     curDate: getCurDate(),
     opacity: '1',
     visibility: 'visible',
-    action: onTogglePhoto.name,
+    action: ON_TOGGLE_PHOTO,
     isNoItems: false,
     resumeBrowse: {},
 

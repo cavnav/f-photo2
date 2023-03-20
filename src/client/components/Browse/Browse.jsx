@@ -9,10 +9,9 @@ import {
 
 
 import './styles.css';
-import { eventNames } from '../../constants';
 import {
 	addHandlers, getBackgroundImageStyle, getItemName, getOppositeWindow, getUpdatedActionLists, initRefreshWindowEvent, isBanMoveItems, myCrop,
-	onMoveSelections, refreshWindows, updateActionsLists,
+	onMoveSelections, refreshOppositeWindow, refreshWindows, updateActionsLists,
 } from '../../functions';
 import { channel } from '../../channel';
 import { ResumeObj } from '../../resumeObj';
@@ -136,7 +135,27 @@ function render(
 	}, []);
 
 	React.useEffect(
-		() => initRefreshWindowEvent({ Comp }),
+		() => initRefreshWindowEvent({ 
+			Comp,  
+			callback: () => {
+				const rp = Comp.getReqProps();
+				const deps = Comp.getDeps();
+				deps.setState({
+					loading: true,
+				});
+				rp.server.toward()			
+					.then((res) => {
+						setState({
+							loading: false,
+							files: res.files,
+							dirs: res.dirs,
+						});
+						updateSelectionDeps({
+							Comp,
+						});
+					});
+			},
+		}),
 		[]
 	);
 
@@ -344,22 +363,11 @@ function getAPI({
 	}
 }
 
-function changeSelections({
+function updateSelectionDeps({
 	Comp,
-	src,
-	checked,
-} = {}
-) {
-	const {
-		state,
-		setState,
-	} = Comp.getDeps();
-
-	setState({
-		forceUpdate: false,
-		selections: updateSelections(),
-	});
-
+}) {
+	const deps = Comp.getDeps();
+	const { state } = deps;
 	const rp = Comp.getReqProps();
 	
 	const isMoveBtn = !isBanMoveItems();
@@ -394,6 +402,28 @@ function changeSelections({
 		},
 	});
 
+}
+
+function changeSelections({
+	Comp,
+	src,
+	checked,
+} = {}
+) {
+	const {
+		state,
+		setState,
+	} = Comp.getDeps();
+
+	setState({
+		forceUpdate: false,
+		selections: updateSelections(),
+	});
+
+	updateSelectionDeps({
+		Comp,
+	});
+
 	// ------------------------------------
 	function updateSelections() {
 		// i.e. clickFolder event or exitFromFolder.
@@ -411,11 +441,26 @@ function htmlResetSelections({
 }) {
 	const {
 		state: { selections },
+		setState,
 	} = Comp.getDeps();
 
+	const selectionsUpd = new Set();
 	[...document.querySelectorAll('.itemSelector')].forEach((item) => {
 		const src = item.getAttribute('src');
-		item.checked = selections.has(src);
+		const isChecked = selections.has(src);
+		item.checked = isChecked;
+		if (isChecked) {
+			selectionsUpd.add(src);
+		}
+	});
+
+	
+	setState({
+		selections: selectionsUpd,
+		forceUpdate: false,
+	});
+	updateSelectionDeps({
+		Comp,
 	});
 }
 
@@ -556,6 +601,7 @@ function renderAddPanel({
 							Comp,
 						}),
 					}))
+					.then(() => refreshOppositeWindow())
 					.catch((error) => {});
 				},
 			});
@@ -582,7 +628,8 @@ function renderAddPanel({
 						onChangeSelections: () => changeSelections({
 							Comp,
 						}),
-					}));
+					}))
+					.then(() => refreshOppositeWindow());
 				},
 			});
 		});
