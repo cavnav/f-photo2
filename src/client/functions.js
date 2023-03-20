@@ -119,7 +119,7 @@ export function isBanMoveItems() {
 			},
 		});
 		
-		if (['Welcome', 'OnePhoto'].includes(destAction.action)) {
+		if (['Welcome', 'OnePhoto', 'Browse'].includes(destAction.action)) {
 			return true;
 
 		}
@@ -129,6 +129,28 @@ export function isBanMoveItems() {
 
 
 	return false;
+}
+
+export function initRefreshWindowEvent({
+	Comp,
+}) {
+	const rp = Comp.getReqProps();
+	const {
+		setState,
+	} = Comp.getDeps();
+	
+	const refreshWindowWrap = () => {
+		setState({
+			loading: true,
+		});
+		rp.server.toward().then((res) => setState(res)).then(() => {
+			setState({
+				loading: false,
+			});
+		});
+	}
+	document.addEventListener(eventNames.refreshWindow, refreshWindowWrap);
+	return () => document.removeEventListener(eventNames.refreshWindow, refreshWindowWrap);
 }
 
 export function getOppositeWindow() {

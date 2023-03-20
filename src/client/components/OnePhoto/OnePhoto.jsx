@@ -3,7 +3,7 @@ import './styles.css';
 import React from 'react';
 import { Empty } from '../';
 import { ResumeObj } from '../../resumeObj';
-import { getOppositeWindow, getUpdatedActionLists, myArray, updateActionsLists, refreshOppositeWindow, isBanMoveItems } from '../../functions';
+import { getOppositeWindow, getUpdatedActionLists, myArray, updateActionsLists, refreshOppositeWindow, isBanMoveItems, initRefreshWindowEvent } from '../../functions';
 import { channel } from '../../channel';
 import { getCurDate } from '../../functions';
 import { useMutedReducer } from '../../mutedReducer';
@@ -83,6 +83,11 @@ function render(
   React.useEffect(() => renderAddPanel({
     Comp,
   }), [state.isNoItems]);
+
+  React.useEffect(
+		() => initRefreshWindowEvent({ Comp }),
+		[]
+	);
   
   return getRender();
 
@@ -455,6 +460,16 @@ function renderAddPanel({
             destWindow: getOppositeWindow().name,
             ...getUpdatedActionLists(),
           })
+          .then((res) => {
+						if (res?.error) {
+							rp.DialogAPI.show({
+							  type: 'error',
+							  message: res.error,
+							  isModal: false,
+							});		
+							throw new Error();					
+						} 
+					})			
           .then((result) => {
             updateActionsLists({ lists: result.updatedActionLists });
             return result;
@@ -462,7 +477,8 @@ function renderAddPanel({
           .then(() => {
             deleteFiles({ Comp });
             refreshOppositeWindow();
-          });
+          })
+          .catch((error) => {});
         }
       });
     }
@@ -481,6 +497,7 @@ function renderAddPanel({
             deleteFiles({
               Comp,
             });
+            refreshOppositeWindow();
           });          
         },
       });

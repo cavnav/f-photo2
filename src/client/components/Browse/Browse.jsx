@@ -11,7 +11,7 @@ import {
 import './styles.css';
 import { eventNames } from '../../constants';
 import {
-	addHandlers, getBackgroundImageStyle, getItemName, getOppositeWindow, getUpdatedActionLists, isBanMoveItems, myCrop,
+	addHandlers, getBackgroundImageStyle, getItemName, getOppositeWindow, getUpdatedActionLists, initRefreshWindowEvent, isBanMoveItems, myCrop,
 	onMoveSelections, refreshWindows, updateActionsLists,
 } from '../../functions';
 import { channel } from '../../channel';
@@ -136,21 +136,7 @@ function render(
 	}, []);
 
 	React.useEffect(
-		() => {
-			const rp = Comp.getReqProps();
-			const refreshWindowWrap = () => {
-				setState({
-					loading: true,
-				});
-				rp.server.toward().then((res) => setState(res)).then(() => {
-					setState({
-						loading: false,
-					});
-				});
-			}
-			document.addEventListener(eventNames.refreshWindow, refreshWindowWrap);
-			return () => document.removeEventListener(eventNames.refreshWindow, refreshWindowWrap);
-		},
+		() => initRefreshWindowEvent({ Comp }),
 		[]
 	);
 

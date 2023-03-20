@@ -1,15 +1,14 @@
 // ++remove, move, rename (only one folder) (print, share)  
 // inside Print a lot of images. how it print?
 // fix error by move same folder but diff path - need show dialog to confirm
-// fix error server on move same path
 // fix error on ban move
 // fix error move for onePhoto as Browse
-// after back to list to scroll to last opened folder
-// last added folder
-// *hide printed, shared folders
 // check all user ways
 // update
 // I
+// after back to list to scroll to last opened folder
+// last added folder
+// *hide printed, shared folders
 // add loading (create Proxy Comp for loading)
 // II
 // magnifying glass
