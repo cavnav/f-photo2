@@ -1,7 +1,7 @@
 // ++remove, move, rename (only one folder) (print, share)  
 // inside Print a lot of images. how it print?
 // fix error by move same folder but diff path - need show dialog to confirm
-// fix error on ban move
+// ++fix error on remove onePhoto + onePhoto.
 // fix error on remove folder from one side and there is open photo from this folder another side.
   // file not exists in OnePhoto when parent folder was removed 
 // fix error Warning: Can't perform a React state update on

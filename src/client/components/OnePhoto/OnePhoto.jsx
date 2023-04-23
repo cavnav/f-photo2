@@ -88,26 +88,8 @@ function render(
 
   React.useEffect(
 		() => initRefreshWindowEvent({ 
-			Comp,  
 			callback: () => {
-				const rp = Comp.getReqProps();
-				const deps = Comp.getDeps();
-				deps.setState({
-					loading: true,
-				});
-				rp.server.toward()
-          .then((res) => {
-            deps.setState({
-              files: myArray({
-                items: res.files,
-              }),
-            });
-
-            // i need know what id was deleted.
-            // deleteFiles({
-            //   Comp,
-            // });
-          });			
+				toggleBrowseAction(Comp);
 			},
 		}),
 		[]
@@ -440,9 +422,6 @@ function renderAddPanel({
     state,
   } = Comp.getDeps();
   const rp = Comp.getReqProps();
-  const {
-    Browse,
-  } = rp;
   const additionalActions = [
     rp.ExitFromOnePhoto,
     rp.ToggleWindow,
@@ -455,17 +434,7 @@ function renderAddPanel({
   .then(() => {
     rp.ExitFromOnePhotoAPI.forceUpdate({
       onClick: () => {
-        rp.AppAPI.toggleActions({
-          action: Browse.name,
-          actions: {
-            [Comp.name]: {
-              isEnabled: false,
-            },
-            [Browse.name]: {
-              isEnabled: true,
-            },
-          }
-        });  
+        toggleBrowseAction(Comp);
       },
     });
 
@@ -535,6 +504,24 @@ function renderAddPanel({
       actions: [],
     });
   };
+}
+
+function toggleBrowseAction(Comp) {
+  const rp = Comp.getReqProps();
+  const {
+    Browse,
+  } = rp;
+  rp.AppAPI.toggleActions({
+    action: Browse.name,
+    actions: {
+      [Comp.name]: {
+        isEnabled: false,
+      },
+      [Browse.name]: {
+        isEnabled: true,
+      },
+    }
+  });  
 }
 
 function getStateInit() {
