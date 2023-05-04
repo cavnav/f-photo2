@@ -137,24 +137,7 @@ function render(
 	React.useEffect(
 		() => initRefreshWindowEvent({ 
 			Comp,  
-			callback: () => {
-				const rp = Comp.getReqProps();
-				const deps = Comp.getDeps();
-				deps.setState({
-					loading: true,
-				});
-				rp.server.toward()			
-					.then((res) => {
-						setState({
-							loading: false,
-							files: res.files,
-							dirs: res.dirs,
-						});
-						updateSelectionDeps({
-							Comp,
-						});
-					});
-			},
+			callback: () => onRefreshWindow({ Comp }),
 		}),
 		[]
 	);
@@ -370,7 +353,9 @@ function updateSelectionDeps({
 	const { state } = deps;
 	const rp = Comp.getReqProps();
 	
-	const isMoveBtn = !isBanMoveItems();
+	const isMoveBtn = !isBanMoveItems({
+		path: state.path,
+	});
 	rp.MoveSelectionsAPI.forceUpdate({
 		title: isMoveBtn ? setBtnTitle({
 			prefix: BTN_MOVE,
@@ -434,6 +419,27 @@ function changeSelections({
 		state.selections[action](src);
 		return state.selections;
 	}
+}
+
+function onRefreshWindow({
+	Comp,
+}) {
+	const rp = Comp.getReqProps();
+	const deps = Comp.getDeps();
+	deps.setState({
+		loading: true,
+	});
+	rp.server.toward()			
+		.then((res) => {
+			deps.setState({
+				loading: false,
+				files: res.files,
+				dirs: res.dirs,
+			});
+			updateSelectionDeps({
+				Comp,
+			});
+		});
 }
 
 function htmlResetSelections({
@@ -567,7 +573,9 @@ function renderAddPanel({
 			});
 
 
-			const isMoveBtn = !isBanMoveItems();
+			const isMoveBtn = !isBanMoveItems({
+				path: state.path,
+			});
 			// Надо дублировать в двух местах - здесь и в OnePhoto.
 			rp.MoveSelectionsAPI.forceUpdate({
 				title: isMoveBtn ? setBtnTitle({
@@ -588,8 +596,9 @@ function renderAddPanel({
 							  message: res.error,
 							  isModal: false,
 							});		
-							throw new Error();					
+							throw new Error({ name: 'responseError' });					
 						} 
+						return res;
 					})					
 					.then((result) => {
 						updateActionsLists({ lists: result.updatedActionLists });
@@ -601,8 +610,12 @@ function renderAddPanel({
 							Comp,
 						}),
 					}))
-					.then(() => refreshOppositeWindow())
-					.catch((error) => {});
+					.then(() => refreshWindows())
+					.catch((error) => { 
+						if (error.name !== 'responseError') {
+							console.log(error);
+						}
+					});
 				},
 			});
 
@@ -629,7 +642,7 @@ function renderAddPanel({
 							Comp,
 						}),
 					}))
-					.then(() => refreshOppositeWindow());
+					.then(() => refreshWindows());
 				},
 			});
 		});

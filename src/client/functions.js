@@ -95,11 +95,12 @@ export function isCatalogSelected({
 	return Boolean(_get(resumeState[windowName], 'App.browseState.path'));
 }
 
-export function isBanMoveItems() {
+export function isBanMoveItems({
+	path,
+} = {}) {
 	// same path
-	// welcome
-	// onePhoto
-	// one side enabled move, then another side onePhoto
+	// another side is welcome
+	// another side is onePhoto
 
 
 	const destWindow = getOppositeWindow();
@@ -116,12 +117,16 @@ export function isBanMoveItems() {
 				App: {
 					action: 1,
 				},
+				Browse: 1,
 			},
 		});
 		
-		if (['Welcome', 'OnePhoto', 'Browse'].includes(destAction.action)) {
+		if (['Welcome', 'OnePhoto'].includes(destAction.action)) {
 			return true;
+		}
 
+		if (destAction.action === 'Browse' && path === destAction.Browse?.path) {
+			return true;
 		}
 	} else {
 		return true;
