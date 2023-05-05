@@ -550,10 +550,10 @@ function renderAddPanel({
 	})
 		.then(() => {
 			rp.AddAlbumAPI.onSubmit(({
-				name,
+				newName,
 			}) => onAddAlbum({
 				Comp,
-				name,
+				name: newName,
 			}));
 
 			const curName = getItemName([...state.selections][0], state.sep);

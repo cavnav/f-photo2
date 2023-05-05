@@ -1,14 +1,12 @@
 // inside Print a lot of images. how it print?
-// fix error by move same folder but diff path - need show dialog to confirm
-// ++fix error on remove folder from one side and there is open photo from this folder another side.
-  // file not exists in OnePhoto when parent folder was removed 
+// hide printed, shared folders
 // fix error Warning: Can't perform a React state update on
 // check all user ways
 // update
 // I
+// show overwrite confirmation for every files
 // after back to list to scroll to last opened folder
 // last added folder
-// *hide printed, shared folders
 // add loading (create Proxy Comp for loading)
 // II
 // magnifying glass

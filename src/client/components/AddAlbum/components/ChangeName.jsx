@@ -17,9 +17,8 @@ export function ChangeName(props) {
     }
 
     function onSubmit() {     
-        console.log("onSubmit")   
-        props.onClose?.();
-        props.onSubmit?.({
+        state.onClose?.();
+        state.onSubmit?.({
             name: state.name,
             newName: state.newName,
         });        
@@ -41,7 +40,7 @@ export function ChangeName(props) {
                 onChange={onChange}
             />
             {!state.error && <input type="button" value="OK" onClick={onSubmit} />}
-            <input className="close_btn" type="button" value="X" onClick={props?.onClose} />
+            <input className="close_btn" type="button" value="X" onClick={state?.onClose} />
             {state.error && <div className="rename-error">{state.error}</div>}
         </div>            
     );
