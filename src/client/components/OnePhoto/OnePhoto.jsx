@@ -181,7 +181,8 @@ function render(
         break;
 
       case 32:  // Space
-        rp.PhotoStatusesAPI.changePrintStatus(); 
+        rp.PhotoStatusesAPI.changePrintStatus();
+        refreshOppositeWindow(); 
 
         break; 
 
