@@ -372,37 +372,7 @@ export function refreshWindows(
 	);
 }
 
-export function checkServerProgress({
-	service,
-	onResponse,
-}) {
-	return new Promise((resolve) => {
-		fn();
-
-		function fn() {
-			service()
-				.then(({
-					progress,
-				}) => {
-					onResponse({
-						progress,
-					});
-
-					if (progress < 100) {
-						setTimeout(
-							() => fn(),
-							500,
-						);
-						return;
-					}
-
-					resolve();
-				});
-		}
-	});
-}
-
-export function ProgressNotification({
+export function ProgressTitle({
 	progress,
 }) {
 	return `Подожди. ${progress} %`;
@@ -413,26 +383,48 @@ export function onMoveSelections({
 	onChangeSelections,
 }) {
 	const rp = Comp.getReqProps();
-	return checkServerProgress({
-		service: rp.server.checkProgress,
-		onResponse: ({
-			progress,
-		}) => {
-			rp.NotificationAPI.forceUpdate({
-				title: ProgressNotification({
-					progress,
-				}),
-			});
-		},
-	})
+	return checkProgress({
+			checkFunc: rp.server.checkProgress,
+			notificationAPI: rp.NotificationAPI.forceUpdate,
+		})
 		.then(() => {
 			onChangeSelections?.();
 			refreshWindows({
 				Comp,
 			});
-			rp.NotificationAPI.setInit({});
 		});
 }
+
+export function checkProgress({
+	checkFunc,
+	notificationAPI,
+}) {
+	return new Promise((resolve) => {
+		coreFunc();
+
+		function coreFunc() {
+			return checkFunc()
+			.then((res) => {
+				const isCopyCompleted = res.progress === 100;
+				setTimeout(() => (isCopyCompleted ? null : coreFunc()), 500);        
+				
+				if (notificationAPI === undefined) {
+					return;
+				}
+
+				notificationAPI({
+					progress: ProgressTitle({
+						progress: res.progress,
+					}),
+				});
+
+				if (isCopyCompleted) {					
+					resolve();         
+				}
+			});
+		}
+	});
+  }
 
 export function getUpdatedActionLists() {
 	const resumeObj = new ResumeObj();

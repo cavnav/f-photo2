@@ -18,6 +18,10 @@ function render(props) {
     setCompDeps: Comp.bindSetCompDeps(),
   });
 
+  if (state.isSetInit) {
+    Comp.getAPI().setInit();
+  }
+
   return !state.isEnabled ? null : (
     <div
       className={`${Notification.name}`}
@@ -44,6 +48,7 @@ function render(props) {
 const initialState = {
   title: '',
   isEnabled: false,
+  isSetInit: false,
   onConfirm: () => {},
   onCancel: () => {},
 };

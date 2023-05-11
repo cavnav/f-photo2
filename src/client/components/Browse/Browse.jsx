@@ -11,7 +11,7 @@ import {
 import './styles.css';
 import {
 	addHandlers, getBackgroundImageStyle, getItemName, getOppositeWindow, getUpdatedActionLists, initRefreshWindowEvent, isBanMoveItems, myCrop,
-	onMoveSelections, refreshOppositeWindow, refreshWindows, updateActionsLists,
+	onMoveSelections, refreshWindows, updateActionsLists,
 } from '../../functions';
 import { channel } from '../../channel';
 import { ResumeObj } from '../../resumeObj';

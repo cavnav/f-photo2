@@ -2,10 +2,10 @@ import './styles.css';
 
 import React from 'react';
 
-import { 
-  Stepper,
+import {
+	Stepper,
 } from '../';
-import { addHandlers, getBackgroundImageStyle } from '../../functions';
+import { addHandlers, checkProgress, getBackgroundImageStyle } from '../../functions';
 import { createSteps } from './createSteps';
 import { channel } from '../../channel';
 import { Copying } from './components/Copying';
@@ -19,591 +19,604 @@ import { useMutedReducer } from '../../mutedReducer';
 import { eventNames } from '../../constants';
 
 export const Print = channel.addComp({
-  name: 'Print',
-  render,
-  getAPI,
-  getReqProps,
-  getComps,
+	name: 'Print',
+	render,
+	getAPI,
+	getReqProps,
+	getComps,
 });
 
 const resumeObj = new ResumeObj({
-  selector: [
-    Print.name,
-  ],
-  val: getStateDefault(),
+	selector: [
+		Print.name,
+	],
+	val: getStateDefault(),
 });
 
-function render({  
-}) {  
-  const Comp = this;
-  const rp = Comp.getReqProps();
+function render({
+}) {
+	const Comp = this;
+	const rp = Comp.getReqProps();
 
-  const [state, setState] = useMutedReducer({    
-    initialState: getStateInit(),
-    setCompDeps: Comp.bindSetCompDeps(),
-    fn: ({
-      stateUpd,
-    }) => {      
-      resumeObj.save({
-        val: stateUpd,
-      });
-    }
-  });
+	const [state, setState] = useMutedReducer({
+		initialState: getStateInit(),
+		setCompDeps: Comp.bindSetCompDeps(),
+		fn: ({
+			stateUpd,
+		}) => {
+			resumeObj.save({
+				val: stateUpd,
+			});
+		}
+	});
 
-  const onCopyCompleted = React.useCallback(({
-    destDir,
-  }) => {
-    setState({
-      isCopyCompleted: true,
-      createdPrintFolder: destDir,
-    });
-  }, []);
+	const onCopyCompleted = React.useCallback(({
+		destDir,
+	}) => {
+		setState({
+			isCopyCompleted: true,
+			createdPrintFolder: destDir,
+		});
+	}, []);
 
-  const onCopyCanceled = React.useCallback(() => setState({ 
-    isSavePhotosToFlash: false 
-  }), [state.isSavePhotosToFlash]);
+	const onCopyCanceled = React.useCallback(() => setState({
+		isSavePhotosToFlash: false
+	}), [state.isSavePhotosToFlash]);
 
-  const onAllStepsPassed = React.useCallback(() => {
-    const rp = Comp.getReqProps();
-    
-    setState({
-      isSavePhotosToFlash: false, 
-    });
-    
-    if (state.createdPrintFolder) {
-      setState({
-        loading: true,
-      });
-      rp.server.towardPrinted({
-        dir: state.createdPrintFolder,
-      })
-      .then(Comp.getAPI().onNavigate);
-    }
+	const onAllStepsPassed = React.useCallback(() => {
+		const rp = Comp.getReqProps();
 
-  }, [state.isSavePhotosToFlash]);
+		setState({
+			isSavePhotosToFlash: false,
+		});
 
-  const steps = React.useMemo(
-    () => createSteps({
-      $getUsbDevices: rp.server.$getUsbDevices,
-      isCopyCompleted: state.isCopyCompleted,
-      onAllStepsPassed,
-      Copying: () => <Copying 
-          filesToPrint={state.filesToPrint}
-          onCopyCompleted={onCopyCompleted} 
-          onCopyCanceled={onCopyCanceled}
-          $saveFilesToFlash={rp.server.$saveFilesToFlash}
-          checkProgress={rp.server.checkProgress} 
-        />,
-    }),
-    [state.isCopyCompleted],
-  );
+		if (state.createdPrintFolder) {
+			setState({
+				loading: true,
+			});
+			rp.server.towardPrinted({
+				dir: state.createdPrintFolder,
+			})
+				.then(Comp.getAPI().onNavigate);
+		}
 
-  const dispatcher = React.useMemo(
-    () => addHandlers(
-      {
-        fns: [
-          function onClickDir({
-            event
-          }) {
-            const rp = Comp.getReqProps();
-            setState({
-              loading: true,
-            });
-            const dir = event.target.getAttribute('src');
-            rp.server.towardPrinted({ 
-              dir, 
-            })            
-            .then(Comp.getAPI().onNavigate)                       
-          }, 
-        ]
-      },
-    ),
-    [],  
-  );
+	}, [state.isSavePhotosToFlash]);
 
-  const onClickDispatcher = React.useCallback((event) => {
-    const { target } = event;
-    const onClickCb = target.getAttribute('clickcb');
+	const steps = React.useMemo(
+		() => createSteps({
+			$getUsbDevices: rp.server.$getUsbDevices,
+			isCopyCompleted: state.isCopyCompleted,
+			onAllStepsPassed,
+			Copying: () => <Copying
+				filesToPrint={state.filesToPrint}
+				onCopyCompleted={onCopyCompleted}
+				onCopyCanceled={onCopyCanceled}
+				$saveFilesToFlash={rp.server.$saveFilesToFlash}
+				checkProgress={() => checkProgress({
+						checkFunc: rp.server.checkProgress,
+						notificationAPI: ({
+								progress,
+							}) => rp.DialogAPI.show({
+								type: 'notification',
+								message: progress,
+								isModal: false,
+								isHide: false,
+							})
+						
+					})
+					.then(() => rp.DialogAPI.close())
+				}
+			/>,
+		}),
+		[state.isCopyCompleted],
+	);
 
-    onClickCb && dispatcher[onClickCb]({
-      event,
-    });
-  }, []);
+	const dispatcher = React.useMemo(
+		() => addHandlers(
+			{
+				fns: [
+					function onClickDir({
+						event
+					}) {
+						const rp = Comp.getReqProps();
+						setState({
+							loading: true,
+						});
+						const dir = event.target.getAttribute('src');
+						rp.server.towardPrinted({
+							dir,
+						})
+							.then(Comp.getAPI().onNavigate)
+					},
+				]
+			},
+		),
+		[],
+	);
 
-  React.useEffect(addKeyDownListener);
-  React.useEffect(() => {
-    const input = getActiveInput();
-    input && input.focus();
-  });
-  React.useEffect(
-    () => {
-      // Задать кнопки действий.
-      const rp = Comp.getReqProps();
+	const onClickDispatcher = React.useCallback((event) => {
+		const { target } = event;
+		const onClickCb = target.getAttribute('clickcb');
 
-      rp.AdditionalPanelAPI.renderIt({
-        actions: [
-          rp.ExitFromFolder,
-          rp.SaveFilesToFlash,
-        ],
-      })
-      .then(() => {
-        rp.SaveFilesToFlashAPI.forceUpdate({
-          title: 'Записать на флешку',
-          onClick: () => {
-            setState({
-              isSavePhotosToFlash: true,
-            });
-          },
-        });
-      });
+		onClickCb && dispatcher[onClickCb]({
+			event,
+		});
+	}, []);
 
-      // Задать начальные значения.
-      resetTo({
-        Comp,
-      });
+	React.useEffect(addKeyDownListener);
+	React.useEffect(() => {
+		const input = getActiveInput();
+		input && input.focus();
+	});
+	React.useEffect(
+		() => {
+			// Задать кнопки действий.
+			const rp = Comp.getReqProps();
 
-      return () => {
-        rp.AdditionalPanelAPI.renderIt({
-          actions: [],
-        });
-      };   
-    },
-    []
-  );
-  React.useEffect(
-    () => {
-      const {
-        setState,
-      } = Comp.getDeps();
-      const refreshWindowWrap = () => {
-        setState({
-          filesToPrint: resumeObj.get().filesToPrint,
-        });
-      };
-      document.addEventListener(eventNames.refreshWindow, refreshWindowWrap);
-      return () => document.removeEventListener(eventNames.refreshWindow, refreshWindowWrap);
-    },
-    []
-  );
-  return (
-    <div 
-      className="Print layout"
-      onClick={onClickDispatcher}
-    >        
-      { state.loading && <Spin size="large" /> }
-      { Object.keys(state.filesToPrint).length === 0 && (
-        <Dirs
-          dirs={state.dirs}
-          onClickDirFnName={dispatcher.onClickDir.name}
-        ></Dirs>
-      )}
-      
-      { state.isSavePhotosToFlash ? 
-        <Stepper 
-          steps={steps}
-        /> : 
-        renderPrintState() 
-      }
+			rp.AdditionalPanelAPI.renderIt({
+				actions: [
+					rp.ExitFromFolder,
+					rp.SaveFilesToFlash,
+				],
+			})
+				.then(() => {
+					rp.SaveFilesToFlashAPI.forceUpdate({
+						title: 'Записать на флешку',
+						onClick: () => {
+							setState({
+								isSavePhotosToFlash: true,
+							});
+						},
+					});
+				});
 
-      <Empty
-        isTrue={state.dirs.length === 0 && Object.keys(state.filesToPrint).length === 0}
-      />
+			// Задать начальные значения.
+			resetTo({
+				Comp,
+			});
 
-      {state.isDialogSavePrint && (
-        <Dialog.r  
-          type={Select.name}
-          title='Сохранить список?'
-          autoClose={false}
-          onAgree={async () => {                           
-            const rp = Comp.getReqProps();
-            await rp.savePrinted({
-              files: state.filesToPrint
-            });
-            setState({
-              isDialogSavePrint: false,
-            }); 
-            rp.backwardPrinted().then(Comp.getAPI().onNavigate);
-          }}    
-          onCancel={() => {
-            setState({
-              isDialogSavePrint: false,
-            }); 
-            rp.backwardPrinted().then(Comp.getAPI().onNavigate);
-          }}
-        >
-        </Dialog.r>
-      )}
-    </div>    
-  ); 
+			return () => {
+				rp.AdditionalPanelAPI.renderIt({
+					actions: [],
+				});
+			};
+		},
+		[]
+	);
+	React.useEffect(
+		() => {
+			const {
+				setState,
+			} = Comp.getDeps();
+			const refreshWindowWrap = () => {
+				setState({
+					filesToPrint: resumeObj.get().filesToPrint,
+				});
+			};
+			document.addEventListener(eventNames.refreshWindow, refreshWindowWrap);
+			return () => document.removeEventListener(eventNames.refreshWindow, refreshWindowWrap);
+		},
+		[]
+	);
+	return (
+		<div
+			className="Print layout"
+			onClick={onClickDispatcher}
+		>
+			{state.loading && <Spin size="large" />}
+			{Object.keys(state.filesToPrint).length === 0 && (
+				<Dirs
+					dirs={state.dirs}
+					onClickDirFnName={dispatcher.onClickDir.name}
+				></Dirs>
+			)}
 
-  // --------------------------------------------------------------------
+			{state.isSavePhotosToFlash ?
+				<Stepper
+					steps={steps}
+				/> :
+				renderPrintState()
+			}
+
+			<Empty
+				isTrue={state.dirs.length === 0 && Object.keys(state.filesToPrint).length === 0}
+			/>
+
+			{state.isDialogSavePrint && (
+				<Dialog.r
+					type={Select.name}
+					title='Сохранить список?'
+					autoClose={false}
+					onAgree={async () => {
+						const rp = Comp.getReqProps();
+						await rp.savePrinted({
+							files: state.filesToPrint
+						});
+						setState({
+							isDialogSavePrint: false,
+						});
+						rp.backwardPrinted().then(Comp.getAPI().onNavigate);
+					}}
+					onCancel={() => {
+						setState({
+							isDialogSavePrint: false,
+						});
+						rp.backwardPrinted().then(Comp.getAPI().onNavigate);
+					}}
+				>
+				</Dialog.r>
+			)}
+		</div>
+	);
+
+	// --------------------------------------------------------------------
 
 
-  function getActiveInput() {
-    document.querySelector(`input[keyid=\'${state.activeInput}\']`);
-  }
-  
-  function addKeyDownListener() {
-    document.addEventListener('keydown', onKeyDown);
+	function getActiveInput() {
+		document.querySelector(`input[keyid=\'${state.activeInput}\']`);
+	}
 
-    return () => {
-      document.removeEventListener('keydown', onKeyDown);
-    };    
-  }
+	function addKeyDownListener() {
+		document.addEventListener('keydown', onKeyDown);
 
-  function onKeyDown(e) {     
-    const input = document.activeElement;
+		return () => {
+			document.removeEventListener('keydown', onKeyDown);
+		};
+	}
 
-    if (input === document.body) return;
+	function onKeyDown(e) {
+		const input = document.activeElement;
 
-    const photoSrc = input.getAttribute('keyid');
+		if (input === document.body) return;
 
-    if (photoSrc === null) return;
+		const photoSrc = input.getAttribute('keyid');
 
-    const cntSource = Number(input.value);
-    const getCntUpd = {
-      38: () => (cntSource + 1),
-      40: () => (cntSource > 0 ? cntSource - 1 : cntSource),
-    }[e.which] ?? (() => cntSource);
-    
-    setState({
-      filesToPrint: updateFilesToPrint.update({
-        photoSrc,
-        val: {
-          cnt: getCntUpd(),
-        },
-      }),
-    });
-  }  
+		if (photoSrc === null) return;
 
-  function renderPrintState(    
-  ) {
-    return (
-      <>
-        <div className="PrintItems">
-          {
-            Object.entries(state.filesToPrint).map(([src, {cnt}]) => { 
-              const key = src;  
+		const cntSource = Number(input.value);
+		const getCntUpd = {
+			38: () => (cntSource + 1),
+			40: () => (cntSource > 0 ? cntSource - 1 : cntSource),
+		}[e.which] ?? (() => cntSource);
 
-              return <div 
-                className="rowData"
-                key={key}
-              >
-                <div
-                  className='fitPreview file'
-                  style={getBackgroundImageStyle({
-                    file: src,
-                  })}
-                >                  
-                </div>               
-                <div 
-                  className='controls'
-                  photosrc={src}
-                >           
-                  <input 
-                    className="changePhotoCount" 
-                    keyid={key}
-                    value={cnt} 
-                    onChange={onChangePhotoCount} 
-                  />
-                  <input type="button" className="marginRight10" onClick={onClickCancelPhotoPrint} value="Отменить печать" />
-                </div>    
-              </div>
-            })
-          }
-        </div>
-      </>
-    );
-  }
+		setState({
+			filesToPrint: updateFilesToPrint.update({
+				photoSrc,
+				val: {
+					cnt: getCntUpd(),
+				},
+			}),
+		});
+	}
 
-  function onClickCancelPhotoPrint(e) {
-    const { photoSrc } = getDataPrint({ element: e.target.parentElement });
-    setState({
-      filesToPrint: delete state.filesToPrint[photoSrc] && state.filesToPrint,
-      activeInput: undefined,
-    });
-  }
+	function renderPrintState(
+	) {
+		return (
+			<>
+				<div className="PrintItems">
+					{
+						Object.entries(state.filesToPrint).map(([src, { cnt }]) => {
+							const key = src;
 
-  function onChangePhotoCount(e) {
-    const input = e.target;
-    
-    // allowed only numbers.
-    const numbers = /^[0-9]+$/;
-    if (input.value.match(numbers) === null) {
-      e.preventDefault();
-      return;
-    }
+							return <div
+								className="rowData"
+								key={key}
+							>
+								<div
+									className='fitPreview file'
+									style={getBackgroundImageStyle({
+										file: src,
+									})}
+								>
+								</div>
+								<div
+									className='controls'
+									photosrc={src}
+								>
+									<input
+										className="changePhotoCount"
+										keyid={key}
+										value={cnt}
+										onChange={onChangePhotoCount}
+									/>
+									<input type="button" className="marginRight10" onClick={onClickCancelPhotoPrint} value="Отменить печать" />
+								</div>
+							</div>
+						})
+					}
+				</div>
+			</>
+		);
+	}
 
-    const { photoSrc } = getDataPrint({ element: input.parentElement });    
+	function onClickCancelPhotoPrint(e) {
+		const { photoSrc } = getDataPrint({ element: e.target.parentElement });
+		setState({
+			filesToPrint: delete state.filesToPrint[photoSrc] && state.filesToPrint,
+			activeInput: undefined,
+		});
+	}
 
-    setState({
-      filesToPrint: updateFilesToPrint.update({
-        photoSrc,
-        val: {
-          cnt: input.value,
-        },
-      }),
-      activeInput: photoSrc,
-    });
-  }
+	function onChangePhotoCount(e) {
+		const input = e.target;
 
-  function getDataPrint({ element }) {
-    const photoSrc = element.getAttribute('photosrc');
+		// allowed only numbers.
+		const numbers = /^[0-9]+$/;
+		if (input.value.match(numbers) === null) {
+			e.preventDefault();
+			return;
+		}
 
-    return {
-      photoSrc,
-    };
-  }
+		const { photoSrc } = getDataPrint({ element: input.parentElement });
+
+		setState({
+			filesToPrint: updateFilesToPrint.update({
+				photoSrc,
+				val: {
+					cnt: input.value,
+				},
+			}),
+			activeInput: photoSrc,
+		});
+	}
+
+	function getDataPrint({ element }) {
+		const photoSrc = element.getAttribute('photosrc');
+
+		return {
+			photoSrc,
+		};
+	}
 
 }
 
-function getReqProps({ 
-  channel, 
-  comps, 
+function getReqProps({
+	channel,
+	comps,
 }) {
-  return {
-    server: channel.server, 
-    ...comps,   
-  }
+	return {
+		server: channel.server,
+		...comps,
+	}
 };
 
 function getAPI({
-  Comp,
-  deps,
+	Comp,
+	deps,
 }) {
-  return {
-    onNavigate,
-    getFilesToPrint,
-    togglePrint,
-    isFileToPrint,
-  };
+	return {
+		onNavigate,
+		getFilesToPrint,
+		togglePrint,
+		isFileToPrint,
+	};
 
 
-  // -----------------------
+	// -----------------------
 
-  function isFileToPrint({
-    src,
-  }) {
-    return isToPrint({
-      val: resumeObj.get().filesToPrint?.[src],
-    });
-  }
+	function isFileToPrint({
+		src,
+	}) {
+		return isToPrint({
+			val: resumeObj.get().filesToPrint?.[src],
+		});
+	}
 
-  function togglePrint({
-    src,
-  }) {
-    const resumed = resumeObj.get();
-    // 0 - not to print, but show in list.
-    // 1 - to print.
-    const printed = isToPrint({
-      val: resumed.filesToPrint[src]?.cnt
-    });
+	function togglePrint({
+		src,
+	}) {
+		const resumed = resumeObj.get();
+		// 0 - not to print, but show in list.
+		// 1 - to print.
+		const printed = isToPrint({
+			val: resumed.filesToPrint[src]?.cnt
+		});
 
-    // toggle.
-    if (printed) {
-      resumed.filesToPrint = updateFilesToPrint.delete({
-        filesToPrint: resumed.filesToPrint,      
-        photoSrc: src,  
-      });
-    }
-    else {
-      resumed.filesToPrint = updateFilesToPrint.add({
-        filesToPrint: resumed.filesToPrint,
-        photoSrc: src,
-        val: {
-          cnt: 1,
-        },
-      });
-    }
-    
-    resumeObj.save({
-      val: {
-        filesToPrint: resumed.filesToPrint,
-      },
-    });
+		// toggle.
+		if (printed) {
+			resumed.filesToPrint = updateFilesToPrint.delete({
+				filesToPrint: resumed.filesToPrint,
+				photoSrc: src,
+			});
+		}
+		else {
+			resumed.filesToPrint = updateFilesToPrint.add({
+				filesToPrint: resumed.filesToPrint,
+				photoSrc: src,
+				val: {
+					cnt: 1,
+				},
+			});
+		}
 
-    return !printed;
-  }
+		resumeObj.save({
+			val: {
+				filesToPrint: resumed.filesToPrint,
+			},
+		});
 
-  function getFilesToPrint(props = {}) {
-    const {
-      state,
-    } = deps;
-    return props.photoSrc ? state.filesToPrint[props.photoSrc] : state.filesToPrint;
-  }
+		return !printed;
+	}
 
-  function onNavigate({
-    dirs,
-    path,
-    sep,
-    files,
-  }) {
-    // Fires on set from storage, open dir, close dir.
-    const rp = Comp.getReqProps();
+	function getFilesToPrint(props = {}) {
+		const {
+			state,
+		} = deps;
+		return props.photoSrc ? state.filesToPrint[props.photoSrc] : state.filesToPrint;
+	}
 
-    const [filesToPrintUpd = {}] = files;
-    deps.setState({
-      dirs,
-      path, 
-      filesToPrint: filesToPrintUpd,     
-      snapFilesToPrint: { ...filesToPrintUpd },
-      sep,
-      loading: false,
-    });
+	function onNavigate({
+		dirs,
+		path,
+		sep,
+		files,
+	}) {
+		// Fires on set from storage, open dir, close dir.
+		const rp = Comp.getReqProps();
 
-    rp.ExitFromFolderAPI.forceUpdate({
-      title: 'Закрыть ',
-      folderName: path ? path : undefined,
-      onClick: () => { 
-        if (isNeedToSaveFilesToPrint({
-          deps,
-        }).result) {
-          deps.setState({
-            isDialogSavePrint: true,
-          });          
-        }
-        else {  
-          rp.backwardPrinted().then(Comp.getAPI().onNavigate);
-        }
-      },
-    });
-  }
+		const [filesToPrintUpd = {}] = files;
+		deps.setState({
+			dirs,
+			path,
+			filesToPrint: filesToPrintUpd,
+			snapFilesToPrint: { ...filesToPrintUpd },
+			sep,
+			loading: false,
+		});
+
+		rp.ExitFromFolderAPI.forceUpdate({
+			title: 'Закрыть ',
+			folderName: path ? path : undefined,
+			onClick: () => {
+				if (isNeedToSaveFilesToPrint({
+					deps,
+				}).result) {
+					deps.setState({
+						isDialogSavePrint: true,
+					});
+				}
+				else {
+					rp.backwardPrinted().then(Comp.getAPI().onNavigate);
+				}
+			},
+		});
+	}
 }
 
 function getStateDefault() {
-  return {
-    loading: false,
-    filesToPrint: {},
-    snapFilesToPrint: {},
-    dirs: [],
-    sep: '',
-    path: '',
-    activeInput: undefined,
-    isSavePhotosToFlash: false,
-    isCopyCompleted: false,
-    isDialogSavePrint: false,
-    createdPrintFolder: '',
-  };
+	return {
+		loading: false,
+		filesToPrint: {},
+		snapFilesToPrint: {},
+		dirs: [],
+		sep: '',
+		path: '',
+		activeInput: undefined,
+		isSavePhotosToFlash: false,
+		isCopyCompleted: false,
+		isDialogSavePrint: false,
+		createdPrintFolder: '',
+	};
 }
 
 function getStateInit(
 ) {
-  const resumed = resumeObj.get();
-  return {
-    ...getStateDefault(),
-    ...resumed,
-  };
+	const resumed = resumeObj.get();
+	return {
+		...getStateDefault(),
+		...resumed,
+	};
 }
 
 function resetTo({
-  Comp,
+	Comp,
 }) {
-  const rp = Comp.getReqProps();
-  const { 
-    deps,
-   } = Print;
+	const rp = Comp.getReqProps();
+	const {
+		deps,
+	} = Print;
 
-  const { path } = deps.state;
+	const { path } = deps.state;
 
-  const answer = isNeedToSaveFilesToPrint({
-    deps,
-  });
-  const filesToPrint = deps.state.filesToPrint;
+	const answer = isNeedToSaveFilesToPrint({
+		deps,
+	});
+	const filesToPrint = deps.state.filesToPrint;
 
-  deps.setState({
-    loading: true,
-  });
+	deps.setState({
+		loading: true,
+	});
 
-  rp.server.towardPrinted({
-    resetTo: path,
-  })
-  .then(Comp.getAPI().onNavigate)
-  .then(() => {
-  // set filesToPrint from storage.
-    if (answer.result === false) return;
+	rp.server.towardPrinted({
+		resetTo: path,
+	})
+		.then(Comp.getAPI().onNavigate)
+		.then(() => {
+			// set filesToPrint from storage.
+			if (answer.result === false) return;
 
-    if (answer.isListNotSaved) {
-      rp.ExitFromFolderAPI.forceUpdate({
-        folderName: '',
-      });
-      deps.setState({
-        filesToPrint,
-        snapFilesToPrint: { ...filesToPrint },
-      });
-    }
-    else if (answer.isListChanged) {
-      deps.setState({
-        filesToPrint,
-      });
-    }
-  });  
+			if (answer.isListNotSaved) {
+				rp.ExitFromFolderAPI.forceUpdate({
+					folderName: '',
+				});
+				deps.setState({
+					filesToPrint,
+					snapFilesToPrint: { ...filesToPrint },
+				});
+			}
+			else if (answer.isListChanged) {
+				deps.setState({
+					filesToPrint,
+				});
+			}
+		});
 }
 
 function isToPrint({
-  val,
+	val,
 }) {
-  return [undefined, 0].includes(val) ? false : true;
+	return [undefined, 0].includes(val) ? false : true;
 }
 
-function isNeedToSaveFilesToPrint(props) { 
-  const {
-    deps,
-  } = props;
-  const filesToPrint = deps.state.filesToPrint;
-  const isListNotSaved = Boolean(Object.keys(filesToPrint).length && deps.state.path === '');
-  const isListChanged = JSON.stringify(filesToPrint) !== JSON.stringify(deps.state.snapFilesToPrint);
+function isNeedToSaveFilesToPrint(props) {
+	const {
+		deps,
+	} = props;
+	const filesToPrint = deps.state.filesToPrint;
+	const isListNotSaved = Boolean(Object.keys(filesToPrint).length && deps.state.path === '');
+	const isListChanged = JSON.stringify(filesToPrint) !== JSON.stringify(deps.state.snapFilesToPrint);
 
-  return {
-    result: isListNotSaved || isListChanged,
-    isListNotSaved,
-    isListChanged,
-  };
+	return {
+		result: isListNotSaved || isListChanged,
+		isListNotSaved,
+		isListChanged,
+	};
 }
 
 export const updateFilesToPrint = {
-  update(props) {
-    const filesToPrint = this.getFilesToPrint(props);
-    filesToPrint[props.photoSrc] = {
-      ...filesToPrint[props.photoSrc],
-      cnt: props.val.cnt,
-    };
-    return filesToPrint;
-  },
-  add(props) {
-    const filesToPrint = this.getFilesToPrint(props);
-    filesToPrint[props.photoSrc] = {
-      cnt: props.val.cnt,
-    };
-    return filesToPrint;
+	update(props) {
+		const filesToPrint = this.getFilesToPrint(props);
+		filesToPrint[props.photoSrc] = {
+			...filesToPrint[props.photoSrc],
+			cnt: props.val.cnt,
+		};
+		return filesToPrint;
+	},
+	add(props) {
+		const filesToPrint = this.getFilesToPrint(props);
+		filesToPrint[props.photoSrc] = {
+			cnt: props.val.cnt,
+		};
+		return filesToPrint;
 
-  },
-  delete(props) {
-    const filesToPrint = this.getFilesToPrint(props);
-    delete filesToPrint[props.photoSrc];
-    return filesToPrint;
-  },
-  getFilesToPrint(props) {
-    const { deps } = Print;
-    return props.filesToPrint || deps.state.filesToPrint;
-  }
+	},
+	delete(props) {
+		const filesToPrint = this.getFilesToPrint(props);
+		delete filesToPrint[props.photoSrc];
+		return filesToPrint;
+	},
+	getFilesToPrint(props) {
+		const { deps } = Print;
+		return props.filesToPrint || deps.state.filesToPrint;
+	}
 }
 
 function getComps({
-  channelComps,
+	channelComps,
 }) {
-  const {
-    Label,
-    AdditionalPanel,
-    Notification,
-  } = channelComps;
-  return {
-    toClone: {
-      ExitFromFolder: Label,
-      SaveFilesToFlash: Label,
-    },
-    items: {
-      Notification,
-      AdditionalPanel,
-    },
-  };
+	const {
+		Label,
+		AdditionalPanel,
+		Dialog,
+	} = channelComps;
+	return {
+		toClone: {
+			ExitFromFolder: Label,
+			SaveFilesToFlash: Label,
+		},
+		items: {
+			Dialog,
+			AdditionalPanel,
+		},
+	};
 }
