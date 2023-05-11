@@ -360,6 +360,7 @@ app.post('/api/saveFilesToFlash', async (req, response) => {
 			const {
 				files,
 				folderNameField,
+				maxFilesCount,
 			} = req.body;
 
 			const total = Object.keys(files).length;

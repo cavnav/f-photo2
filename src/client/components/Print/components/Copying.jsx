@@ -3,11 +3,13 @@ import { Progress } from 'antd';
 import { Select } from '../../Dialog/';
 import { useMutedReducer } from '../../../mutedReducer';
 
+const MAX_FILES_COUNT = 2;
+
 export const Copying = React.memo(function ({
   filesToPrint,
   onCopyCompleted = () => {},
   onCopyCanceled = () => {},
-  $checkCopyProgress,
+  checkProgress,
   $saveFilesToFlash,  
 }) {
   const [state, setState] = useMutedReducer({
@@ -43,6 +45,7 @@ export const Copying = React.memo(function ({
     $saveFilesToFlash({
       files: filesToPrint,
       folderNameField: 'cnt',
+      maxFilesCount: MAX_FILES_COUNT,
     })
     .then(({
       destDir,
@@ -55,9 +58,9 @@ export const Copying = React.memo(function ({
     });
 
     function checkCopyProgress() {
-      $checkCopyProgress()
+      checkProgress()
       .then((res) => {
-        const isCopyCompleted = res.copyProgress === 100;
+        const isCopyCompleted = res.progress === 100;
         if (isCopyCompleted === false) {
           setTimeout(() => checkCopyProgress(), 500);
         }

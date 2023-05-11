@@ -84,15 +84,15 @@ function render({
 
   const steps = React.useMemo(
     () => createSteps({
-      $getUsbDevices: rp.$getUsbDevices,
+      $getUsbDevices: rp.server.$getUsbDevices,
       isCopyCompleted: state.isCopyCompleted,
       onAllStepsPassed,
       Copying: () => <Copying 
           filesToPrint={state.filesToPrint}
           onCopyCompleted={onCopyCompleted} 
           onCopyCanceled={onCopyCanceled}
-          $saveFilesToFlash={rp.$saveFilesToFlash}
-          $checkCopyProgress={rp.$checkCopyProgress} 
+          $saveFilesToFlash={rp.server.$saveFilesToFlash}
+          checkProgress={rp.server.checkProgress} 
         />,
     }),
     [state.isCopyCompleted],
