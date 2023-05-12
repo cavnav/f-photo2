@@ -6,6 +6,7 @@
 // check all user ways
 // update
 // I
+// scroll to new photo to print in Print action.
 // show overwrite confirmation for every files
 // after back to list to scroll to last opened folder
 // last added folder
@@ -116,7 +117,6 @@ function getAppStateInit(
 
   return {
     action: Actions.Welcome.name,
-    notification: '',
     forceUpdate: false,
     doNeedHelp: false, // move to Help module.
     mouse: {

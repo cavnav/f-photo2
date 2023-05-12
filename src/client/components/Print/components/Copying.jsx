@@ -2,7 +2,6 @@ import React from 'react';
 import { Select } from '../../Dialog/';
 import { useMutedReducer } from '../../../mutedReducer';
 
-const MAX_FILES_COUNT = 2;
 
 export const Copying = React.memo(function ({
 	filesToPrint,
@@ -44,7 +43,6 @@ export const Copying = React.memo(function ({
 		$saveFilesToFlash({
 			files: filesToPrint,
 			folderNameField: 'cnt',
-			maxFilesCount: MAX_FILES_COUNT,
 		})
 			.then(({
 				destDir,

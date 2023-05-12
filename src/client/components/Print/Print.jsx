@@ -18,6 +18,10 @@ import { Select } from '../Dialog';
 import { useMutedReducer } from '../../mutedReducer';
 import { eventNames } from '../../constants';
 
+
+const MAX_FILES_COUNT = 2;
+
+
 export const Print = channel.addComp({
 	name: 'Print',
 	render,
@@ -83,31 +87,47 @@ function render({
 	}, [state.isSavePhotosToFlash]);
 
 	const steps = React.useMemo(
-		() => createSteps({
-			$getUsbDevices: rp.server.$getUsbDevices,
-			isCopyCompleted: state.isCopyCompleted,
-			onAllStepsPassed,
-			Copying: () => <Copying
-				filesToPrint={state.filesToPrint}
-				onCopyCompleted={onCopyCompleted}
-				onCopyCanceled={onCopyCanceled}
-				$saveFilesToFlash={rp.server.$saveFilesToFlash}
-				checkProgress={() => checkProgress({
-						checkFunc: rp.server.checkProgress,
-						notificationAPI: ({
-								progress,
-							}) => rp.DialogAPI.show({
-								type: 'notification',
-								message: progress,
-								isModal: true,
-								isHide: false,
-							})
-						
-					})
-					.then(() => rp.DialogAPI.close())
+		() => {
+			const filesToPrint = {};
+			const stateFilesToPrint = state.filesToPrint;
+
+			let index = 0;
+			for (const file in stateFilesToPrint) {
+				if (index === MAX_FILES_COUNT) {
+					break;
 				}
-			/>,
-		}),
+
+				filesToPrint[file] = stateFilesToPrint[file];				
+
+				index = index + 1;
+			}
+
+			return createSteps({
+				$getUsbDevices: rp.server.$getUsbDevices,
+				isCopyCompleted: state.isCopyCompleted,
+				onAllStepsPassed,
+				Copying: () => <Copying
+					filesToPrint={filesToPrint}
+					onCopyCompleted={onCopyCompleted}
+					onCopyCanceled={onCopyCanceled}
+					$saveFilesToFlash={rp.server.$saveFilesToFlash}
+					checkProgress={() => checkProgress({
+							checkFunc: rp.server.checkProgress,
+							notificationAPI: ({
+									progress,
+								}) => rp.DialogAPI.show({
+									type: 'notification',
+									message: progress,
+									isModal: true,
+									isHide: false,
+								})
+							
+						})
+						.then(() => rp.DialogAPI.close())
+					}
+				/>,
+			});
+		},
 		[state.isCopyCompleted],
 	);
 
