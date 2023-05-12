@@ -51,22 +51,6 @@ function render() {
   function onClickAction(e) {
     const actionId = e.target.getAttribute('data-id');
 
-    if (actionId === rp.Print.name) {
-      // Чтобы не открывалась вторая печать.
-      const resumeData = resumeObj.state;
-      const { browserCount } = resumeData; 
-      if (browserCount > 1) {
-        const oppositeWindow = getOppositeWindow();
-        if (resumeData[oppositeWindow.name].App.action === rp.Print.name) {
-          const rp = Comp.getReqProps();
-          rp.NotificationAPI.forceUpdate({
-            title: 'Нельзя открыть вторую печать',
-          });
-          return;
-        }
-      }
-    }
-
     if (actionId !== null) {
       rp.setAppState({
         action: actionId,

@@ -99,7 +99,7 @@ function render({
 							}) => rp.DialogAPI.show({
 								type: 'notification',
 								message: progress,
-								isModal: false,
+								isModal: true,
 								isHide: false,
 							})
 						

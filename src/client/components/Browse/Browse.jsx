@@ -661,7 +661,6 @@ function getComps({
 		App,
 		OnePhoto,
 		AdditionalPanel,
-		Notification,
 
 		AddAlbum,
 		CustomAction,
@@ -683,7 +682,6 @@ function getComps({
 		items: {
 			App,
 			OnePhoto,
-			Notification,
 			AdditionalPanel,
 			Dialog,
 		}
