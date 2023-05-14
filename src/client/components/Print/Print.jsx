@@ -19,7 +19,7 @@ import { useMutedReducer } from '../../mutedReducer';
 import { eventNames } from '../../constants';
 
 
-const MAX_FILES_COUNT = 2;
+const MAX_FILES_COUNT = 100;
 
 
 export const Print = channel.addComp({
@@ -49,7 +49,10 @@ function render({
 			stateUpd,
 		}) => {
 			resumeObj.save({
-				val: stateUpd,
+				val: {
+					...stateUpd,
+					isSavePhotosToFlash: false,
+				},
 			});
 		}
 	});
@@ -175,11 +178,19 @@ function render({
 
 			rp.AdditionalPanelAPI.renderIt({
 				actions: [
-					rp.ExitFromFolder,
+					rp.Cancel,
 					rp.SaveFilesToFlash,
 				],
 			})
 				.then(() => {
+					rp.CancelAPI.forceUpdate({
+						title: 'Отменить',
+						onClick: () => {
+							setState({
+								isSavePhotosToFlash: false,
+							});
+						},
+					});
 					rp.SaveFilesToFlashAPI.forceUpdate({
 						title: 'Записать на флешку',
 						onClick: () => {
@@ -483,23 +494,6 @@ function getAPI({
 			sep,
 			loading: false,
 		});
-
-		rp.ExitFromFolderAPI.forceUpdate({
-			title: 'Закрыть ',
-			folderName: path ? path : undefined,
-			onClick: () => {
-				if (isNeedToSaveFilesToPrint({
-					deps,
-				}).result) {
-					deps.setState({
-						isDialogSavePrint: true,
-					});
-				}
-				else {
-					rp.backwardPrinted().then(Comp.getAPI().onNavigate);
-				}
-			},
-		});
 	}
 }
 
@@ -554,21 +548,9 @@ function resetTo({
 		.then(() => {
 			// set filesToPrint from storage.
 			if (answer.result === false) return;
-
-			if (answer.isListNotSaved) {
-				rp.ExitFromFolderAPI.forceUpdate({
-					folderName: '',
-				});
-				deps.setState({
-					filesToPrint,
-					snapFilesToPrint: { ...filesToPrint },
-				});
-			}
-			else if (answer.isListChanged) {
-				deps.setState({
-					filesToPrint,
-				});
-			}
+			deps.setState({
+				filesToPrint,
+			});
 		});
 }
 
@@ -631,7 +613,7 @@ function getComps({
 	} = channelComps;
 	return {
 		toClone: {
-			ExitFromFolder: Label,
+			Cancel: Label,
 			SaveFilesToFlash: Label,
 		},
 		items: {
