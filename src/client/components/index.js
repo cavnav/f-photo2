@@ -18,26 +18,3 @@ export { Dialog } from './Dialog/Dialog';
 export { Selector } from './Selector/Selector';
 export { Empty } from './Empty/Empty';
 export { ToggleWindow  } from './ToggleWindow/ToggleWindow';
-
-import Rename from './Rename/Rename';
-
-import { Print } from './Print/Print';
-import { Share } from './Share/Share';
-import { OnePhoto } from './OnePhoto/OnePhoto';
-import { Tune } from './Tune';
-import { Copy } from './Copy/Copy';
-import { Browse } from './Browse/Browse';
-import { Welcome } from './Welcome';
-import { Help } from './Help';
-
-
-export const Actions = {
-  Tune, 
-  Copy, 
-  Browse,
-  Print, 
-  Help,
-  OnePhoto,
-  Welcome,
-  Share,
-};

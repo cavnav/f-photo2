@@ -1,14 +1,10 @@
 import './styles.css';
 import React from 'react';
-
-import { ResumeObj } from '../../resumeObj';
-import { getOppositeWindow } from '../../functions';
 import { get as _get } from 'lodash';
 import { channel } from '../../channel';
 import cn from 'classnames';
 import { useMutedReducer } from '../../mutedReducer';
 
-const resumeObj = new ResumeObj();
 export const ControlPanel = channel.addComp({
   name: 'ControlPanel',
   render,
@@ -18,7 +14,7 @@ export const ControlPanel = channel.addComp({
 
 function render() {
   const Comp = this;
-  const [state, setState] = useMutedReducer({
+  useMutedReducer({
     initialState: stateInit,
     setCompDeps: Comp.bindSetCompDeps(),
   });

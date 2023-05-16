@@ -348,6 +348,7 @@ export function getCompsAPI({
 		const compUpd = toClone[name] ? comp.clone({
 			name,
 		}) : comp;
+		
 		return {
 			...res,
 			[name]: compUpd,

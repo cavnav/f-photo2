@@ -1,5 +1,5 @@
 import React from 'react';
-import { Stepper, Actions } from '../';
+import { Stepper } from '../';
 
 import './styles.css';
 import { channel } from '../../channel';
@@ -90,7 +90,7 @@ function render() {
 				trigger: () => {
 					const rp = Comp.getReqProps();
 					rp.setAppState({
-						action: Actions.Browse.name,
+						action: rp.BrowseName,
 					});
 				}
 			}
@@ -157,6 +157,7 @@ function getReqProps({
 	return {
 		setAppState: channel.d.setAppState,
 		server: channel.server,
+		BrowseName: comps.Browse.name,
 		...comps,
 	};
 }

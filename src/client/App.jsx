@@ -32,7 +32,7 @@
 // add icon type for items
 // share print, share file status
 // sync between browse, print, share, onePhoto
-  // z100 error
+// z100 error
 // Failed to load resource
 // ctg file
 // add create resumeObj in channel.addComp().
@@ -42,7 +42,7 @@ import 'antd/dist/antd.css';
 import './app.css';
 
 import React from 'react';
-import { Actions, ControlPanel, AdditionalPanel, Dialog } from './components';
+import { ControlPanel, AdditionalPanel, Dialog } from './components';
 import { updFromObj } from './functions';
 import { get as _get } from 'lodash';
 import { channel } from './channel';
@@ -50,147 +50,183 @@ import { ResumeObj } from './resumeObj';
 import { useMutedReducer } from './mutedReducer';
 
 export const App = channel.addComp({
-  name: 'App',
-  render,
-  getAPI,
+	name: 'App',
+	render,
+	getAPI,
+	getComps,
+	getReqProps,
 });
 
 const resumeObj = new ResumeObj({
-  selector: [
-    window.name,
-    App.name,
-  ],
+	selector: [
+		window.name,
+		App.name,
+	],
 });
 
 function render() {
-  const Comp = this;
-  let s; // state
-  const [d] = React.useState({}); // dispatch.
+	const Comp = this;
+	let s; // state
+	const [d] = React.useState({}); // dispatch.
 
-  [s, d.setAppState] = useMutedReducer({
-    initialState: getAppStateInit(),
-    setCompDeps: Comp.bindSetCompDeps(),
-    fn: resumeUpdFn,
-  });
+	[s, d.setAppState] = useMutedReducer({
+		initialState: getAppStateInit(),
+		setCompDeps: Comp.bindSetCompDeps(),
+		fn: resumeUpdFn,
+	});
 
-  channel.preset({
-    s,
-    d,
-  });
+	channel.preset({
+		s,
+		d,
+	});
 
-  React.useEffect(() => 
-    {
-      const onMouseUpWrap = (e) => onMouseUp({ Comp, e });
-      document.addEventListener('mouseup', onMouseUpWrap);
-      return () => document.removeEventListener('mouseup', onMouseUpWrap);
-    },
-    []
-  );
+	React.useEffect(() => {
+		const onMouseUpWrap = (e) => onMouseUp({ Comp, e });
+		document.addEventListener('mouseup', onMouseUpWrap);
+		return () => document.removeEventListener('mouseup', onMouseUpWrap);
+	},
+		[]
+	);
 
 
-  const Action = Actions[s.action];
+	const Action = Comp.getReqProps().comps[s.action];
 
-  return (    
-    <div className="f-photo">     
-      <ControlPanel.r />
-      <AdditionalPanel.r/>
-      <div className="Action">
-        <Action.r />
-      </div>
-      <Dialog.r />
-    </div>
-  );
+	return (
+		<div className="f-photo">
+			<ControlPanel.r />
+			<AdditionalPanel.r />
+			<div className="Action">
+				<Action.r />
+			</div>
+			<Dialog.r />
+		</div>
+	);
 
-  //--------------------------------------------------------------------------
+	//--------------------------------------------------------------------------
 }
 
 function resumeUpdFn({
-  state,
+	state,
 }) {
-  resumeObj.save({
-    val: state,
-  });
+	resumeObj.save({
+		val: state,
+	});
 };
 
-function getAppStateInit(
-) {
-  const resumed = resumeObj.get();
+function getAppStateInit() {
+	const resumed = resumeObj.get();
+	const rp = App.getReqProps();
+	const { comps } = rp;
 
-  return {
-    action: Actions.Welcome.name,
-    forceUpdate: false,
-    doNeedHelp: false, // move to Help module.
-    mouse: {
-      x: 0,
-      y: 0,
-    },
-    actions: {
-      Copy: {
-        title: 'Добавить',
-        isEnabled: true
-      },
-      Browse: {
-        title: 'Смотреть',
-        isEnabled: true,
-      },
-      OnePhoto: {
-        title: 'Смотреть',
-        isEnabled: false,
-      },
-      Print: {
-        title: 'Печатать',
-        isEnabled: true,
-      },
-      Printed: {
-        title: 'Отпечатанные',
-        isEnabled: true,
-      },
-      Share: {
-        title: 'Отправить',
-        isEnabled: true,
-      },
-      // Help: {
-      //   title: '?',
-      //   isEnabled: true,
-      // }
-    },
-    ...resumed,    
-  };
+	return {
+		action: comps.Welcome.name,
+		forceUpdate: false,
+		doNeedHelp: false, // move to Help module.
+		mouse: {
+			x: 0,
+			y: 0,
+		},
+		actions: {
+			Copy: {
+				title: 'Добавить',
+				isEnabled: true
+			},
+			Browse: {
+				title: 'Смотреть',
+				isEnabled: true,
+			},
+			OnePhoto: {
+				title: 'Смотреть',
+				isEnabled: false,
+			},
+			Print: {
+				title: 'Печатать',
+				isEnabled: true,
+			},
+			Printed: {
+				title: 'Напечатанные',
+				isEnabled: true,
+			},
+			Share: {
+				title: 'Отправить',
+				isEnabled: true,
+			},
+			// Help: {
+			//   title: '?',
+			//   isEnabled: true,
+			// }
+		},
+		...resumed,
+	};
 };
 
 
 // Need to be sameFunction and App must be 'this'.
 function onMouseUp({
-  Comp, 
-  e
+	Comp,
+	e
 }) {
-  Comp.deps.setState({
-    forceUpdate: false,
-    mouse: {
-      x: e.clientX,
-      y: e.clientY,
-    }
-  });
+	Comp.deps.setState({
+		forceUpdate: false,
+		mouse: {
+			x: e.clientX,
+			y: e.clientY,
+		}
+	});
 }
 
 export function getAPI({
-  deps,
+	deps,
 }) {
-  return {
-    setState: deps.setState,
-    toggleActions,
-  };
+	return {
+		setState: deps.setState,
+		toggleActions,
+	};
 
-  function toggleActions({
-    action,
-    actions = {},
-  }) {
-    deps.setState({
-      action,
-      actions: updFromObj({
-        obj: deps.state.actions,
-        objUpd: actions,      
-      }),
-    });
-  }
+	function toggleActions({
+		action,
+		actions = {},
+	}) {
+		deps.setState({
+			action,
+			actions: updFromObj({
+				obj: deps.state.actions,
+				objUpd: actions,
+			}),
+		});
+	}
+}
+
+function getComps({
+	channelComps,
+}) {
+	const {
+		Copy,
+		Browse,
+		Print,
+		OnePhoto,
+		Welcome,
+		Share,
+		Printed,
+	} = channelComps;
+
+	return {
+		items: {
+			Copy,
+			Browse,
+			Print,
+			OnePhoto,
+			Welcome,
+			Share,
+			Printed,
+		}
+	}
+}
+
+function getReqProps({
+	comps,
+}) {
+	return {
+		comps,
+	};
 }
