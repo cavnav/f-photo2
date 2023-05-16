@@ -1,10 +1,11 @@
 // inside Print a lot of images. how it print?
 //  100 things maximum,
 //  when files had written, then created file with this list and it possible to view by printed
-// hide printed, shared folders
+// rewrite printedLog
 // fix error Warning: Can't perform a React state update on
 // check all user ways
 // update
+
 // I
 // scroll to new photo to print in Print action.
 // show overwrite confirmation for every files

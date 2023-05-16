@@ -343,7 +343,7 @@ app.post('/api/savePrinted', async (req, response) => {
 		dest,
 		files,
 	} = req.body;
-	await createPrintedFolder({
+	await createPrintedLog({
 		dest,
 		files,
 	});
@@ -365,14 +365,12 @@ app.post('/api/saveFilesToFlash', async (req, response) => {
 
 			const total = Object.keys(files).length;
 
-			// create appropriate folder in printedFolder
-			let { destDir } = await createPrintedFolder({
+			await createPrintedLog({
 				files,
 			});
 
 			response.send({
-				...req.body,
-				destDir,
+				...req.body,				
 			});
 
 			// copy to flash  
@@ -703,6 +701,7 @@ async function findFiles({
 	const { sep } = path;
 	const browseDirs = dirs
 		.filter(isTopLevelFile)
+		.filter(removePrintedFolder)
 		.sort(sortByBirthday)
 		.map((dir) => path.join(sep, path.basename(dir)));	
 
@@ -713,6 +712,9 @@ async function findFiles({
 
 
 	// ------------------------------------------- 
+	function removePrintedFolder(file) {
+		return !file.includes(PRINTED_DIR);
+	}
 	function isNotSVI(file) {
 		return !file.includes('System Volume Information');
 	}
@@ -851,20 +853,13 @@ async function browseFiles({
 	});
 }
 
-async function createPrintedFolder({
+async function createPrintedLog({
 	files,
 }) {
-	const destDir = path.join(PRINTED_DIR, getCurMoment());
-	await fs.mkdirs(
-		destDir,
-	);
 	await fs.writeJSON(
-		path.join(destDir, PRINT_JSON),
+		path.join(PRINTED_DIR, getCurMoment().concat('.json')),
 		files,
 	);
-	return {
-		destDir,
-	};
 }
 
 async function mapResponsePrinted({

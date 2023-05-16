@@ -252,31 +252,6 @@ function render({
 			<Empty
 				isTrue={state.dirs.length === 0 && Object.keys(state.filesToPrint).length === 0}
 			/>
-
-			{state.isDialogSavePrint && (
-				<Dialog.r
-					type={Select.name}
-					title='Сохранить список?'
-					autoClose={false}
-					onAgree={async () => {
-						const rp = Comp.getReqProps();
-						await rp.savePrinted({
-							files: state.filesToPrint
-						});
-						setState({
-							isDialogSavePrint: false,
-						});
-						rp.backwardPrinted().then(Comp.getAPI().onNavigate);
-					}}
-					onCancel={() => {
-						setState({
-							isDialogSavePrint: false,
-						});
-						rp.backwardPrinted().then(Comp.getAPI().onNavigate);
-					}}
-				>
-				</Dialog.r>
-			)}
 		</div>
 	);
 
