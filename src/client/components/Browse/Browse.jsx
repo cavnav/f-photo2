@@ -101,16 +101,8 @@ function render(
 						curPhotoInd: +event.target.getAttribute('ind'),
 					});
 
-					rp.AppAPI.toggleActions({
-						action: rp.OnePhoto.name,
-						actions: {
-							[rp.OnePhoto.name]: {
-								isEnabled: true,
-							},
-							[Browse.name]: {
-								isEnabled: false,
-							},
-						}
+					rp.AppAPI.toggleAction({
+						action: rp.OnePhoto.name,	
 					});
 				},
 			],

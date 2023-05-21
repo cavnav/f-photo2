@@ -4,8 +4,7 @@ import { channel } from '../../channel';
 import { useMutedReducer } from '../../mutedReducer';
 import { ChangeName } from '../AddAlbum/components/ChangeName';
 
-
-channel.addComp({
+export const Rename = channel.addComp({
     name: 'Rename',
     render,
     getComps,

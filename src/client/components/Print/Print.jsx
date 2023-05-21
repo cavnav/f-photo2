@@ -5,7 +5,7 @@ import React from 'react';
 import {
 	Stepper,
 } from '../';
-import { addHandlers, checkProgress, getBackgroundImageStyle } from '../../functions';
+import { addHandlers, checkProgress } from '../../functions';
 import { createSteps } from './createSteps';
 import { channel } from '../../channel';
 import { Copying } from './components/Copying';
@@ -13,10 +13,9 @@ import { Dirs } from '../Dirs/Dirs';
 import { ResumeObj } from '../../resumeObj';
 import { Spin } from 'antd';
 import { Empty } from '../';
-import { Dialog } from '../Dialog/Dialog';
-import { Select } from '../Dialog';
 import { useMutedReducer } from '../../mutedReducer';
 import { eventNames } from '../../constants';
+import { PrintItemsRender } from '../../common/PrintItemsRender';
 
 
 const MAX_FILES_COUNT = 100;
@@ -166,11 +165,6 @@ function render({
 		});
 	}, []);
 
-	React.useEffect(addKeyDownListener);
-	React.useEffect(() => {
-		const input = getActiveInput();
-		input && input.focus();
-	});
 	React.useEffect(
 		() => {
 			// Задать кнопки действий.
@@ -246,7 +240,7 @@ function render({
 				<Stepper
 					steps={steps}
 				/> :
-				renderPrintState()
+				<PrintItemsRender Comp={Comp} />
 			}
 
 			<Empty
@@ -254,126 +248,6 @@ function render({
 			/>
 		</div>
 	);
-
-	// --------------------------------------------------------------------
-
-
-	function getActiveInput() {
-		document.querySelector(`input[keyid=\'${state.activeInput}\']`);
-	}
-
-	function addKeyDownListener() {
-		document.addEventListener('keydown', onKeyDown);
-
-		return () => {
-			document.removeEventListener('keydown', onKeyDown);
-		};
-	}
-
-	function onKeyDown(e) {
-		const input = document.activeElement;
-
-		if (input === document.body) return;
-
-		const photoSrc = input.getAttribute('keyid');
-
-		if (photoSrc === null) return;
-
-		const cntSource = Number(input.value);
-		const getCntUpd = {
-			38: () => (cntSource + 1),
-			40: () => (cntSource > 0 ? cntSource - 1 : cntSource),
-		}[e.which] ?? (() => cntSource);
-
-		setState({
-			filesToPrint: updateFilesToPrint.update({
-				photoSrc,
-				val: {
-					cnt: getCntUpd(),
-				},
-			}),
-		});
-	}
-
-	function renderPrintState(
-	) {
-		return (
-			<>
-				<div className="PrintItems">
-					{
-						Object.entries(state.filesToPrint).map(([src, { cnt }]) => {
-							const key = src;
-
-							return <div
-								className="rowData"
-								key={key}
-							>
-								<div
-									className='fitPreview file'
-									style={getBackgroundImageStyle({
-										file: src,
-									})}
-								>
-								</div>
-								<div
-									className='controls'
-									photosrc={src}
-								>
-									<input
-										className="changePhotoCount"
-										keyid={key}
-										value={cnt}
-										onChange={onChangePhotoCount}
-									/>
-									<input type="button" className="marginRight10" onClick={onClickCancelPhotoPrint} value="Отменить печать" />
-								</div>
-							</div>
-						})
-					}
-				</div>
-			</>
-		);
-	}
-
-	function onClickCancelPhotoPrint(e) {
-		const { photoSrc } = getDataPrint({ element: e.target.parentElement });
-		setState({
-			filesToPrint: delete state.filesToPrint[photoSrc] && state.filesToPrint,
-			activeInput: undefined,
-		});
-	}
-
-	function onChangePhotoCount(e) {
-		const input = e.target;
-
-		// allowed only numbers.
-		const numbers = /^[0-9]+$/;
-		if (input.value.match(numbers) === null) {
-			e.preventDefault();
-			return;
-		}
-
-		const { photoSrc } = getDataPrint({ element: input.parentElement });
-
-		setState({
-			filesToPrint: updateFilesToPrint.update({
-				photoSrc,
-				val: {
-					cnt: input.value,
-				},
-			}),
-			activeInput: photoSrc,
-		});
-	}
-
-	function getDataPrint({ element }) {
-		const photoSrc = element.getAttribute('photosrc');
-
-		return {
-			photoSrc,
-		};
-	}
-
 }
 
 function getReqProps({
@@ -423,6 +297,7 @@ function getAPI({
 			resumed.filesToPrint = updateFilesToPrint.delete({
 				filesToPrint: resumed.filesToPrint,
 				photoSrc: src,
+				Comp,
 			});
 		}
 		else {
@@ -432,6 +307,7 @@ function getAPI({
 				val: {
 					cnt: 1,
 				},
+				Comp,
 			});
 		}
 
@@ -548,34 +424,6 @@ function isNeedToSaveFilesToPrint(props) {
 		isListNotSaved,
 		isListChanged,
 	};
-}
-
-export const updateFilesToPrint = {
-	update(props) {
-		const filesToPrint = this.getFilesToPrint(props);
-		filesToPrint[props.photoSrc] = {
-			...filesToPrint[props.photoSrc],
-			cnt: props.val.cnt,
-		};
-		return filesToPrint;
-	},
-	add(props) {
-		const filesToPrint = this.getFilesToPrint(props);
-		filesToPrint[props.photoSrc] = {
-			cnt: props.val.cnt,
-		};
-		return filesToPrint;
-
-	},
-	delete(props) {
-		const filesToPrint = this.getFilesToPrint(props);
-		delete filesToPrint[props.photoSrc];
-		return filesToPrint;
-	},
-	getFilesToPrint(props) {
-		const { deps } = Print;
-		return props.filesToPrint || deps.state.filesToPrint;
-	}
 }
 
 function getComps({

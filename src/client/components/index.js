@@ -18,3 +18,8 @@ export { Dialog } from './Dialog/Dialog';
 export { Selector } from './Selector/Selector';
 export { Empty } from './Empty/Empty';
 export { ToggleWindow  } from './ToggleWindow/ToggleWindow';
+export { Welcome } from './Welcome';
+export { Copy } from './Copy/Copy';
+export { Browse } from './Browse/Browse';
+export { Printed } from './Printed/Printed';
+export { Rename } from './Rename/Rename';

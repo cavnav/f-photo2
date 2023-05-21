@@ -43,11 +43,18 @@ import './app.css';
 
 import React from 'react';
 import { ControlPanel, AdditionalPanel, Dialog } from './components';
-import { updFromObj } from './functions';
 import { get as _get } from 'lodash';
 import { channel } from './channel';
 import { ResumeObj } from './resumeObj';
 import { useMutedReducer } from './mutedReducer';
+import { Copy,
+	Browse,
+	Print,
+	OnePhoto,
+	Welcome,
+	Share,
+	Printed, 
+} from './components';
 
 export const App = channel.addComp({
 	name: 'App',
@@ -55,6 +62,15 @@ export const App = channel.addComp({
 	getAPI,
 	getComps,
 	getReqProps,
+
+	// чтобы вызвать автоматическое включение этих компонент в channel.
+	Copy,
+	Browse,
+	Print,
+	OnePhoto,
+	Welcome,
+	Share,
+	Printed,
 });
 
 const resumeObj = new ResumeObj({
@@ -126,36 +142,32 @@ function getAppStateInit() {
 			x: 0,
 			y: 0,
 		},
-		actions: {
-			Copy: {
+		actions: [
+			{
+				id: Copy.name,
 				title: 'Добавить',
-				isEnabled: true
 			},
-			Browse: {
+			{
+				id: Browse.name,
 				title: 'Смотреть',
-				isEnabled: true,
-			},
-			OnePhoto: {
-				title: 'Смотреть',
-				isEnabled: false,
-			},
-			Print: {
+			},			
+			{
+				id: Print.name,
 				title: 'Печатать',
-				isEnabled: true,
 			},
-			Printed: {
-				title: 'Напечатанные',
-				isEnabled: true,
+			{
+				id: Printed.name,
+				title: 'Архив печатей',
 			},
-			Share: {
+			{
+				id: Share.name,
 				title: 'Отправить',
-				isEnabled: true,
 			},
 			// Help: {
 			//   title: '?',
 			//   isEnabled: true,
 			// }
-		},
+		],
 		...resumed,
 	};
 };
@@ -180,19 +192,14 @@ export function getAPI({
 }) {
 	return {
 		setState: deps.setState,
-		toggleActions,
+		toggleAction,
 	};
 
-	function toggleActions({
+	function toggleAction({
 		action,
-		actions = {},
-	}) {
+	}) {		
 		deps.setState({
-			action,
-			actions: updFromObj({
-				obj: deps.state.actions,
-				objUpd: actions,
-			}),
+			action,		
 		});
 	}
 }

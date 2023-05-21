@@ -512,16 +512,8 @@ function toggleBrowseAction(Comp) {
   const {
     Browse,
   } = rp;
-  rp.AppAPI.toggleActions({
-    action: Browse.name,
-    actions: {
-      [Comp.name]: {
-        isEnabled: false,
-      },
-      [Browse.name]: {
-        isEnabled: true,
-      },
-    }
+  rp.AppAPI.toggleAction({
+    action: Browse.name,  
   });  
 }
 

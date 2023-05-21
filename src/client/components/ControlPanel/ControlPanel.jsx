@@ -6,87 +6,86 @@ import cn from 'classnames';
 import { useMutedReducer } from '../../mutedReducer';
 
 export const ControlPanel = channel.addComp({
-  name: 'ControlPanel',
-  render,
-  getReqProps,
-  getComps,
+	name: 'ControlPanel',
+	render,
+	getReqProps,
+	getComps,
 });
 
 function render() {
-  const Comp = this;
-  useMutedReducer({
-    initialState: stateInit,
-    setCompDeps: Comp.bindSetCompDeps(),
-  });
+	const Comp = this;
+	useMutedReducer({
+		initialState: stateInit,
+		setCompDeps: Comp.bindSetCompDeps(),
+	});
 
-  const rp = Comp.getReqProps();
-  return (
-    <div 
-      className="controlPanel flex"
-      onClick={onClickAction}
-    >
-      {Object.entries(rp.actions)
-        .filter(([action, actionProps]) => actionProps.isEnabled)
-        .map(([action, actionProps]) => {
-          const classNames = cn({
-            action: true,
-            active: action === rp.appStateAction,
-            btn: true,
-          });          
-          return (
-            <div key={action} className={classNames} data-id={action}>
-              {actionProps.title}
-            </div>
-          );
-        })
-      }
-    </div>
-  );
+	const rp = Comp.getReqProps();
+	return (
+		<div
+			className="controlPanel flex"
+			onClick={onClickAction}
+		>{
+			rp.actions
+				.map((props) => {
+					const classNames = cn({
+						action: true,
+						btn: true,
+						active: props.id === rp.appStateAction,
+					});
+					return (
+						<div key={props.id} className={classNames} data-id={props.id}>
+							{props.title}
+						</div>
+					);
+				})
+			}		
+		</div>
+	);
 
-  // -----------------------------------------------------------------------
-  function onClickAction(e) {
-    const actionId = e.target.getAttribute('data-id');
+	// -----------------------------------------------------------------------
+	function onClickAction(e) {
+		const actionId = e.target.getAttribute('data-id');
 
-    if (actionId !== null) {
-      rp.setAppState({
-        action: actionId,
-      });
-    }
-  };
+		if (actionId !== null) {
+			rp.setAppState({
+				action: actionId,
+			});
+		}
+	};
 }
 
-function getReqProps ({ comps, channel }) {
-  const cropped = channel.crop({
-    s: {
-      action: 'appStateAction',
-      actions: 1,
-    },     
-    d: {
-      setAppState: 1,
-    },
-  });
+function getReqProps({ comps, channel }) {
+	const cropped = channel.crop({
+		s: {
+			action: 'appStateAction',
+			actions: 1,
+		},
+		d: {
+			setAppState: 1,
+		},
+	});
 
-  return {
-    ...cropped,
-    ...comps,
-  };
+	return {
+		...cropped,
+		...comps,
+	};
 };
 
 function getComps({
-  channelComps,
+	channelComps,
 }) {
-  const {
-    Print,
-    Notification,
-  } = channelComps;
-  return {
-    items: {
-      Print,
-      Notification,
-    },
-  };
+	const {
+		Print,
+		Notification,
+	} = channelComps;
+	return {
+		items: {
+			Print,
+			Notification,
+		},
+	};
 }
 
 const stateInit = {
-  isDialogPrint: false,
+	isDialogPrint: false,
 };
