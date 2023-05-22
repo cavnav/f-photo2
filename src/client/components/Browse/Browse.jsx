@@ -18,6 +18,7 @@ import { ResumeObj } from '../../resumeObj';
 import { Empty } from '../Empty/Empty';
 import { useMutedReducer } from '../../mutedReducer';
 import { BTN_MOVE, BTN_REMOVE, setBtnTitle } from '../../common/additionalActions/const';
+import { FileItem } from '../File/FileItem';
 
 
 export const Browse = channel.addComp({
@@ -120,7 +121,10 @@ function render(
 	}, []);
 
 	React.useEffect(() => {
-		renderAddPanel({ Comp });
+		renderAddPanel({ Comp });		
+	}, []);
+
+	React.useEffect(() => {
 		resetTo({
 			Comp,
 		});
@@ -211,22 +215,18 @@ function render(
 			const style = getBackgroundImageStyle({
 				file: `${browsePath}${file}`,
 			});
+			const className = 'positionRel fitPreview file scrollwait';
+
 			return (
-				<div
-					key={file}
-					className='positionRel fitPreview file scrollwait'
+				<FileItem
+					key={file} 
+					className={className}
 					style={style}
 					ind={ind}
 					src={file}
 					clickcb={dispatcher.onClickFile.name}
-				>
-					<input
-						className="itemSelector positionAbs"
-						type="checkbox"
-						src={file}
-						clickcb={dispatcher.onClickItemSelector.name}
-					/>
-				</div>
+					clickItemCb={dispatcher.onClickItemSelector.name}
+				/>
 			);
 		});
 	}
@@ -267,6 +267,7 @@ function getAPI({
 	deps,
 }) {
 	return {
+		resetTo,
 		onNavigate,
 		setToResumeObj,
 		getResumeObj,

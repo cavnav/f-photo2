@@ -1,9 +1,11 @@
+import { Dialog } from './components';
 import {
 	eventNames
 } from './constants';
 import {
 	ResumeObj,
 } from './resumeObj';
+import { AppServerAPI } from './ServerApi';
 
 class MyItems {
 	constructor({
@@ -458,4 +460,19 @@ export function updateActionsLists({
 
 export function getItemName(name, sep) {
 	return name?.replace(sep, '');
+}
+
+export function myRequest({ request, requestParams, onResponse }) {
+    const DialogAPI = Dialog.getAPI();
+
+	DialogAPI.show({
+		message: 'Подожди.',
+		isModal: true,
+		isHide: false,
+	});
+	return request?.()
+		.then(onResponse)
+		.then(() => {
+			DialogAPI.close();
+		});
 }
