@@ -3,8 +3,9 @@ import { getBackgroundImageStyle } from '../functions';
 
 
 export function PrintItemsRender({
-    Comp,
+    filesToPrint,
 }) {
+    
     const deps = Comp.getDeps();
     const { state } = deps;
     const onChangePhotoCount = (e) => onChangePhotoCountCore({ e, Comp });

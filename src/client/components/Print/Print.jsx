@@ -5,7 +5,7 @@ import React from 'react';
 import {
 	Stepper,
 } from '../';
-import { addHandlers, checkProgress } from '../../functions';
+import { checkProgress } from '../../functions';
 import { createSteps } from './createSteps';
 import { channel } from '../../channel';
 import { Copying } from './components/Copying';
@@ -39,7 +39,7 @@ const resumeObj = new ResumeObj({
 function render({
 }) {
 	const Comp = this;
-	const rp = Comp.getReqProps();
+	const rp = Comp.getReqProps();	
 
 	const [state, setState] = useMutedReducer({
 		initialState: getStateInit(),
@@ -49,8 +49,7 @@ function render({
 		}) => {
 			resumeObj.save({
 				val: {
-					...stateUpd,
-					isSavePhotosToFlash: false,
+					filesToPrint: stateUpd.filesToPrint,
 				},
 			});
 		}
@@ -74,17 +73,7 @@ function render({
 
 		setState({
 			isSavePhotosToFlash: false,
-		});
-
-		if (state.createdPrintFolder) {
-			setState({
-				loading: true,
-			});
-			rp.server.towardPrinted({
-				dir: state.createdPrintFolder,
-			})
-				.then(Comp.getAPI().onNavigate);
-		}
+		});		
 
 	}, [state.isSavePhotosToFlash]);
 
@@ -132,38 +121,6 @@ function render({
 		},
 		[state.isCopyCompleted],
 	);
-
-	const dispatcher = React.useMemo(
-		() => addHandlers(
-			{
-				fns: [
-					function onClickDir({
-						event
-					}) {
-						const rp = Comp.getReqProps();
-						setState({
-							loading: true,
-						});
-						const dir = event.target.getAttribute('src');
-						rp.server.towardPrinted({
-							dir,
-						})
-							.then(Comp.getAPI().onNavigate)
-					},
-				]
-			},
-		),
-		[],
-	);
-
-	const onClickDispatcher = React.useCallback((event) => {
-		const { target } = event;
-		const onClickCb = target.getAttribute('clickcb');
-
-		onClickCb && dispatcher[onClickCb]({
-			event,
-		});
-	}, []);
 
 	React.useEffect(
 		() => {
@@ -265,7 +222,6 @@ function getAPI({
 	deps,
 }) {
 	return {
-		onNavigate,
 		getFilesToPrint,
 		togglePrint,
 		isFileToPrint,
@@ -326,41 +282,13 @@ function getAPI({
 		} = deps;
 		return props.photoSrc ? state.filesToPrint[props.photoSrc] : state.filesToPrint;
 	}
-
-	function onNavigate({
-		dirs,
-		path,
-		sep,
-		files,
-	}) {
-		// Fires on set from storage, open dir, close dir.
-		const rp = Comp.getReqProps();
-
-		const [filesToPrintUpd = {}] = files;
-		deps.setState({
-			dirs,
-			path,
-			filesToPrint: filesToPrintUpd,
-			snapFilesToPrint: { ...filesToPrintUpd },
-			sep,
-			loading: false,
-		});
-	}
 }
 
 function getStateDefault() {
 	return {
-		loading: false,
 		filesToPrint: {},
-		snapFilesToPrint: {},
-		dirs: [],
-		sep: '',
-		path: '',
-		activeInput: undefined,
-		isSavePhotosToFlash: false,
+		isSavePhotosToFlash: false, 
 		isCopyCompleted: false,
-		isDialogSavePrint: false,
-		createdPrintFolder: '',
 	};
 }
 
@@ -373,57 +301,10 @@ function getStateInit(
 	};
 }
 
-function resetTo({
-	Comp,
-}) {
-	const rp = Comp.getReqProps();
-	const {
-		deps,
-	} = Print;
-
-	const { path } = deps.state;
-
-	const answer = isNeedToSaveFilesToPrint({
-		deps,
-	});
-	const filesToPrint = deps.state.filesToPrint;
-
-	deps.setState({
-		loading: true,
-	});
-
-	rp.server.towardPrinted({
-		resetTo: path,
-	})
-		.then(Comp.getAPI().onNavigate)
-		.then(() => {
-			// set filesToPrint from storage.
-			if (answer.result === false) return;
-			deps.setState({
-				filesToPrint,
-			});
-		});
-}
-
 function isToPrint({
 	val,
 }) {
 	return [undefined, 0].includes(val) ? false : true;
-}
-
-function isNeedToSaveFilesToPrint(props) {
-	const {
-		deps,
-	} = props;
-	const filesToPrint = deps.state.filesToPrint;
-	const isListNotSaved = Boolean(Object.keys(filesToPrint).length && deps.state.path === '');
-	const isListChanged = JSON.stringify(filesToPrint) !== JSON.stringify(deps.state.snapFilesToPrint);
-
-	return {
-		result: isListNotSaved || isListChanged,
-		isListNotSaved,
-		isListChanged,
-	};
 }
 
 function getComps({
