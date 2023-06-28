@@ -9,7 +9,6 @@ import { checkProgress } from '../../functions';
 import { createSteps } from './createSteps';
 import { channel } from '../../channel';
 import { Copying } from './components/Copying';
-import { Dirs } from '../Dirs/Dirs';
 import { ResumeObj } from '../../resumeObj';
 import { Spin } from 'antd';
 import { Empty } from '../';
@@ -60,7 +59,6 @@ function render({
 	}) => {
 		setState({
 			isCopyCompleted: true,
-			createdPrintFolder: destDir,
 		});
 	}, []);
 
@@ -95,9 +93,11 @@ function render({
 
 			return createSteps({
 				$getUsbDevices: rp.server.$getUsbDevices,
-				isCopyCompleted: state.isCopyCompleted,
 				onAllStepsPassed,
-				Copying: () => <Copying
+				Copying: ({
+					NextStepBtn,
+				}) => <Copying
+					NextStepBtn={NextStepBtn}
 					filesToPrint={filesToPrint}
 					onCopyCompleted={onCopyCompleted}
 					onCopyCanceled={onCopyCanceled}
@@ -119,7 +119,7 @@ function render({
 				/>,
 			});
 		},
-		[state.isCopyCompleted],
+		[],
 	);
 
 	React.useEffect(
@@ -152,11 +152,6 @@ function render({
 					});
 				});
 
-			// Задать начальные значения.
-			resetTo({
-				Comp,
-			});
-
 			return () => {
 				rp.AdditionalPanelAPI.renderIt({
 					actions: [],
@@ -186,12 +181,6 @@ function render({
 			onClick={onClickDispatcher}
 		>
 			{state.loading && <Spin size="large" />}
-			{Object.keys(state.filesToPrint).length === 0 && (
-				<Dirs
-					dirs={state.dirs}
-					onClickDirFnName={dispatcher.onClickDir.name}
-				></Dirs>
-			)}
 
 			{state.isSavePhotosToFlash ?
 				<Stepper
@@ -201,7 +190,7 @@ function render({
 			}
 
 			<Empty
-				isTrue={state.dirs.length === 0 && Object.keys(state.filesToPrint).length === 0}
+				isTrue={Object.keys(state.filesToPrint).length === 0}
 			/>
 		</div>
 	);
@@ -288,7 +277,6 @@ function getStateDefault() {
 	return {
 		filesToPrint: {},
 		isSavePhotosToFlash: false, 
-		isCopyCompleted: false,
 	};
 }
 

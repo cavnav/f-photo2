@@ -1,6 +1,4 @@
-// inside Print a lot of images. how it print?
-//  100 things maximum,
-//  when files had written, then created file with this list and it possible to view by printed
+// when files had written, then created file with this list and it possible to view by printed
 // rewrite printedLog
 // fix error Warning: Can't perform a React state update on
 // check all user ways
@@ -12,6 +10,11 @@
 // after back to list to scroll to last opened folder
 // last added folder
 // add loading (create Proxy Comp for loading)
+// remove ctg file
+// add counter/all for one photo mode
+// print, printed - click by preview open one photo mode by src this photo. 
+	// And one photo need not return to print button, it might simply select print tab.
+
 // II
 // magnifying glass
 // tablet using

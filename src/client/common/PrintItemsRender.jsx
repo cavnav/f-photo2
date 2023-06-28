@@ -5,7 +5,7 @@ import { getBackgroundImageStyle } from '../functions';
 export function PrintItemsRender({
     filesToPrint,
 }) {
-    
+
     const deps = Comp.getDeps();
     const { state } = deps;
     const onChangePhotoCount = (e) => onChangePhotoCountCore({ e, Comp });
@@ -24,32 +24,37 @@ export function PrintItemsRender({
             Object.entries(state.filesToPrint).map(([src, { cnt }]) => {
                 const key = src;
 
-                return <div
-                    className="rowData"
-                    key={key}
-                >
+                return (
                     <div
-                        className='fitPreview file'
-                        style={getBackgroundImageStyle({
-                            file: src,
-                        })}
+                        className="rowData"
+                        key={key}
                     >
-                    </div>
-                    <div
-                        className='controls'
-                        photosrc={src}
-                    >
-                        <input
-                            className="changePhotoCount"
-                            keyid={key}
-                            value={cnt}
-                            onChange={onChangePhotoCount}
-                        />
-                        <input  type="button" className="marginRight10" onClick={onClickCancelPhotoPrint}
+                        <div
+                            className='fitPreview file'
+                            style={getBackgroundImageStyle({
+                                file: src,
+                            })}
+                        >
+                        </div>
+                        <div
+                            className='controls'
+                            photosrc={src}
+                        >
+                            <input
+                                className="changePhotoCount"
+                                keyid={key}
+                                value={cnt}
+                                onChange={onChangePhotoCount}
+                            />
+                            <input  
+                                type="button" 
+                                className="marginRight10" 
                                 value="Отменить печать" 
-                        />
+                                onClick={onClickCancelPhotoPrint}
+                            />
+                        </div>
                     </div>
-                </div>
+                );
             })
         }
         </div>

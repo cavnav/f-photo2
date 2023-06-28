@@ -1,5 +1,4 @@
 export function createSteps({
-  isCopyCompleted,
   onAllStepsPassed,
   Copying,
   $getUsbDevices,
@@ -23,13 +22,12 @@ export function createSteps({
       isNextBtn: false,
     }, 
     {    
-      type: 'reject',
       desc: 'Что-то пошло не так... Попробуй еще раз',
       stepNumDelta: -2,
     }, 
     {
       toRender: Copying,
-      isNextBtn: isCopyCompleted,
+      isNextBtn: false,
     }, 
     {
       photoSrc: 'wizardCopy/005_returnMemCardInPhoto.jpg',
@@ -49,7 +47,6 @@ export function createSteps({
       isNextBtn: false,
     }, 
     {    
-      type: 'reject',
       desc: 'Что-то пошло не так... Попробуй еще раз',
       stepNumDelta: -2,
     }, 
