@@ -1,5 +1,13 @@
 // when files had written, then created file with this list and it possible to view by printed
 // rewrite printedLog
+
+// i need browse core component. for browsing files same mode in all instances.
+// printed - use browse component for viewing prints by date. when click one date, then render print component.
+// you able to see what photos printed, and you have some actions - saveToFlash, back.
+// every component must be with own storage.
+// BrowseBase - render folder, render file, render Empty. OnSelectFolder, onSelectFile, onClickDir, onClickFile, ....
+
+
 // fix error Warning: Can't perform a React state update on
 // check all user ways
 // update

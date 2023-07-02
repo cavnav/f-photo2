@@ -21,5 +21,6 @@ export { ToggleWindow  } from './ToggleWindow/ToggleWindow';
 export { Welcome } from './Welcome';
 export { Copy } from './Copy/Copy';
 export { Browse } from './Browse/Browse';
+export {BrowseBase} from './Browse/BrowseBase';
 export { Printed } from './Printed/Printed';
 export { Rename } from './Rename/Rename';

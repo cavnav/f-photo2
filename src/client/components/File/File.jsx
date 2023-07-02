@@ -1,12 +1,12 @@
 import React from 'react';
 
-export function FileItem({
+export function File({
     style,
     className,
     ind,
     src,
-    clickcb,
-    clickItemCb,
+    onSelectFile,
+    onRequestFile,
     title,
 }) {
     return (
@@ -16,14 +16,14 @@ export function FileItem({
             style={style}
             ind={ind}
             src={src}
-            clickcb={clickcb}
+            event={onRequestFile}
         >
             {title}
             <input
                 className="itemSelector positionAbs"
                 type="checkbox"
                 src={src}
-                clickcb={clickItemCb}
+                event={onSelectFile}
             />
         </div>
     );

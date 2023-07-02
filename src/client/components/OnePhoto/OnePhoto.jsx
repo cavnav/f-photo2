@@ -126,9 +126,7 @@ function render(
             />
           </>
         )}
-        <Empty 
-          isTrue={state.isNoItems}
-        />
+        {state.isNoItems && <Empty />}
       </div>
     );
   }

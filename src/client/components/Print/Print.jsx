@@ -175,6 +175,9 @@ function render({
 		},
 		[]
 	);
+	
+	const isEmpty = Object.keys(state.filesToPrint).length === 0;
+
 	return (
 		<div
 			className="Print layout"
@@ -189,9 +192,7 @@ function render({
 				<PrintItemsRender Comp={Comp} />
 			}
 
-			<Empty
-				isTrue={Object.keys(state.filesToPrint).length === 0}
-			/>
+			{isEmpty && <Empty/>}
 		</div>
 	);
 }

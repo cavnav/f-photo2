@@ -187,15 +187,6 @@ export function getFromResumeObj({
 	});
 }
 
-export function addHandlers({
-	fns,
-}) {
-	return fns.reduce((res, fn) => {
-		res[fn.name] = fn;
-		return res;
-	}, {});
-}
-
 export function updFromObj({
 	obj,
 	objUpd,

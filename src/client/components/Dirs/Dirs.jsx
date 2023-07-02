@@ -2,25 +2,31 @@ import React from 'react';
 
 export function Dirs({
   dirs,
-  onClickDirFnName,
-  onClickItemSelectorFnName,
+  onChangeDir,
+  onSelectDir,
 }) {
-    return dirs.map(dir => {
-      return (
-        <div 
-          key={dir}
-          src={dir}
-          className="positionRel fitPreview dir"
-          clickcb={onClickDirFnName}
-        >
-          {dir.slice(1)}
-          <input
-            className="itemSelector positionAbs"
-            type="checkbox"
+    const Comp = useMemo(() => {
+      className="positionRel fitPreview dir"
+      className="itemSelector positionAbs"
+      return dirs.map(dir => {
+        return (
+          <div 
+            key={dir}
             src={dir}
-            clickcb={onClickItemSelectorFnName}
-          />
-        </div>
-      );
-    });
+            event={onChangeDir}
+          >
+            {dir.slice(1)}
+            <input
+              type="checkbox"
+              src={dir}
+              event={onSelectDir}
+            />
+          </div>
+        );
+      });
+    }, [dirs]);
+    
+    return (
+      <Comp/>
+    );
   }

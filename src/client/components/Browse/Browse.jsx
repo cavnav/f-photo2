@@ -1,24 +1,13 @@
 import React from 'react';
-import {
-	Dirs,
-} from '../';
-import {
-	Spin,
-	Progress,
-} from 'antd';
-
-
 import './styles.css';
 import {
-	addHandlers, getBackgroundImageStyle, getItemName, getOppositeWindow, getUpdatedActionLists, initRefreshWindowEvent, isBanMoveItems, myCrop,
+	getItemName, getOppositeWindow, getUpdatedActionLists, initRefreshWindowEvent, isBanMoveItems, myCrop,
 	onMoveSelections, refreshWindows, updateActionsLists,
 } from '../../functions';
 import { channel } from '../../channel';
 import { ResumeObj } from '../../resumeObj';
-import { Empty } from '../Empty/Empty';
 import { useMutedReducer } from '../../mutedReducer';
 import { BTN_MOVE, BTN_REMOVE, setBtnTitle } from '../../common/additionalActions/const';
-import { FileItem } from '../File/FileItem';
 
 
 export const Browse = channel.addComp({
@@ -39,6 +28,8 @@ const resumeObj = new ResumeObj({
 function render(
 ) {
 	const Comp = this;
+	const rp = Comp.getReqProps();
+	const BrowseBase = rp.BrowseBase.r;
 	const [state, setState] = useMutedReducer({
 		setCompDeps: Comp.bindSetCompDeps(),
 		initialState: getStateInit(),
@@ -53,72 +44,6 @@ function render(
 			});
 		}
 	});
-
-	const dispatcher = React.useMemo(
-		() => addHandlers({
-			fns: [
-				function onClickDir({
-					event
-				}) {
-					const rp = Comp.getReqProps();
-					const {
-						onNavigate,
-					} = Comp.getAPI();
-					setState({
-						loading: true,
-					});
-					const dir = event.target.getAttribute('src');
-					console.log('dispatch')
-					rp.server.toward({ dir })
-						.then(onNavigate)
-						.then(() => {
-							changeSelections({
-								Comp,
-							});
-							setState({
-								loading: false,
-							});
-						});
-				},
-
-				function onClickItemSelector({
-					event: { target },
-				}) {
-					const src = target.getAttribute('src');
-					const { checked } = target;
-					changeSelections({
-						Comp,
-						src,
-						checked,
-					});
-				},
-
-				function onClickFile({
-					event
-				}) {
-					const rp = Comp.getReqProps();
-
-					setState({
-						curPhotoInd: +event.target.getAttribute('ind'),
-					});
-
-					rp.AppAPI.toggleAction({
-						action: rp.OnePhoto.name,	
-					});
-				},
-			],
-		}),
-		[]
-	);
-
-	const onClickDispatcher = React.useCallback((event) => {
-		const { target } = event;
-		const onClickCb = target.getAttribute('clickcb');
-
-		onClickCb && dispatcher[onClickCb]({
-			event,
-		});
-	}, []);
 
 	React.useEffect(() => {
 		renderAddPanel({ Comp });		
@@ -146,42 +71,18 @@ function render(
 		Comp,
 	}), [state.selections]);
 
-	return getRender();
+	const browsePath = state.path + state.sep;
 
-	// --------------------------------------------------------------------
-	function getRender() {
-		return (
-			<div
-				className={`${Browse.name} layout`}
-				onClick={onClickDispatcher}
-			>
-				{state.loading && <Spin size="large" />}
-				{state.progress < 100 && (
-					<div className="flexCenter width100pr positionAbs">
-						<Progress
-							type="circle"
-							percent={state.progress}
-						/>
-					</div>
-				)}
-
-				<Dirs
-					dirs={state.dirs}
-					onClickDirFnName={dispatcher.onClickDir.name}
-					onClickItemSelectorFnName={dispatcher.onClickItemSelector.name}
-				></Dirs>
-				{getFilesToRender()}
-				<Empty
-					isTrue={state.dirs.length === 0 && state.files.length === 0}
-				/>
-
-				{/* <Help
-          toRender={toRenderHelp()}
-          {...{ doNeedHelp: rp.appState.doNeedHelp }}
-        /> */}
-			</div>
-		);
-	}
+	return (
+		<BrowseBase 
+			browsePath={browsePath}
+			files={state.files}
+			dirs={state.dirs}
+			onChangeDir={}
+			onChangeSelections={}
+			onRequestFile={}
+		/>
+	);
 
 	function scrollToSelectedImage() {
 		if (state.curPhotoInd === -1) {
@@ -196,39 +97,6 @@ function render(
 			curPhotoEl.scrollIntoView();
 			curPhotoEl.classList.add('curFile');
 		}
-	}
-
-	function toRenderHelp() {
-		return <div className="flexCenter marginBottom10">
-			Открыть альбом<br></br>
-			Закрыть альбом<br></br>
-			Рассмотреть фото<br></br>
-			Вернуть фото в альбом.<br></br>
-
-		</div>
-	}
-
-	function getFilesToRender() {
-		const rp = Comp.getReqProps();
-		const browsePath = state.path + state.sep;
-		return state.files.map((file, ind) => {
-			const style = getBackgroundImageStyle({
-				file: `${browsePath}${file}`,
-			});
-			const className = 'positionRel fitPreview file scrollwait';
-
-			return (
-				<FileItem
-					key={file} 
-					className={className}
-					style={style}
-					ind={ind}
-					src={file}
-					clickcb={dispatcher.onClickFile.name}
-					clickItemCb={dispatcher.onClickItemSelector.name}
-				/>
-			);
-		});
 	}
 }
 
@@ -654,6 +522,7 @@ function getComps({
 		App,
 		OnePhoto,
 		AdditionalPanel,
+		BrowseBase,
 
 		AddAlbum,
 		CustomAction,
@@ -665,6 +534,7 @@ function getComps({
 
 	return {
 		toClone: {
+			BrowseBase,
 			ToggleWindow,
 			AddAlbum,
 			Rename,

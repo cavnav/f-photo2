@@ -6,9 +6,8 @@ export const emptyTitles = {
 
 export function Empty({
   title = emptyTitles.empty,
-  isTrue,
 }) {  
-  return isTrue === false ? null : (
+  return (
     <div className='flexCenter height100pr width100pr'>{title}</div>
   );
 }

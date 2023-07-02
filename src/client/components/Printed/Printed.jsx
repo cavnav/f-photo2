@@ -3,7 +3,7 @@ import { channel } from '../../channel';
 import { myRequest } from '../../functions';
 import { useMutedReducer } from '../../mutedReducer';
 import { AppServerAPI } from '../../ServerApi';
-import { FileItem } from '../File/FileItem';
+import { FileItem } from '../File/File';
 
 
 export const Printed = channel.addComp({
@@ -71,7 +71,7 @@ const CLICK_DISPATCHER = {
 function onClickFile({
     event,
 }) {
-    
+
 
 }
 
