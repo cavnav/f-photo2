@@ -8,6 +8,7 @@
 // BrowseBase - render folder, render file, render Empty. OnSelectFolder, onSelectFile, onClickDir, onClickFile, ....
 
 
+// add loading (create Proxy Comp for loading)
 // fix error Warning: Can't perform a React state update on
 // check all user ways
 // update
@@ -17,7 +18,6 @@
 // show overwrite confirmation for every files
 // after back to list to scroll to last opened folder
 // last added folder
-// add loading (create Proxy Comp for loading)
 // remove ctg file
 // add counter/all for one photo mode
 // print, printed - click by preview open one photo mode by src this photo. 

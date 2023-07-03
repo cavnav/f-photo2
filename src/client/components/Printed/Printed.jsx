@@ -3,7 +3,7 @@ import { channel } from '../../channel';
 import { myRequest } from '../../functions';
 import { useMutedReducer } from '../../mutedReducer';
 import { AppServerAPI } from '../../ServerApi';
-import { FileItem } from '../File/File';
+import { File } from '../File/File';
 
 
 export const Printed = channel.addComp({
@@ -48,14 +48,14 @@ function render() {
         <div className="printed" onClick={onClickDispatcher}>
         {
             state.files.map((file, ind) => (
-                <FileItem
+                <File
                     key={file} 
                     title={file.replace(".json", "")}
                     ind={ind}
                     src={file}
                     className="positionRel fitPreview file"
-                    clickcb={"onClickFile"}
-                    clickItemCb={"onSelectFile"}
+                    onSelectFile="onClickFile"
+                    onRequestFile="onSelectFile"
                 />
             ))
         }

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useCallback} from 'react';
 import './styles.css';
 import {
 	getItemName, getOppositeWindow, getUpdatedActionLists, initRefreshWindowEvent, isBanMoveItems, myCrop,
@@ -44,6 +44,10 @@ function render(
 			});
 		}
 	});
+	const browsePath = state.path + state.sep;
+	const onChangeDirUpd = useCallback(onChangeDir({Comp}), []);
+	const onChangeSelectionsUpd = useCallback(onChangeSelections({Comp}), []);
+	const onRequestFileUpd = useCallback(onRequestFile({Comp}), []);
 
 	React.useEffect(() => {
 		renderAddPanel({ Comp });		
@@ -63,7 +67,7 @@ function render(
 		[]
 	);
 
-	React.useEffect(scrollToSelectedImage, [state.curPhotoInd]);
+	React.useEffect(() => scrollToSelectedImage({Comp}), [state.curPhotoInd]);
 
 	React.useEffect(boostPerfImgRender, [state.files]);
 
@@ -71,32 +75,33 @@ function render(
 		Comp,
 	}), [state.selections]);
 
-	const browsePath = state.path + state.sep;
-
 	return (
 		<BrowseBase 
 			browsePath={browsePath}
 			files={state.files}
 			dirs={state.dirs}
-			onChangeDir={}
-			onChangeSelections={}
-			onRequestFile={}
+			onChangeDir={onChangeDirUpd}
+			onChangeSelections={onChangeSelectionsUpd}
+			onRequestFile={onRequestFileUpd}
 		/>
 	);
+}
 
-	function scrollToSelectedImage() {
-		if (state.curPhotoInd === -1) {
-			const curPhotoEl = document.querySelector(`.${Browse.name} .file.curFile`);
-			if (curPhotoEl) {
-				curPhotoEl.classList.remove('curFile');
-			}
-			return;
-		}
-		const curPhotoEl = document.querySelector(`.${Browse.name} .file[ind='${state.curPhotoInd}']`);
+function scrollToSelectedImage({Comp}) {
+	const deps = Comp.getDeps();
+	const {state} = deps;
+
+	if (state.curPhotoInd === -1) {
+		const curPhotoEl = document.querySelector(`browse .file.curFile`);
 		if (curPhotoEl) {
-			curPhotoEl.scrollIntoView();
-			curPhotoEl.classList.add('curFile');
+			curPhotoEl.classList.remove('curFile');
 		}
+		return;
+	}
+	const curPhotoEl = document.querySelector(`.browse .file[ind='${state.curPhotoInd}']`);
+	if (curPhotoEl) {
+		curPhotoEl.scrollIntoView();
+		curPhotoEl.classList.add('curFile');
 	}
 }
 
@@ -118,7 +123,55 @@ function boostPerfImgRender() {
 	}
 }
 
-// -------------------------------------------------------
+function onChangeDir({
+	Comp,
+}) {
+	return (event) => {
+		const rp = Comp.getReqProps();
+		const {
+			onNavigate,
+		} = Comp.getAPI();
+
+		const dir = event.target.getAttribute('src');
+		
+		rp.server.toward({ dir })
+			.then(onNavigate)
+			.then(() => {
+				changeSelections({
+					Comp,
+				});
+			});
+	};
+}
+
+function onChangeSelections({Comp}) {
+	return (event) => {
+		const src = event.target.getAttribute('src');
+		const { checked } = event.target;
+
+		changeSelections({
+			Comp,
+			src,
+			checked,
+		});
+	}
+};
+
+function onRequestFile({Comp}) {
+	return (event) => {
+		const rp = Comp.getReqProps();
+		const deps = Comp.getDeps();
+
+		deps.setState({
+			curPhotoInd: +event.target.getAttribute('ind'),
+		});
+
+		rp.AppAPI.toggleAction({
+			action: rp.OnePhoto.name,	
+		});
+	};
+}
+	
 
 function getReqProps({
 	comps,

@@ -1,8 +1,9 @@
 import React, {useMemo} from 'react';
 import {channel} from '../../channel';
-import {getBackgroundImageStyle} from '../../functions';
+import {getBackgroundImageStyle, getVarName} from '../../functions';
 import { Dirs } from '../Dirs/Dirs';
 import {File} from '../File/File';
+import {Empty} from '../Empty/Empty';
 
 
 export const BrowseBase = channel.addComp({
@@ -16,44 +17,47 @@ function render(props) {
         browsePath,
         files,
         dirs,
-        onChangeDir,
-        onChangeSelections,
-        onRequestFile,
+
+        ...eventHandlers
     } = props;
 
-    const eventHandlers = {
+    const {
         onChangeDir,
         onChangeSelections,
         onRequestFile,
-    };
+    } = eventHandlers;
+
+    const isEmpty = dirs.length === 0 && files.length === 0;
 
     const Files = useMemo(() => {
         const className = 'positionRel fitPreview file scrollwait';
 		
-        return files.map((file, ind) => {
-			const style = getBackgroundImageStyle({
-				file: `${browsePath}${file}`,
-			});
+        return (
+            <>
+                {files.map((file, ind) => {
+                    const style = getBackgroundImageStyle({
+                        file: `${browsePath}${file}`,
+                    });
 
-			return (
-				<File
-					key={file} 
-					className={className}
-					style={style}
-					ind={ind}
-					src={file}
-					onSelectFile={onChangeSelections.name}
-                    onRequestFile={onRequestFile.name}
-				/>
-			);
-		});
+                    return (
+                        <File
+                            key={file} 
+                            className={className}
+                            style={style}
+                            ind={ind}
+                            src={file}
+                            onSelectFile={getVarName({onChangeSelections})}
+                            onRequestFile={getVarName({onRequestFile})}
+                        />
+                    );
+                })}
+            </>
+		);
     }, [browsePath, files]);
 
-    const isEmpty = dirs.length === 0 && files.length === 0;
-
     const onClickItem = (event) => {
-        const eventHandler = event.target.getAttribute('eventHandler');
-        eventHandlers?.[eventHandler]?.(event);
+        const eventHandler = event.target.getAttribute('handler');
+        eventHandlers[eventHandler]?.(event);
     };
 
     return (
@@ -63,10 +67,10 @@ function render(props) {
 		>
 			<Dirs
 				dirs={dirs}
-				onChangeDir={onClickDir.name}
-				onSelectDir={onSelectItem.name}
+				onChangeDir={getVarName({onChangeDir})}
+				onSelectDir={getVarName({onChangeSelections})}
 			/>
-			<Files />
+			{Files}
             {isEmpty && <Empty/>}
 		</div>
     );

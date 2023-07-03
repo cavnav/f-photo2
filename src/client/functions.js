@@ -187,6 +187,10 @@ export function getFromResumeObj({
 	});
 }
 
+export function getVarName(variable) {
+	return Object.keys(variable)[0];
+}
+
 export function updFromObj({
 	obj,
 	objUpd,

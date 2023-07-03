@@ -16,14 +16,14 @@ export function File({
             style={style}
             ind={ind}
             src={src}
-            event={onRequestFile}
+            handler={onRequestFile}
         >
             {title}
             <input
                 className="itemSelector positionAbs"
                 type="checkbox"
                 src={src}
-                event={onSelectFile}
+                handler={onSelectFile}
             />
         </div>
     );
