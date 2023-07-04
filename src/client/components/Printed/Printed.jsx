@@ -42,7 +42,7 @@ function render() {
     
     return (
         <div className="printed">
-            <StateComp PrintedComp={Comp}/>
+            {StateComp && <StateComp PrintedComp={Comp}/>}
         </div>
     );
 }

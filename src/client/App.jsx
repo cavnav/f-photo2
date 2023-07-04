@@ -29,6 +29,7 @@
 // unselect all
 // select all
 
+// III
 
 // Warning: Can't perform a React state update on an unmounted component. This is a no-op, but it indicates a memory leak in your application. To fix, cancel all subscriptions and asynchronous tasks in a useEffect cleanup function.
 //     in bound render (created by bound render)
@@ -45,7 +46,6 @@
 // sync between browse, print, share, onePhoto
 // z100 error
 // Failed to load resource
-// ctg file
 // add create resumeObj in channel.addComp().
 // content-visibility
 
