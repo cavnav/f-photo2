@@ -4,7 +4,6 @@ import {File} from './File';
 
 export function FilesPrinted({
     files,
-    onSelectFile,
     onRequestFile,
 }) {
     return (

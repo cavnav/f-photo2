@@ -77,13 +77,13 @@ function render(
 		Comp,
 	}), [state.selections]);
 
-	const FilesComp = state.files.length === 0 ? null : (props) => <Files
+	const FilesComp = state.files.length === 0 ? undefined : (props) => <Files
 		files={state.files}
 		browsePath={browsePath}
 		{...props}
 	/>;
 
-	const DirsComp = state.dirs.length === 0 ? null : (props) => <Dirs
+	const DirsComp = state.dirs.length === 0 ? undefined : (props) => <Dirs
 		dirs={state.dirs}
 		{...props}
 	/>;

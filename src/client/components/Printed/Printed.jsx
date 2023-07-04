@@ -6,6 +6,8 @@ import { AppServerAPI } from '../../ServerApi';
 import { FilesPrinted } from '../File/FilesPrinted';
 
 
+const STATES = {BrowseBase: BrowseBaseWrap, Print: PrintWrap};
+
 export const Printed = channel.addComp({
     name: 'Printed',
     render,
@@ -15,12 +17,10 @@ export const Printed = channel.addComp({
 
 function render() {
     const Comp = this;
-    const rp = Comp.getReqProps();
-    const BrowseBase = rp.BrowseBase.r;
 
     const [state] = useMutedReducer({
         setCompDeps: Comp.bindSetCompDeps(),
-        initialState: getInitialState(),
+        initialState: getInitialState({Comp}),
     });    
 
     const onNavigate = ({ files }) => onNavigateCore({
@@ -38,29 +38,49 @@ function render() {
         });
     }, []);
 
-    const onRequestFileUpd = useCallback(onRequestFile({Comp}, []));
-    const FilesComp = state.files.length === 0 ? null : (props) => <FilesPrinted
-        files={state.files}
-        {...props}
-        />;
+    const StateComp = STATES[state.action];
     
     return (
         <div className="printed">
-            <BrowseBase 
-                Files={FilesComp}
-                onRequestFile={onRequestFileUpd}
-            />
+            <StateComp PrintedComp={Comp}/>
         </div>
     );
 }
 
-function onRequestFile({
-    Comp,
-}) {
-    return (event) => {
+function BrowseBaseWrap({PrintedComp}) {
+    const deps = PrintedComp.getDeps();
+    const rp = PrintedComp.getReqProps();
+    const BrowseBase = rp.BrowseBase.r;
+
+    const {state} = deps;
+    const onRequestFileUpd = useCallback(onRequestFile, []);
+    const FilesComp = state.files.length === 0 ? undefined : (props) => <FilesPrinted
+        files={state.files}
+        {...props}
+        />;
+
+    return (
+        <BrowseBase
+            Files={FilesComp}
+            onRequestFile={onRequestFileUpd}
+        />
+    );
+
+
+    function onRequestFile(event) {
+        const deps = PrintedComp.getDeps();
+        const {setState} = deps;
+        const rp = PrintedComp.getReqProps();
+        const Print = rp.Print;
 
         console.log("onRequestFile");
-    };
+
+        setState({action: Print.name});
+    }
+}
+
+function PrintWrap({PrintedComp}) {
+    return (<>print</>);
 }
 
 function getReqProps({
@@ -87,8 +107,7 @@ function getComps({
     channelComps,
 }) {
     const {
-        App,
-        Browse,
+        Print,
         Dialog,
         BrowseBase,
     } = channelComps;
@@ -96,10 +115,9 @@ function getComps({
     return {
         toClone: {
             BrowseBase,
+            Print,
         },
         items: {
-            App,
-            Browse,
             Dialog,
         },
     };
@@ -121,8 +139,11 @@ function navigate({
     });
 }
 
-function getInitialState() {
+function getInitialState({Comp}) {
+    const rp = Comp.getReqProps();
+    const BrowseBase = rp.BrowseBase.name;
     return {
         files: [],
+        action: BrowseBase,
     };
 }

@@ -17,7 +17,7 @@ function render(props) {
         ...eventHandlers
     } = props;
 
-    const isEmpty = Files === null && Dirs === null;
+    const isEmpty = Files === undefined && Dirs === undefined;
 
     const {
         onChangeDir,
