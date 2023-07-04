@@ -8,6 +8,8 @@ import { channel } from '../../channel';
 import { ResumeObj } from '../../resumeObj';
 import { useMutedReducer } from '../../mutedReducer';
 import { BTN_MOVE, BTN_REMOVE, setBtnTitle } from '../../common/additionalActions/const';
+import { Files } from '../File/Files';
+import { Dirs } from '../Dirs/Dirs';
 
 
 export const Browse = channel.addComp({
@@ -75,11 +77,21 @@ function render(
 		Comp,
 	}), [state.selections]);
 
+	const FilesComp = state.files.length === 0 ? null : (props) => <Files
+		files={state.files}
+		browsePath={browsePath}
+		{...props}
+	/>;
+
+	const DirsComp = state.dirs.length === 0 ? null : (props) => <Dirs
+		dirs={state.dirs}
+		{...props}
+	/>;
+
 	return (
 		<BrowseBase 
-			browsePath={browsePath}
-			files={state.files}
-			dirs={state.dirs}
+			Files={FilesComp}
+			Dirs={DirsComp}
 			onChangeDir={onChangeDirUpd}
 			onChangeSelections={onChangeSelectionsUpd}
 			onRequestFile={onRequestFileUpd}

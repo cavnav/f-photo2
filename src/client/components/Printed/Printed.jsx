@@ -1,9 +1,9 @@
-import React, { useEffect } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { channel } from '../../channel';
 import { myRequest } from '../../functions';
 import { useMutedReducer } from '../../mutedReducer';
 import { AppServerAPI } from '../../ServerApi';
-import { File } from '../File/File';
+import { FilesPrinted } from '../File/FilesPrinted';
 
 
 export const Printed = channel.addComp({
@@ -15,24 +15,18 @@ export const Printed = channel.addComp({
 
 function render() {
     const Comp = this;
-    const onClickDispatcher = (event) => {
-        const { target } = event;
-        const onClickCb = target.getAttribute('clickcb');
-        if (onClickCb && CLICK_DISPATCHER[onClickCb]) {
-            CLICK_DISPATCHER[onClickCb]({
-                event,
-            });
-        }
-    };
-    const onNavigate = ({ files }) => onNavigateCore({
-        Comp,
-        files,
-    });
+    const rp = Comp.getReqProps();
+    const BrowseBase = rp.BrowseBase.r;
 
     const [state] = useMutedReducer({
         setCompDeps: Comp.bindSetCompDeps(),
         initialState: getInitialState(),
     });    
+
+    const onNavigate = ({ files }) => onNavigateCore({
+        Comp,
+        files,
+    });
 
     useEffect(() => {    
         const rp = Comp.getReqProps();
@@ -43,42 +37,30 @@ function render() {
             onResponse: onNavigate,
         });
     }, []);
+
+    const onRequestFileUpd = useCallback(onRequestFile({Comp}, []));
+    const FilesComp = state.files.length === 0 ? null : (props) => <FilesPrinted
+        files={state.files}
+        {...props}
+        />;
     
     return (
-        <div className="printed" onClick={onClickDispatcher}>
-        {
-            state.files.map((file, ind) => (
-                <File
-                    key={file} 
-                    title={file.replace(".json", "")}
-                    ind={ind}
-                    src={file}
-                    className="positionRel fitPreview file"
-                    onSelectFile="onClickFile"
-                    onRequestFile="onSelectFile"
-                />
-            ))
-        }
+        <div className="printed">
+            <BrowseBase 
+                Files={FilesComp}
+                onRequestFile={onRequestFileUpd}
+            />
         </div>
     );
 }
 
-const CLICK_DISPATCHER = {
-    onClickFile,
-    onSelectFile,
-};
-
-function onClickFile({
-    event,
+function onRequestFile({
+    Comp,
 }) {
+    return (event) => {
 
-
-}
-
-function onSelectFile({
-    event,
-}) {
-
+        console.log("onRequestFile");
+    };
 }
 
 function getReqProps({
@@ -108,9 +90,13 @@ function getComps({
         App,
         Browse,
         Dialog,
+        BrowseBase,
     } = channelComps;
 
     return {
+        toClone: {
+            BrowseBase,
+        },
         items: {
             App,
             Browse,

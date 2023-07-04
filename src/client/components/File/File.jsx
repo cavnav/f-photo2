@@ -19,12 +19,12 @@ export function File({
             handler={onRequestFile}
         >
             {title}
-            <input
+            {onSelectFile && <input
                 className="itemSelector positionAbs"
                 type="checkbox"
                 src={src}
                 handler={onSelectFile}
-            />
+            />}
         </div>
     );
 }
