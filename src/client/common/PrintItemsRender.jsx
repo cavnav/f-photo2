@@ -3,25 +3,33 @@ import { getBackgroundImageStyle } from '../functions';
 
 
 export function PrintItemsRender({
-    filesToPrint,
+    items,
 }) {
-
-    const deps = Comp.getDeps();
-    const { state } = deps;
-    const onChangePhotoCount = (e) => onChangePhotoCountCore({ e, Comp });
-    const onClickCancelPhotoPrint = (e) => onClickCancelPhotoPrintCore({ e, Comp });
-    const addKeyDownListener = (e) => addKeyDownListenerCore({e, Comp });
-
-    React.useEffect(addKeyDownListener, []);
-    React.useEffect(() => {
-		const input = getActiveInput({ Comp });
-		input && input.focus();
+	const [state, setState] = useMutedReducer({
+		initialState: getStateInit(),
+		setCompDeps: Comp.bindSetCompDeps(),
+		fn: ({
+			stateUpd,
+		}) => {
+			resumeObj.save({
+				val: {
+					filesToPrint: stateUpd.filesToPrint,
+				},
+			});
+		}
 	});
+
+    const onChangePhotoCount = (e) => {};
+    const onClickCancelPhotoPrint = (e) => {};
+    const addKeyDownListener = (e) => {};
+
+    // React.useEffect(addKeyDownListener, []);
+    // React.useEffect(setInputFocus);
 
     return (
         <div className="PrintItems">
         {
-            Object.entries(state.filesToPrint).map(([src, { cnt }]) => {
+            Object.entries(items).map(([src, { cnt }]) => {
                 const key = src;
 
                 return (
@@ -61,22 +69,23 @@ export function PrintItemsRender({
     );
 }
 
-function getActiveInput({ Comp }) {
+function setInputFocus({Comp}) {
     const deps = Comp.getDeps();
     const { state } = deps;
-    document.querySelector(`input[keyid=\'${state.activeInput}\']`);
+    const input = document.querySelector(`input[keyid=\'${state.activeInput}\']`);
+    input && input.focus();
 }
 
 function addKeyDownListenerCore({ Comp }) {
-    const onKeyDown = (e) => onKeyDownCore({ e, Comp });
-    document.addEventListener('keydown', onKeyDown);
+    const onKeyDownWrap = (event) => onKeyDown({ event, Comp });
+    document.addEventListener('keydown', onKeyDownWrap);
 
     return () => {
-        document.removeEventListener('keydown', onKeyDown);
+        document.removeEventListener('keydown', onKeyDownWrap);
     };
 }
 
-function onKeyDownCore({ e, Comp }) {
+function onKeyDown({ event, Comp }) {
     const input = document.activeElement;
 
     if (input === document.body) return;
@@ -89,18 +98,18 @@ function onKeyDownCore({ e, Comp }) {
     const getCntUpd = {
         38: () => (cntSource + 1),
         40: () => (cntSource > 0 ? cntSource - 1 : cntSource),
-    }[e.which] ?? (() => cntSource);
+    }[event.which] ?? (() => cntSource);
 
     const deps = Comp.getDeps();
-    const { setState } = deps;
+    const { state, setState } = deps;
 
     setState({
         filesToPrint: updateFilesToPrint.update({
+            filesToPrint: state.files,
             photoSrc,
             val: {
                 cnt: getCntUpd(),
             },
-            Comp,
         }),
     });
 }
@@ -142,31 +151,4 @@ function onClickCancelPhotoPrintCore({ e, Comp }) {
     });
 }
 
-const updateFilesToPrint = {
-	update(props) {
-		const filesToPrint = this.getFilesToPrint(props);
-		filesToPrint[props.photoSrc] = {
-			...filesToPrint[props.photoSrc],
-			cnt: props.val.cnt,
-		};
-		return filesToPrint;
-	},
-	add(props) {
-		const filesToPrint = this.getFilesToPrint(props);
-		filesToPrint[props.photoSrc] = {
-			cnt: props.val.cnt,
-		};
-		return filesToPrint;
-
-	},
-	delete(props) {
-		const filesToPrint = this.getFilesToPrint(props);
-		delete filesToPrint[props.photoSrc];
-		return filesToPrint;
-	},
-	getFilesToPrint(props) {
-		const { deps } = props.Comp;
-		return props.filesToPrint || deps.state.filesToPrint;
-	}
-}
 

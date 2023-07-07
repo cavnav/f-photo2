@@ -10,11 +10,11 @@ import { createSteps } from './createSteps';
 import { channel } from '../../channel';
 import { Copying } from './components/Copying';
 import { ResumeObj } from '../../resumeObj';
-import { Spin } from 'antd';
 import { Empty } from '../';
 import { useMutedReducer } from '../../mutedReducer';
 import { eventNames } from '../../constants';
 import { PrintItemsRender } from '../../common/PrintItemsRender';
+import { updateFilesToPrint } from './PrintUtils';
 
 
 const MAX_FILES_COUNT = 100;
@@ -181,15 +181,12 @@ function render({
 	return (
 		<div
 			className="Print layout"
-			onClick={onClickDispatcher}
 		>
-			{state.loading && <Spin size="large" />}
-
-			{state.isSavePhotosToFlash ?
-				<Stepper
+			{state.isSavePhotosToFlash 
+				? <Stepper
 					steps={steps}
-				/> :
-				<PrintItemsRender Comp={Comp} />
+					/> 
+				: <PrintItemsRender items={state.filesToPrint} />
 			}
 
 			{isEmpty && <Empty/>}
