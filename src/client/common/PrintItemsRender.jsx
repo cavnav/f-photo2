@@ -1,30 +1,29 @@
-import React from 'react';
+import React, {useRef} from 'react';
+import { updateFilesToPrint } from '../components/Print/PrintUtils';
 import { getBackgroundImageStyle } from '../functions';
+import { useMutedReducer } from '../mutedReducer';
 
 
 export function PrintItemsRender({
     items,
 }) {
 	const [state, setState] = useMutedReducer({
-		initialState: getStateInit(),
-		setCompDeps: Comp.bindSetCompDeps(),
-		fn: ({
-			stateUpd,
-		}) => {
-			resumeObj.save({
-				val: {
-					filesToPrint: stateUpd.filesToPrint,
-				},
-			});
-		}
+		initialState: getInitialState(),
+        props: {
+            items,
+        },
 	});
 
-    const onChangePhotoCount = (e) => {};
-    const onClickCancelPhotoPrint = (e) => {};
-    const addKeyDownListener = (e) => {};
-
-    // React.useEffect(addKeyDownListener, []);
-    // React.useEffect(setInputFocus);
+    const Comp = useRef({state, setState}).current;
+    const onChangePhotoCountWrap = (event) => onChangePhotoCount({event, Comp});
+    const onCancelPrintWrap = (event) => onCancelPrint({event, Comp});
+    
+    React.useEffect(() => {
+        keyDownListener({Comp});
+    }, []);
+    React.useEffect(() => {
+        setInputFocus({Comp});
+    });
 
     return (
         <div className="PrintItems">
@@ -52,13 +51,13 @@ export function PrintItemsRender({
                                 className="changePhotoCount"
                                 keyid={key}
                                 value={cnt}
-                                onChange={onChangePhotoCount}
+                                onChange={onChangePhotoCountWrap}
                             />
                             <input  
                                 type="button" 
                                 className="marginRight10" 
                                 value="Отменить печать" 
-                                onClick={onClickCancelPhotoPrint}
+                                onClick={onCancelPrintWrap}
                             />
                         </div>
                     </div>
@@ -70,13 +69,12 @@ export function PrintItemsRender({
 }
 
 function setInputFocus({Comp}) {
-    const deps = Comp.getDeps();
-    const { state } = deps;
+    const { state } = Comp;
     const input = document.querySelector(`input[keyid=\'${state.activeInput}\']`);
     input && input.focus();
 }
 
-function addKeyDownListenerCore({ Comp }) {
+function keyDownListener({ Comp }) {
     const onKeyDownWrap = (event) => onKeyDown({ event, Comp });
     document.addEventListener('keydown', onKeyDownWrap);
 
@@ -100,12 +98,11 @@ function onKeyDown({ event, Comp }) {
         40: () => (cntSource > 0 ? cntSource - 1 : cntSource),
     }[event.which] ?? (() => cntSource);
 
-    const deps = Comp.getDeps();
-    const { state, setState } = deps;
+    const { state, setState } = Comp;
 
     setState({
-        filesToPrint: updateFilesToPrint.update({
-            filesToPrint: state.files,
+        items: updateFilesToPrint.update({
+            filesToPrint: state.items,
             photoSrc,
             val: {
                 cnt: getCntUpd(),
@@ -114,41 +111,45 @@ function onKeyDown({ event, Comp }) {
     });
 }
 
-function onChangePhotoCountCore({ e, Comp }) {
+function onChangePhotoCount({ event, Comp }) {
     const input = e.target;
 
     // allowed only numbers.
     const numbers = /^[0-9]+$/;
     if (input.value.match(numbers) === null) {
-        e.preventDefault();
+        event.preventDefault();
         return;
     }
 
     const { photoSrc } = input.parentElement.getAttribute('photosrc');
 
-    const deps = Comp.getDeps();
-    const { setState } = deps;
+    const { setState } = Comp;
 
     setState({
-        filesToPrint: updateFilesToPrint.update({
+        items: updateFilesToPrint.update({
             photoSrc,
             val: {
                 cnt: input.value,
             },
-            Comp,
         }),
         activeInput: photoSrc,
     });
 }
 
-function onClickCancelPhotoPrintCore({ e, Comp }) {
-    const { photoSrc } =  e.target.parentElement.getAttribute('photosrc');
-    const deps = Comp.getDeps();
-    const { state, setState } = deps;
+function onCancelPrint({ event, Comp }) {
+    const photoSrc =  event.target.parentElement.getAttribute('photosrc');
+    const { state, setState } = Comp;
     setState({
-        filesToPrint: delete state.filesToPrint[photoSrc] && state.filesToPrint,
+        items: delete state.items[photoSrc] && state.items,
         activeInput: undefined,
     });
+}
+
+function getInitialState() {
+    return {
+        activeInput: undefined,
+        items: {},
+    };
 }
 
 

@@ -283,6 +283,7 @@ function getStateInit(
 	const resumed = resumeObj.get();
 	return {
 		...getStateDefault(),
+		
 		...resumed,
 	};
 }
