@@ -5,11 +5,7 @@ import { useMutedReducer } from '../../mutedReducer';
 
 export const ToggleWindow = channel.addComp({
     name: 'ToggleWindow',
-    resumeObj: {
-        selector: [
-            "browserCount",
-        ],
-    },
+    getResumeObj,    
     render,
     getComps,
 });
@@ -98,5 +94,13 @@ function getComps({
         toClone: {
             Label: channelComps.Label,
         },
+    };
+}
+
+function getResumeObj() {
+    return {
+        selector: [
+            "browserCount",
+        ],
     };
 }

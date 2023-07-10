@@ -30,7 +30,7 @@ class Channel {
     addComp({
         name,
         render,
-        resumeObj,
+        getResumeObj,
         getAPI,
         getReqProps,
         getComps = () => ({}),
@@ -38,7 +38,7 @@ class Channel {
         const baseComp = new ChannelComp({
             name,
             render,
-            resumeObj,
+            getResumeObj,
             getAPI,
             getReqProps,
             getComps,
@@ -121,7 +121,7 @@ class ChannelComp {
     constructor({
         name,
         render,
-        resumeObj,
+        getResumeObj,
         getAPI,
         getReqProps,
         getComps,
@@ -131,11 +131,11 @@ class ChannelComp {
         this.deps = {};
         this.comps = undefined;
         this.r = render.bind(this);
-        this.resumeObj = resumeObj ? new ResumeObj(resumeObj) : {};
+        this.resumeObj = getResumeObj ? new ResumeObj(getResumeObj({name})) : {};
         this.props = {
             name,
             render,
-            resumeObj,
+            getResumeObj,
             getAPI,
             getReqProps,
             getComps,
@@ -192,6 +192,7 @@ class ChannelComp {
                 Comp: this,
                 deps: this.deps,
             }),
+            resumeObj: this.resumeObj,
         };
     }
 

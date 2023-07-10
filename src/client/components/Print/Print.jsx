@@ -9,7 +9,6 @@ import { checkProgress } from '../../functions';
 import { createSteps } from './createSteps';
 import { channel } from '../../channel';
 import { Copying } from './components/Copying';
-import { ResumeObj } from '../../resumeObj';
 import { Empty } from '../';
 import { useMutedReducer } from '../../mutedReducer';
 import { eventNames } from '../../constants';
@@ -22,27 +21,28 @@ const MAX_FILES_COUNT = 100;
 
 export const Print = channel.addComp({
 	name: 'Print',
+	getResumeObj,
 	render,
 	getAPI,
 	getReqProps,
 	getComps,
 });
 
-const resumeObj = new ResumeObj({
-	selector: [
-		Print.name,
-	],
-	val: getStateDefault(),
-});
-
 function render({
+	files,
 }) {
 	const Comp = this;
 	const rp = Comp.getReqProps();	
+	const {resumeObj} = rp;
 
 	const [state, setState] = useMutedReducer({
-		initialState: getStateInit(),
+		initialState: getInitialState({resumeObj}),
 		setCompDeps: Comp.bindSetCompDeps(),
+		...(files && {
+			props: {
+				filesToPrint: files,
+			}
+		}),
 		fn: ({
 			stateUpd,
 		}) => {
@@ -165,6 +165,8 @@ function render({
 			const {
 				setState,
 			} = Comp.getDeps();
+			const rp = Comp.getReqProps();
+			const {resumeObj} = rp;
 			const refreshWindowWrap = () => {
 				setState({
 					filesToPrint: resumeObj.get().filesToPrint,
@@ -197,9 +199,11 @@ function render({
 function getReqProps({
 	channel,
 	comps,
+	resumeObj,
 }) {
 	return {
 		server: channel.server,
+		resumeObj,
 		...comps,
 	}
 };
@@ -207,6 +211,7 @@ function getReqProps({
 function getAPI({
 	Comp,
 	deps,
+	resumeObj,
 }) {
 	return {
 		getFilesToPrint,
@@ -278,12 +283,13 @@ function getStateDefault() {
 	};
 }
 
-function getStateInit(
-) {
+function getInitialState({
+	resumeObj,
+}) {
 	const resumed = resumeObj.get();
 	return {
 		...getStateDefault(),
-		
+
 		...resumed,
 	};
 }
@@ -312,4 +318,13 @@ function getComps({
 			AdditionalPanel,
 		},
 	};
+}
+
+function getResumeObj({name}) {
+	return {
+		selector: [
+			name,
+		],
+		val: getStateDefault(),
+	}
 }

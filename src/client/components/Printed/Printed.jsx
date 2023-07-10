@@ -6,7 +6,7 @@ import { AppServerAPI } from '../../ServerApi';
 import { FilesPrinted } from '../File/FilesPrinted';
 
 
-const STATES = {BrowseBase: BrowseBaseWrap, Print: PrintWrap};
+const STATE_NAMES = {Browse: BrowseBaseWrap, Print: PrintWrap};
 
 export const Printed = channel.addComp({
     name: 'Printed',
@@ -38,7 +38,7 @@ function render() {
         });
     }, []);
 
-    const StateComp = STATES[state.action];
+    const StateComp = STATE_NAMES[state.actionName];
     
     return (
         <div className="printed">
@@ -67,20 +67,23 @@ function BrowseBaseWrap({PrintedComp}) {
     );
 
 
-    function onRequestFile(event) {
+    function onRequestFile() {
         const deps = PrintedComp.getDeps();
         const {setState} = deps;
         const rp = PrintedComp.getReqProps();
-        const Print = rp.Print;
+        const actionName = rp.PrintClone.name;
 
-        console.log("onRequestFile");
-
-        setState({action: Print.name});
+        setState({actionName});
     }
 }
 
 function PrintWrap({PrintedComp}) {
-    return (<>print</>);
+    const deps = PrintedComp.getDeps();
+    const {state} = deps;
+    const rp = PrintedComp.getReqProps();
+    const PrintClone = rp.PrintClone.r;
+
+    return <PrintClone files={state.files}/>;
 }
 
 function getReqProps({
@@ -115,7 +118,7 @@ function getComps({
     return {
         toClone: {
             BrowseBase,
-            Print,
+            PrintClone: Print,
         },
         items: {
             Dialog,
@@ -141,9 +144,9 @@ function navigate({
 
 function getInitialState({Comp}) {
     const rp = Comp.getReqProps();
-    const BrowseBase = rp.BrowseBase.name;
+    const actionName = rp.BrowseBase.name;
     return {
         files: [],
-        action: BrowseBase,
+        actionName,
     };
 }
