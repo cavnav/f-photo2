@@ -6,6 +6,16 @@ export const resumeObjConstants = {
   browserCount: 'browserCount',
 };
 export class ResumeObj {
+  defAppState = {
+    [resumeObjConstants.browserCount]: 1,
+    leftWindow: {
+      // OnePhoto: {},
+    },
+    rightWindow: undefined,
+    // [Print.name]: {},
+    // [Share.name]: {},
+  };
+  
   constructor(
     props = {},
     {
@@ -122,14 +132,4 @@ export class ResumeObj {
     const storage = localStorage.getItem(resumeObjConstants.storageItemName);
     return storage ? JSON.parse(storage) : this.defAppState;
   }  
-
-  defAppState = {
-    [resumeObjConstants.browserCount]: 1,
-    leftWindow: {
-      // OnePhoto: {},
-    },
-    rightWindow: undefined,
-    // [Print.name]: {},
-    // [Share.name]: {},
-  };
 }

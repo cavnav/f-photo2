@@ -39,7 +39,7 @@ export function useMutedReducer({
   
     return [state, dispatch, forceUpdate];
   
-    // ---
+    // --- need to be unmutable.
     function dispatch(stateUpd) {
       updateState({
         state,

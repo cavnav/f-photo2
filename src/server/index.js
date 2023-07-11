@@ -282,10 +282,22 @@ app.post('/api/toward', getToward());
 app.post('/api/backward', getToward({
 	isBackward: true,
 }));
-app.post('/api/towardPrinted', getToward({
-	rootDir: PRINTED_DIR,
-	mapResponse: mapResponsePrinted
-}));
+app.post('/api/towardPrinted', async (req, res) => {
+	const {body} = req;
+	if (body.dir) {
+		const mappedResult = await mapResponsePrinted({
+			jsonSrc: body.dir,
+			reqPath: path.join(state[body.curWindow], path.basename(body.dir)),
+		});
+
+		res.send(mappedResult);
+	} else {
+		getToward({
+			rootDir: PRINTED_DIR,
+		})(req, res);
+	}
+});
+app.post('/api/getPrintedItems', )
 app.post('/api/backwardPrinted', getToward(
 	{
 		rootDir: PRINTED_DIR,
@@ -863,17 +875,14 @@ async function createPrintedLog({
 }
 
 async function mapResponsePrinted({
-	result,
 	reqPath,
 }) {
-	const jsonSrc = result.files[0] || '';
 	const json = await fs.readJson(
-		path.join(reqPath, jsonSrc),
+		reqPath,
 	).catch(e => undefined);
 
 	return {
-		...result,
-		files: json ? [json] : [],
+		files: json ?? {},
 	};
 }
 

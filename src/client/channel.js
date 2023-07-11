@@ -191,8 +191,8 @@ class ChannelComp {
             ...this.props.getAPI?.({
                 Comp: this,
                 deps: this.deps,
-            }),
-            resumeObj: this.resumeObj,
+                resumeObj: this.resumeObj,
+            }),            
         };
     }
 
@@ -213,6 +213,7 @@ class ChannelComp {
     getReqProps() {
         const res = {
             channel,
+            serverAPI: channel.server,
             deps: this.deps,
             comps: this.getComps(),
             resumeObj: this.resumeObj,

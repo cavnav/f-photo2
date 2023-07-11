@@ -201,6 +201,23 @@ export class AppServerAPI {
 		});
 	}
 
+	getPrintedItems = ({
+		requestFile,
+	}) => {
+		return fetch(
+			this.getFullUrl({
+				url: 'getPrintedItems'
+			}),
+			new PostObjTmp({
+				body: {
+					requestFile,
+					curWindow: window.name,
+				},
+			})
+		)
+		.then(res => res.json());
+	}
+
 	removeItems = ({
 		items = [],
 		updatedActionLists,
