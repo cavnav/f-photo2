@@ -65,7 +65,7 @@ export function Stepper(props) {
                 return step[item] && stepStruct[item]({
                     key: ind,
                     step,
-                    NextStepBtn,
+                    NextStepBtn: () => getNextBtn(step.stepNumDelta),
                 });
             });
 
