@@ -47,9 +47,7 @@ function render({
 			stateUpd,
 		}) => {
 			resumeObj.save({
-				val: {
-					filesToPrint: stateUpd.filesToPrint,
-				},
+				val: stateUpd
 			});
 		}
 	});
