@@ -95,9 +95,9 @@ function render({
 				$getUsbDevices: rp.server.$getUsbDevices,
 				onAllStepsPassed,
 				Copying: ({
-					NextStepBtn,
+					nextStepBtn,
 				}) => <Copying
-					NextStepBtn={NextStepBtn}
+					nextStepBtn={nextStepBtn}
 					filesToPrint={filesToPrint}
 					onCopyCompleted={onCopyCompleted}
 					onCopyCanceled={onCopyCanceled}

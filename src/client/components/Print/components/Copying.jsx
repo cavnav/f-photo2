@@ -4,7 +4,7 @@ import { useMutedReducer } from '../../../mutedReducer';
 
 
 export const Copying = React.memo(function ({
-	NextStepBtn,
+	nextStepBtn,
 	filesToPrint,
 	checkProgress,
 	$saveFilesToFlash,
@@ -35,7 +35,7 @@ export const Copying = React.memo(function ({
 			{state.isCopyCompleted && (
 				<>
 					<div>Все файлы успешно скопированы</div>
-					<NextStepBtn />
+					{nextStepBtn}
 				</>
 			)}
 		</div>

@@ -8,31 +8,29 @@ export function Stepper(props) {
 
     const [state, dispatch] = React.useReducer(
         stateReducer,
-        initState,
+        {
+            ...initState,
+            steps: props.steps,
+        },
         stateReducer
     );
 
-    let stateFinal = state;
-    if (state.steps.length === 0) {
-        stateFinal = stateReducer(state, { steps: props.steps });
-    };
-
-    React.useEffect(fireTrigger, [stateFinal.stepNum]);
+    React.useEffect(fireTrigger, [state.stepNum]);
 
     return (
         <div className="Stepper">
-            {stateFinal.stepJSX}
+            {state.stepJSX}
         </div>
     );
 
     // ------------------------------------------------------------------
 
     function fireTrigger() {
-        const { step: { trigger = () => { } } } = stateFinal;
-        trigger({ step: stateFinal.step, setStepNum });
+        const { step: { trigger = () => { } } } = state;
+        trigger({ step: state.step, setStepNum });
     }
 
-    function stateReducer(prevState, delta,) {
+    function stateReducer(prevState, delta) {
         const stateUpd = {
             ...prevState,
             ...delta,
@@ -59,18 +57,20 @@ export function Stepper(props) {
         function getContent(step) {
             const items = Object.keys(stepStruct);
             let content;
-            const NextStepBtn = getNextBtn(step.stepNumDelta);
+            const nextStepBtn = getNextBtn(step.stepNumDelta);
 
+            let index;
             content = items.map((item, ind) => {
+                index = ind + 1;
                 return step[item] && stepStruct[item]({
                     key: ind,
                     step,
-                    NextStepBtn: () => getNextBtn(step.stepNumDelta),
+                    nextStepBtn,
                 });
             });
 
             if (step.isNextBtn !== false) {
-                content.push(NextStepBtn);
+                content.push(<div key={index}>{nextStepBtn}</div>);
             }
 
             return content;
@@ -88,13 +88,13 @@ export function Stepper(props) {
 
     function onClickNextStep({ stepNumDelta = STEP_NUM_DELTA }) {
         dispatch({
-            stepNum: stateFinal.stepNum + stepNumDelta,
+            stepNum: state.stepNum + stepNumDelta,
         });
     }
 
     function setStepNum({ val }) {
         dispatch({
-            stepNum: stateFinal.stepNum + val,
+            stepNum: state.stepNum + val,
         });
     }
 }
@@ -104,7 +104,7 @@ const stepStruct = {
     photoSrc: ({ key, step }) => <div className="imgBlock marginBottom10" key={key}>
         <img className="copyWizardImg" src={step.photoSrc} />
     </div>,
-    toRender: ({ key, step, NextStepBtn }) => step.toRender({ key, step, NextStepBtn }),
+    toRender: ({ key, step, nextStepBtn }) => <div key={key}>{step.toRender({ step, nextStepBtn })}</div>,
 };
 
 const initState = {
