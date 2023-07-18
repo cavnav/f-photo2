@@ -52,27 +52,6 @@ function render({
 		}
 	});
 
-	const onCopyCompleted = React.useCallback(({
-		destDir,
-	}) => {
-		setState({
-			isCopyCompleted: true,
-		});
-	}, []);
-
-	const onCopyCanceled = React.useCallback(() => setState({
-		isSavePhotosToFlash: false
-	}), [state.isSavePhotosToFlash]);
-
-	const onAllStepsPassed = React.useCallback(() => {
-		const rp = Comp.getReqProps();
-
-		setState({
-			isSavePhotosToFlash: false,
-		});		
-
-	}, [state.isSavePhotosToFlash]);
-
 	const steps = React.useMemo(
 		() => {
 			const filesToPrint = {};
@@ -89,31 +68,44 @@ function render({
 				index = index + 1;
 			}
 
+			function saveFilesToFlash() {
+				return rp.server.$saveFilesToFlash({
+					files: filesToPrint,
+					folderNameField: 'cnt',
+				})				
+				.then(() => {
+					return checkProgressWrap();
+				});				
+			}
+
+			function checkProgressWrap() {
+				return checkProgress({
+					checkFunc: rp.server.checkProgress,
+					notificationAPI: ({
+							progress,
+						}) => rp.DialogAPI.show({
+							type: 'notification',
+							message: progress,
+							isModal: true,
+							isHide: false,
+						})
+					
+				})
+				.then(() => rp.DialogAPI.close());
+			}
+
 			return createSteps({
 				$getUsbDevices: rp.server.$getUsbDevices,
-				onAllStepsPassed,
+				onAllStepsPassed: () => setState(getStateDefault()),
 				Copying: ({
 					nextStepBtn,
 				}) => <Copying
 					nextStepBtn={nextStepBtn}
 					filesToPrint={filesToPrint}
-					onCopyCompleted={onCopyCompleted}
-					onCopyCanceled={onCopyCanceled}
-					$saveFilesToFlash={rp.server.$saveFilesToFlash}
-					checkProgress={() => checkProgress({
-							checkFunc: rp.server.checkProgress,
-							notificationAPI: ({
-									progress,
-								}) => rp.DialogAPI.show({
-									type: 'notification',
-									message: progress,
-									isModal: true,
-									isHide: false,
-								})
-							
-						})
-						.then(() => rp.DialogAPI.close())
-					}
+					onCopyCanceled={() => setState({
+						isSavePhotosToFlash: false
+					})}
+					saveFilesToFlash={saveFilesToFlash}
 				/>,
 			});
 		},
@@ -132,15 +124,15 @@ function render({
 				],
 			})
 				.then(() => {
-					rp.CancelAPI.forceUpdate({
-						title: 'Отменить',
+					state.isSavePhotosToFlash && rp.CancelAPI.forceUpdate({
+						title: 'Отменить запись',
 						onClick: () => {
 							setState({
 								isSavePhotosToFlash: false,
 							});
 						},
 					});
-					rp.SaveFilesToFlashAPI.forceUpdate({
+					!state.isSavePhotosToFlash && rp.SaveFilesToFlashAPI.forceUpdate({
 						title: 'Записать на флешку',
 						onClick: () => {
 							setState({
@@ -156,7 +148,7 @@ function render({
 				});
 			};
 		},
-		[]
+		[state.isSavePhotosToFlash]
 	);
 	React.useEffect(
 		() => {

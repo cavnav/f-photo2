@@ -1,18 +1,9 @@
-//+ when files had written, then created file with this list and it possible to view by printed
-// rewrite printedLog
-// isCopyCompleted = true after save to flash. Fix cancelAll. Clear filesToPrint after save to flash.
-
-//+ i need browse core component. for browsing files same mode in all instances.
-//+ BrowseBase - render folder, render file, render Empty. OnSelectFolder, onSelectFile, onClickDir, onClickFile, ....
-//+ printed - use browse component for viewing prints by date. when click one date, then render print component.
-// you able to see what photos printed, and you have some actions - saveToFlash, back.
-//+ every component must be with own storage.
-
-
+// print from printed
+// cancel every print - lead to empty message.
 // add loading (create Proxy Comp for loading)
 // fix error Warning: Can't perform a React state update on
 // check all user ways
-// update
+// update version
 
 // I
 // scroll to new photo to print in Print action.

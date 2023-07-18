@@ -4,22 +4,13 @@ import { useMutedReducer } from '../../../mutedReducer';
 
 
 export const Copying = React.memo(function ({
+	saveFilesToFlash,
 	nextStepBtn,
-	filesToPrint,
-	checkProgress,
-	$saveFilesToFlash,
 	onCopyCanceled = () => { },
-	onCopyCompleted = () => { },
 }) {
 	const [state, setState] = useMutedReducer({
 		initialState: getStateInit(),
 	});
-
-	React.useEffect(() => {
-		if (state.isCopyCompleted === true) onCopyCompleted({
-			destDir: state.destDir,
-		});
-	}, [state.isCopyCompleted]);
 
 	return (
 		<div className="flexCenter flexDirColumn">
@@ -45,34 +36,18 @@ export const Copying = React.memo(function ({
 		setState({
 			isDialogEraseFlash: false,
 		});
-
-		$saveFilesToFlash({
-			files: filesToPrint,
-			folderNameField: 'cnt',
-		})
-			.then(({
-				destDir,
-			}) => {
-				destDir && setState({
-					destDir,
-					forceUpdate: false,
-				});
-			})
-			.then(() => {
-				return checkProgress();
-			})
-			.then(() => {
-				setState({
-					isDialogEraseFlash: false,
-					isCopyCompleted: true,
-				});
+		saveFilesToFlash()
+		.then(() => {
+			setState({
+				isDialogEraseFlash: false,
+				isCopyCompleted: true,
 			});
+		});
 	}
 });
 
 function getStateInit() {
 	return {
-		destDir: undefined,
 		isCopyCompleted: false,
 		isDialogEraseFlash: true,
 	};
