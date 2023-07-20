@@ -37,11 +37,13 @@ function render(props) {
 		}, DELAY.ms);
 	}
 
-	setState({
-		_ref: ref,
-		_timerIdRef: timerIdRef,
-		forceUpdate: false,
-	});
+	useEffect(() => {
+		setState({
+			_ref: ref,
+			_timerIdRef: timerIdRef,
+		})},
+		[]
+	);
 
 	useEffect(() => {		
 		if (timerIdRef.current !== undefined) { // для случая render = null.
@@ -50,8 +52,6 @@ function render(props) {
 			onMouseLeave();
 		}
 	});
-
-	console.log("dialog", state);
 
 	return !state.isShow ||
 		timerIdRef.current !== undefined  // чтобы диалог скрывался при действиях вне диалога.
@@ -130,9 +130,8 @@ function getAPI({
 			clearTimeout(deps.state._timerIdRef.current);
 			deps.state._timerIdRef.current = undefined;
 		}
-		deps.setState({
+		deps.setStateSilent({
 			isShow: false,
-			forceUpdate: false,
 		});
 	}
 

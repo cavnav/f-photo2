@@ -17,22 +17,17 @@ export function useMutedReducer({
 }) {
 	const [_, forceUpdate] = useReducer((x) => !x, false);
 	const [state] = useState(init());
-	const [dispatchContext] = useState({
+	const [context] = useState({
 		state, 		
 		reducer,
 		forceUpdate, 
 		fn, 
 	});
-	const dispatchWrap = useCallback(dispatch(dispatchContext), []);
-
+	const setStateWrap = useCallback(setState(context), []);
+	const setStateSilentWrap = useCallback(setState(context, false), []);
+	
 	props && React.useMemo(
-		() => {
-			const stateUpd = {
-				...props,
-				forceUpdate: false,
-			};
-			dispatchWrap(stateUpd);
-		},
+		() => setStateSilentWrap(props),
 		Object.values(props),
 	);
 
@@ -40,14 +35,15 @@ export function useMutedReducer({
 		deps: {
 			initialState,
 			state,
-			setState: dispatchWrap,
+			setState: setStateWrap,
+			setStateSilent: setStateSilentWrap,
 		},
 	});
 
-	return [state, dispatchWrap, forceUpdate];
+	return [state, setStateWrap, setStateSilentWrap];
 }
 
-function dispatch(context) {
+function setState(context, isForceUpdate = true) {
 	return function (stateUpd) {
 		updateState({
 			state: context.state,
@@ -61,8 +57,9 @@ function dispatch(context) {
 		});
 
 		// console.log('zz', JSON.stringify(stateUpd));
-		stateUpd.forceUpdate === undefined &&
+		if (isForceUpdate) {
 			context.forceUpdate();
+		}
 	}
 }
 

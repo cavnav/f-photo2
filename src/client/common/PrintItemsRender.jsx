@@ -6,6 +6,7 @@ import { useMutedReducer } from '../mutedReducer';
 
 export function PrintItemsRender({
     items,
+    onChangeItems,
 }) {
 	const [state, setState] = useMutedReducer({
 		initialState: getInitialState(),
@@ -15,8 +16,8 @@ export function PrintItemsRender({
 	});
 
     const Comp = useRef({state, setState}).current;
-    const onChangePhotoCountWrap = (event) => onChangePhotoCount({event, Comp});
-    const onCancelPrintWrap = (event) => onCancelPrint({event, Comp});
+    const onChangePhotoCountWrap = (event) => onChangePhotoCount({event, Comp, onChangeItems});
+    const onCancelPrintWrap = (event) => onCancelPrint({event, Comp, onChangeItems});
     
     React.useEffect(() => {
         keyDownListener({Comp});
@@ -111,7 +112,7 @@ function onKeyDown({ event, Comp }) {
     });
 }
 
-function onChangePhotoCount({ event, Comp }) {
+function onChangePhotoCount({ event, Comp, onChangeItems, }) {
     const input = e.target;
 
     // allowed only numbers.
@@ -125,24 +126,32 @@ function onChangePhotoCount({ event, Comp }) {
 
     const { setState } = Comp;
 
+    const items = updateFilesToPrint.update({
+        photoSrc,
+        val: {
+            cnt: input.value,
+        },
+    });
+
     setState({
-        items: updateFilesToPrint.update({
-            photoSrc,
-            val: {
-                cnt: input.value,
-            },
-        }),
+        items,
         activeInput: photoSrc,
     });
+
+    onChangeItems?.({items});
 }
 
-function onCancelPrint({ event, Comp }) {
+function onCancelPrint({ event, Comp, onChangeItems }) {
     const photoSrc =  event.target.parentElement.getAttribute('photosrc');
     const { state, setState } = Comp;
+    const items = delete state.items[photoSrc] && state.items;
+
     setState({
-        items: delete state.items[photoSrc] && state.items,
+        items,
         activeInput: undefined,
     });
+
+    onChangeItems?.({items});
 }
 
 function getInitialState() {

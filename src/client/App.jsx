@@ -1,5 +1,4 @@
 // print from printed
-// cancel every print - lead to empty message.
 // add loading (create Proxy Comp for loading)
 // fix error Warning: Can't perform a React state update on
 // check all user ways
@@ -139,7 +138,6 @@ function getAppStateInit() {
 
 	return {
 		action: comps.Welcome.name,
-		forceUpdate: false,
 		doNeedHelp: false, // move to Help module.
 		mouse: {
 			x: 0,
@@ -181,8 +179,7 @@ function onMouseUp({
 	Comp,
 	e
 }) {
-	Comp.deps.setState({
-		forceUpdate: false,
+	Comp.deps.setStateSilent({
 		mouse: {
 			x: e.clientX,
 			y: e.clientY,

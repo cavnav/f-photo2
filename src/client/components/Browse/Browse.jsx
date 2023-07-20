@@ -323,11 +323,10 @@ function changeSelections({
 ) {
 	const {
 		state,
-		setState,
+		setStateSilent,
 	} = Comp.getDeps();
 
-	setState({
-		forceUpdate: false,
+	setStateSilent({
 		selections: updateSelections(),
 	});
 
@@ -373,7 +372,7 @@ function htmlResetSelections({
 }) {
 	const {
 		state: { selections },
-		setState,
+		setStateSilent,
 	} = Comp.getDeps();
 
 	const selectionsUpd = new Set();
@@ -387,9 +386,8 @@ function htmlResetSelections({
 	});
 
 	
-	setState({
+	setStateSilent({
 		selections: selectionsUpd,
-		forceUpdate: false,
 	});
 	updateSelectionDeps({
 		Comp,

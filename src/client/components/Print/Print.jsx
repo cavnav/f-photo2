@@ -35,7 +35,7 @@ function render({
 	const rp = Comp.getReqProps();	
 	const {resumeObj} = rp;
 
-	const [state, setState] = useMutedReducer({
+	const [state, setState, setStateStil] = useMutedReducer({
 		initialState: getInitialState({resumeObj}),
 		setCompDeps: Comp.bindSetCompDeps(),
 		...(files && {
@@ -50,6 +50,10 @@ function render({
 				val: stateUpd
 			});
 		}
+	});
+
+	const onChangeFiles = ({ items }) => setState({
+		filesToPrint: items,
 	});
 
 	const steps = React.useMemo(
@@ -177,8 +181,11 @@ function render({
 			{state.isSavePhotosToFlash 
 				? <Stepper
 					steps={steps}
-					/> 
-				: <PrintItemsRender items={state.filesToPrint} />
+				/> 
+				: <PrintItemsRender 
+					items={state.filesToPrint}
+					onChangeItems={onChangeFiles} 
+				/>
 			}
 
 			{isEmpty && <Empty/>}
