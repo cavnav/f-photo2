@@ -14,6 +14,7 @@ import { useMutedReducer } from '../../mutedReducer';
 import { eventNames } from '../../constants';
 import { PrintItemsRender } from '../../common/PrintItemsRender';
 import { updateFilesToPrint } from './PrintUtils';
+import { usePrintActions } from './components/printHooks';
 
 
 const MAX_FILES_COUNT = 100;
@@ -35,7 +36,7 @@ function render({
 	const rp = Comp.getReqProps();	
 	const {resumeObj} = rp;
 
-	const [state, setState, setStateStil] = useMutedReducer({
+	const [state, setState] = useMutedReducer({
 		initialState: getInitialState({resumeObj}),
 		setCompDeps: Comp.bindSetCompDeps(),
 		...(files && {
@@ -116,44 +117,22 @@ function render({
 		[],
 	);
 
-	React.useEffect(
-		() => {
-			// Задать кнопки действий.
-			const rp = Comp.getReqProps();
 
-			rp.AdditionalPanelAPI.renderIt({
-				actions: [
-					rp.Cancel,
-					rp.SaveFilesToFlash,
-				],
-			})
-				.then(() => {
-					state.isSavePhotosToFlash && rp.CancelAPI.forceUpdate({
-						title: 'Отменить запись',
-						onClick: () => {
-							setState({
-								isSavePhotosToFlash: false,
-							});
-						},
-					});
-					!state.isSavePhotosToFlash && rp.SaveFilesToFlashAPI.forceUpdate({
-						title: 'Записать на флешку',
-						onClick: () => {
-							setState({
-								isSavePhotosToFlash: true,
-							});
-						},
-					});
-				});
-
-			return () => {
-				rp.AdditionalPanelAPI.renderIt({
-					actions: [],
-				});
-			};
+	usePrintActions({
+		isSaveToFlash: state.isSaveToFlash,
+		render: rp.AdditionalPanelAPI.renderIt,
+		onCancelSaveToFlash: () => {
+			setState({
+				isSaveToFlash: false,
+			});
 		},
-		[state.isSavePhotosToFlash]
-	);
+		onSaveToFlash: () => {
+			setState({
+				isSaveToFlash: true,
+			});
+		},
+	})
+
 	React.useEffect(
 		() => {
 			const {
@@ -178,7 +157,7 @@ function render({
 		<div
 			className="Print layout"
 		>
-			{state.isSavePhotosToFlash 
+			{state.isSaveToFlash 
 				? <Stepper
 					steps={steps}
 				/> 
@@ -276,7 +255,7 @@ function getAPI({
 function getStateDefault() {
 	return {
 		filesToPrint: {},
-		isSavePhotosToFlash: false, 
+		isSaveToFlash: false, 
 	};
 }
 
@@ -301,15 +280,10 @@ function getComps({
 	channelComps,
 }) {
 	const {
-		Label,
 		AdditionalPanel,
 		Dialog,
 	} = channelComps;
-	return {
-		toClone: {
-			Cancel: Label,
-			SaveFilesToFlash: Label,
-		},
+	return {		
 		items: {
 			Dialog,
 			AdditionalPanel,

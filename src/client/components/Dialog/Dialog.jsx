@@ -16,7 +16,7 @@ function render(props) {
 	const Comp = this;
 	const ref = useRef();
 	const timerIdRef = useRef();
-	const [state, setState] = useMutedReducer({
+	const [state, _, setStateSilent] = useMutedReducer({
 		setCompDeps: Comp.bindSetCompDeps(),
 		initialState,
 	});
@@ -37,13 +37,10 @@ function render(props) {
 		}, DELAY.ms);
 	}
 
-	useEffect(() => {
-		setState({
-			_ref: ref,
-			_timerIdRef: timerIdRef,
-		})},
-		[]
-	);
+	setStateSilent({
+		_ref: ref,
+		_timerIdRef: timerIdRef,
+	});
 
 	useEffect(() => {		
 		if (timerIdRef.current !== undefined) { // для случая render = null.

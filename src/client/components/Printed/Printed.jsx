@@ -25,9 +25,7 @@ function render() {
     const StateComp = STATE_NAMES[state.actionName];
     
     return (
-        <div className="printed">
-            {StateComp && <StateComp PrintedComp={Comp}/>}
-        </div>
+        StateComp && <StateComp PrintedComp={Comp}/>
     );
 }
 
