@@ -31,6 +31,8 @@ export const Print = channel.addComp({
 
 function render({
 	files,
+	printed,
+	onBackToPrinted,
 }) {
 	const Comp = this;
 	const rp = Comp.getReqProps();	
@@ -42,6 +44,8 @@ function render({
 		...(files && {
 			props: {
 				filesToPrint: files,
+				printed,
+				onBackToPrinted,
 			}
 		}),
 		fn: ({
@@ -120,6 +124,7 @@ function render({
 
 	usePrintActions({
 		isSaveToFlash: state.isSaveToFlash,
+		printed,
 		render: rp.AdditionalPanelAPI.renderIt,
 		onCancelSaveToFlash: () => {
 			setState({
@@ -131,6 +136,7 @@ function render({
 				isSaveToFlash: true,
 			});
 		},
+		onBackToPrinted: state.onBackToPrinted,
 	})
 
 	React.useEffect(

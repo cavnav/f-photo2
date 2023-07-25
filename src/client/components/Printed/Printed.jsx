@@ -34,7 +34,7 @@ function BrowseBaseWrap({PrintedComp}) {
     const {deps} = rp;
     const BrowseBase = rp.comps.BrowseBase.r;
 
-    const {state} = deps;
+    const {state, setState} = deps;
     const FilesComp = state.printed.length === 0 ? undefined : (props) => <FilesPrinted
         files={state.printed}
         {...props}
@@ -42,6 +42,9 @@ function BrowseBaseWrap({PrintedComp}) {
 
     useEffect(() => {    
         getPrinted({PrintedComp});
+        setState({
+            requestFile: undefined,
+        });
     }, []);
 
     return (
@@ -68,13 +71,24 @@ function PrintWrap({PrintedComp}) {
     const rp = PrintedComp.getReqProps();
     const PrintClone = rp.comps.PrintClone.r;
     const {deps} = rp;
-    const {state} = deps;
+    const {state, setState} = deps;
      
     useEffect(() => {
         getPrintedItems({PrintedComp, requestFile: state.requestFile});
     }, []);
 
-    return <PrintClone files={state.printedItems}/>;
+    const onBackToPrinted = () => {
+        const actionName = rp.comps.BrowseBase.name;
+        setState({
+            actionName,        
+        });
+    }
+
+    return <PrintClone 
+        files={state.printedItems} 
+        printed={state.requestFile}
+        onBackToPrinted={onBackToPrinted}
+    />;
 }
 
 function getPrintedItems({PrintedComp, requestFile}) {

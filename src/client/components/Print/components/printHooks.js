@@ -5,8 +5,10 @@ import { getCompsAPI } from '../../../functions';
 export function usePrintActions({
     render,
     isSaveToFlash,
+    printed,
     onCancelSaveToFlash,
     onSaveToFlash,
+    onBackToPrinted,
 }) {
     useEffect(
         () => {
@@ -14,14 +16,17 @@ export function usePrintActions({
             const {
                 CancelSaveToFlash,
                 SaveToFlash,
+                BackToPrinted,
                 CancelSaveToFlashAPI,
                 SaveToFlashAPI,
+                BackToPrintedAPI,
             } = getComps();
 
             render({
                 actions: [
                     CancelSaveToFlash,
                     SaveToFlash,
+                    BackToPrinted,
                 ],
             })
             .then(() => {
@@ -35,6 +40,12 @@ export function usePrintActions({
                     SaveToFlashAPI.forceUpdate({
                         title: 'Записать на флешку',
                         onClick: onSaveToFlash,
+                    });
+                }
+                if (onBackToPrinted) {
+                    BackToPrintedAPI.forceUpdate({
+                        title: `Закрыть ${printed}`,
+                        onClick: onBackToPrinted,
                     });
                 }
             });
@@ -58,6 +69,7 @@ function getComps() {
         toClone: {
 			CancelSaveToFlash: Label,
 			SaveToFlash: Label,
+            BackToPrinted: Label,
 		},
     });
 }

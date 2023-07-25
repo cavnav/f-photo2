@@ -15,7 +15,7 @@ const app = express();
 
 const ALBUM_DIR = path.join(path.resolve('../../'), 'album');
 const PRINTED_DIR = path.join(ALBUM_DIR, 'printed');
-const PRINT_JSON = 'index.json';
+const PRINTED_EXT = '.json';
 
 
 let state = {
@@ -294,10 +294,16 @@ app.post('/api/towardPrinted', async (req, res) => {
 	} else {
 		getToward({
 			rootDir: PRINTED_DIR,
+			mapResponse: ({
+				result: {files},
+			}) => {
+				return {
+					files: files.map((file) => file.replace(PRINTED_EXT, "")),
+				};
+			}
 		})(req, res);
 	}
 });
-app.post('/api/getPrintedItems', )
 app.post('/api/backwardPrinted', getToward(
 	{
 		rootDir: PRINTED_DIR,
@@ -372,7 +378,6 @@ app.post('/api/saveFilesToFlash', async (req, response) => {
 			const {
 				files,
 				folderNameField,
-				maxFilesCount,
 			} = req.body;
 
 			const total = Object.keys(files).length;
@@ -774,12 +779,6 @@ function setState(propsUpd) {
 	};
 }
 
-function getPathWithoutRoot({
-	path,
-}) {
-	return path.replace(ALBUM_DIR, '');
-}
-
 function getToward({
 	rootDir = ALBUM_DIR,
 	isBackward,
@@ -869,7 +868,7 @@ async function createPrintedLog({
 	files,
 }) {
 	await fs.writeJSON(
-		path.join(PRINTED_DIR, getCurMoment().concat('.json')),
+		path.join(PRINTED_DIR, getCurMoment().concat(PRINTED_EXT)),
 		files,
 	);
 }
@@ -878,7 +877,7 @@ async function mapResponsePrinted({
 	reqPath,
 }) {
 	const json = await fs.readJson(
-		reqPath,
+		reqPath.concat(PRINTED_EXT),
 	).catch(e => undefined);
 
 	return {

@@ -12,7 +12,7 @@ export function FilesPrinted({
             files.map((file, ind) => (
                 <File
                     key={file} 
-                    title={file.replace(".json", "")}
+                    title={file}
                     ind={ind}
                     src={file}
                     className="positionRel fitPreview file"

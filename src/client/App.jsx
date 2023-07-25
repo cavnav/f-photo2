@@ -1,4 +1,3 @@
-// add exit to printed files in Printed.
 // add loading (create Proxy Comp for loading)
 // fix error Warning: Can't perform a React state update on
 // check all user ways
