@@ -16,7 +16,7 @@ function render() {
   const Comp = this;
   const [state] = useMutedReducer({
     initialState,
-    setCompDeps: Comp.bindSetCompDeps(),
+    setCompDeps: Comp.setCompDeps,
   });
 
   const rp = Comp.getReqProps();

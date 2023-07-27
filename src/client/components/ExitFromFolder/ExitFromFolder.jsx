@@ -15,7 +15,7 @@ function render(
 
   const [state] = useMutedReducer({
     initialState: stateInit,
-    setCompDeps: this.bindSetCompDeps(),
+    setCompDeps: Comp.setCompDeps,
   });
 
   if (state.folderName === undefined) return null;

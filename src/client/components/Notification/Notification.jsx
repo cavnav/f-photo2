@@ -15,7 +15,7 @@ function render(props) {
   const [state, setState] = useMutedReducer({
     initialState,
     props,
-    setCompDeps: Comp.bindSetCompDeps(),
+    setCompDeps: Comp.setCompDeps,
   });
 
   if (state.isSetInit) {

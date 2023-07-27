@@ -1,4 +1,5 @@
 import React from 'react';
+import { useMutedReducer } from '../../mutedReducer';
 
 import './styles.css';
 
@@ -6,14 +7,11 @@ const STEP_NUM_DELTA = +1;
 
 export function Stepper(props) {
 
-    const [state, dispatch] = React.useReducer(
-        stateReducer,
-        {
-            ...initState,
-            steps: props.steps,
-        },
-        stateReducer
-    );
+    const [state, dispatch] = useMutedReducer({
+        initialState,
+        reducer: stateReducer,
+        props, 
+    });
 
     React.useEffect(fireTrigger, [state.stepNum]);
 
@@ -30,18 +28,18 @@ export function Stepper(props) {
         trigger({ step: state.step, setStepNum });
     }
 
-    function stateReducer(prevState, delta) {
-        const stateUpd = {
-            ...prevState,
-            ...delta,
+    function stateReducer({state, stateUpd}) {
+        const stateNew = {
+            ...state,
+            ...stateUpd,
         };
 
-        const step = stateUpd.steps[stateUpd.stepNum];
-        stateUpd.step = step;
-        stateUpd.stepJSX = createStepJSX({ step });
-        stateUpd.stepsTotal = stateUpd.steps.length - 1;
+        const step = stateNew.steps[stateNew.stepNum];
+        stateNew.step = step;
+        stateNew.stepJSX = createStepJSX({ step });
+        stateNew.stepsTotal = stateNew.steps.length - 1;
 
-        return stateUpd;
+        return stateNew;
     }
 
     function createStepJSX({ step }) {
@@ -107,7 +105,7 @@ const stepStruct = {
     toRender: ({ key, step, nextStepBtn }) => <div key={key}>{step.toRender({ step, nextStepBtn })}</div>,
 };
 
-const initState = {
+const initialState = {
     steps: [],
     stepsTotal: 0,
     step: {},

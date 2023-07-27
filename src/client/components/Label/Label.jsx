@@ -14,7 +14,7 @@ function render(props) {
   const [state] = useMutedReducer({
     initialState: stateInit,
     props,
-    setCompDeps: Comp.bindSetCompDeps(),
+    setCompDeps: Comp.setCompDeps,
   });
 
   if (!state.title) return null;

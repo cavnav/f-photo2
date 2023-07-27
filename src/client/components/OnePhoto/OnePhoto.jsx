@@ -44,7 +44,7 @@ function render(
 
   const [state, setState] = useMutedReducer({
     reducer: selfReducer,
-    setCompDeps: Comp.bindSetCompDeps(),
+    setCompDeps: Comp.setCompDeps,
     initialState: {
       ...getStateInit(),
       curPhotoInd: resumeBrowse.curPhotoInd,

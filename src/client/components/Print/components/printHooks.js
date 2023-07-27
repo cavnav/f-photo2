@@ -5,6 +5,7 @@ import { getCompsAPI } from '../../../functions';
 export function usePrintActions({
     render,
     isSaveToFlash,
+    isEmpty,
     printed,
     onCancelSaveToFlash,
     onSaveToFlash,
@@ -36,7 +37,7 @@ export function usePrintActions({
                         onClick: onCancelSaveToFlash,
                     });
                 } 
-                else {
+                else if (!isEmpty) {
                     SaveToFlashAPI.forceUpdate({
                         title: 'Записать на флешку',
                         onClick: onSaveToFlash,
@@ -56,7 +57,7 @@ export function usePrintActions({
                 });
             };
         },
-        [isSaveToFlash]
+        [isSaveToFlash, isEmpty]
     );
 }
 

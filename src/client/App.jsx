@@ -1,6 +1,14 @@
-// add loading (create Proxy Comp for loading)
-// fix error Warning: Can't perform a React state update on
 // check all user ways
+	// clear addPanel on unmount
+	// cancel from dialog before save files to flash.
+	// eternal progress on save one file to flash (printed, after remove second from twice files).
+	// check save limit files.
+// fix error Warning: Can't perform a React state update on
+	// first - browse, then print, then back to browse.
+	// first - browse, then print, then back to browse, then print, then change cnt.
+// add loading (create Proxy Comp for loading)
+	// get countNewPhotos.
+	// copying new photos.
 // update version
 
 // I
@@ -88,7 +96,7 @@ function render() {
 
 	[s, d.setAppState] = useMutedReducer({
 		initialState: getAppStateInit(),
-		setCompDeps: Comp.bindSetCompDeps(),
+		setCompDeps: Comp.setCompDeps,
 		fn: resumeUpdFn,
 	});
 

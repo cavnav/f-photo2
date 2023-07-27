@@ -4,12 +4,12 @@ export function useMutedReducer({
 	initialState = {},
 	reducer,
 	props, // props will inject to state.
-	setCompDeps,
+	setCompDeps, // rename with less details.
 	fn = () => { },
 	init = () => {
 		return reducer ? reducer({
 			state: initialState,
-			updateState: {},
+			stateUpd: {},
 		}) : {
 			...initialState,
 		};

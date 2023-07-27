@@ -4,6 +4,7 @@ import { Stepper } from '../';
 import './styles.css';
 import { channel } from '../../channel';
 import { checkProgress } from '../../functions';
+import { useMutedReducer } from '../../mutedReducer';
 
 export const Copy = channel.addComp({
 	name: 'Copy',
@@ -14,21 +15,20 @@ export const Copy = channel.addComp({
 
 function render() {
 	const Comp = this;
-	const [state, setState] = React.useState(stateInit);
+	const [state, setState] = useMutedReducer({
+		initialState,
+		setCompDeps: Comp.setCompDeps,
+	});
 
-	return getRender();
+	const steps = createSteps();
 
-	// ----------------------------------------------------------------------------------
-	function getRender() {
-		const steps = createSteps();
+	return <div className="Copy">
+		<Stepper
+			steps={steps}
+		/>
+	</div>;
 
-		return <div className="Copy">
-			<Stepper
-				steps={steps}
-			/>
-		</div>;
-	}
-
+	// -------------------------------
 	function createSteps() {
 		return [
 			{
@@ -99,8 +99,7 @@ function render() {
 
 	function getCopyingContent({ key }) {
 		return <div className="flex flexDirColumn" key={key}>
-			Количество новых фото:
-			{state.countNewPhotos}
+			Количество новых фото: {state.countNewPhotos}
 			<div>* Внимание! После копирования карта памяти будет очищена.</div>
 		</div>;
 	}
@@ -116,7 +115,6 @@ function render() {
 		return rp.server.$getNewPhotos()
 			.then((res) => {
 				setState({
-					...state,
 					countNewPhotos: res.countNewPhotos,
 				});
 			});
@@ -143,7 +141,6 @@ function render() {
 			})
 			.then(() => {
 				setState({
-					...state,
 					isCopyCompleted: true,
 				});
 			});
@@ -173,7 +170,7 @@ function getComps({
 	};
 }
 
-const stateInit = {
+const initialState = {
 	copyProgress: 0,
 	countNewPhotos: 0,
 	isHelp: false,

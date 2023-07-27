@@ -33,7 +33,7 @@ function render(
 	const rp = Comp.getReqProps();
 	const BrowseBase = rp.BrowseBase.r;
 	const [state, setState] = useMutedReducer({
-		setCompDeps: Comp.bindSetCompDeps(),
+		setCompDeps: Comp.setCompDeps,
 		initialState: getStateInit(),
 		fn: ({
 			state,

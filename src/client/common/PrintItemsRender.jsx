@@ -52,7 +52,7 @@ export function PrintItemsRender({
                                 className="changePhotoCount"
                                 keyid={key}
                                 value={cnt}
-                                onChange={onChangePhotoCountWrap}
+                                onKeyUp={onChangePhotoCountWrap}
                             />
                             <input  
                                 type="button" 
@@ -113,7 +113,7 @@ function onKeyDown({ event, Comp }) {
 }
 
 function onChangePhotoCount({ event, Comp, onChangeItems, }) {
-    const input = e.target;
+    const input = event.target;
 
     // allowed only numbers.
     const numbers = /^[0-9]+$/;
@@ -122,11 +122,12 @@ function onChangePhotoCount({ event, Comp, onChangeItems, }) {
         return;
     }
 
-    const { photoSrc } = input.parentElement.getAttribute('photosrc');
+    const photoSrc = input.parentElement.getAttribute('photosrc');
 
-    const { setState } = Comp;
+    const { state, setState } = Comp;
 
     const items = updateFilesToPrint.update({
+        filesToPrint: state.items,
         photoSrc,
         val: {
             cnt: input.value,

@@ -27,7 +27,7 @@ function render() {
             browserCount: resumeObj.get(),
             title: 'Доп. окно',
         },
-        setCompDeps: Comp.bindSetCompDeps(),
+        setCompDeps: Comp.setCompDeps,
     });
 
     const onClick = async () => {        

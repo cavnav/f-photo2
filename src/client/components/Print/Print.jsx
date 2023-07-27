@@ -40,7 +40,7 @@ function render({
 
 	const [state, setState] = useMutedReducer({
 		initialState: getInitialState({resumeObj}),
-		setCompDeps: Comp.bindSetCompDeps(),
+		setCompDeps: Comp.setCompDeps,
 		...(files && {
 			props: {
 				filesToPrint: files,
@@ -121,9 +121,11 @@ function render({
 		[],
 	);
 
-
+	const isEmpty = Object.keys(state.filesToPrint).length === 0;
+	
 	usePrintActions({
 		isSaveToFlash: state.isSaveToFlash,
+		isEmpty,
 		printed,
 		render: rp.AdditionalPanelAPI.renderIt,
 		onCancelSaveToFlash: () => {
@@ -137,7 +139,7 @@ function render({
 			});
 		},
 		onBackToPrinted: state.onBackToPrinted,
-	})
+	});
 
 	React.useEffect(
 		() => {
@@ -156,8 +158,6 @@ function render({
 		},
 		[]
 	);
-	
-	const isEmpty = Object.keys(state.filesToPrint).length === 0;
 
 	return (
 		<div

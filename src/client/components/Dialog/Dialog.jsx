@@ -17,7 +17,7 @@ function render(props) {
 	const ref = useRef();
 	const timerIdRef = useRef();
 	const [state, _, setStateSilent] = useMutedReducer({
-		setCompDeps: Comp.bindSetCompDeps(),
+		setCompDeps: Comp.setCompDeps,
 		initialState,
 	});
 

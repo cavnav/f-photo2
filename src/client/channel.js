@@ -140,18 +140,15 @@ class ChannelComp {
             getReqProps,
             getComps,
         };
+        this.setCompDeps = this.setCompDeps.bind(this);
     }
 
-    bindSetCompDeps() {
-        return this.setCompDeps.bind(this);
-    }
-
-    setCompDeps(props) {
+    setCompDeps = (props) => {
         Object.assign(
             this.deps,
             props.deps,
         );
-    }
+    };
 
     getComps() {
         if (this.comps === undefined) {
