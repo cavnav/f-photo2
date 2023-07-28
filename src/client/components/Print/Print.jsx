@@ -17,7 +17,7 @@ import { updateFilesToPrint } from './PrintUtils';
 import { usePrintActions } from './components/printHooks';
 
 
-const MAX_FILES_COUNT = 100;
+const MAX_FILES_COUNT = 5;
 
 
 export const Print = channel.addComp({
@@ -63,6 +63,10 @@ function render({
 
 	const steps = React.useMemo(
 		() => {
+			if (!state.isSaveToFlash) {
+				return undefined;
+			}
+
 			const filesToPrint = {};
 			const stateFilesToPrint = state.filesToPrint;
 
@@ -112,17 +116,17 @@ function render({
 					nextStepBtn={nextStepBtn}
 					filesToPrint={filesToPrint}
 					onCopyCanceled={() => setState({
-						isSavePhotosToFlash: false
+						isSaveToFlash: false
 					})}
 					saveFilesToFlash={saveFilesToFlash}
 				/>,
 			});
 		},
-		[],
+		[state.isSaveToFlash],
 	);
 
 	const isEmpty = Object.keys(state.filesToPrint).length === 0;
-	
+
 	usePrintActions({
 		isSaveToFlash: state.isSaveToFlash,
 		isEmpty,
@@ -163,7 +167,7 @@ function render({
 		<div
 			className="Print layout"
 		>
-			{state.isSaveToFlash 
+			{steps 
 				? <Stepper
 					steps={steps}
 				/> 

@@ -17,7 +17,7 @@ export const Copying = React.memo(function ({
 			{(state.isDialogEraseFlash) && (
 				<Select
 					type={Select.name}
-					title='Внимание! Флешка будет очищена перед копированием. Продолжить'
+					title='Внимание! Флешка будет очищена перед копированием. Продолжить ?'
 					onAgree={onAgree}
 					onCancel={onCopyCanceled}
 				/>

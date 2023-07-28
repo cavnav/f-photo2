@@ -409,25 +409,22 @@ app.post('/api/saveFilesToFlash', async (req, response) => {
 			}) {
 				for (const file in files) {
 					const folder = String(files[file][folderNameField]);
-					if (folder === '0') continue;
+					
+					if (folder !== '0') {
+						core({file, folder});
+					};			
+
+					progressUpdate({total});		
+				}
+
+				async function core({file, folder}) {
 					const fileName = path.basename(file);
 					const sourceUpd = path.join(source, file);
 					const destUpd = path.join(dest, folder, fileName);
 					await fs.copy(
 						sourceUpd,
 						destUpd,
-					);
-
-					const countProcessed = state.countCopiedPhotos + 1;
-					const progress = calcProgress({
-						cntProcessed: countProcessed,
-						total,
-					});
-
-					setState({
-						progress: progress,
-						countCopiedPhotos: countProcessed,
-					});
+					);										
 				}
 			}
 		})
@@ -977,4 +974,19 @@ async function rename({
 			error,
 		};
 	};
+}
+
+function progressUpdate({
+	total,
+}) {
+	const countProcessed = state.countCopiedPhotos + 1;
+	const progress = calcProgress({
+		cntProcessed: countProcessed,
+		total,
+	});
+
+	setState({
+		progress: progress,
+		countCopiedPhotos: countProcessed,
+	});
 }

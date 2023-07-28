@@ -1,8 +1,8 @@
 // check all user ways
 	// clear addPanel on unmount
-	// cancel from dialog before save files to flash.
-	// eternal progress on save one file to flash (printed, after remove second from twice files).
 	// check save limit files.
+		// after save limit, need to remove limit from all.
+		// if i need print first and last in 1000 files.
 // fix error Warning: Can't perform a React state update on
 	// first - browse, then print, then back to browse.
 	// first - browse, then print, then back to browse, then print, then change cnt.
@@ -12,6 +12,7 @@
 // update version
 
 // I
+
 // scroll to new photo to print in Print action.
 // show overwrite confirmation for every files
 // after back to list to scroll to last opened folder
