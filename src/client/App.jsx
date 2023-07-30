@@ -1,8 +1,6 @@
 // check all user ways
 	// clear addPanel on unmount
 	// check save limit files.
-		// after save limit, need to remove limit from all.
-		// if i need print first and last in 1000 files.
 // fix error Warning: Can't perform a React state update on
 	// first - browse, then print, then back to browse.
 	// first - browse, then print, then back to browse, then print, then change cnt.

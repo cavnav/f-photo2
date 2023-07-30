@@ -69,6 +69,7 @@ function render({
 
 			const filesToPrint = {};
 			const stateFilesToPrint = state.filesToPrint;
+			const isFilesExcess = Object.keys(stateFilesToPrint).length > MAX_FILES_COUNT;
 
 			let index = 0;
 			for (const file in stateFilesToPrint) {
@@ -76,7 +77,7 @@ function render({
 					break;
 				}
 
-				filesToPrint[file] = stateFilesToPrint[file];				
+				filesToPrint[file] = stateFilesToPrint[file];						
 
 				index = index + 1;
 			}
@@ -109,10 +110,19 @@ function render({
 
 			return createSteps({
 				$getUsbDevices: rp.server.$getUsbDevices,
-				onAllStepsPassed: () => setState(getStateDefault()),
+				onAllStepsPassed: () => {
+					for (const file in filesToPrint) {
+						delete stateFilesToPrint[file];
+					}
+					setState({
+						filesToPrint: stateFilesToPrint,
+						isSaveToFlash: false,
+					});
+				},
 				Copying: ({
 					nextStepBtn,
 				}) => <Copying
+					isFilesExcess={isFilesExcess}
 					nextStepBtn={nextStepBtn}
 					filesToPrint={filesToPrint}
 					onCopyCanceled={() => setState({

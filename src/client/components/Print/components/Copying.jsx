@@ -4,12 +4,13 @@ import { useMutedReducer } from '../../../mutedReducer';
 
 
 export const Copying = React.memo(function ({
+	isFilesExcess,
 	saveFilesToFlash,
 	nextStepBtn,
 	onCopyCanceled = () => { },
 }) {
 	const [state, setState] = useMutedReducer({
-		initialState: getStateInit(),
+		initialState,
 	});
 
 	return (
@@ -18,8 +19,19 @@ export const Copying = React.memo(function ({
 				<Select
 					type={Select.name}
 					title='Внимание! Флешка будет очищена перед копированием. Продолжить ?'
-					onAgree={onAgree}
+					onAgree={onAgreeErase}
 					onCancel={onCopyCanceled}
+				/>
+			)}
+			{state.isDialogFilesExcees && (
+				<Select
+					type={Select.name}
+					title='Для печати выбрано большое количество фото, так что нельзя записать все файлы на флешку за один раз. 
+						Если в этот раз требуются конкретные фото, отметь их галочкой или нажми продолжить, чтобы записать произвольную часть фотографий.'
+					agreeTitle='Вернуться и отметить фото'
+					cancelTitle='Продолжить'
+					onAgree={onCopyCanceled}					
+					onCancel={onAgreeCopy}
 				/>
 			)}
 
@@ -32,23 +44,26 @@ export const Copying = React.memo(function ({
 		</div>
 	);
 
-	function onAgree() {
+	function onAgreeErase() {
 		setState({
 			isDialogEraseFlash: false,
+			isDialogFilesExcees: isFilesExcess,
 		});
+		if (!isFilesExcess) {
+			onAgreeCopy();
+		}
+	}
+
+	function onAgreeCopy() {
 		saveFilesToFlash()
 		.then(() => {
-			setState({
-				isDialogEraseFlash: false,
-				isCopyCompleted: true,
-			});
+			setState({isDialogFilesExcees: false, isCopyCompleted: true});
 		});
 	}
 });
 
-function getStateInit() {
-	return {
-		isCopyCompleted: false,
-		isDialogEraseFlash: true,
-	};
+const initialState = {
+	isDialogEraseFlash: true,
+	isCopyCompleted: false,
+	isDialogFilesExcees: false,
 }

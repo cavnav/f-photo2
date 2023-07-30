@@ -45,7 +45,7 @@ export function PrintItemsRender({
                         >
                         </div>
                         <div
-                            className='controls'
+                            className='controls btns'
                             photosrc={src}
                         >
                             <input
@@ -54,12 +54,12 @@ export function PrintItemsRender({
                                 value={cnt}
                                 onKeyUp={onChangePhotoCountWrap}
                             />
-                            <input  
-                                type="button" 
+                            <div  
                                 className="marginRight10" 
-                                value="Отменить печать" 
                                 onClick={onCancelPrintWrap}
-                            />
+                            >
+                                Отменить печать
+                            </div>
                         </div>
                     </div>
                 );
