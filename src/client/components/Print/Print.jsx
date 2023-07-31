@@ -5,7 +5,7 @@ import React from 'react';
 import {
 	Stepper,
 } from '../';
-import { checkProgress } from '../../functions';
+import { checkProgress, getVarName, onChangeSelections } from '../../functions';
 import { createSteps } from './createSteps';
 import { channel } from '../../channel';
 import { Copying } from './components/Copying';
@@ -38,7 +38,7 @@ function render({
 	const rp = Comp.getReqProps();	
 	const {resumeObj} = rp;
 
-	const [state, setState] = useMutedReducer({
+	const [state, setState, setStateSilent] = useMutedReducer({
 		initialState: getInitialState({resumeObj}),
 		setCompDeps: Comp.setCompDeps,
 		...(files && {
@@ -57,9 +57,23 @@ function render({
 		}
 	});
 
-	const onChangeFiles = ({ items }) => setState({
-		filesToPrint: items,
+	const onChangeFiles = ({ items }) => setStateSilent({
+		filesToPrint: items,		
 	});
+
+	const onChangeSelectionsHandler = ({src, checked})=> {
+		if (checked) {
+			state.requiredFilesToPrint[src] = state.filesToPrint[src];
+		}
+		else {
+			delete state.requiredFilesToPrint[src];
+		}
+		setStateSilent({
+			requiredFilesToPrint: state.requiredFilesToPrint,
+		});
+	};
+
+	const onChangeThisSelections = onChangeSelections({handler: onChangeSelectionsHandler});
 
 	const steps = React.useMemo(
 		() => {
@@ -68,8 +82,7 @@ function render({
 			}
 
 			const filesToPrint = {};
-			const stateFilesToPrint = state.filesToPrint;
-			const isFilesExcess = Object.keys(stateFilesToPrint).length > MAX_FILES_COUNT;
+			const stateFilesToPrint = Object.keys(state.requiredFilesToPrint).length  ? state.requiredFilesToPrint : state.filesToPrint;			
 
 			let index = 0;
 			for (const file in stateFilesToPrint) {
@@ -108,6 +121,8 @@ function render({
 				.then(() => rp.DialogAPI.close());
 			}
 
+			const isFilesExcess = checkFilesExcess({files: state})
+
 			return createSteps({
 				$getUsbDevices: rp.server.$getUsbDevices,
 				onAllStepsPassed: () => {
@@ -122,7 +137,7 @@ function render({
 				Copying: ({
 					nextStepBtn,
 				}) => <Copying
-					isFilesExcess={isFilesExcess}
+					isFilesExcess={state.isFilesExcess}
 					nextStepBtn={nextStepBtn}
 					filesToPrint={filesToPrint}
 					onCopyCanceled={() => setState({
@@ -136,6 +151,14 @@ function render({
 	);
 
 	const isEmpty = Object.keys(state.filesToPrint).length === 0;
+
+	const onClickItem = (event) => {
+		const handler = event.target.getAttribute('handler');
+		const eventHandlers = {
+			onChangeThisSelections,
+		};
+		eventHandlers[handler]?.(event);
+	}
 
 	usePrintActions({
 		isSaveToFlash: state.isSaveToFlash,
@@ -176,6 +199,7 @@ function render({
 	return (
 		<div
 			className="Print layout"
+			onClick={onClickItem}
 		>
 			{steps 
 				? <Stepper
@@ -184,6 +208,7 @@ function render({
 				: <PrintItemsRender 
 					items={state.filesToPrint}
 					onChangeItems={onChangeFiles} 
+					onChangeSelectionsName={getVarName({onChangeThisSelections})}
 				/>
 			}
 
@@ -248,9 +273,7 @@ function getAPI({
 			resumed.filesToPrint = updateFilesToPrint.add({
 				filesToPrint: resumed.filesToPrint,
 				photoSrc: src,
-				val: {
-					cnt: 1,
-				},
+				cnt: 1,
 				Comp,
 			});
 		}
@@ -275,6 +298,8 @@ function getAPI({
 function getStateDefault() {
 	return {
 		filesToPrint: {},
+		// используется, когда нельзя записать все файлы на флешку разом. Тогда надо выбрать конкретные, поставив галочку.
+		requiredFilesToPrint: {}, 
 		isSaveToFlash: false, 
 	};
 }
@@ -318,4 +343,8 @@ function getResumeObj({name}) {
 		],
 		val: getStateDefault(),
 	}
+}
+
+function checkFilesExcess({files}) {
+	return Object.keys(files).length > MAX_FILES_COUNT;
 }

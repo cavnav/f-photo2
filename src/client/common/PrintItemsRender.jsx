@@ -1,12 +1,14 @@
 import React, {useRef} from 'react';
+import { ItemSelector } from '../components/ItemSelector/ItemSelector';
 import { updateFilesToPrint } from '../components/Print/PrintUtils';
-import { getBackgroundImageStyle } from '../functions';
+import { getBackgroundImageStyle, getVarName } from '../functions';
 import { useMutedReducer } from '../mutedReducer';
 
 
 export function PrintItemsRender({
     items,
     onChangeItems,
+    onChangeSelectionsName,
 }) {
 	const [state, setState] = useMutedReducer({
 		initialState: getInitialState(),
@@ -43,6 +45,10 @@ export function PrintItemsRender({
                                 file: src,
                             })}
                         >
+                            <ItemSelector 
+                                src={src}
+                                handler={onChangeSelectionsName}
+                            />
                         </div>
                         <div
                             className='controls btns'
@@ -105,9 +111,7 @@ function onKeyDown({ event, Comp }) {
         items: updateFilesToPrint.update({
             filesToPrint: state.items,
             photoSrc,
-            val: {
-                cnt: getCntUpd(),
-            },
+            cnt: getCntUpd(),
         }),
     });
 }
@@ -129,9 +133,7 @@ function onChangePhotoCount({ event, Comp, onChangeItems, }) {
     const items = updateFilesToPrint.update({
         filesToPrint: state.items,
         photoSrc,
-        val: {
-            cnt: input.value,
-        },
+        cnt: input.value,
     });
 
     setState({

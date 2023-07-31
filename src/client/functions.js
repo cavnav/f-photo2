@@ -471,3 +471,15 @@ export function myRequest({ request, requestParams, onResponse }) {
 			DialogAPI.close();
 		});
 }
+
+export function onChangeSelections({handler}) {
+	return (event) => {
+		const src = event.target.getAttribute('src');
+		const { checked } = event.target;
+
+		handler({
+			src,
+			checked,
+		});
+	}
+};

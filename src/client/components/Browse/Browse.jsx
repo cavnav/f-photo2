@@ -2,6 +2,7 @@ import React, {useCallback} from 'react';
 import './styles.css';
 import {
 	getItemName, getOppositeWindow, getUpdatedActionLists, initRefreshWindowEvent, isBanMoveItems, myCrop,
+	onChangeSelections,
 	onMoveSelections, refreshWindows, updateActionsLists,
 } from '../../functions';
 import { channel } from '../../channel';
@@ -48,7 +49,7 @@ function render(
 	});
 	const browsePath = state.path + state.sep;
 	const onChangeDirUpd = useCallback(onChangeDir({Comp}), []);
-	const onChangeSelectionsUpd = useCallback(onChangeSelections({Comp}), []);
+	const onChangeSelectionsUpd = useCallback(onChangeThisSelections({Comp}), []);
 	const onRequestFileUpd = useCallback(onRequestFile({Comp}), []);
 
 	React.useEffect(() => {
@@ -156,17 +157,14 @@ function onChangeDir({
 	};
 }
 
-function onChangeSelections({Comp}) {
-	return (event) => {
-		const src = event.target.getAttribute('src');
-		const { checked } = event.target;
-
-		changeSelections({
+function onChangeThisSelections({Comp}) {
+	return onChangeSelections({handler: ({src, checked}) => {
+		return changeSelections({
 			Comp,
 			src,
 			checked,
 		});
-	}
+	}});
 };
 
 function onRequestFile({Comp}) {

@@ -1,4 +1,5 @@
 import React from 'react';
+import { ItemSelector } from '../ItemSelector/ItemSelector';
 
 export function File({
     style,
@@ -19,9 +20,7 @@ export function File({
             handler={onRequestFile}
         >
             {title}
-            {onSelectFile && <input
-                className="itemSelector positionAbs"
-                type="checkbox"
+            {onSelectFile && <ItemSelector
                 src={src}
                 handler={onSelectFile}
             />}

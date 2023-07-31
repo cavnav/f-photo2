@@ -3,14 +3,14 @@ export const updateFilesToPrint = {
 		const {filesToPrint} = props;
 		filesToPrint[props.photoSrc] = {
 			...filesToPrint[props.photoSrc],
-			cnt: props.val.cnt,
+			cnt: props.cnt,
 		};
 		return filesToPrint;
 	},
 	add(props) {
 		const {filesToPrint} = props;
 		filesToPrint[props.photoSrc] = {
-			cnt: props.val.cnt,
+			cnt: props.cnt,
 		};
 		return filesToPrint;
 
