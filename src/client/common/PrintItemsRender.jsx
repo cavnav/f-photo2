@@ -45,10 +45,12 @@ export function PrintItemsRender({
                                 file: src,
                             })}
                         >
-                            <ItemSelector 
-                                src={src}
-                                handler={onChangeSelectionsName}
-                            />
+                            {onChangeSelectionsName && (
+                                <ItemSelector 
+                                    src={src}
+                                    handler={onChangeSelectionsName}
+                                />
+                            )}
                         </div>
                         <div
                             className='controls btns'

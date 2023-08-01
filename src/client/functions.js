@@ -480,6 +480,7 @@ export function onChangeSelections({handler}) {
 		handler({
 			src,
 			checked,
+			target: event.target,
 		});
 	}
 };

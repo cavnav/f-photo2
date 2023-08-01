@@ -1,6 +1,7 @@
 // check all user ways
 	// clear addPanel on unmount
 	// check save limit files.
+	// отменить печать - удалять из requiredFiles.
 // fix error Warning: Can't perform a React state update on
 	// first - browse, then print, then back to browse.
 	// first - browse, then print, then back to browse, then print, then change cnt.

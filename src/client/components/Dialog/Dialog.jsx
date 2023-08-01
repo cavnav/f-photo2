@@ -19,6 +19,7 @@ function render(props) {
 	const [state, _, setStateSilent] = useMutedReducer({
 		setCompDeps: Comp.setCompDeps,
 		initialState,
+		props,
 	});
 
 	const rp = this.getReqProps();
@@ -36,6 +37,8 @@ function render(props) {
 			Comp.getAPI().close();
 		}, DELAY.ms);
 	}
+
+	const onClickClose = () => Comp.getAPI().close();
 
 	setStateSilent({
 		_ref: ref,
@@ -81,6 +84,14 @@ function render(props) {
 				{state.message && <div>{state.message}</div>}
 				{state.render && state.render}
 				{props.children}
+				{state.confirmBtn && (
+					<div 
+						className='btn'	
+						onClick={onClickClose}				
+					>
+						{state.confirmBtn.title}
+					</div>
+				)}
 			</div>
 		</div>
 	);
@@ -127,7 +138,7 @@ function getAPI({
 			clearTimeout(deps.state._timerIdRef.current);
 			deps.state._timerIdRef.current = undefined;
 		}
-		deps.setStateSilent({
+		deps.setState({
 			isShow: false,
 		});
 	}
@@ -151,6 +162,7 @@ const initialState = {
 	render: null,
 	isHide: true, // признак - исчезает ли спустя время
 	isModal: true, // признак - модальный ли диалог
+	conrirmBtn: undefined,
 };
 
 const DELAY = {

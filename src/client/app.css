@@ -190,7 +190,7 @@ iframe,
   z-index: 10000;
 }
 
-.btns > div {
+.btns > div, .btn {
   padding: 5px;
   user-select: none;
   margin-right: 5px;

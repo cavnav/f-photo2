@@ -3,6 +3,7 @@ import './styles.css';
 import React from 'react';
 
 import {
+	Dialog,
 	Stepper,
 } from '../';
 import { checkProgress, getVarName, onChangeSelections } from '../../functions';
@@ -61,8 +62,21 @@ function render({
 		filesToPrint: items,		
 	});
 
-	const onChangeSelectionsHandler = ({src, checked})=> {
+	const onChangeSelectionsHandler = ({target, src, checked})=> {
 		if (checked) {
+			if (checkFilesExcess({files: state.requiredFilesToPrint})) {
+				rp.DialogAPI.show({
+					type: 'notification',
+					message: 'Выбрано максимальное количество фотографий для записи на флешку.',
+					isModal: true,
+					isHide: false,
+					confirmBtn: {
+						title: 'Понятно',						
+					},
+				});
+				target.checked = false;
+				return;
+			}
 			state.requiredFilesToPrint[src] = state.filesToPrint[src];
 		}
 		else {
@@ -121,8 +135,6 @@ function render({
 				.then(() => rp.DialogAPI.close());
 			}
 
-			const isFilesExcess = checkFilesExcess({files: state})
-
 			return createSteps({
 				$getUsbDevices: rp.server.$getUsbDevices,
 				onAllStepsPassed: () => {
@@ -132,12 +144,12 @@ function render({
 					setState({
 						filesToPrint: stateFilesToPrint,
 						isSaveToFlash: false,
+						requiredFilesToPrint: {},
 					});
 				},
 				Copying: ({
 					nextStepBtn,
 				}) => <Copying
-					isFilesExcess={state.isFilesExcess}
 					nextStepBtn={nextStepBtn}
 					filesToPrint={filesToPrint}
 					onCopyCanceled={() => setState({
@@ -152,7 +164,7 @@ function render({
 
 	const isEmpty = Object.keys(state.filesToPrint).length === 0;
 
-	const onClickItem = (event) => {
+	const onClickItem = (event) => {		
 		const handler = event.target.getAttribute('handler');
 		const eventHandlers = {
 			onChangeThisSelections,
@@ -171,6 +183,23 @@ function render({
 			});
 		},
 		onSaveToFlash: () => {
+			const isFilesExcess = checkFilesExcess({files: state.filesToPrint});
+			if (isFilesExcess) {				
+				rp.DialogAPI.show({
+					type: 'notification',
+					message: 'Нельзя записать все фотографии на флешку за один раз. Отметь галочкой фотографии, чтобы их напечатать.',
+					isModal: true,
+					isHide: false,
+					confirmBtn: {
+						title: 'Понятно',						
+					},
+				});
+				setState({
+					isFilesExcess: true,
+				});
+				return;
+			}
+
 			setState({
 				isSaveToFlash: true,
 			});
@@ -208,11 +237,18 @@ function render({
 				: <PrintItemsRender 
 					items={state.filesToPrint}
 					onChangeItems={onChangeFiles} 
-					onChangeSelectionsName={getVarName({onChangeThisSelections})}
+					onChangeSelectionsName={state.isFilesExcess ? getVarName({onChangeThisSelections}) : undefined}
 				/>
 			}
 
 			{isEmpty && <Empty/>}
+			{/* <Dialog.r
+					type='notification'
+					message='Внимание! Нельзя записать все фотографии на флешку за один раз. Выбери нужные, отметив галочкой.'
+					isModal
+					isShow
+					isHide={false}
+			/> */}
 		</div>
 	);
 }
@@ -301,6 +337,7 @@ function getStateDefault() {
 		// используется, когда нельзя записать все файлы на флешку разом. Тогда надо выбрать конкретные, поставив галочку.
 		requiredFilesToPrint: {}, 
 		isSaveToFlash: false, 
+		isFilesExcess: false,
 	};
 }
 
@@ -346,5 +383,5 @@ function getResumeObj({name}) {
 }
 
 function checkFilesExcess({files}) {
-	return Object.keys(files).length > MAX_FILES_COUNT;
+	return Object.keys(files).length + 1 > MAX_FILES_COUNT;
 }
