@@ -3,7 +3,7 @@ import './styles.css';
 import {
 	getItemName, getOppositeWindow, getUpdatedActionLists, initRefreshWindowEvent, isBanMoveItems, myCrop,
 	onChangeSelections,
-	onMoveSelections, refreshWindows, updateActionsLists,
+	onMoveSelections, refreshWindows, updateActionsLists, updateHtmlSelectorsFromArray,
 } from '../../functions';
 import { channel } from '../../channel';
 import { ResumeObj } from '../../resumeObj';
@@ -36,16 +36,6 @@ function render(
 	const [state, setState] = useMutedReducer({
 		setCompDeps: Comp.setCompDeps,
 		initialState: getStateInit(),
-		fn: ({
-			state,
-		}) => {
-			resumeObj.save({
-				val: {
-					...state,
-					selections: Array.from(state.selections),
-				},
-			});
-		}
 	});
 	const browsePath = state.path + state.sep;
 	const onChangeDirUpd = useCallback(onChangeDir({Comp}), []);
@@ -74,9 +64,16 @@ function render(
 
 	React.useEffect(boostPerfImgRender, [state.files]);
 
-	React.useEffect(() => htmlResetSelections({
-		Comp,
-	}), [state.selections]);
+	React.useEffect(
+		() => {
+			setState({
+				selections: updateHtmlSelectorsFromArray({
+					selections: state.selections,
+				}),
+			});
+		}, 
+		[state.selections]
+	);
 
 	const FilesComp = state.files.length === 0 ? undefined : (props) => <Files
 		files={state.files}
@@ -181,7 +178,6 @@ function onRequestFile({Comp}) {
 		});
 	};
 }
-	
 
 function getReqProps({
 	comps,
@@ -283,7 +279,7 @@ function updateSelectionDeps({
 	rp.MoveSelectionsAPI.forceUpdate({
 		title: isMoveBtn ? setBtnTitle({
 			prefix: BTN_MOVE,
-			title: state.selections.size,
+			title: state.selections.length,
 		}) : '',
 	});
 
@@ -291,11 +287,11 @@ function updateSelectionDeps({
 	rp.RemoveSelectionsAPI.forceUpdate({
 		title: setBtnTitle({
 			prefix: BTN_REMOVE,
-			title: state.selections.size,
+			title: state.selections.length,
 		}),
 	});
 
-	const curName = getItemName([...state.selections][0], state.sep);
+	const curName = getItemName(state.selections, state.sep);
 	rp.RenameAPI.forceUpdate({
 		isShow: isShowRename(state.selections, state.sep),
 		name: curName,
@@ -339,7 +335,13 @@ function changeSelections({
 
 		const action = ({ true: 'add', false: 'delete' })[checked];
 
-		state.selections[action](src);
+		if (action === 'add') {
+			state.selections.push(src);
+		}
+		else if (action === 'delete') {
+			state.selections = state.selections.filter(item => item !== src);
+		}
+
 		return state.selections;
 	}
 }
@@ -363,33 +365,6 @@ function onRefreshWindow({
 				Comp,
 			});
 		});
-}
-
-function htmlResetSelections({
-	Comp,
-}) {
-	const {
-		state: { selections },
-		setStateSilent,
-	} = Comp.getDeps();
-
-	const selectionsUpd = new Set();
-	[...document.querySelectorAll('.itemSelector')].forEach((item) => {
-		const src = item.getAttribute('src');
-		const isChecked = selections.has(src);
-		item.checked = isChecked;
-		if (isChecked) {
-			selectionsUpd.add(src);
-		}
-	});
-
-	
-	setStateSilent({
-		selections: selectionsUpd,
-	});
-	updateSelectionDeps({
-		Comp,
-	});
 }
 
 async function onAddAlbum({
@@ -449,7 +424,6 @@ async function onRename({
 	});
 }
 
-
 function renderAddPanel({
 	Comp,
 }) {
@@ -478,7 +452,7 @@ function renderAddPanel({
 				name: newName,
 			}));
 
-			const curName = getItemName([...state.selections][0], state.sep);
+			const curName = getItemName(state.selections, state.sep);
 			rp.RenameAPI.forceUpdate({
 				isShow: isShowRename(state.selections, state.sep),	
 				name: curName,
@@ -502,12 +476,11 @@ function renderAddPanel({
 			rp.MoveSelectionsAPI.forceUpdate({
 				title: isMoveBtn ? setBtnTitle({
 					prefix: BTN_MOVE,
-					title: state.selections.size,
+					title: state.selections.length,
 				}) : '',
-				onClick: () => {
-					const selections = [...state.selections.values()];
+				onClick: () => {					
 					rp.server.moveToPath({
-						items: selections,
+						items: state.selections,
 						destWindow: getOppositeWindow().name,
 						...getUpdatedActionLists(),
 					})
@@ -545,12 +518,11 @@ function renderAddPanel({
 			rp.RemoveSelectionsAPI.forceUpdate({
 				title: setBtnTitle({
 					prefix: BTN_REMOVE,
-					title: state.selections.size,
+					title: state.selections.length,
 				}),
 				onClick: () => {
-					const selections = [...state.selections.values()];
 					rp.server.removeItems({
-						items: selections,
+						items: state.selections,
 						...getUpdatedActionLists(),
 					})
 					.then((result) => {
@@ -637,8 +609,8 @@ function resetTo({
 		}));
 }
 
-function isShowRename(selections, sep) {
-	return selections.size === 1 && [...selections][0].includes(sep);
+function isShowRename([itemName], sep) {
+	return itemName.includes(sep);
 }
 
 function getStateInit() {
@@ -655,7 +627,6 @@ function getStateInit() {
 		files: [],
 		dirs: [],
 
-		...resumed,
-		selections: new Set(resumed.selections),
+		...resumed,		
 	};
 }

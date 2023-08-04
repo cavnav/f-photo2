@@ -1,12 +1,12 @@
 import './styles.css';
 
-import React from 'react';
+import React, {useEffect} from 'react';
 
 import {
 	Dialog,
 	Stepper,
 } from '../';
-import { checkProgress, getVarName, onChangeSelections } from '../../functions';
+import { checkProgress, getVarName, onChangeSelections, updateHtmlSelectorsFromObject } from '../../functions';
 import { createSteps } from './createSteps';
 import { channel } from '../../channel';
 import { Copying } from './components/Copying';
@@ -207,7 +207,7 @@ function render({
 		onBackToPrinted: state.onBackToPrinted,
 	});
 
-	React.useEffect(
+	useEffect(
 		() => {
 			const {
 				setState,
@@ -225,6 +225,16 @@ function render({
 		[]
 	);
 
+	useEffect(
+		() => {
+			updateHtmlSelectorsFromObject({
+				selections: state.requiredFilesToPrint,
+			});
+		}, 
+		[]
+	);
+
+
 	return (
 		<div
 			className="Print layout"
@@ -241,14 +251,7 @@ function render({
 				/>
 			}
 
-			{isEmpty && <Empty/>}
-			{/* <Dialog.r
-					type='notification'
-					message='Внимание! Нельзя записать все фотографии на флешку за один раз. Выбери нужные, отметив галочкой.'
-					isModal
-					isShow
-					isHide={false}
-			/> */}
+			{isEmpty && <Empty/>}			
 		</div>
 	);
 }

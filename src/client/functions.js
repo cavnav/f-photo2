@@ -453,11 +453,11 @@ export function updateActionsLists({
 	});
 }
 
-export function getItemName(name, sep) {
-	return name?.replace(sep, '');
+export function getItemName([itemName], sep) {
+	return itemName?.replace(sep, '');
 }
 
-export function myRequest({ request, requestParams, onResponse }) {
+export function myRequest({ request, onResponse }) {
     const DialogAPI = Dialog.getAPI();
 
 	DialogAPI.show({
@@ -484,3 +484,44 @@ export function onChangeSelections({handler}) {
 		});
 	}
 };
+
+export function updateHtmlSelectorsFromArray({
+	selections,
+}) {
+	const selectionsUpd = [];
+	function handler({item, src}) {
+		const isChecked = selections.includes(src);
+		item.checked = isChecked;
+		if (isChecked) {
+			selectionsUpd.push(src);
+		}
+	}
+
+	updateHtmlSelectors({handler});
+
+	return selectionsUpd;
+}
+
+export function updateHtmlSelectorsFromObject({
+	selections,
+}) {
+	const selectionsUpd = {};
+	function handler({item, src}) {
+		const isChecked = selections[src];
+		item.checked = isChecked;
+		if (isChecked) {
+			selectionsUpd[src] = selections[src];
+		}
+	}
+
+	updateHtmlSelectors({handler});
+
+	return selectionsUpd;
+}
+
+function updateHtmlSelectors({handler}) {	
+	[...document.querySelectorAll('.itemSelector')].forEach((item) => {
+		const src = item.getAttribute('src');
+		handler({item, src});
+	});	
+}
