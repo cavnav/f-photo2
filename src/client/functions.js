@@ -480,7 +480,7 @@ export function onChangeSelections({handler}) {
 		handler({
 			src,
 			checked,
-			target: event.target,
+			event,
 		});
 	}
 };
@@ -492,9 +492,6 @@ export function updateHtmlSelectorsFromArray({
 	function handler({item, src}) {
 		const isChecked = selections.includes(src);
 		item.checked = isChecked;
-		if (isChecked) {
-			selectionsUpd.push(src);
-		}
 	}
 
 	updateHtmlSelectors({handler});

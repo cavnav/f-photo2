@@ -1,7 +1,8 @@
 // check all user ways
 	// clear addPanel on unmount
-	// check save limit files.
-	// отменить печать - удалять из requiredFiles.
+	// remove from copying
+	// change dialog from erase ?
+	// confirm cancel file to print
 // fix error Warning: Can't perform a React state update on
 	// first - browse, then print, then back to browse.
 	// first - browse, then print, then back to browse, then print, then change cnt.

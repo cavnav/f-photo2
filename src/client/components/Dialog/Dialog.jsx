@@ -38,7 +38,9 @@ function render(props) {
 		}, DELAY.ms);
 	}
 
-	const onClickClose = () => Comp.getAPI().close();
+	const onClickClose = (event) => {
+		Comp.getAPI().close({promiseResult: event.target.dataset.type});
+	}
 
 	setStateSilent({
 		_ref: ref,
@@ -70,7 +72,8 @@ function render(props) {
 					[`DialogWrap`]: true,
 					[`Dialog__error`]: state.type === `error`,
 					[`Dialog__warning`]: state.type === `warning`,
-					[`Dialog__notify`]: state.type === `notify`,
+					[`Dialog__notify`]: state.type === `notification`,
+					[`Dialog__confirmation`]: state.type === `confirmation`,
 				})}
 				style={{
 					left: rp.mouse.x,
@@ -87,9 +90,19 @@ function render(props) {
 				{state.confirmBtn && (
 					<div 
 						className='btn'	
+						data-type="resolve"
 						onClick={onClickClose}				
 					>
 						{state.confirmBtn.title}
+					</div>
+				)}
+				{state.rejectBtn && (
+					<div 
+						className='btn'	
+						data-type="reject"
+						onClick={onClickClose}				
+					>
+						{state.rejectBtn.title}
 					</div>
 				)}
 			</div>
@@ -121,9 +134,12 @@ function getAPI({
 	return {
 		show,
 		close,
+		showNotification,
+		showConfirmation,
+		showChoiceConfirmation,
 	};
 
-	function close() {
+	async function close({promiseResult} = {}) {
 		/**
 		 * очень жестоко было с этим местом.
 		 * если здесь менять какое - то значение стейт, то новое окно будет с примененным стилем __hide без учета transition. 
@@ -139,18 +155,76 @@ function getAPI({
 			deps.state._timerIdRef.current = undefined;
 		}
 		deps.setState({
-			isShow: false,
+			isShow: false,			
 		});
+		
+		deps.state.confirmationPromise?.[promiseResult]();
 	}
 
-	function show(props) {
+	async function show(props) {
 		if (deps.state._ref.current) {
 			deps.state._ref.current.parentElement.classList.remove(`Dialog__none`);
 		}
+
+		let promiseResolve;
+		let promiseReject;
+		const promise = new Promise((resolve, reject) => {
+			promiseResolve = resolve;
+			promiseReject = reject;
+		});
+
 		deps.setState({
 			...initialState,
 			...props,
 			isShow: true,
+			confirmationPromise: {
+				resolve: promiseResolve,
+				reject: promiseReject,
+			},
+		});
+
+		return promise;
+	}
+
+	async function showNotification({
+		message,
+	}) {
+		show({
+			type: 'notification',
+			isModal: true,
+			isHide: false,
+			message,
+		});
+	}
+
+	async function showConfirmation({
+		message,
+		confirmBtn,
+		rejectBtn,
+	}) {
+		return show({
+			type: 'confirmation',
+			isModal: true,
+			isHide: false,
+			confirmBtn: confirmBtn ?? {
+				title: 'Понятно',
+			},
+			rejectBtn,
+			message,
+		});
+	}
+
+	async function showChoiceConfirmation({
+		message,
+	}) {
+		return showConfirmation({
+			message, 
+			confirmBtn: {
+				title: 'Да'
+			},
+			rejectBtn: {
+				title: 'Нет'
+			},
 		});
 	}
 }
@@ -163,6 +237,8 @@ const initialState = {
 	isHide: true, // признак - исчезает ли спустя время
 	isModal: true, // признак - модальный ли диалог
 	conrirmBtn: undefined,
+	rejectBtn: undefined,
+	confirmationPromise: undefined,
 };
 
 const DELAY = {

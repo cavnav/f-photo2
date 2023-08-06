@@ -3,7 +3,6 @@ import './styles.css';
 import React, {useEffect} from 'react';
 
 import {
-	Dialog,
 	Stepper,
 } from '../';
 import { checkProgress, getVarName, onChangeSelections, updateHtmlSelectorsFromObject } from '../../functions';
@@ -39,7 +38,7 @@ function render({
 	const rp = Comp.getReqProps();	
 	const {resumeObj} = rp;
 
-	const [state, setState, setStateSilent] = useMutedReducer({
+	const [state, setState, setStateSilent] = useMutedReducer({		
 		initialState: getInitialState({resumeObj}),
 		setCompDeps: Comp.setCompDeps,
 		...(files && {
@@ -58,23 +57,26 @@ function render({
 		}
 	});
 
-	const onChangeFiles = ({ items }) => setStateSilent({
-		filesToPrint: items,		
-	});
+	const onChangeFiles = ({ items }) => {		
+		const requiredFilesToPrintUpd = {};
+		for (const file in state.requiredFilesToPrint) {
+			if (state.filesToPrint[file]) {
+				requiredFilesToPrintUpd[file] = state.filesToPrint[file];
+			}
+		}
+		setStateSilent({
+			filesToPrint: items,
+			requiredFilesToPrint: requiredFilesToPrintUpd,
+		});
+	}
 
-	const onChangeSelectionsHandler = ({target, src, checked})=> {
+	const onChangeSelectionsHandler = ({event, src, checked})=> {
 		if (checked) {
-			if (checkFilesExcess({files: state.requiredFilesToPrint})) {
-				rp.DialogAPI.show({
-					type: 'notification',
+			if (checkFilesExcess({files: state.requiredFilesToPrint, delta: 1})) {
+				rp.DialogAPI.showConfirmation({
 					message: 'Выбрано максимальное количество фотографий для записи на флешку.',
-					isModal: true,
-					isHide: false,
-					confirmBtn: {
-						title: 'Понятно',						
-					},
 				});
-				target.checked = false;
+				event.preventDefault();
 				return;
 			}
 			state.requiredFilesToPrint[src] = state.filesToPrint[src];
@@ -82,6 +84,7 @@ function render({
 		else {
 			delete state.requiredFilesToPrint[src];
 		}
+
 		setStateSilent({
 			requiredFilesToPrint: state.requiredFilesToPrint,
 		});
@@ -94,21 +97,9 @@ function render({
 			if (!state.isSaveToFlash) {
 				return undefined;
 			}
-
-			const filesToPrint = {};
-			const stateFilesToPrint = Object.keys(state.requiredFilesToPrint).length  ? state.requiredFilesToPrint : state.filesToPrint;			
-
-			let index = 0;
-			for (const file in stateFilesToPrint) {
-				if (index === MAX_FILES_COUNT) {
-					break;
-				}
-
-				filesToPrint[file] = stateFilesToPrint[file];						
-
-				index = index + 1;
-			}
-
+			
+			const filesToPrint = Object.keys(state.requiredFilesToPrint).length  ? state.requiredFilesToPrint : state.filesToPrint;			
+			
 			function saveFilesToFlash() {
 				return rp.server.$saveFilesToFlash({
 					files: filesToPrint,
@@ -124,13 +115,9 @@ function render({
 					checkFunc: rp.server.checkProgress,
 					notificationAPI: ({
 							progress,
-						}) => rp.DialogAPI.show({
-							type: 'notification',
+						}) => rp.DialogAPI.showNotification({
 							message: progress,
-							isModal: true,
-							isHide: false,
-						})
-					
+						})					
 				})
 				.then(() => rp.DialogAPI.close());
 			}
@@ -139,11 +126,12 @@ function render({
 				$getUsbDevices: rp.server.$getUsbDevices,
 				onAllStepsPassed: () => {
 					for (const file in filesToPrint) {
-						delete stateFilesToPrint[file];
+						delete state.filesToPrint[file];
 					}
 					setState({
-						filesToPrint: stateFilesToPrint,
+						filesToPrint: state.filesToPrint,
 						isSaveToFlash: false,
+						isFilesExcess: false,
 						requiredFilesToPrint: {},
 					});
 				},
@@ -182,17 +170,23 @@ function render({
 				isSaveToFlash: false,
 			});
 		},
-		onSaveToFlash: () => {
+		onSaveToFlash: async () => {
+			const result = await rp.DialogAPI.showChoiceConfirmation({
+				message: 'Внимание! Флешка будет очищена перед копированием. Продолжить ?',
+			});
+
+			const isRequiredFiles = Object.keys(state.requiredFilesToPrint).length > 0;
+			if (isRequiredFiles) {
+				setState({
+					isSaveToFlash: true,
+				});
+				return;
+			}
+
 			const isFilesExcess = checkFilesExcess({files: state.filesToPrint});
 			if (isFilesExcess) {				
-				rp.DialogAPI.show({
-					type: 'notification',
+				rp.DialogAPI.showConfirmation({
 					message: 'Нельзя записать все фотографии на флешку за один раз. Отметь галочкой фотографии, чтобы их напечатать.',
-					isModal: true,
-					isHide: false,
-					confirmBtn: {
-						title: 'Понятно',						
-					},
 				});
 				setState({
 					isFilesExcess: true,
@@ -203,6 +197,7 @@ function render({
 			setState({
 				isSaveToFlash: true,
 			});
+
 		},
 		onBackToPrinted: state.onBackToPrinted,
 	});
@@ -231,7 +226,7 @@ function render({
 				selections: state.requiredFilesToPrint,
 			});
 		}, 
-		[]
+		[state.isSaveToFlash]
 	);
 
 
@@ -385,6 +380,6 @@ function getResumeObj({name}) {
 	}
 }
 
-function checkFilesExcess({files}) {
-	return Object.keys(files).length + 1 > MAX_FILES_COUNT;
+function checkFilesExcess({files, delta = 0}) {
+	return Object.keys(files).length + delta > MAX_FILES_COUNT;
 }

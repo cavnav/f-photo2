@@ -1,4 +1,4 @@
-import React, {useCallback} from 'react';
+import React, {useCallback, useState} from 'react';
 import './styles.css';
 import {
 	getItemName, getOppositeWindow, getUpdatedActionLists, initRefreshWindowEvent, isBanMoveItems, myCrop,
@@ -33,9 +33,16 @@ function render(
 	const Comp = this;
 	const rp = Comp.getReqProps();
 	const BrowseBase = rp.BrowseBase.r;
-	const [state, setState] = useMutedReducer({
+	const [state] = useMutedReducer({
 		setCompDeps: Comp.setCompDeps,
 		initialState: getStateInit(),
+		fn: ({
+			state,
+		}) => {
+			resumeObj.save({
+				val: state,
+			});
+		}
 	});
 	const browsePath = state.path + state.sep;
 	const onChangeDirUpd = useCallback(onChangeDir({Comp}), []);
@@ -66,13 +73,10 @@ function render(
 
 	React.useEffect(
 		() => {
-			setState({
-				selections: updateHtmlSelectorsFromArray({
-					selections: state.selections,
-				}),
+			updateHtmlSelectorsFromArray({
+				selections: state.selections,
 			});
 		}, 
-		[state.selections]
 	);
 
 	const FilesComp = state.files.length === 0 ? undefined : (props) => <Files
@@ -86,6 +90,7 @@ function render(
 		{...props}
 	/>;
 
+	console.log(new Date);
 	return (
 		<BrowseBase 
 			Files={FilesComp}
@@ -331,7 +336,7 @@ function changeSelections({
 	// ------------------------------------
 	function updateSelections() {
 		// i.e. clickFolder event or exitFromFolder.
-		if (src === undefined) return new Set();
+		if (src === undefined) return [];
 
 		const action = ({ true: 'add', false: 'delete' })[checked];
 
@@ -610,7 +615,7 @@ function resetTo({
 }
 
 function isShowRename([itemName], sep) {
-	return itemName.includes(sep);
+	return itemName?.includes(sep);
 }
 
 function getStateInit() {
