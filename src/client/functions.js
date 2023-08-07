@@ -490,7 +490,7 @@ export function updateHtmlSelectorsFromArray({
 }) {
 	const selectionsUpd = [];
 	function handler({item, src}) {
-		const isChecked = selections.includes(src);
+		const isChecked = Boolean(selections?.includes(src));
 		item.checked = isChecked;
 	}
 

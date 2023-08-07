@@ -171,9 +171,13 @@ function render({
 			});
 		},
 		onSaveToFlash: async () => {
-			const result = await rp.DialogAPI.showChoiceConfirmation({
+			const isResolve = await rp.DialogAPI.showChoiceConfirmation({
 				message: 'Внимание! Флешка будет очищена перед копированием. Продолжить ?',
 			});
+
+			if (isResolve === 'false') {
+				return;
+			}
 
 			const isRequiredFiles = Object.keys(state.requiredFilesToPrint).length > 0;
 			if (isRequiredFiles) {

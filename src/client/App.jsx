@@ -1,8 +1,8 @@
 // check all user ways
-	// clear addPanel on unmount
-	// remove from copying
-	// change dialog from erase ?
-	// confirm cancel file to print
+	// clear addPanel on unmount. Browse -> Add
+	// selections on Browse
+	// show move btn on second window on change path in first window.
+	// dialog position on edges
 // fix error Warning: Can't perform a React state update on
 	// first - browse, then print, then back to browse.
 	// first - browse, then print, then back to browse, then print, then change cnt.
@@ -11,14 +11,15 @@
 	// copying new photos.
 // update version
 
-// I
-
-// scroll to new photo to print in Print action.
-// show overwrite confirmation for every files
-// after back to list to scroll to last opened folder
+// after back to list to scroll to last opened folder, last viewed photo
 // last added folder
-// remove ctg file
+// scroll to new photo to print in Print action.
 // add counter/all for one photo mode
+// forward to photo location from print by click
+
+// I
+// show overwrite confirmation for every files
+// remove ctg file
 // print, printed - click by preview open one photo mode by src this photo. 
 	// And one photo need not return to print button, it might simply select print tab.
 
@@ -168,10 +169,10 @@ function getAppStateInit() {
 				id: Printed.name,
 				title: 'Архив печатей',
 			},
-			{
-				id: Share.name,
-				title: 'Отправить',
-			},
+			// {
+			// 	id: Share.name,
+			// 	title: 'Отправить',
+			// },
 			// Help: {
 			//   title: '?',
 			//   isEnabled: true,
@@ -221,7 +222,6 @@ function getComps({
 		Print,
 		OnePhoto,
 		Welcome,
-		Share,
 		Printed,
 	} = channelComps;
 
@@ -232,7 +232,6 @@ function getComps({
 			Print,
 			OnePhoto,
 			Welcome,
-			Share,
 			Printed,
 		}
 	}

@@ -39,7 +39,7 @@ function render(props) {
 	}
 
 	const onClickClose = (event) => {
-		Comp.getAPI().close({promiseResult: event.target.dataset.type});
+		Comp.getAPI().close({promiseResult: event.target.dataset.isResolve});
 	}
 
 	setStateSilent({
@@ -90,7 +90,7 @@ function render(props) {
 				{state.confirmBtn && (
 					<div 
 						className='btn'	
-						data-type="resolve"
+						data-is-resolve="true"
 						onClick={onClickClose}				
 					>
 						{state.confirmBtn.title}
@@ -99,7 +99,7 @@ function render(props) {
 				{state.rejectBtn && (
 					<div 
 						className='btn'	
-						data-type="reject"
+						data-is-resolve="false"
 						onClick={onClickClose}				
 					>
 						{state.rejectBtn.title}
@@ -158,7 +158,7 @@ function getAPI({
 			isShow: false,			
 		});
 		
-		deps.state.confirmationPromise?.[promiseResult]();
+		deps.state.confirmationPromise?.resolve(promiseResult);
 	}
 
 	async function show(props) {
@@ -167,10 +167,8 @@ function getAPI({
 		}
 
 		let promiseResolve;
-		let promiseReject;
-		const promise = new Promise((resolve, reject) => {
+		const promise = new Promise((resolve) => {
 			promiseResolve = resolve;
-			promiseReject = reject;
 		});
 
 		deps.setState({
@@ -179,7 +177,6 @@ function getAPI({
 			isShow: true,
 			confirmationPromise: {
 				resolve: promiseResolve,
-				reject: promiseReject,
 			},
 		});
 
