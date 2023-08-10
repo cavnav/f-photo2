@@ -1,3 +1,4 @@
+import { channel } from './channel';
 import { Dialog } from './components';
 import {
 	eventNames
@@ -5,7 +6,6 @@ import {
 import {
 	ResumeObj,
 } from './resumeObj';
-import { AppServerAPI } from './ServerApi';
 
 class MyItems {
 	constructor({
@@ -383,7 +383,6 @@ export function onMoveSelections({
 	const rp = Comp.getReqProps();
 	return checkProgress({
 			checkFunc: rp.server.checkProgress,
-			notificationAPI: rp.NotificationAPI.forceUpdate,
 		})
 		.then(() => {
 			onChangeSelections?.();
@@ -395,29 +394,30 @@ export function onMoveSelections({
 
 export function checkProgress({
 	checkFunc,
-	notificationAPI,
 }) {
 	return new Promise((resolve) => {
 		coreFunc();
+		const {DialogAPI} = getComps({
+			callback: ({
+				Dialog,
+			}) => ({toClone: {Dialog}}),
+		});
 
 		function coreFunc() {
 			return checkFunc()
 			.then((res) => {
 				const isCopyCompleted = res.progress === 100;
 				setTimeout(() => (isCopyCompleted ? null : coreFunc()), 500);        
-				
-				if (notificationAPI === undefined) {
-					return;
-				}
 
-				notificationAPI({
-					progress: ProgressTitle({
+				DialogAPI.show({
+					message: ProgressTitle({
 						progress: res.progress,
 					}),
 				});
 
 				if (isCopyCompleted) {					
-					resolve();         
+					resolve();    
+					DialogAPI.close();     
 				}
 			});
 		}
@@ -521,4 +521,9 @@ function updateHtmlSelectors({handler}) {
 		const src = item.getAttribute('src');
 		handler({item, src});
 	});	
+}
+
+export function getComps({callback}) {
+	const required = callback?.(channel.comps);
+    return getCompsAPI(required);
 }

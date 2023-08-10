@@ -1,6 +1,5 @@
 import {useEffect} from 'react';
-import {channel} from '../../../channel';
-import { getCompsAPI } from '../../../functions';
+import { getComps } from '../../../functions';
 
 export function usePrintActions({
     render,
@@ -21,7 +20,7 @@ export function usePrintActions({
                 CancelSaveToFlashAPI,
                 SaveToFlashAPI,
                 BackToPrintedAPI,
-            } = getComps();
+            } = getCompsOwn();
 
             render({
                 actions: [
@@ -61,16 +60,18 @@ export function usePrintActions({
     );
 }
 
-function getComps() {
-    const {
-        Label,
-    } = channel.comps;
+function getCompsOwn() {
+    return getComps({callback});
 
-    return getCompsAPI({
-        toClone: {
-			CancelSaveToFlash: Label,
-			SaveToFlash: Label,
-            BackToPrinted: Label,
-		},
-    });
+    function callback({
+        Label,
+    }) {
+        return {
+            toClone: {
+                CancelSaveToFlash: Label,
+                SaveToFlash: Label,
+                BackToPrinted: Label,
+            },
+        };
+    }
 }

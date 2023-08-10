@@ -1,5 +1,4 @@
 // check all user ways
-	// clear addPanel on unmount. Browse -> Add
 	// selections on Browse
 	// show move btn on second window on change path in first window.
 	// dialog position on edges
@@ -155,7 +154,7 @@ function getAppStateInit() {
 		actions: [
 			{
 				id: Copy.name,
-				title: 'Добавить',
+				title: 'Копировать с флешки',
 			},
 			{
 				id: Browse.name,

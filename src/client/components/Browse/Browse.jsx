@@ -50,7 +50,8 @@ function render(
 	const onRequestFileUpd = useCallback(onRequestFile({Comp}), []);
 
 	React.useEffect(() => {
-		renderAddPanel({ Comp });		
+		const returnCb = renderAddPanel({ Comp });		
+		return returnCb;
 	}, []);
 
 	React.useEffect(() => {
@@ -631,6 +632,7 @@ function getStateInit() {
 		scrollY: 0,
 		files: [],
 		dirs: [],
+		selections: [],
 
 		...resumed,		
 	};
