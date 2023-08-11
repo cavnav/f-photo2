@@ -1,8 +1,7 @@
 import React, {useRef} from 'react';
-import { channel } from '../channel';
 import { ItemSelector } from '../components/ItemSelector/ItemSelector';
 import { updateFilesToPrint } from '../components/Print/PrintUtils';
-import { getBackgroundImageStyle, getCompsAPI} from '../functions';
+import { getBackgroundImageStyle, getComps} from '../functions';
 import { useMutedReducer } from '../mutedReducer';
 
 
@@ -149,7 +148,9 @@ function onChangePhotoCount({ event, Comp, onChangeItems, }) {
 
 async function onCancelPrint({ event, Comp, onChangeItems }) {
     const photoSrc =  event.target.parentElement.getAttribute('photosrc');
-    const {DialogAPI} = getComps();
+    const {DialogAPI} = getComps({
+        callback: ({Dialog}) => ({items: {Dialog}})
+    });
     const isResolve = await DialogAPI.showChoiceConfirmation({
         message: 'Убрать фото из этого списка ?',
     });
@@ -175,16 +176,5 @@ function getInitialState() {
     };
 }
 
-function getComps() {
-    const {
-        Dialog,
-    } = channel.comps;
-
-    return getCompsAPI({
-        items: {
-			Dialog,
-		},
-    });
-}
 
 

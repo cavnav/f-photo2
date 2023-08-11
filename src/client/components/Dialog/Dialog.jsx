@@ -132,12 +132,17 @@ function getAPI({
 	deps,
 }) {
 	return {
+		update,
 		show,
 		close,
 		showNotification,
 		showConfirmation,
 		showChoiceConfirmation,
 	};
+
+	function update(props) {
+		deps.setState(props);
+	}
 
 	async function close({promiseResult} = {}) {
 		/**

@@ -222,3 +222,4 @@ class ChannelComp {
 
 export const channel = new Channel();
 
+window.myChannel = channel;

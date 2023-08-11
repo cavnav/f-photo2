@@ -350,7 +350,7 @@ export function getCompsAPI({
 				...res,
 				[name]: compUpd,
 				[`${name}API`]: {
-					...compUpd?.getAPI?.(),
+					...compUpd?.getAPI(),
 				},
 			};
 		},
@@ -400,8 +400,10 @@ export function checkProgress({
 		const {DialogAPI} = getComps({
 			callback: ({
 				Dialog,
-			}) => ({toClone: {Dialog}}),
+			}) => ({items: {Dialog}}),
 		});
+
+		DialogAPI.show();
 
 		function coreFunc() {
 			return checkFunc()
@@ -409,7 +411,7 @@ export function checkProgress({
 				const isCopyCompleted = res.progress === 100;
 				setTimeout(() => (isCopyCompleted ? null : coreFunc()), 500);        
 
-				DialogAPI.show({
+				DialogAPI.update({
 					message: ProgressTitle({
 						progress: res.progress,
 					}),
