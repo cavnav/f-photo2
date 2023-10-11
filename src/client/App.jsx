@@ -1,5 +1,13 @@
 // check all user ways
-	// selections on Browse
+	// doubled dialog btns.
+	// onePhoto mode
+		// remove, move
+	// btn move dont appear straitway.
+	// forbid move btn to print, printed albums, same path.
+	// add album press ok btn, dialog hidden.
+	// btn rename without check.
+	// on remove, rename, move folder / file change all print lists.
+	// when explore then print and backward the path reset.
 	// show move btn on second window on change path in first window.
 	// dialog position on edges
 // fix error Warning: Can't perform a React state update on
