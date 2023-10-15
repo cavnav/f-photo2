@@ -616,7 +616,7 @@ function resetTo({
 }
 
 function isShowRename([itemName], sep) {
-	return itemName?.includes(sep);
+	return itemName?.includes(sep) ?? false;
 }
 
 function getStateInit() {
