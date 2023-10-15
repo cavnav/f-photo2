@@ -38,8 +38,10 @@ function render(props) {
 		}, DELAY.ms);
 	}
 
-	const onClickClose = (event) => {
+	const onClose = (event) => {
+		const onConfirm = event.target.dataset.isResolve === "true" ? state.confirmBtn?.onConfirm : undefined;
 		Comp.getAPI().close({promiseResult: event.target.dataset.isResolve});
+		onConfirm?.();
 	}
 
 	setStateSilent({
@@ -91,7 +93,7 @@ function render(props) {
 					<div 
 						className='btn'	
 						data-is-resolve="true"
-						onClick={onClickClose}				
+						onClick={onClose}				
 					>
 						{state.confirmBtn.title}
 					</div>
@@ -100,7 +102,7 @@ function render(props) {
 					<div 
 						className='btn'	
 						data-is-resolve="false"
-						onClick={onClickClose}				
+						onClick={onClose}				
 					>
 						{state.rejectBtn.title}
 					</div>
@@ -159,9 +161,7 @@ function getAPI({
 			clearTimeout(deps.state._timerIdRef.current);
 			deps.state._timerIdRef.current = undefined;
 		}
-		deps.setState({
-			isShow: false,			
-		});
+		deps.setState(initialState);
 		
 		deps.state.confirmationPromise?.resolve(promiseResult);
 	}
@@ -218,11 +218,13 @@ function getAPI({
 
 	async function showChoiceConfirmation({
 		message,
+		onConfirm,
 	}) {
 		return showConfirmation({
 			message, 
 			confirmBtn: {
-				title: 'Да'
+				title: 'Да',
+				onConfirm,
 			},
 			rejectBtn: {
 				title: 'Нет'
@@ -238,7 +240,7 @@ const initialState = {
 	render: null,
 	isHide: true, // признак - исчезает ли спустя время
 	isModal: true, // признак - модальный ли диалог
-	conrirmBtn: undefined,
+	confirmBtn: undefined,
 	rejectBtn: undefined,
 	confirmationPromise: undefined,
 };

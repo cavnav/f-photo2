@@ -393,9 +393,9 @@ function getComps({
     Browse,
     AdditionalPanel,
     PhotoStatuses,
-    CustomAction,
     ToggleWindow,
     Label,
+    Dialog,
   } = channelComps;
 
   return {
@@ -403,13 +403,14 @@ function getComps({
       ExitFromOnePhoto: Label,
       ToggleWindow,
       MoveSelections: Label,
-      RemoveSelections: CustomAction,
+      RemoveSelections: Label,
     },
     items: {
       App,
       Browse,
       AdditionalPanel,
       PhotoStatuses,
+      Dialog,
     },
   };
 }
@@ -458,16 +459,17 @@ function renderAddPanel({
 							});		
 							throw new Error();					
 						} 
+            return res;
 					})			
           .then((result) => {
-            updateActionsLists({ lists: result.updatedActionLists });
+            updateActionsLists({ lists: result?.updatedActionLists });
             return result;
           })
           .then(() => {
             deleteFiles({ Comp });
             refreshOppositeWindow();
           })
-          .catch((error) => {});
+          .catch(() => {});
         }
       });
     }
@@ -479,15 +481,22 @@ function renderAddPanel({
           title: state.selections.size,
         }),
         onClick: () => {
-          rp.server.removeItems({
-            items: [state.curPhotoWithTime],
-          })
-          .then(() => {
-            deleteFiles({
-              Comp,
-            });
-            refreshOppositeWindow();
-          });          
+          rp.DialogAPI.showChoiceConfirmation({
+						message: "",
+						onConfirm,
+					});
+					
+					function onConfirm() {
+            rp.server.removeItems({
+              items: [state.curPhotoWithTime],
+            })
+            .then(() => {
+              deleteFiles({
+                Comp,
+              });
+              refreshOppositeWindow();
+            });       
+          }   
         },
       });
     }

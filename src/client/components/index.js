@@ -5,7 +5,6 @@ export { Print } from './Print/Print';
 export { Notification } from './Notification/Notification';
 export { Label } from './Label/Label';
 export { AddAlbum } from './AddAlbum/AddAlbum';
-export { CustomAction } from '../common/additionalActions/CustomAction';
 export { Dirs } from './Dirs/Dirs';
 export { Copying } from './Copying/Copying';
 export { ControlPanel } from './ControlPanel/ControlPanel';

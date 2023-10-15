@@ -527,22 +527,29 @@ function renderAddPanel({
 					title: state.selections.length,
 				}),
 				onClick: () => {
-					rp.server.removeItems({
-						items: state.selections,
-						...getUpdatedActionLists(),
-					})
-					.then((result) => {
-						updateActionsLists({ lists: result.updatedActionLists });
-						return result;
-					})
-					.then(({
-					}) => onMoveSelections({
-						Comp,
-						onChangeSelections: () => changeSelections({
+					rp.DialogAPI.showChoiceConfirmation({
+						message: "",
+						onConfirm,
+					});
+					
+					function onConfirm() {
+						rp.server.removeItems({
+							items: state.selections,
+							...getUpdatedActionLists(),
+						})
+						.then((result) => {
+							updateActionsLists({ lists: result.updatedActionLists });
+							return result;
+						})
+						.then(({
+						}) => onMoveSelections({
 							Comp,
-						}),
-					}))
-					.then(() => refreshWindows());
+							onChangeSelections: () => changeSelections({
+								Comp,
+							}),
+						}))
+						.then(() => refreshWindows());
+					}					
 				},
 			});
 		});
@@ -564,7 +571,6 @@ function getComps({
 		BrowseBase,
 
 		AddAlbum,
-		CustomAction,
 		Label,
 		ToggleWindow,
 		Dialog,
@@ -579,7 +585,7 @@ function getComps({
 			Rename,
 			ExitFromFolder: Label,
 			MoveSelections: Label,
-			RemoveSelections: CustomAction,
+			RemoveSelections: Label,
 		},
 		items: {
 			App,

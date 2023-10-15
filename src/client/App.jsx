@@ -1,23 +1,19 @@
 // check all user ways
-	// doubled dialog btns.
-	// onePhoto mode
-		// remove, move
-	// btn move dont appear straitway.
+	// when explore then print and backward the path reset.
 	// forbid move btn to print, printed albums, same path.
 	// add album press ok btn, dialog hidden.
-	// btn rename without check.
-	// on remove, rename, move folder / file change all print lists.
-	// when explore then print and backward the path reset.
 	// show move btn on second window on change path in first window.
-	// dialog position on edges
+	// on remove, rename, move folder / file change all print lists.
 // fix error Warning: Can't perform a React state update on
 	// first - browse, then print, then back to browse.
 	// first - browse, then print, then back to browse, then print, then change cnt.
 // add loading (create Proxy Comp for loading)
 	// get countNewPhotos.
 	// copying new photos.
+// notify about server problem - wait admin.
 // update version
 
+// dialog position on edges
 // after back to list to scroll to last opened folder, last viewed photo
 // last added folder
 // scroll to new photo to print in Print action.
