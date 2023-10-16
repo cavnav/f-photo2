@@ -1,16 +1,15 @@
 // check all user ways
-	// when explore then print and backward the path reset.
-	// forbid move btn to print, printed albums, same path.
 	// add album press ok btn, dialog hidden.
 	// show move btn on second window on change path in first window.
+	// forbid move btn to print, printed albums, same path.
 	// on remove, rename, move folder / file change all print lists.
-// fix error Warning: Can't perform a React state update on
-	// first - browse, then print, then back to browse.
-	// first - browse, then print, then back to browse, then print, then change cnt.
 // add loading (create Proxy Comp for loading)
 	// get countNewPhotos.
 	// copying new photos.
 // notify about server problem - wait admin.
+// fix error Warning: Can't perform a React state update on
+// first - browse, then print, then back to browse.
+// first - browse, then print, then back to browse, then print, then change cnt.
 // update version
 
 // dialog position on edges
@@ -162,8 +161,13 @@ function getAppStateInit() {
 			},
 			{
 				id: Browse.name,
-				title: 'Смотреть',
-			},			
+				title: 'Альбомы',
+			},		
+			{
+				id: OnePhoto.name,
+				title: 'Фото',
+				isEnabled: false,
+			},
 			{
 				id: Print.name,
 				title: 'Печатать',
@@ -210,8 +214,14 @@ export function getAPI({
 	function toggleAction({
 		action,
 	}) {		
+		let Action = deps.state.actions.find((action) => action.id === deps.state.action);
+		Action.isEnabled = false;
+		Action = deps.state.actions.find((actionItem) => actionItem.id === action);
+		Action.isEnabled = true;
+
 		deps.setState({
 			action,		
+			actions: deps.state.actions,
 		});
 	}
 }

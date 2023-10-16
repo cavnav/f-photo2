@@ -26,6 +26,7 @@ function render() {
 			onClick={onClickAction}
 		>{
 			rp.actions
+				.filter((action) => action.isEnabled !== false)
 				.map((props) => {
 					const classNames = cn({
 						action: true,
