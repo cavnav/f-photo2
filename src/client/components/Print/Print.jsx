@@ -5,7 +5,9 @@ import React, {useEffect} from 'react';
 import {
 	Stepper,
 } from '../';
-import { checkProgress, getVarName, onChangeSelections, updateHtmlSelectorsFromObject } from '../../functions';
+import { checkProgress, 
+	refreshOppositeWindow,
+	getVarName, onChangeSelections, updateHtmlSelectorsFromObject } from '../../functions';
 import { createSteps } from './createSteps';
 import { channel } from '../../channel';
 import { Copying } from './components/Copying';
@@ -232,6 +234,10 @@ function render({
 		}, 
 		[state.isSaveToFlash]
 	);
+
+	useEffect(() => {
+		refreshOppositeWindow();
+	}, []);
 
 
 	return (

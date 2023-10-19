@@ -10,9 +10,17 @@ export function ChangeName(props) {
 
     function onChange(e) {
         const newName = e.target.value;
+        let error;
+        if (Boolean(newName.match("^[A-Za-zА-Яа-я0-9_-]*$")) === false) {
+            error = 'название только из букв, цифр, "-" и "_"';
+        }
+        else if (newName === '') {
+            error = 'имя не задано';
+        }
+        
         setState({
             newName: e.target.value,
-            error: newName === '' ? 'имя не задано' : undefined,
+            error,
         });
     }
 
@@ -49,5 +57,5 @@ export function ChangeName(props) {
 const initialState  = {
     name: '',
     newName: '',
-    error: undefined,
+    error: true,
 };

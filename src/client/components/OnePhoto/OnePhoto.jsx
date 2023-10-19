@@ -1,9 +1,10 @@
 import './styles.css';
 
-import React from 'react';
+import React, {useEffect} from 'react';
 import { Empty } from '../';
 import { ResumeObj } from '../../resumeObj';
-import { getOppositeWindow, getUpdatedActionLists, myArray, updateActionsLists, refreshOppositeWindow, isBanMoveItems, initRefreshWindowEvent } from '../../functions';
+import { getOppositeWindow, getUpdatedActionLists, myArray, 
+  updateActionsLists, refreshOppositeWindow, isBanMoveItems, initRefreshWindowEvent } from '../../functions';
 import { channel } from '../../channel';
 import { getCurDate } from '../../functions';
 import { useMutedReducer } from '../../mutedReducer';
@@ -94,6 +95,10 @@ function render(
 		}),
 		[]
 	);
+
+	useEffect(() => {
+		refreshOppositeWindow();
+	}, []);
   
   return getRender();
 
@@ -435,6 +440,7 @@ function renderAddPanel({
     rp.ExitFromOnePhotoAPI.forceUpdate({
       onClick: () => {
         toggleBrowseAction(Comp);
+        refreshOppositeWindow();
       },
     });
 

@@ -100,9 +100,7 @@ export function isCatalogSelected({
 export function isBanMoveItems({
 	path,
 } = {}) {
-	// same path
-	// another side is welcome
-	// another side is onePhoto
+	// another side is: samePath, welcome, onePhoto, print, printed.
 
 
 	const destWindow = getOppositeWindow();
@@ -123,7 +121,7 @@ export function isBanMoveItems({
 			},
 		});
 		
-		if (['Welcome', 'OnePhoto'].includes(destAction.action)) {
+		if (['Welcome', 'OnePhoto', 'Print', 'Printed'].includes(destAction.action)) {
 			return true;
 		}
 

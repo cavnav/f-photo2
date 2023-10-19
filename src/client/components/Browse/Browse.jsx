@@ -1,9 +1,10 @@
-import React, {useCallback, useState} from 'react';
+import React, {useCallback, useEffect} from 'react';
 import './styles.css';
 import {
 	getItemName, getOppositeWindow, getUpdatedActionLists, initRefreshWindowEvent, isBanMoveItems, myCrop,
 	onChangeSelections,
-	onMoveSelections, refreshWindows, updateActionsLists, updateHtmlSelectorsFromArray,
+	onMoveSelections, refreshWindows, refreshOppositeWindow,
+	updateActionsLists, updateHtmlSelectorsFromArray,
 } from '../../functions';
 import { channel } from '../../channel';
 import { ResumeObj } from '../../resumeObj';
@@ -33,6 +34,7 @@ function render(
 	const Comp = this;
 	const rp = Comp.getReqProps();
 	const BrowseBase = rp.BrowseBase.r;
+
 	const [state] = useMutedReducer({
 		setCompDeps: Comp.setCompDeps,
 		initialState: getStateInit(),
@@ -80,6 +82,10 @@ function render(
 		}, 
 	);
 
+	useEffect(() => {
+		refreshOppositeWindow();
+	}, []);
+
 	const FilesComp = state.files.length === 0 ? undefined : (props) => <Files
 		files={state.files}
 		browsePath={browsePath}
@@ -91,7 +97,6 @@ function render(
 		{...props}
 	/>;
 
-	console.log(new Date);
 	return (
 		<BrowseBase 
 			Files={FilesComp}
@@ -156,6 +161,7 @@ function onChangeDir({
 				changeSelections({
 					Comp,
 				});
+				refreshOppositeWindow();
 			});
 	};
 }
@@ -245,7 +251,9 @@ function getAPI({
 		const rp = Comp.getReqProps();
 		rp.ExitFromFolderAPI.forceUpdate({
 			title: res.path ? `Закрыть альбом ${res.path}` : '',
-			onClick: () => onExitFolder({ Comp }),
+			onClick: () => {
+				onExitFolder({ Comp });
+			}
 		});
 
 
@@ -257,6 +265,7 @@ function getAPI({
 				changeSelections,
 				onNavigate,
 			} = Comp.getAPI();
+
 			changeSelections({
 				Comp,
 			});
@@ -267,7 +276,10 @@ function getAPI({
 			});
 			const rp = Comp.getReqProps();
 			rp.server.backward()
-				.then(onNavigate);
+				.then(onNavigate)
+				.then(() => {
+					refreshOppositeWindow();
+				});
 		}
 	}
 }
@@ -458,10 +470,9 @@ function renderAddPanel({
 				name: newName,
 			}));
 
-			const curName = getItemName(state.selections, state.sep);
 			rp.RenameAPI.forceUpdate({
 				isShow: isShowRename(state.selections, state.sep),	
-				name: curName,
+				name: getItemName(state.selections, state.sep),
 				onSubmit: ({
 					name,
 					newName, 

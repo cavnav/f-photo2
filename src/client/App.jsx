@@ -1,7 +1,4 @@
 // check all user ways
-	// add album press ok btn, dialog hidden.
-	// show move btn on second window on change path in first window.
-	// forbid move btn to print, printed albums, same path.
 	// on remove, rename, move folder / file change all print lists.
 // add loading (create Proxy Comp for loading)
 	// get countNewPhotos.
