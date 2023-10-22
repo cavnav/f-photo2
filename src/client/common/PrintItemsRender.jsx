@@ -154,6 +154,7 @@ async function onCancelPrint({ event, Comp, onChangeItems }) {
     const isResolve = await DialogAPI.showChoiceConfirmation({
         message: 'Убрать фото из этого списка ?',
     });
+
     if (isResolve === 'false') {
         return;
     }

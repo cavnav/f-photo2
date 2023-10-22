@@ -90,6 +90,7 @@ function render(
   React.useEffect(
 		() => initRefreshWindowEvent({ 
 			callback: () => {
+        // когда удалил или переместил или еще что. чтобы не усложнять.
 				toggleBrowseAction(Comp);
 			},
 		}),

@@ -1,14 +1,29 @@
 // check all user ways
-	// on remove, rename, move folder / file change all print lists.
+	// when rename, remove, move folder - exit from same another side.
+	// on remove, rename, move folder / file change 
+		// printed
+			// remove file-
+			// remove folder-
+			// rename folder+
+			// move file-
+			// move folder-		
+		// print
+			// remove file-
+			// remove folder-
+			// rename folder+
+			// move file+
+			// move folder+
 // add loading (create Proxy Comp for loading)
 	// get countNewPhotos.
 	// copying new photos.
 // notify about server problem - wait admin.
+// PrintItemsRender. Warning: Failed prop type: You provided a `value` prop to a form field without an `onChange` handler. This will render a read-only field. If the field should be mutable use `defaultValue`. Otherwise, set either `onChange` or `readOnly`.
 // fix error Warning: Can't perform a React state update on
-// first - browse, then print, then back to browse.
-// first - browse, then print, then back to browse, then print, then change cnt.
+	// first - browse, then print, then back to browse.
+	// first - browse, then print, then back to browse, then print, then change cnt.
 // update version
 
+// from one photo 1 side and select print 2 side, then exit from one photo on 1 side.	
 // dialog position on edges
 // after back to list to scroll to last opened folder, last viewed photo
 // last added folder

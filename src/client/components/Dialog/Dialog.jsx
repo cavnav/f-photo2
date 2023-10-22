@@ -39,8 +39,9 @@ function render(props) {
 	}
 
 	const onClose = (event) => {
-		const onConfirm = event.target.dataset.isResolve === "true" ? state.confirmBtn?.onConfirm : undefined;
-		Comp.getAPI().close({promiseResult: event.target.dataset.isResolve});
+		const choice = event.target.dataset.isResolve;
+		const onConfirm = choice === "true" ? state.confirmBtn?.onConfirm : undefined;
+		Comp.getAPI().close({promiseResult: choice});
 		onConfirm?.();
 	}
 
@@ -161,9 +162,9 @@ function getAPI({
 			clearTimeout(deps.state._timerIdRef.current);
 			deps.state._timerIdRef.current = undefined;
 		}
-		deps.setState(initialState);
+		deps.state.confirmationResolver?.(promiseResult);
 		
-		deps.state.confirmationPromise?.resolve(promiseResult);
+		deps.setState(initialState);			
 	}
 
 	async function show(props) {
@@ -171,18 +172,16 @@ function getAPI({
 			deps.state._ref.current.parentElement.classList.remove(`Dialog__none`);
 		}
 
-		let promiseResolve;
+		let promiseResolver;
 		const promise = new Promise((resolve) => {
-			promiseResolve = resolve;
+			promiseResolver = resolve;
 		});
 
 		deps.setState({
 			...initialState,
 			...props,
 			isShow: true,
-			confirmationPromise: {
-				resolve: promiseResolve,
-			},
+			confirmationResolver: promiseResolver,
 		});
 
 		return promise;
@@ -242,7 +241,7 @@ const initialState = {
 	isModal: true, // признак - модальный ли диалог
 	confirmBtn: undefined,
 	rejectBtn: undefined,
-	confirmationPromise: undefined,
+	confirmationResolver: undefined,
 };
 
 const DELAY = {
