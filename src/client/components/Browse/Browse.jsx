@@ -12,6 +12,7 @@ import { useMutedReducer } from '../../mutedReducer';
 import { BTN_MOVE, BTN_REMOVE, setBtnTitle } from '../../common/additionalActions/const';
 import { Files } from '../File/Files';
 import { Dirs } from '../Dirs/Dirs';
+import { eventNames } from '../../constants';
 
 
 export const Browse = channel.addComp({
@@ -64,8 +65,16 @@ function render(
 
 	React.useEffect(
 		() => initRefreshWindowEvent({ 
-			Comp,  
+			eventName: eventNames.refreshWindow,
 			callback: () => onRefreshWindow({ Comp }),
+		}),
+		[]
+	);
+
+	React.useEffect(
+		() => initRefreshWindowEvent({ 
+			eventName: eventNames.exitFolder,
+			callback: () => exitFolder({ Comp }),
 		}),
 		[]
 	);
@@ -207,6 +216,7 @@ function getAPI({
 }) {
 	return {
 		resetTo,
+		exitFolder: () => exitFolder({Comp}),
 		onNavigate,
 		setToResumeObj,
 		getResumeObj,
@@ -252,35 +262,9 @@ function getAPI({
 		rp.ExitFromFolderAPI.forceUpdate({
 			title: res.path ? `Закрыть альбом ${res.path}` : '',
 			onClick: () => {
-				onExitFolder({ Comp });
+				exitFolder({ Comp });
 			}
-		});
-
-
-		// --------------------------------------------
-		function onExitFolder({
-			Comp,
-		}) {
-			const {
-				changeSelections,
-				onNavigate,
-			} = Comp.getAPI();
-
-			changeSelections({
-				Comp,
-			});
-			resumeObj.save({
-				val: {
-					curPhotoInd: -1,
-				},
-			});
-			const rp = Comp.getReqProps();
-			rp.server.backward()
-				.then(onNavigate)
-				.then(() => {
-					refreshOppositeWindow();
-				});
-		}
+		});	
 	}
 }
 
@@ -548,7 +532,7 @@ function renderAddPanel({
 							items: state.selections,
 							...getUpdatedActionLists(),
 						})
-						.then((result) => {
+						.then((result) => {							
 							updateActionsLists({ lists: result.updatedActionLists });
 							return result;
 						})
@@ -559,7 +543,12 @@ function renderAddPanel({
 								Comp,
 							}),
 						}))
-						.then(() => refreshWindows());
+						.then(() => {
+							onRefreshWindow({Comp});
+							refreshOppositeWindow({
+								eventName: eventNames.exitFolder,
+							});
+						});
 					}					
 				},
 			});
@@ -630,6 +619,30 @@ function resetTo({
 		.then(() => setState({
 			loading: false,
 		}));
+}
+
+function exitFolder({
+	Comp,
+}) {
+	const {
+		changeSelections,
+		onNavigate,
+	} = Comp.getAPI();
+
+	changeSelections({
+		Comp,
+	});
+	resumeObj.save({
+		val: {
+			curPhotoInd: -1,
+		},
+	});
+	const rp = Comp.getReqProps();
+	rp.server.backward()
+		.then(onNavigate)
+		.then(() => {
+			refreshOppositeWindow();
+		});
 }
 
 function isShowRename([itemName], sep) {

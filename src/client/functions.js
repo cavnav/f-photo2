@@ -137,10 +137,11 @@ export function isBanMoveItems({
 }
 
 export function initRefreshWindowEvent({
+	eventName,
 	callback,
 }) {
-	document.addEventListener(eventNames.refreshWindow, callback);
-	return () => document.removeEventListener(eventNames.refreshWindow, callback);
+	document.addEventListener(eventName, callback);
+	return () => document.removeEventListener(eventName, callback);
 }
 
 export function getOppositeWindow() {
@@ -148,10 +149,19 @@ export function getOppositeWindow() {
 }
 
 
-export function refreshOppositeWindow() {
+export function refreshOppositeWindow({
+	eventName = eventNames.refreshWindow,
+} = {}) {
 	const oppositeWindow = getOppositeWindow();
 	oppositeWindow?.document.dispatchEvent(
-		new Event(eventNames.refreshWindow)
+		new Event(eventName)
+	);
+}
+
+export function oppositeWindowExitFolder() {
+	const oppositeWindow = getOppositeWindow();
+	oppositeWindow?.document.dispatchEvent(
+		new Event(eventNames.exitFolder)
 	);
 }
 
@@ -447,6 +457,7 @@ export function getUpdatedActionLists() {
 export function updateActionsLists({
 	lists,
 }) {
+	// update print, printed, share lists.
 	const resumeObj = new ResumeObj();
 	resumeObj.saveUpdatedActionLists({
 		lists,

@@ -9,6 +9,7 @@ import { channel } from '../../channel';
 import { getCurDate } from '../../functions';
 import { useMutedReducer } from '../../mutedReducer';
 import { BTN_MOVE, BTN_REMOVE, setBtnTitle } from '../../common/additionalActions/const';
+import { eventNames } from '../../constants';
 
 export const OnePhoto = channel.addComp({
   name: 'OnePhoto',
@@ -89,9 +90,20 @@ function render(
 
   React.useEffect(
 		() => initRefreshWindowEvent({ 
+      eventName: eventNames.refreshWindow,
 			callback: () => {
         // когда удалил или переместил или еще что. чтобы не усложнять.
 				toggleBrowseAction(Comp);
+			},
+		}),
+		[]
+	);
+
+  React.useEffect(
+		() => initRefreshWindowEvent({ 
+      eventName: eventNames.exitFolder,
+			callback: () => {
+        rp.BrowseAPI.exitFolder();
 			},
 		}),
 		[]
