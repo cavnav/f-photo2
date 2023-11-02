@@ -235,7 +235,7 @@ export class AppServerAPI {
 				},
 			})
 		)
-			.then((res) => res.json());
+		.then((res) => res.json());
 	};
 
 	moveToPath = ({

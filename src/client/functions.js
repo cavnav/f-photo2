@@ -432,26 +432,6 @@ export function checkProgress({
 			});
 		}
 	});
-  }
-
-export function getUpdatedActionLists() {
-	const resumeObj = new ResumeObj();
-	const appState = resumeObj.state;
-	const {
-		Print: {
-			filesToPrint,
-		},
-		Share: {
-			filesToShare = {},
-		} = {},
-	} = appState;
-
-	return {
-		updatedActionLists: {
-			filesToPrint,
-			filesToShare,
-		},
-	};
 }
 
 export function updateActionsLists({

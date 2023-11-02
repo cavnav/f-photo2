@@ -224,6 +224,7 @@ app.post('/api/removeItems',
 				updatedLists: updatedActionLists,
 				items: flattedItems,
 				source,
+				isDelete: true,
 			}),
 		});
 
@@ -882,7 +883,21 @@ async function mapResponsePrinted({
 	};
 }
 
-
+function removeFromActionLists({
+	items,
+}) {
+	items.forEach((item) => {
+		const sourceFull = path.join(sourceRel, path.sep, item);
+		const destFull = path.join(destRel, path.sep, item);
+		updatedListsArr.forEach((files) => {
+			if (files[sourceFull]) {
+				files[destFull] = files[sourceFull];
+			}
+			delete files[sourceFull];
+		});
+	});
+	return updatedLists;
+}
 /**
  * 
  * обновить списки файлов (печать, поделиться, архивПечати, архивПоделиться)
@@ -892,21 +907,22 @@ function updateActionLists({
 	items,
 	source,
 	dest,
+	isDelete,
 }) {
-	if (!dest) return updatedLists;
-
-	const sourceRel = source.replace(ALBUM_DIR, '');
-	const destRel = dest.replace(ALBUM_DIR, '');
+	const sourceRel = source.replace(ALBUM_DIR, '');	
 	const updatedListsArr = Object.values(updatedLists);
 
 	items.forEach((item) => {
-		const sourceFull = path.join(sourceRel, path.sep, item);
-		const destFull = path.join(destRel, path.sep, item);
+		const sourceFull = path.join(sourceRel, path.sep, item);		
 		updatedListsArr.forEach((files) => {
 			if (files[sourceFull]) {
-				files[destFull] = files[sourceFull];
-			}
-			delete files[sourceFull];
+				if (!isDelete) {
+					const destRel = dest.replace(ALBUM_DIR, '');
+					const destFull = path.join(destRel, path.sep, item);
+					files[destFull] = files[sourceFull];
+				}
+				delete files[sourceFull];
+			}			
 		});
 	});
 

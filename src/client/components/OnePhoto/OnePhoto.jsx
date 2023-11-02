@@ -3,7 +3,7 @@ import './styles.css';
 import React, {useEffect} from 'react';
 import { Empty } from '../';
 import { ResumeObj } from '../../resumeObj';
-import { getOppositeWindow, getUpdatedActionLists, myArray, 
+import { getOppositeWindow, myArray, 
   updateActionsLists, refreshOppositeWindow, isBanMoveItems, initRefreshWindowEvent } from '../../functions';
 import { channel } from '../../channel';
 import { getCurDate } from '../../functions';
@@ -467,7 +467,7 @@ function renderAddPanel({
           rp.server.moveToPath({
             items: [state.curPhotoWithTime],
             destWindow: getOppositeWindow().name,
-            ...getUpdatedActionLists(),
+            ...resumeObj.getUpdatedActionLists(),
           })
           .then((res) => {
 						if (res?.error) {

@@ -1,7 +1,7 @@
 import React, {useCallback, useEffect} from 'react';
 import './styles.css';
 import {
-	getItemName, getOppositeWindow, getUpdatedActionLists, initRefreshWindowEvent, isBanMoveItems, myCrop,
+	getItemName, getOppositeWindow, initRefreshWindowEvent, isBanMoveItems, myCrop,
 	onChangeSelections,
 	onMoveSelections, refreshWindows, refreshOppositeWindow,
 	updateActionsLists, updateHtmlSelectorsFromArray,
@@ -403,7 +403,7 @@ async function onRename({
 	const res = await rp.server.rename({
 	  name,
 	  newName,
-	  ...getUpdatedActionLists(),
+	  ...resumeObj.getUpdatedActionLists(),
 	});
   
 	if (res?.error) {
@@ -483,7 +483,7 @@ function renderAddPanel({
 					rp.server.moveToPath({
 						items: state.selections,
 						destWindow: getOppositeWindow().name,
-						...getUpdatedActionLists(),
+						...resumeObj.getUpdatedActionLists(),
 					})
 					.then((res) => {
 						if (res?.error) {

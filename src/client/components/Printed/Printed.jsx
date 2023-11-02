@@ -6,7 +6,7 @@ import { FilesPrinted } from '../File/FilesPrinted';
 import { getFileSrc } from '../File/FileUtils';
 
 
-const STATE_NAMES = {BrowseBase: BrowseBaseWrap, PrintClone: PrintWrap};
+const STATE_NAMES = {BrowseBase: BrowseBaseWrap, Printed: PrintWrap};
 
 export const Printed = channel.addComp({
     name: 'Printed',
@@ -61,7 +61,7 @@ function BrowseBaseWrap({PrintedComp}) {
         const rp = PrintedComp.getReqProps();
         const {deps} = rp;
         const {setState} = deps;
-        const actionName = rp.comps.PrintClone.name;
+        const actionName = rp.comps.Printed.name;
 
         setState({actionName, requestFile: getFileSrc({event})});
     }
@@ -69,7 +69,7 @@ function BrowseBaseWrap({PrintedComp}) {
 
 function PrintWrap({PrintedComp}) {
     const rp = PrintedComp.getReqProps();
-    const PrintClone = rp.comps.PrintClone.r;
+    const Printed = rp.comps.Printed.r;
     const {deps} = rp;
     const {state, setState} = deps;
      
@@ -84,7 +84,7 @@ function PrintWrap({PrintedComp}) {
         });
     }
 
-    return <PrintClone 
+    return <Printed
         files={state.printedItems} 
         printed={state.requestFile}
         onBackToPrinted={onBackToPrinted}
@@ -127,7 +127,7 @@ function getComps({
     return {
         toClone: {
             BrowseBase,
-            PrintClone: Print,
+            Printed: Print,
         },
         items: {
             Dialog,

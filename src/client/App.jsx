@@ -1,15 +1,14 @@
-// check all user ways
-	// when rename, remove, move folder - exit from same another side.
+// check all user ways	
 	// on remove, rename, move folder / file change 
-		// printed
+		// printed. need check all physical files.
 			// remove file-
 			// remove folder-
 			// rename folder+
 			// move file-
 			// move folder-		
 		// print
-			// remove file-
-			// remove folder-
+			// remove file+
+			// remove folder+
 			// rename folder+
 			// move file+
 			// move folder+

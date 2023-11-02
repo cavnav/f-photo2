@@ -77,17 +77,45 @@ export class ResumeObj {
     );
   }
 
+  getActionLists() {
+    const {
+      Print: {
+        filesToPrint,
+      },
+      Printed: {
+        filesToPrint: filesPrinted = {},
+      } = {},
+      Share: {
+        filesToShare = {},
+      } = {},
+    } = this.state;
+
+    return {
+      filesToPrint,
+      filesToShare,
+      filesPrinted,
+    };
+  }
+
+  getUpdatedActionLists() {
+    return {
+      updatedActionLists: this.getActionLists(),
+    };
+  }
+
   saveUpdatedActionLists({
     lists,
   }) {
     const state = this.state;
-    const sourceLists = {
-      filesToPrint: state.Print,
-      filesToShare: state.Share,
-    };
+    const sourceLists = this.getActionLists();
     
     Object.entries(lists).forEach(([listName, list]) => {
-        if (sourceLists[listName]?.[listName]) sourceLists[listName][listName] = list;
+        if (sourceLists[listName]) {
+          Object.assign(
+            sourceLists[listName],
+            list,
+          );
+        }
     });
 
     localStorage.setItem(
