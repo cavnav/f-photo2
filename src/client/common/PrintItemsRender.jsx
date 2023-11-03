@@ -1,6 +1,6 @@
 import React, {useRef} from 'react';
 import { ItemSelector } from '../components/ItemSelector/ItemSelector';
-import { updateFilesToPrint } from '../components/Print/PrintUtils';
+import { updateFiles } from '../components/Print/PrintUtils';
 import { getBackgroundImageStyle, getComps} from '../functions';
 import { useMutedReducer } from '../mutedReducer';
 
@@ -110,8 +110,8 @@ function onKeyDown({ event, Comp }) {
     const { state, setState } = Comp;
 
     setState({
-        items: updateFilesToPrint.update({
-            filesToPrint: state.items,
+        items: updateFiles.update({
+            files: state.items,
             photoSrc,
             cnt: getCntUpd(),
         }),
@@ -132,8 +132,8 @@ function onChangePhotoCount({ event, Comp, onChangeItems, }) {
 
     const { state, setState } = Comp;
 
-    const items = updateFilesToPrint.update({
-        filesToPrint: state.items,
+    const items = updateFiles.update({
+        files: state.items,
         photoSrc,
         cnt: input.value,
     });

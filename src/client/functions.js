@@ -4,9 +4,10 @@ import {
 	eventNames
 } from './constants';
 import {
-	ResumeObj,
+	ResumeObj, STORAGE_ITEM,
 } from './resumeObj';
 
+const RESUME_OBJ = new ResumeObj();
 class MyItems {
 	constructor({
 		items,
@@ -92,8 +93,7 @@ export function isCatalogSelected({
 	windowName,
 }) {
 	if (!windowName) return false;
-	const resumeObj = new ResumeObj();
-	const resumeState = resumeObj.state;
+	const resumeState = RESUME_OBJ.state;
 	return Boolean(_get(resumeState[windowName], 'App.browseState.path'));
 }
 
@@ -106,8 +106,7 @@ export function isBanMoveItems({
 	const destWindow = getOppositeWindow();
 
 	if (destWindow) {
-		const resumeObj = new ResumeObj();
-		const resumeState = resumeObj.state;
+		const resumeState = RESUME_OBJ.state;
 		if (resumeState[destWindow.name] === undefined) {
 			return true;
 		}
@@ -187,8 +186,7 @@ export function getBackgroundImageStyle({
 export function getFromResumeObj({
 	selector,
 }) {
-	const resumeObj = new ResumeObj();
-	const resumeState = resumeObj.state;
+	const resumeState = RESUME_OBJ.state;
 	return myCrop({
 		from: resumeState,
 		selector,
@@ -438,8 +436,7 @@ export function updateActionsLists({
 	lists,
 }) {
 	// update print, printed, share lists.
-	const resumeObj = new ResumeObj();
-	resumeObj.saveUpdatedActionLists({
+	saveActionLists({
 		lists,
 	});
 }
@@ -517,4 +514,49 @@ function updateHtmlSelectors({handler}) {
 export function getComps({callback}) {
 	const required = callback?.(channel.comps);
     return getCompsAPI(required);
+}
+
+export function getActionLists() {
+    const result = {};
+
+    const actions = getActions();
+    for (let actionName in actions) {
+      result[actionName] = actions[actionName]?.files ?? '';
+    }
+
+    return result;
+}
+
+function getActions() {
+    const {
+      Print,
+      Printed,
+    } = RESUME_OBJ.state;
+
+	return {
+		Print,
+		Printed,
+	};
+}
+
+export function getUpdatedActionLists() {
+    return {
+      updatedActionLists: getActionLists(),
+    };
+}
+
+export function saveActionLists({
+    lists,
+}) {
+	const state = RESUME_OBJ.state;
+    Object.entries(lists).forEach(([actionName, files]) => {
+        if (state[actionName]) {
+			state[actionName].files = files;
+		}
+    });
+
+    localStorage.setItem(
+      STORAGE_ITEM,
+      JSON.stringify(state),
+    );
 }

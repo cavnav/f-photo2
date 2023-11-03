@@ -1,13 +1,11 @@
 import { myCrop } from './functions';
 import { get as _get, set as _set } from 'lodash';
 
-export const resumeObjConstants = {
-  storageItemName:'resume',
-  browserCount: 'browserCount',
-};
+export const STORAGE_ITEM = 'resume';
+const KEY_BROWSER_COUNT = 'browserCount';
 export class ResumeObj {
   defAppState = {
-    [resumeObjConstants.browserCount]: 1,
+    [KEY_BROWSER_COUNT]: 1,
     leftWindow: {
       // OnePhoto: {},
     },
@@ -70,57 +68,10 @@ export class ResumeObj {
     val,
   }) {
     localStorage.setItem(
-      resumeObjConstants.storageItemName, 
+      STORAGE_ITEM, 
       JSON.stringify(
         val,
       ),
-    );
-  }
-
-  getActionLists() {
-    const {
-      Print: {
-        filesToPrint,
-      },
-      Printed: {
-        filesToPrint: filesPrinted = {},
-      } = {},
-      Share: {
-        filesToShare = {},
-      } = {},
-    } = this.state;
-
-    return {
-      filesToPrint,
-      filesToShare,
-      filesPrinted,
-    };
-  }
-
-  getUpdatedActionLists() {
-    return {
-      updatedActionLists: this.getActionLists(),
-    };
-  }
-
-  saveUpdatedActionLists({
-    lists,
-  }) {
-    const state = this.state;
-    const sourceLists = this.getActionLists();
-    
-    Object.entries(lists).forEach(([listName, list]) => {
-        if (sourceLists[listName]) {
-          Object.assign(
-            sourceLists[listName],
-            list,
-          );
-        }
-    });
-
-    localStorage.setItem(
-      resumeObjConstants.storageItemName,
-      JSON.stringify(state),
     );
   }
 
@@ -128,7 +79,7 @@ export class ResumeObj {
     val,
   }) {
     localStorage.setItem(
-      resumeObjConstants.storageItemName,
+      STORAGE_ITEM,
       JSON.stringify({
         ...this.state,
         ...val,
@@ -157,7 +108,7 @@ export class ResumeObj {
   }
 
   get state() {
-    const storage = localStorage.getItem(resumeObjConstants.storageItemName);
+    const storage = localStorage.getItem(STORAGE_ITEM);
     return storage ? JSON.parse(storage) : this.defAppState;
   }  
 }

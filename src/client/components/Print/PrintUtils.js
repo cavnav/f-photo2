@@ -1,23 +1,23 @@
-export const updateFilesToPrint = {
+export const updateFiles = {
 	update(props) {
-		const {filesToPrint} = props;
-		filesToPrint[props.photoSrc] = {
-			...filesToPrint[props.photoSrc],
+		const {files} = props;
+		files[props.photoSrc] = {
+			...files[props.photoSrc],
 			cnt: props.cnt,
 		};
-		return filesToPrint;
+		return files;
 	},
 	add(props) {
-		const {filesToPrint} = props;
-		filesToPrint[props.photoSrc] = {
+		const {files} = props;
+		files[props.photoSrc] = {
 			cnt: props.cnt,
 		};
-		return filesToPrint;
+		return files;
 
 	},
 	delete(props) {
-		const {filesToPrint} = props;
-		delete filesToPrint[props.photoSrc];
-		return filesToPrint;
+		const {files} = props;
+		delete files[props.photoSrc];
+		return files;
 	},
 }

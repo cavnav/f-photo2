@@ -5,6 +5,7 @@ import {
 	onChangeSelections,
 	onMoveSelections, refreshWindows, refreshOppositeWindow,
 	updateActionsLists, updateHtmlSelectorsFromArray,
+	getUpdatedActionLists,
 } from '../../functions';
 import { channel } from '../../channel';
 import { ResumeObj } from '../../resumeObj';
@@ -403,7 +404,7 @@ async function onRename({
 	const res = await rp.server.rename({
 	  name,
 	  newName,
-	  ...resumeObj.getUpdatedActionLists(),
+	  ...getUpdatedActionLists(),
 	});
   
 	if (res?.error) {
@@ -483,7 +484,7 @@ function renderAddPanel({
 					rp.server.moveToPath({
 						items: state.selections,
 						destWindow: getOppositeWindow().name,
-						...resumeObj.getUpdatedActionLists(),
+						...getUpdatedActionLists(),
 					})
 					.then((res) => {
 						if (res?.error) {

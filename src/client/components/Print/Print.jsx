@@ -15,7 +15,7 @@ import { Empty } from '../';
 import { useMutedReducer } from '../../mutedReducer';
 import { eventNames } from '../../constants';
 import { PrintItemsRender } from '../../common/PrintItemsRender';
-import { updateFilesToPrint } from './PrintUtils';
+import { updateFiles } from './PrintUtils';
 import { usePrintActions } from './components/printHooks';
 
 
@@ -45,7 +45,7 @@ function render({
 		setCompDeps: Comp.setCompDeps,
 		...(files && {
 			props: {
-				filesToPrint: files,
+				files,
 				printed,
 				onBackToPrinted,
 			}
@@ -62,12 +62,12 @@ function render({
 	const onChangeFiles = ({ items }) => {		
 		const requiredFilesToPrintUpd = {};
 		for (const file in state.requiredFilesToPrint) {
-			if (state.filesToPrint[file]) {
-				requiredFilesToPrintUpd[file] = state.filesToPrint[file];
+			if (state.files[file]) {
+				requiredFilesToPrintUpd[file] = state.files[file];
 			}
 		}
 		setStateSilent({
-			filesToPrint: items,
+			files: items,
 			requiredFilesToPrint: requiredFilesToPrintUpd,
 		});
 	}
@@ -81,7 +81,7 @@ function render({
 				event.preventDefault();
 				return;
 			}
-			state.requiredFilesToPrint[src] = state.filesToPrint[src];
+			state.requiredFilesToPrint[src] = state.files[src];
 		}
 		else {
 			delete state.requiredFilesToPrint[src];
@@ -100,11 +100,11 @@ function render({
 				return undefined;
 			}
 			
-			const filesToPrint = Object.keys(state.requiredFilesToPrint).length  ? state.requiredFilesToPrint : state.filesToPrint;			
+			const files = Object.keys(state.requiredFilesToPrint).length  ? state.requiredFilesToPrint : state.files;			
 			
 			function saveFilesToFlash() {
 				return rp.server.$saveFilesToFlash({
-					files: filesToPrint,
+					files,
 					folderNameField: 'cnt',
 				})				
 				.then(() => {
@@ -127,11 +127,11 @@ function render({
 			return createSteps({
 				$getUsbDevices: rp.server.$getUsbDevices,
 				onAllStepsPassed: () => {
-					for (const file in filesToPrint) {
-						delete state.filesToPrint[file];
+					for (const file in files) {
+						delete state.files[file];
 					}
 					setState({
-						filesToPrint: state.filesToPrint,
+						files: state.files,
 						isSaveToFlash: false,
 						isFilesExcess: false,
 						requiredFilesToPrint: {},
@@ -141,7 +141,7 @@ function render({
 					nextStepBtn,
 				}) => <Copying
 					nextStepBtn={nextStepBtn}
-					filesToPrint={filesToPrint}
+					filesToPrint={files}
 					onCopyCanceled={() => setState({
 						isSaveToFlash: false
 					})}
@@ -152,7 +152,7 @@ function render({
 		[state.isSaveToFlash],
 	);
 
-	const isEmpty = Object.keys(state.filesToPrint).length === 0;
+	const isEmpty = Object.keys(state.files).length === 0;
 
 	const onClickItem = (event) => {		
 		const handler = event.target.getAttribute('handler');
@@ -189,7 +189,7 @@ function render({
 				return;
 			}
 
-			const isFilesExcess = checkFilesExcess({files: state.filesToPrint});
+			const isFilesExcess = checkFilesExcess({files: state.files});
 			if (isFilesExcess) {				
 				rp.DialogAPI.showConfirmation({
 					message: 'Нельзя записать все фотографии на флешку за один раз. Отметь галочкой фотографии, чтобы их напечатать.',
@@ -217,7 +217,7 @@ function render({
 			const {resumeObj} = rp;
 			const refreshWindowWrap = () => {
 				setState({
-					filesToPrint: resumeObj.get().filesToPrint,
+					files: resumeObj.get().files,
 				});
 			};
 			document.addEventListener(eventNames.refreshWindow, refreshWindowWrap);
@@ -250,7 +250,7 @@ function render({
 					steps={steps}
 				/> 
 				: <PrintItemsRender 
-					items={state.filesToPrint}
+					items={state.files}
 					onChangeItems={onChangeFiles} 
 					onChangeSelectionsName={state.isFilesExcess ? getVarName({onChangeThisSelections}) : undefined}
 				/>
@@ -291,7 +291,7 @@ function getAPI({
 		src,
 	}) {
 		return isToPrint({
-			val: resumeObj.get().filesToPrint?.[src],
+			val: resumeObj.get().files?.[src],
 		});
 	}
 
@@ -302,20 +302,20 @@ function getAPI({
 		// 0 - not to print, but show in list.
 		// 1 - to print.
 		const printed = isToPrint({
-			val: resumed.filesToPrint[src]?.cnt
+			val: resumed.files[src]?.cnt
 		});
 
 		// toggle.
 		if (printed) {
-			resumed.filesToPrint = updateFilesToPrint.delete({
-				filesToPrint: resumed.filesToPrint,
+			resumed.files = updateFiles.delete({
+				files: resumed.files,
 				photoSrc: src,
 				Comp,
 			});
 		}
 		else {
-			resumed.filesToPrint = updateFilesToPrint.add({
-				filesToPrint: resumed.filesToPrint,
+			resumed.files = updateFiles.add({
+				files: resumed.files,
 				photoSrc: src,
 				cnt: 1,
 				Comp,
@@ -324,7 +324,7 @@ function getAPI({
 
 		resumeObj.save({
 			val: {
-				filesToPrint: resumed.filesToPrint,
+				files: resumed.files,
 			},
 		});
 
@@ -335,13 +335,13 @@ function getAPI({
 		const {
 			state,
 		} = deps;
-		return props.photoSrc ? state.filesToPrint[props.photoSrc] : state.filesToPrint;
+		return props.photoSrc ? state.files[props.photoSrc] : state.files;
 	}
 }
 
 function getStateDefault() {
 	return {
-		filesToPrint: {},
+		files: {},
 		// используется, когда нельзя записать все файлы на флешку разом. Тогда надо выбрать конкретные, поставив галочку.
 		requiredFilesToPrint: {}, 
 		isSaveToFlash: false, 

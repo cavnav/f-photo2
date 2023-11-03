@@ -4,7 +4,10 @@ import React, {useEffect} from 'react';
 import { Empty } from '../';
 import { ResumeObj } from '../../resumeObj';
 import { getOppositeWindow, myArray, 
-  updateActionsLists, refreshOppositeWindow, isBanMoveItems, initRefreshWindowEvent } from '../../functions';
+  updateActionsLists, refreshOppositeWindow, isBanMoveItems, 
+  initRefreshWindowEvent,
+  getUpdatedActionLists,
+} from '../../functions';
 import { channel } from '../../channel';
 import { getCurDate } from '../../functions';
 import { useMutedReducer } from '../../mutedReducer';
@@ -467,7 +470,7 @@ function renderAddPanel({
           rp.server.moveToPath({
             items: [state.curPhotoWithTime],
             destWindow: getOppositeWindow().name,
-            ...resumeObj.getUpdatedActionLists(),
+            ...getUpdatedActionLists(),
           })
           .then((res) => {
 						if (res?.error) {
