@@ -530,12 +530,10 @@ export function getActionLists() {
 function getActions() {
     const {
       Print,
-      Printed,
     } = RESUME_OBJ.state;
 
 	return {
 		Print,
-		Printed,
 	};
 }
 

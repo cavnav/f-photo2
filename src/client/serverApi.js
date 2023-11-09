@@ -102,23 +102,6 @@ export class AppServerAPI {
 		);
 	}
 
-	savePrinted = ({
-		dest,
-		files,
-	}) => {
-		return fetch(
-			this.getFullUrl({
-				url: 'savePrinted',
-			}),
-			new PostObjTmp({
-				body: {
-					dest,
-					files,
-				},
-			}),
-		);
-	};
-
 	towardPrinted = (props) => this.toward({
 		...props,
 		url: 'towardPrinted',

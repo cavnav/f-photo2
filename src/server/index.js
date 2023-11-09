@@ -15,6 +15,7 @@ const app = express();
 
 const ALBUM_DIR = path.join(path.resolve('../../'), 'album');
 const PRINTED_DIR = path.join(ALBUM_DIR, 'printed');
+const PRINTED_JSON = path.join(PRINTED_DIR, 'printed.json');
 const PRINTED_EXT = '.json';
 
 
@@ -182,14 +183,15 @@ app.post('/api/rename',
 			});
 	
 			const flattedItems = allItems.flat();
+			const actionListsUpd = await updateActionLists({
+				updatedLists: actionLists,
+				items: flattedItems,
+				source: srcName,
+				dest: srcNewName,
+			}); 
 
 			result = {
-				actionLists: updateActionLists({
-					updatedLists: actionLists,
-					items: flattedItems,
-					source: srcName,
-					dest: srcNewName,
-				}),
+				actionLists: actionListsUpd,
 			};
 		}
 
@@ -217,15 +219,16 @@ app.post('/api/removeItems',
 		});
 
 		const flattedItems = allItems.flat();
+		const updatedActionListsUpd = await updateActionLists({
+			updatedLists: updatedActionLists,
+			items: flattedItems,
+			source,
+			isDelete: true,
+		});
 
 		res.send({
-			...req.body,
-			updatedActionLists: updateActionLists({
-				updatedLists: updatedActionLists,
-				items: flattedItems,
-				source,
-				isDelete: true,
-			}),
+			...req.body,	
+			updatedActionLists: updatedActionListsUpd,		
 		});
 
 		remove({
@@ -357,18 +360,6 @@ app.get('/api/imgRotate', (req, response) => {
 		.catch(console.error);
 });
 
-app.post('/api/savePrinted', async (req, response) => {
-	const {
-		dest,
-		files,
-	} = req.body;
-	await createPrintedLog({
-		dest,
-		files,
-	});
-	response.send(req.body);
-});
-
 app.post('/api/saveFilesToFlash', async (req, response) => {
 	clearUpUSB()
 		.then(async () => {
@@ -383,7 +374,7 @@ app.post('/api/saveFilesToFlash', async (req, response) => {
 
 			const total = Object.keys(files).length;
 
-			await createPrintedLog({
+			await updatePrinted({
 				files,
 			});
 
@@ -465,16 +456,17 @@ app.post('/api/moveToPath',
 		});
 
 		const flattedItems = allItems.flat();
+		const updatedActionListsUpd = await updateActionLists({
+			updatedLists: updatedActionLists,
+			items: flattedItems,
+			source,
+			dest,
+		});
 
 		res.send({
 			...req.body,
 			dest: dest.replace(ALBUM_DIR, ''),
-			updatedActionLists: updateActionLists({
-				updatedLists: updatedActionLists,
-				items: flattedItems,
-				source,
-				dest,
-			}),
+			updatedActionLists: updatedActionListsUpd,
 		});
 
 		startCopy({
@@ -862,12 +854,16 @@ async function browseFiles({
 	});
 }
 
-async function createPrintedLog({
+async function updatePrinted({
 	files,
 }) {
+	let json = await fs.readJson(PRINTED_JSON).catch(e => ({}));
+
+	json[getCurMoment()] = files;
+
 	await fs.writeJSON(
-		path.join(PRINTED_DIR, getCurMoment().concat(PRINTED_EXT)),
-		files,
+		PRINTED_JSON,		
+		json,
 	);
 }
 
@@ -902,7 +898,7 @@ function removeFromActionLists({
  * 
  * обновить списки файлов (печать, поделиться, архивПечати, архивПоделиться)
  */
-function updateActionLists({
+async function updateActionLists({
 	updatedLists,
 	items,
 	source,
@@ -910,9 +906,10 @@ function updateActionLists({
 	isDelete,
 }) {
 	const sourceRel = source.replace(ALBUM_DIR, '');	
-	const updatedListsArr = Object.values(updatedLists);
+	const printed = await fs.readJson(PRINTED_JSON).catch(e => ({}));
+	const updatedListsArr = Object.values(updatedLists).concat(Object.values(printed));
 
-	items.forEach((item) => {
+	for (let item of items) {
 		const sourceFull = path.join(sourceRel, path.sep, item);		
 		updatedListsArr.forEach((files) => {
 			if (files[sourceFull]) {
@@ -924,7 +921,12 @@ function updateActionLists({
 				delete files[sourceFull];
 			}			
 		});
-	});
+	}
+
+	await fs.writeJSON(
+		PRINTED_JSON,		
+		printed,
+	);
 
 	return updatedLists;
 }
