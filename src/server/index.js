@@ -283,38 +283,21 @@ app.post('/api/resetNavigation', (req, res) => {
 });
 
 app.post('/api/toward', getToward());
+
 app.post('/api/backward', getToward({
 	isBackward: true,
 }));
+
 app.post('/api/towardPrinted', async (req, res) => {
 	const {body} = req;
-	if (body.dir) {
-		const mappedResult = await mapResponsePrinted({
-			jsonSrc: body.dir,
-			reqPath: path.join(state[body.curWindow], path.basename(body.dir)),
-		});
 
-		res.send(mappedResult);
-	} else {
-		getToward({
-			rootDir: PRINTED_DIR,
-			mapResponse: ({
-				result: {files},
-			}) => {
-				return {
-					files: files.map((file) => file.replace(PRINTED_EXT, "")),
-				};
-			}
-		})(req, res);
-	}
+	const dir = body.dir ? path.basename(body.dir) : undefined;
+	const result = await mapResponsePrinted({
+		dir,
+	});
+
+	res.send(result);
 });
-app.post('/api/backwardPrinted', getToward(
-	{
-		rootDir: PRINTED_DIR,
-		isBackward: true,
-		mapResponse: mapResponsePrinted,
-	},
-));
 
 app.get('/api/checkProgress', (req, res) => {
 	res.send({
@@ -857,7 +840,7 @@ async function browseFiles({
 async function updatePrinted({
 	files,
 }) {
-	let json = await fs.readJson(PRINTED_JSON).catch(e => ({}));
+	let json = await fs.readJson(PRINTED_JSON).catch(e => new Object());
 
 	json[getCurMoment()] = files;
 
@@ -868,32 +851,15 @@ async function updatePrinted({
 }
 
 async function mapResponsePrinted({
-	reqPath,
+	dir,
 }) {
-	const json = await fs.readJson(
-		reqPath.concat(PRINTED_EXT),
-	).catch(e => undefined);
+	const json = await fs.readJson(PRINTED_JSON).catch(e => new Object());
 
 	return {
-		files: json ?? {},
+		files: json[dir] ?? json,
 	};
 }
 
-function removeFromActionLists({
-	items,
-}) {
-	items.forEach((item) => {
-		const sourceFull = path.join(sourceRel, path.sep, item);
-		const destFull = path.join(destRel, path.sep, item);
-		updatedListsArr.forEach((files) => {
-			if (files[sourceFull]) {
-				files[destFull] = files[sourceFull];
-			}
-			delete files[sourceFull];
-		});
-	});
-	return updatedLists;
-}
 /**
  * 
  * обновить списки файлов (печать, поделиться, архивПечати, архивПоделиться)

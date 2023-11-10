@@ -107,11 +107,6 @@ export class AppServerAPI {
 		url: 'towardPrinted',
 	});
 
-	backwardPrinted = (props) => this.toward({
-		...props,
-		url: 'backwardPrinted',
-	});
-
 	toward = ({
 		resetTo,
 		dir,

@@ -109,7 +109,7 @@ function getPrinted({PrintedComp}) {
         request: () => rp.serverAPI.towardPrinted({resetTo: ''}),
         onResponse: ({ files }) => {
             rp.deps.setState({
-                printed: files,
+                printed: Object.keys(files),
             });
         },
     });
