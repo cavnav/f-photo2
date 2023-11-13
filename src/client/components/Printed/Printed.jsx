@@ -1,9 +1,10 @@
 import React, { useEffect } from 'react';
 import { channel } from '../../channel';
-import { myRequest } from '../../functions';
+import { initRefreshWindowEvent, myRequest } from '../../functions';
 import { useMutedReducer } from '../../mutedReducer';
 import { FilesPrinted } from '../File/FilesPrinted';
 import { getFileSrc } from '../File/FileUtils';
+import { eventNames } from '../../constants';
 
 
 const STATE_NAMES = {BrowseBase: BrowseBaseWrap, Printed: PrintWrap};
@@ -37,10 +38,25 @@ function render() {
     });    
 
     const StateComp = STATE_NAMES[state.actionName];
+
+    React.useEffect(
+		() => initRefreshWindowEvent({ 
+			eventName: eventNames.refreshWindow,
+			callback: () => onRefreshWindow({ Comp }),
+		}),
+		[]
+	);
     
     return (
-        StateComp && <StateComp PrintedComp={Comp}/>
+        StateComp && <StateComp key={state.forceUpdate} PrintedComp={Comp}/>
     );
+}
+
+function onRefreshWindow({
+    Comp,
+}) {
+    const {state, setState} = Comp.getDeps();
+    Comp.getDeps().setState({forceUpdate: !state.forceUpdate});   
 }
 
 function BrowseBaseWrap({PrintedComp}) {
@@ -56,7 +72,7 @@ function BrowseBaseWrap({PrintedComp}) {
 
     useEffect(() => {    
         getPrinted({PrintedComp});
-    }, []);
+    }, [state.forceUpdate]);
 
 
     return (
@@ -162,6 +178,7 @@ function getDefaultState() {
         printed: [],
         requestFile: undefined,
         printedItems: {},
+        forceUpdate: false,
     };
 }
 

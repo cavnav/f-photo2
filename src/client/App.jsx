@@ -12,7 +12,7 @@
 			// rename folder+
 			// move file+
 			// move folder+
-// update printed on any actions.
+// ban move to printed.			
 // add loading (create Proxy Comp for loading)
 	// get countNewPhotos.
 	// copying new photos.
