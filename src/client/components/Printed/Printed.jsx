@@ -8,18 +8,32 @@ import { getFileSrc } from '../File/FileUtils';
 
 const STATE_NAMES = {BrowseBase: BrowseBaseWrap, Printed: PrintWrap};
 
-export const Printed = channel.addComp({
-    name: 'Printed',
+export const PrintedComp = channel.addComp({
+    name: 'PrintedComp',
     render,
     getComps,
+    getResumeObj,
 });
 
 function render() {
     const Comp = this;
+    const resumeObj = Comp.getResumeObj();
 
     const [state] = useMutedReducer({
         setCompDeps: Comp.setCompDeps,
         initialState: getInitialState({Comp}),
+        fn: ({
+			stateUpd,
+		}) => {
+			if (stateUpd.hasOwnProperty('requestFile')) {
+                resumeObj.save({
+                    val: {
+                        actionName: stateUpd.actionName, 
+                        requestFile: stateUpd.requestFile,
+                    }
+			    });
+            }
+		}
     });    
 
     const StateComp = STATE_NAMES[state.actionName];
@@ -34,7 +48,7 @@ function BrowseBaseWrap({PrintedComp}) {
     const {deps} = rp;
     const BrowseBase = rp.comps.BrowseBase.r;
 
-    const {state, setState} = deps;
+    const {state} = deps;
     const FilesComp = state.printed.length === 0 ? undefined : (props) => <FilesPrinted
         files={state.printed}
         {...props}
@@ -42,10 +56,8 @@ function BrowseBaseWrap({PrintedComp}) {
 
     useEffect(() => {    
         getPrinted({PrintedComp});
-        setState({
-            requestFile: undefined,
-        });
     }, []);
+
 
     return (
         <BrowseBase
@@ -80,7 +92,8 @@ function PrintWrap({PrintedComp}) {
     const onBackToPrinted = () => {
         const actionName = rp.comps.BrowseBase.name;
         setState({
-            actionName,        
+            actionName,  
+            requestFile: undefined,      
         });
     }
 
@@ -135,13 +148,31 @@ function getComps({
     };
 }
 
-function getInitialState({Comp}) {
-    const rp = Comp.getReqProps();
-    const actionName = rp.comps.BrowseBase.name;
+function getResumeObj({name}) {
     return {
-        actionName,
+        selector: [name],
+        val: {},
+    }
+
+}
+
+function getDefaultState() {
+    return {
+        actionName: undefined,
         printed: [],
         requestFile: undefined,
         printedItems: {},
+    };
+}
+
+function getInitialState({Comp}) {
+    const rp = Comp.getReqProps();
+    const actionBrowseName = rp.comps.BrowseBase.name;
+    const resumeObj = Comp.getResumeObj().get();
+
+    return {
+        ...getDefaultState(),
+        ...resumeObj,
+        actionName: resumeObj.actionName ?? actionBrowseName,
     };
 }

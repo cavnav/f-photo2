@@ -1,17 +1,18 @@
 // check all user ways	
 	// on remove, rename, move folder / file change 
 		// printed. need check all physical files.
-			// remove file-
-			// remove folder-
+			// remove file+
+			// remove folder+
 			// rename folder+
-			// move file-
-			// move folder-		
-		// print
+			// move file+
+			// move folder+		
+	// print
 			// remove file+
 			// remove folder+
 			// rename folder+
 			// move file+
 			// move folder+
+// update printed on any actions.
 // add loading (create Proxy Comp for loading)
 	// get countNewPhotos.
 	// copying new photos.
@@ -77,7 +78,7 @@ import { Copy,
 	OnePhoto,
 	Welcome,
 	Share,
-	Printed, 
+	PrintedComp, 
 } from './components';
 
 export const App = channel.addComp({
@@ -94,7 +95,7 @@ export const App = channel.addComp({
 	OnePhoto,
 	Welcome,
 	Share,
-	Printed,
+	PrintedComp,
 });
 
 const resumeObj = new ResumeObj({
@@ -184,7 +185,7 @@ function getAppStateInit() {
 				title: 'Печатать',
 			},
 			{
-				id: Printed.name,
+				id: PrintedComp.name,
 				title: 'Архив печатей',
 			},
 			// {
@@ -246,7 +247,7 @@ function getComps({
 		Print,
 		OnePhoto,
 		Welcome,
-		Printed,
+		PrintedComp,
 	} = channelComps;
 
 	return {
@@ -256,7 +257,7 @@ function getComps({
 			Print,
 			OnePhoto,
 			Welcome,
-			Printed,
+			PrintedComp,
 		}
 	}
 }

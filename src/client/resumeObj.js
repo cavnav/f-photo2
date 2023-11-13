@@ -16,11 +16,12 @@ export class ResumeObj {
   
   constructor(
     props = {},
-    {
+  ) {
+
+    const {
       selector = [],
       val,
-    } = props,
-  ) {
+    } = props;
 
     this.selector = selector;
     if (this.state === null) {

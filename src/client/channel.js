@@ -218,6 +218,10 @@ class ChannelComp {
 
         return this.props.getReqProps?.(res) ?? res;
     }
+
+    getResumeObj() {
+        return this.resumeObj;
+    }
 }
 
 export const channel = new Channel();
