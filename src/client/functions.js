@@ -8,6 +8,8 @@ import {
 } from './resumeObj';
 
 const RESUME_OBJ = new ResumeObj();
+const TEXT_WAIT = 'подожди...';
+
 class MyItems {
 	constructor({
 		items,
@@ -120,7 +122,7 @@ export function isBanMoveItems({
 			},
 		});
 		
-		if (['Welcome', 'OnePhoto', 'Print', 'Printed'].includes(destAction.action)) {
+		if (['Welcome', 'OnePhoto', 'Print', 'PrintedComp'].includes(destAction.action)) {
 			return true;
 		}
 
@@ -398,11 +400,32 @@ export function onMoveSelections({
 		});
 }
 
+export function loader({
+	isActive,
+}) {
+	const {DialogAPI} = getComps({
+		callback: ({
+			Dialog,
+		}) => ({items: {Dialog}}),
+	});
+
+	if (isActive) {
+		DialogAPI.close();
+	}
+	else {
+		DialogAPI.show();
+		DialogAPI.update({
+			message: TEXT_WAIT,
+		});
+	}
+}
+
 export function checkProgress({
 	checkFunc,
 }) {
 	return new Promise((resolve) => {
 		coreFunc();
+
 		const {DialogAPI} = getComps({
 			callback: ({
 				Dialog,
@@ -411,6 +434,7 @@ export function checkProgress({
 
 		DialogAPI.show();
 
+		// --------------------------
 		function coreFunc() {
 			return checkFunc()
 			.then((res) => {

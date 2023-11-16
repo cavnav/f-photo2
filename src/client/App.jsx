@@ -11,9 +11,9 @@
 			// remove folder+
 			// rename folder+
 			// move file+
-			// move folder+
-// ban move to printed.			
+			// move folder+		
 // add loading (create Proxy Comp for loading)
+	// why dialog show on right side, when action was in left side
 	// get countNewPhotos.
 	// copying new photos.
 // notify about server problem - wait admin.
@@ -139,6 +139,7 @@ function render() {
 			<div className="Action">
 				<Action.r />
 			</div>
+			test
 			<Dialog.r />
 		</div>
 	);

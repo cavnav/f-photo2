@@ -10,6 +10,17 @@ class PostObjTmp {
 	}
 };
 
+function fetchWithLoader(...params) {
+	loader({isActive: true});
+
+	return fetch.apply(null, params)
+		.then(response => {
+			loader({isActive: false});
+
+			return response;
+		});
+}
+
 export class AppServerAPI {
 	constructor({ d, s }) {
 		this.d = d;
@@ -20,16 +31,7 @@ export class AppServerAPI {
 		return `/api/${url}`;
 	}
 
-	// нельзя использовать function - declaration. В channel.addAPI контекст теряется.
-
-	getAppData = () => {
-		return fetch(
-			this.getFullUrl({
-				url: 'appData',
-			})
-		)
-			.then(res => res.json());
-	}
+	// не смог использовать function - declaration. В channel.addAPI контекст теряется.
 
 	$share = (params) => {
 		return fetch(
@@ -123,8 +125,8 @@ export class AppServerAPI {
 		});
 	}
 
-	navigate = ({ url, params = {} }) => {
-		return fetch(
+	navigate = ({ url, params = {} }) => {		
+		return fetchWithLoader(
 			this.getFullUrl({ url }),
 			new PostObjTmp({
 				body: {
@@ -133,7 +135,7 @@ export class AppServerAPI {
 				},
 			})
 		)
-			.then(res => res.json())
+		.then(res => res.json())
 	}
 
 	addAlbum = async ({
