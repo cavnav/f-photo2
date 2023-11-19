@@ -1,3 +1,5 @@
+import { loader } from "./functions";
+
 class PostObjTmp {
 	constructor({ body = {} } = {}) {
 		Object.assign(this, {
@@ -12,10 +14,12 @@ class PostObjTmp {
 
 function fetchWithLoader(...params) {
 	loader({isActive: true});
+	// const timerId = setTimeout(() => loader({isActive: true}), 500);
 
 	return fetch.apply(null, params)
 		.then(response => {
-			loader({isActive: false});
+			//clearTimeout(timerId);
+			//loader({isActive: false});
 
 			return response;
 		});

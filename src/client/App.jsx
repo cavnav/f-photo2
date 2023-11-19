@@ -139,7 +139,6 @@ function render() {
 			<div className="Action">
 				<Action.r />
 			</div>
-			test
 			<Dialog.r />
 		</div>
 	);

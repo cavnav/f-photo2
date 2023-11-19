@@ -410,13 +410,25 @@ export function loader({
 	});
 
 	if (isActive) {
-		DialogAPI.close();
+		/* Похоже, что мой setState если вызывается последовательно 
+		несколько раз, выполняется с оптимизацией. 
+		Факт - если вызвать:
+		DialogAPI.show();
+		DialogAPI.update({message: TEXT_WAIT});
+
+		Будет два вызова render, но компонент будет null. (первый рендер)
+
+		Если вызвать:
+		DialogAPI.show();
+		DialogAPI.update({message: TEXT_WAIT});
+		DialogAPI.update({message: 'asdf'});
+
+		Будет два вызова render, но компонент будет диалог с 'asdf'.
+		*/
+		DialogAPI.show({message: TEXT_WAIT});
 	}
 	else {
-		DialogAPI.show();
-		DialogAPI.update({
-			message: TEXT_WAIT,
-		});
+		DialogAPI.close();
 	}
 }
 

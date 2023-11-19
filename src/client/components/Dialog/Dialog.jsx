@@ -58,10 +58,11 @@ function render(props) {
 		}
 	});
 
-	return !state.isShow ||
-		timerIdRef.current !== undefined  // чтобы диалог скрывался при действиях вне диалога.
-		? null 
-		: (
+	const isRenderNull = !state.isShow
+		|| timerIdRef.current !== undefined; // чтобы диалог скрывался при действиях вне диалога.
+
+		console.log(111, 'isRenderNull', isRenderNull, state.message);
+	return isRenderNull ? null : (
 		<div
 			key={Number(new Date())}
 			className={classnames({
@@ -162,9 +163,10 @@ function getAPI({
 			clearTimeout(deps.state._timerIdRef.current);
 			deps.state._timerIdRef.current = undefined;
 		}
+
 		deps.state.confirmationResolver?.(promiseResult);
 		
-		deps.setState(initialState);			
+		deps.setState(initialState);				
 	}
 
 	async function show(props) {
