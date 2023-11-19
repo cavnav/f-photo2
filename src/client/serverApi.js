@@ -13,22 +13,12 @@ class PostObjTmp {
 };
 
 function fetchWithLoader(...params) {
-<<<<<<< Updated upstream
-	loader({isActive: true});
-	// const timerId = setTimeout(() => loader({isActive: true}), 500);
-
-	return fetch.apply(null, params)
-		.then(response => {
-			//clearTimeout(timerId);
-			//loader({isActive: false});
-=======
 	const timerId = setTimeout(() => loader({isActive: true}), 500);
 
 	return fetch.apply(null, params)
 		.then(response => {
 			clearTimeout(timerId);
 			loader({isActive: false});
->>>>>>> Stashed changes
 
 			return response;
 		});

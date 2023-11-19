@@ -61,7 +61,6 @@ function render(props) {
 	const isRenderNull = !state.isShow
 		|| timerIdRef.current !== undefined; // чтобы диалог скрывался при действиях вне диалога.
 
-		console.log(111, 'isRenderNull', isRenderNull, state.message);
 	return isRenderNull ? null : (
 		<div
 			key={Number(new Date())}
