@@ -46,7 +46,7 @@ export class AppServerAPI {
 	}
 
 	$saveFilesToFlash = (params) => {
-		return fetch(
+		return fetchWithLoader(
 			this.getFullUrl({ url: 'saveFilesToFlash' }),
 			new PostObjTmp({ body: params }))
 			.then(res => res.json());
@@ -65,7 +65,7 @@ export class AppServerAPI {
 				curWindow: window.name,
 			}
 		});
-		return fetch(url)
+		return fetchWithLoader(url)
 			.then(res => res.json());
 	}
 
@@ -96,7 +96,7 @@ export class AppServerAPI {
 	resetNavigation = ({
 		curWindow,
 	}) => {
-		return fetch(
+		return fetchWithLoader(
 			this.getFullUrl({ url: 'resetNavigation' }),
 			new PostObjTmp({
 				body: {
@@ -145,7 +145,7 @@ export class AppServerAPI {
 		name,
 	}) => {
 		if (!name) return;
-		return fetch(
+		return fetchWithLoader(
 			this.getFullUrl({
 				url: 'addAlbum'
 			}),
@@ -166,7 +166,7 @@ export class AppServerAPI {
 	}) => {
 		if (!name || !newName || name === newName) return;
 
-		return fetch(
+		return fetchWithLoader(
 			this.getFullUrl({
 				url: 'rename'
 			}),
@@ -187,7 +187,7 @@ export class AppServerAPI {
 	getPrintedItems = ({
 		requestFile,
 	}) => {
-		return fetch(
+		return fetchWithLoader(
 			this.getFullUrl({
 				url: 'getPrintedItems'
 			}),
@@ -206,7 +206,7 @@ export class AppServerAPI {
 		updatedActionLists,
 	}) => {
 		if (items.length === 0) return;
-		return fetch(
+		return fetchWithLoader(
 			this.getFullUrl({
 				url: 'removeItems'
 			}),
@@ -226,7 +226,7 @@ export class AppServerAPI {
 		updatedActionLists,
 		destWindow,
 	}) => {
-		return fetch(
+		return fetchWithLoader(
 			this.getFullUrl({
 				url: 'moveToPath',
 			}),
@@ -243,7 +243,7 @@ export class AppServerAPI {
 	}
 
 	$copyPhotos = () => {
-		return fetch(this.getFullUrl({
+		return fetchWithLoader(this.getFullUrl({
 			url: 'copyPhotos',
 		}), {
 			method: 'POST',
@@ -257,7 +257,7 @@ export class AppServerAPI {
 	}
 
 	$getNewPhotos = () => {
-		return fetch(this.getFullUrl({ url: 'getNewPhotos' })).then(res => res.json());
+		return fetchWithLoader(this.getFullUrl({ url: 'getNewPhotos' })).then(res => res.json());
 	}
 
 	checkProgress = () => {
@@ -270,7 +270,7 @@ export class AppServerAPI {
 
 	$getUsbDevices = (params = {}) => {
 		const url = this.getUrlWithParams({ url: 'getUsbDevices', params });
-		return fetch(url)
+		return fetchWithLoader(url)
 			.then(res => res.json()).then(res => { console.log('usbDevices', res); return res; });
 	}
 }

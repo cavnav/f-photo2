@@ -425,7 +425,7 @@ export function loader({
 
 		Будет два вызова render, но компонент будет диалог с 'asdf'.
 		*/
-		DialogAPI.show({message: TEXT_WAIT});
+		DialogAPI.show({message: TEXT_WAIT, isHide: false});
 	}
 	else {
 		DialogAPI.close();
@@ -444,7 +444,7 @@ export function checkProgress({
 			}) => ({items: {Dialog}}),
 		});
 
-		DialogAPI.show();
+		DialogAPI.show({isHide: false});
 
 		// --------------------------
 		function coreFunc() {
@@ -453,6 +453,8 @@ export function checkProgress({
 				const isCopyCompleted = res.progress === 100;
 				setTimeout(() => (isCopyCompleted ? null : coreFunc()), 500);        
 
+				console.log(111, res.progress);
+
 				DialogAPI.update({
 					message: ProgressTitle({
 						progress: res.progress,
@@ -460,8 +462,8 @@ export function checkProgress({
 				});
 
 				if (isCopyCompleted) {					
-					resolve();    
 					DialogAPI.close();     
+					resolve();    					
 				}
 			});
 		}

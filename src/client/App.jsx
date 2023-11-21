@@ -16,7 +16,8 @@
 	// why dialog show on right side, when action was in left side
 	// get countNewPhotos.
 	// copying new photos.
-// notify about server problem - wait admin.
+// notify about server problem - wait admin
+	// cant to copy photos to album.
 // PrintItemsRender. Warning: Failed prop type: You provided a `value` prop to a form field without an `onChange` handler. This will render a read-only field. If the field should be mutable use `defaultValue`. Otherwise, set either `onChange` or `readOnly`.
 // fix error Warning: Can't perform a React state update on
 	// first - browse, then print, then back to browse.
@@ -63,7 +64,6 @@
 // add create resumeObj in channel.addComp().
 // content-visibility
 
-import 'antd/dist/antd.css';
 import './app.css';
 
 import React from 'react';
