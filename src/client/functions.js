@@ -9,6 +9,7 @@ import {
 
 const RESUME_OBJ = new ResumeObj();
 const TEXT_WAIT = 'подожди...';
+const TEXT_SERVER_ERROR = 'произошла ошибка. попробуй повторить свое действие или дождись ответа технической поддержки';
 
 class MyItems {
 	constructor({
@@ -400,6 +401,17 @@ export function onMoveSelections({
 		});
 }
 
+export function notifyServerError(error) {
+	const {DialogAPI} = getComps({
+		callback: ({
+			Dialog,
+		}) => ({items: {Dialog}}),
+	});
+
+	console.log(error);
+	DialogAPI.showConfirmation({message: TEXT_SERVER_ERROR, isHide: false, });
+
+}
 export function loader({
 	isActive,
 }) {
@@ -452,8 +464,6 @@ export function checkProgress({
 			.then((res) => {
 				const isCopyCompleted = res.progress === 100;
 				setTimeout(() => (isCopyCompleted ? null : coreFunc()), 500);        
-
-				console.log(111, res.progress);
 
 				DialogAPI.update({
 					message: ProgressTitle({

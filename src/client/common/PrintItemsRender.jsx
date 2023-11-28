@@ -1,4 +1,4 @@
-import React, {useRef} from 'react';
+import React, {useRef, useEffect} from 'react';
 import { ItemSelector } from '../components/ItemSelector/ItemSelector';
 import { updateFiles } from '../components/Print/PrintUtils';
 import { getBackgroundImageStyle, getComps} from '../functions';
@@ -21,12 +21,18 @@ export function PrintItemsRender({
     const onChangePhotoCountWrap = (event) => onChangePhotoCount({event, Comp, onChangeItems});
     const onCancelPrintWrap = (event) => onCancelPrint({event, Comp, onChangeItems});
     
-    React.useEffect(() => {
-        keyDownListener({Comp});
-    }, []);
-    React.useEffect(() => {
+    useEffect(() => keyDownListener({Comp}), []);
+
+    useEffect(() => {
         setInputFocus({Comp});
     });
+
+    useEffect(() => {
+        console.log('mount');
+
+        return () => console.log('unmount');
+    }, []);
+
 
     return (
         <div className="PrintItems">

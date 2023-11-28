@@ -1,4 +1,4 @@
-import { loader } from "./functions";
+import { loader, notifyServerError } from "./functions";
 
 class PostObjTmp {
 	constructor({ body = {} } = {}) {
@@ -21,7 +21,8 @@ function fetchWithLoader(...params) {
 			loader({isActive: false});
 
 			return response;
-		});
+		})
+		.catch(notifyServerError);
 }
 
 export class AppServerAPI {
@@ -265,7 +266,8 @@ export class AppServerAPI {
 			this.getFullUrl({
 				url: 'checkProgress'
 			}))
-			.then(res => res.json());
+			.then(res => res.json())
+			.catch(notifyServerError);
 	}
 
 	$getUsbDevices = (params = {}) => {

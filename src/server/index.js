@@ -345,65 +345,66 @@ app.get('/api/imgRotate', (req, response) => {
 
 app.post('/api/saveFilesToFlash', async (req, response) => {
 	clearUpUSB()
-		.then(async () => {
-			setState({
-				progress: 0,
-				countCopiedPhotos: 0,
-			});
-			const {
-				files,
-				folderNameField,
-			} = req.body;
+	.then(async () => {
+		setState({
+			progress: 0,
+			countCopiedPhotos: 0,
+		});
+		const {
+			files,
+			folderNameField,
+		} = req.body;
 
-			const total = Object.keys(files).length;
+		const total = Object.keys(files).length;
 
-			await updatePrinted({
-				files,
-			});
+		await updatePrinted({
+			files,
+		});
 
-			response.send({
-				...req.body,				
-			});
+		response.send({});
 
-			// copy to flash  
-			const source = path.join(ALBUM_DIR);
-			const dest = path.join(state.usbDriveLetter);
-			copy({
-				source,
-				dest,
-				total,
-				files,
-			});
+		// copy to flash  
+		const source = path.join(ALBUM_DIR);
+		const dest = path.join(state.usbDriveLetter);
+		copy({
+			source,
+			dest,
+			total,
+			files,
+		});
 
-			// ---------------------------------------
-			async function copy({
-				source,
-				dest,
-				total,
-				files,
-			}) {
-				for (const file in files) {
-					const folder = String(files[file][folderNameField]);
-					
-					if (folder !== '0') {
-						core({file, folder});
-					};			
+		// ---------------------------------------
+		async function copy({
+			source,
+			dest,
+			total,
+			files,
+		}) {
+			for (const file in files) {
+				const folder = String(files[file][folderNameField]);
+				
+				if (folder !== '0') {
+					core({file, folder});
+				};			
 
-					progressUpdate({total});		
-				}
-
-				async function core({file, folder}) {
-					const fileName = path.basename(file);
-					const sourceUpd = path.join(source, file);
-					const destUpd = path.join(dest, folder, fileName);
-					await fs.copy(
-						sourceUpd,
-						destUpd,
-					);										
-				}
+				progressUpdate({total});		
 			}
-		})
-		.catch(console.error);
+
+			async function core({file, folder}) {
+				const fileName = path.basename(file);
+				const sourceUpd = path.join(source, file);
+				const destUpd = path.join(dest, folder, fileName);
+				await fs.copy(
+					sourceUpd,
+					destUpd,
+				);										
+			}
+		}
+	})
+	.catch((error) => {
+		console.error(777, error);
+		response.send({error});
+	});
 });
 
 app.post('/api/moveToPath',
@@ -583,7 +584,7 @@ app.post('/api/copyPhotos', (req, res) => {
 			if (progress !== 100) {
 				startCopy({ photos: photos.slice(1), destDir });
 			} else {
-				// await clearUpUSB();
+				await clearUpUSB();
 				setState({
 					[curWindow]: destDir,
 				});
@@ -737,12 +738,7 @@ function removeItem({
 }
 
 function clearUpUSB() {
-	return fs.remove(state.usbDriveLetter)
-		.then(() => {
-		})
-		.catch(err => {
-			console.error(err)
-		});
+	return fs.remove(state.usbDriveLetter).catch(console.error);
 }
 
 function setState(propsUpd) {
