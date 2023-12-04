@@ -16,7 +16,6 @@ const app = express();
 const ALBUM_DIR = path.join(path.resolve('../../'), 'album');
 const PRINTED_DIR = path.join(ALBUM_DIR, 'printed');
 const PRINTED_JSON = path.join(PRINTED_DIR, 'printed.json');
-const PRINTED_EXT = '.json';
 
 
 let state = {
@@ -33,14 +32,16 @@ let state = {
 	reqBody: {},
 };
 
-let timeoutIdImg
-
-// -----------------------------------------------------------------------------------------------
 
 app.use(express.static(ALBUM_DIR));
-app.use(express.static('public'));
-app.use(express.static('dist'));
+app.use(express.static('assets'));
 app.use(bodyParser.json());
+
+if (process.env.NODE_ENV?.trim() === 'production') {
+	app.use(express.static('dist'));
+} else {
+	app.use(express.static('public'));
+}
 
 app.listen(process.env.PORT || 8080, () => console.log(`Listening on port ${process.env.PORT || 8080}!`));
 
@@ -584,7 +585,7 @@ app.post('/api/copyPhotos', (req, res) => {
 			if (progress !== 100) {
 				startCopy({ photos: photos.slice(1), destDir });
 			} else {
-				await clearUpUSB();
+				//await clearUpUSB();
 				setState({
 					[curWindow]: destDir,
 				});

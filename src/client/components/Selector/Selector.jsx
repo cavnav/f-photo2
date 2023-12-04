@@ -1,5 +1,4 @@
 import React from 'react';
-import { Select } from 'antd';
 import { tempReducer } from '../../functions';
 
 
@@ -34,7 +33,7 @@ export const Selector = React.memo(function ({
   return (
     <>
       <input type="button" value="Выбрать все" onClick={onSelectAll} />
-      <Select
+      {/* <Select
         mode="multiple"
         allowClear={allowClear}
         placeholder={placeHolder}
@@ -48,7 +47,7 @@ export const Selector = React.memo(function ({
             {item}
           </Select.Option>
         ))}
-      </Select>
+      </Select> */}
     </>
   );
 });

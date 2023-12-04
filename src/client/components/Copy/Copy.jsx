@@ -32,10 +32,10 @@ function render() {
 	function createSteps() {
 		return [
 			{
-				photoSrc: 'wizardCopy/001_getOutMemCard.jpg',
+				photoSrc: '001_getOutMemCard.jpg',
 				desc: 'нажми пальцем на синюю карту памяти, и, вдавив внутрь, отпусти.',
 			}, {
-				photoSrc: 'wizardCopy/002_insertIntoCardReader.jpg',
+				photoSrc: '002_insertIntoCardReader.jpg',
 				desc: 'Вставь карту памяти в ноутбук, как показано ниже:',
 			}, {
 				desc: 'Ищу карту памяти...',

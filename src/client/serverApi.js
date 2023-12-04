@@ -12,17 +12,25 @@ class PostObjTmp {
 	}
 };
 
+function fetchUpd(...params) {
+	return fetch.apply(null, params)
+		.catch((error) => {
+			notifyServerError(error);
+
+			throw error;
+		});
+}
+
 function fetchWithLoader(...params) {
 	const timerId = setTimeout(() => loader({isActive: true}), 500);
 
-	return fetch.apply(null, params)
-		.then(response => {
+	return fetchUpd(...params)
+		.then((response) => {
 			clearTimeout(timerId);
 			loader({isActive: false});
 
 			return response;
-		})
-		.catch(notifyServerError);
+		});
 }
 
 export class AppServerAPI {
@@ -262,12 +270,11 @@ export class AppServerAPI {
 	}
 
 	checkProgress = () => {
-		return fetch(
+		return fetchUpd(
 			this.getFullUrl({
 				url: 'checkProgress'
 			}))
 			.then(res => res.json())
-			.catch(notifyServerError);
 	}
 
 	$getUsbDevices = (params = {}) => {

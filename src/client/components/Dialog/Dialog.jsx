@@ -5,6 +5,13 @@ import { channel } from '../../channel';
 import { useMutedReducer } from '../../mutedReducer';
 import classnames from 'classnames';
 
+export const DIALOG_TYPES = {
+	confirmation: 'confirmation',
+	error: 'error',
+	warning: 'warning',
+	notification: 'notification',
+};
+
 export const Dialog = channel.addComp({
 	name: 'Dialog',
 	render,
@@ -144,6 +151,10 @@ function getAPI({
 	};
 
 	function update(props) {
+		// ошибку перекрыть может только ошибка.
+		if (deps.state.type === DIALOG_TYPES.error && props.type !== undefined && props.type !== DIALOG_TYPES.error) {
+			return;
+		}
 		deps.setState(props);
 	}
 
@@ -178,7 +189,7 @@ function getAPI({
 			promiseResolver = resolve;
 		});
 
-		deps.setState({
+		update({
 			...initialState,
 			...props,
 			isShow: true,
@@ -200,12 +211,13 @@ function getAPI({
 	}
 
 	async function showConfirmation({
+		type,
 		message,
 		confirmBtn,
 		rejectBtn,
 	}) {
 		return show({
-			type: 'confirmation',
+			type: type ?? 'confirmation',
 			isModal: true,
 			isHide: false,
 			confirmBtn: confirmBtn ?? {

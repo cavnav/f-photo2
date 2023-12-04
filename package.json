@@ -6,17 +6,17 @@
   "scripts": {
     "build": "webpack --mode production",
     "buildLocal": "",
-    "startb": "npm run build && node src/server/index.js",
+    "startb": "npm run build && set NODE_ENV=production && nodemon src/server/index.js",
     "startLocal": "",
     "client": "webpack-dev-server --mode development --devtool inline-source-map --hot",
     "server": "nodemon src/server/index.js",
+    "serverp": "set NODE_ENV=production && npm run server",
     "start": "concurrently \"npm run server\" \"npm run client\"",
     "test": "jest"
   },
   "author": "J0101",
   "license": "ISC",
   "dependencies": {
-    "antd": "^4.13.1",
     "babel-polyfill": "^6.26.0",
     "body-parser": "^1.19.0",
     "classnames": "^2.3.1",

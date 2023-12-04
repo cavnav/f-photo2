@@ -5,7 +5,7 @@ export function createSteps({
 } = {}) {
   return [
     {
-      photoSrc: 'wizardCopy/004_plugInPC.jpg',
+      photoSrc: '004_plugInPC.jpg',
       desc: 'Вставь флешку в компьютер, чтобы совпал ключ.',
     }, 
     {    
@@ -30,7 +30,7 @@ export function createSteps({
       isNextBtn: false,
     }, 
     {
-      photoSrc: 'wizardCopy/005_returnMemCardInPhoto.jpg',
+      photoSrc: '005_returnMemCardInPhoto.jpg',
       desc: 'Вытащи флешку',
     }, 
     {

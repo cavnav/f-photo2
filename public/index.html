@@ -12,32 +12,32 @@
 <body>
     <div id="explorer" />
     <script>
-
-    const resumeObj = JSON.parse(localStorage.getItem('resume'));
-    const {
-        browserCount,
-     } = resumeObj ?? {};
-    
-    if (window.self === window.top) {
-        const container = document.createElement('div');
-        container.id = "leftWindow";
-        const iframe = document.createElement("iframe");
-        iframe.src = "http://localhost:3000";
-        iframe.name = "leftWindow";
-        container.append(iframe);
-        document.getElementById("explorer").append(container);                
-     
-
-        if (browserCount === 2) {
+        const LOCALHOST = "http://localhost:8080";
+        const resumeObj = JSON.parse(localStorage.getItem('resume'));
+        const {
+            browserCount,
+        } = resumeObj ?? {};
+        
+        if (window.self === window.top) {
             const container = document.createElement('div');
-            container.id = "rightWindow";
+            container.id = "leftWindow";
             const iframe = document.createElement("iframe");
-            iframe.src = "http://localhost:3000";
-            iframe.name = "rightWindow";
+            iframe.src = LOCALHOST;
+            iframe.name = "leftWindow";
             container.append(iframe);
-            document.getElementById("explorer").append(container);
+            document.getElementById("explorer").append(container);                
+        
+
+            if (browserCount === 2) {
+                const container = document.createElement('div');
+                container.id = "rightWindow";
+                const iframe = document.createElement("iframe");
+                iframe.src = LOCALHOST;
+                iframe.name = "rightWindow";
+                container.append(iframe);
+                document.getElementById("explorer").append(container);
+            }
         }
-    }
     </script>
 </body>
 </html>

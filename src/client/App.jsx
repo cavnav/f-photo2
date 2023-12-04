@@ -1,24 +1,16 @@
-// check all user ways	
-// notify about server problem - wait admin
-	// cant to copy photos to album.
-
 // update version
 
-// run build version without proxy.
-
-// from one photo 1 side and select print 2 side, then exit from one photo on 1 side.	
-// dialog position on edges
-// after back to list to scroll to last opened folder, last viewed photo
-// last added folder
+// scroll to last opened folder, 
+// scroll to last viewed photo
+// scroll to last added folder
 // scroll to new photo to print in Print action.
 // add counter/all for one photo mode
 // forward to photo location from print by click
+// whatsapp / telegram.
 
 // I
 // show overwrite confirmation for every files
 // remove ctg file
-// print, printed - click by preview open one photo mode by src this photo. 
-	// And one photo need not return to print button, it might simply select print tab.
 
 // II
 // magnifying glass
@@ -28,12 +20,9 @@
 
 // III
 
-// Warning: Can't perform a React state update on an unmounted component. This is a no-op, but it indicates a memory leak in your application. To fix, cancel all subscriptions and asynchronous tasks in a useEffect cleanup function.
-//     in bound render (created by bound render)
-
+// dialog position on edges
+// from one photo 1 side and select print 2 side, then exit from one photo on 1 side.	
 // help (fire dialog with corresponding actions)
-// ban move to print 
-// ban move file on Welcome screen
 // add path to onePhoto, it is understand where this photo is
 // add status icon to preview image
 
@@ -43,7 +32,6 @@
 // sync between browse, print, share, onePhoto
 // z100 error
 // Failed to load resource
-// add create resumeObj in channel.addComp().
 // content-visibility
 
 import './app.css';

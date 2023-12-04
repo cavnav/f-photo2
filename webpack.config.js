@@ -48,8 +48,7 @@ module.exports = {
     new CleanWebpackPlugin([outputDirectory]),
     new HtmlWebpackPlugin({
       template: './public/index.html',
-      favicon: './public/favicon.png',
+      favicon: './assets/favicon.png',
     })
   ],
-  devtool: "cheap-module-eval-source-map"
 };

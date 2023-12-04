@@ -1,7 +1,6 @@
 import React from 'react';
 import { getFileDateSrcKey, tempReducer } from '../../functions';
 import { Selector } from '../';
-import { Input } from 'antd';
 
 const ADDRESSEES = [
   'Мамао', 
@@ -66,12 +65,12 @@ export function Share({
       ></Selector>
       <div>Сообщение</div>
       <div>
-        <Input 
+        <input 
           placeholder="подпиши фото"
           allowClear
           onChange={onChangeFilesTitle}
           value={state.filesTitle}
-        ></Input>
+        />
       </div>
       { renderItems() }
     </div>

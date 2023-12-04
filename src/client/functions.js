@@ -1,5 +1,6 @@
 import { channel } from './channel';
 import { Dialog } from './components';
+import { DIALOG_TYPES } from './components/Dialog/Dialog';
 import {
 	eventNames
 } from './constants';
@@ -9,7 +10,7 @@ import {
 
 const RESUME_OBJ = new ResumeObj();
 const TEXT_WAIT = 'подожди...';
-const TEXT_SERVER_ERROR = 'произошла ошибка. попробуй повторить свое действие или дождись ответа технической поддержки';
+const TEXT_SERVER_ERROR = 'произошла ошибка. попробуй повторить свое действие или обратись в поддержку';
 
 class MyItems {
 	constructor({
@@ -409,7 +410,11 @@ export function notifyServerError(error) {
 	});
 
 	console.log(error);
-	DialogAPI.showConfirmation({message: TEXT_SERVER_ERROR, isHide: false, });
+	DialogAPI.showConfirmation({
+		message: TEXT_SERVER_ERROR, 
+		isHide: false, 
+		type: DIALOG_TYPES.error,
+	});
 
 }
 export function loader({
@@ -437,7 +442,7 @@ export function loader({
 
 		Будет два вызова render, но компонент будет диалог с 'asdf'.
 		*/
-		DialogAPI.show({message: TEXT_WAIT, isHide: false});
+		DialogAPI.show({message: TEXT_WAIT, isHide: false, type: DIALOG_TYPES.notification});
 	}
 	else {
 		DialogAPI.close();
