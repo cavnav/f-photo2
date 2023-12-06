@@ -15,6 +15,9 @@ import { Files } from '../File/Files';
 import { Dirs } from '../Dirs/Dirs';
 import { eventNames } from '../../constants';
 
+const SCROLL_CLASS = 'scroll-to';
+const BROWSE_CLASS = 'browse-base';
+
 
 export const Browse = channel.addComp({
 	name: 'Browse',
@@ -80,7 +83,7 @@ function render(
 		[]
 	);
 
-	React.useEffect(() => scrollToSelectedImage({Comp}), [state.curPhotoInd]);
+	React.useEffect(() => scrollToSelector({Comp, selector: `[ind="${state.curPhotoInd}"]`}), [state.curPhotoInd]);
 
 	React.useEffect(boostPerfImgRender, [state.files]);
 
@@ -118,27 +121,28 @@ function render(
 	);
 }
 
-function scrollToSelectedImage({Comp}) {
+function scrollToSelector({Comp, selector}) {
+
 	const deps = Comp.getDeps();
 	const {state} = deps;
 
 	if (state.curPhotoInd === -1) {
-		const curPhotoEl = document.querySelector(`browse .file.curFile`);
+		const curPhotoEl = document.querySelector(`.${BROWSE_CLASS} .${SCROLL_CLASS}`);
 		if (curPhotoEl) {
-			curPhotoEl.classList.remove('curFile');
+			curPhotoEl.classList.remove(SCROLL_CLASS);
 		}
 		return;
 	}
-	const curPhotoEl = document.querySelector(`.browse .file[ind='${state.curPhotoInd}']`);
+	const curPhotoEl = document.querySelector(`.${BROWSE_CLASS} ${selector}`);
 	if (curPhotoEl) {
 		curPhotoEl.scrollIntoView();
-		curPhotoEl.classList.add('curFile');
+		curPhotoEl.classList.add(SCROLL_CLASS);
 	}
 }
 
 function boostPerfImgRender() {
 	const observer = new IntersectionObserver(cb, { threshold: 1 });
-	const elements = [...(document.querySelectorAll(`.${Browse.name} .scrollwait`) || [])];
+	const elements = [...(document.querySelectorAll(`.${BROWSE_CLASS} .scrollwait`) || [])];
 	const observe = observer.observe.bind(observer);
 	elements.map(observe);
 
@@ -639,9 +643,15 @@ function exitFolder({
 		},
 	});
 	const rp = Comp.getReqProps();
+	const {state} = Comp.getDeps();
+	const path = state.path;
+	const sep = [state.sep].join('');
+	
 	rp.server.backward()
 		.then(onNavigate)
 		.then(() => {
+			
+			scrollToSelector({Comp, selector: `[src="${sep}${path}"]`});
 			refreshOppositeWindow();
 		});
 }

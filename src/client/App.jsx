@@ -1,7 +1,7 @@
 // update version
 
 // scroll to last opened folder, 
-// scroll to last viewed photo
+// +scroll to last viewed photo
 // scroll to last added folder
 // scroll to new photo to print in Print action.
 // add counter/all for one photo mode
