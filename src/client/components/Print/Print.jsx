@@ -7,7 +7,7 @@ import {
 } from '../';
 import { checkProgress, 
 	refreshOppositeWindow,
-	getVarName, onChangeSelections, updateHtmlSelectorsFromObject } from '../../functions';
+	getVarName, onChangeSelections, updateHtmlSelectorsFromObject, scrollToSelector } from '../../functions';
 import { createSteps } from './createSteps';
 import { channel } from '../../channel';
 import { Copying } from './components/Copying';
@@ -20,6 +20,7 @@ import { usePrintActions } from './components/printHooks';
 
 
 const MAX_FILES_COUNT = 5;
+const LAST_ELEMENT = 'last-element';
 
 
 export const Print = channel.addComp({
@@ -32,9 +33,9 @@ export const Print = channel.addComp({
 });
 
 function render({
-	files,
-	printed,
-	onBackToPrinted,
+	files, // filesToPrint or printedFiles from folder.
+	printed, // printed folder name.
+	onBackToPrinted, // when cancel write to flash.
 }) {
 	const Comp = this;
 	const rp = Comp.getReqProps();	
@@ -218,9 +219,11 @@ function render({
 			const refreshWindowWrap = () => {
 				setState({
 					files: resumeObj.get().files,
-				});
+				});				
 			};
+
 			document.addEventListener(eventNames.refreshWindow, refreshWindowWrap);
+			
 			return () => document.removeEventListener(eventNames.refreshWindow, refreshWindowWrap);
 		},
 		[]
@@ -234,6 +237,13 @@ function render({
 		}, 
 		[state.isSaveToFlash]
 	);
+
+	useEffect(
+		() => {
+			scrollToSelector({selector: `#${LAST_ELEMENT}`});
+		},
+		[state.files]
+	)
 
 	useEffect(() => {
 		refreshOppositeWindow();
@@ -253,8 +263,10 @@ function render({
 					items={state.files}
 					onChangeItems={onChangeFiles} 
 					onChangeSelectionsName={state.isFilesExcess ? getVarName({onChangeThisSelections}) : undefined}
-				/>
+				/>			
 			}
+
+			<div id="last-element"/>
 
 			{isEmpty && <Empty/>}			
 		</div>
@@ -342,7 +354,8 @@ function getAPI({
 function getStateDefault() {
 	return {
 		files: {},
-		// используется, когда нельзя записать все файлы на флешку разом. Тогда надо выбрать конкретные, поставив галочку.
+		// используется, когда нельзя записать все файлы на флешку разом. 
+		// Тогда надо выбрать конкретные, поставив галочку.
 		requiredFilesToPrint: {}, 
 		isSaveToFlash: false, 
 		isFilesExcess: false,

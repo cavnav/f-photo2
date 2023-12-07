@@ -27,12 +27,6 @@ export function PrintItemsRender({
         setInputFocus({Comp});
     });
 
-    useEffect(() => {
-        console.log('mount');
-
-        return () => console.log('unmount');
-    }, []);
-
 
     return (
         <div className="PrintItems">

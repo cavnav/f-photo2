@@ -6,6 +6,7 @@ import {
 	onMoveSelections, refreshWindows, refreshOppositeWindow,
 	updateActionsLists, updateHtmlSelectorsFromArray,
 	getUpdatedActionLists,
+	scrollToSelector,
 } from '../../functions';
 import { channel } from '../../channel';
 import { ResumeObj } from '../../resumeObj';
@@ -15,7 +16,6 @@ import { Files } from '../File/Files';
 import { Dirs } from '../Dirs/Dirs';
 import { eventNames } from '../../constants';
 
-const SCROLL_CLASS = 'scroll-to';
 const BROWSE_CLASS = 'browse-base';
 
 
@@ -83,8 +83,6 @@ function render(
 		[]
 	);
 
-	React.useEffect(() => scrollToSelector({Comp, selector: `[ind="${state.curPhotoInd}"]`}), [state.curPhotoInd]);
-
 	React.useEffect(boostPerfImgRender, [state.files]);
 
 	React.useEffect(
@@ -95,9 +93,9 @@ function render(
 		}, 
 	);
 
-	useEffect(() => {
-		refreshOppositeWindow();
-	}, []);
+	useEffect(
+		() => scrollToSelector({selector: state.scrollTo}),
+	);
 
 	const FilesComp = state.files.length === 0 ? undefined : (props) => <Files
 		files={state.files}
@@ -119,25 +117,6 @@ function render(
 			onRequestFile={onRequestFileUpd}
 		/>
 	);
-}
-
-function scrollToSelector({Comp, selector}) {
-
-	const deps = Comp.getDeps();
-	const {state} = deps;
-
-	if (state.curPhotoInd === -1) {
-		const curPhotoEl = document.querySelector(`.${BROWSE_CLASS} .${SCROLL_CLASS}`);
-		if (curPhotoEl) {
-			curPhotoEl.classList.remove(SCROLL_CLASS);
-		}
-		return;
-	}
-	const curPhotoEl = document.querySelector(`.${BROWSE_CLASS} ${selector}`);
-	if (curPhotoEl) {
-		curPhotoEl.scrollIntoView();
-		curPhotoEl.classList.add(SCROLL_CLASS);
-	}
 }
 
 function boostPerfImgRender() {
@@ -194,9 +173,11 @@ function onRequestFile({Comp}) {
 	return (event) => {
 		const rp = Comp.getReqProps();
 		const deps = Comp.getDeps();
+		const curPhotoInd = +event.target.getAttribute('ind'); 
 
 		deps.setState({
-			curPhotoInd: +event.target.getAttribute('ind'),
+			curPhotoInd,
+			scrollTo: `.${BROWSE_CLASS} [ind="${curPhotoInd}"]`,
 		});
 
 		rp.AppAPI.toggleAction({
@@ -392,6 +373,10 @@ async function onAddAlbum({
 		});
 		return;
 	}
+
+	const {state, setState} = Comp.getDeps();	
+	const src = [state.sep, state.sep, name].join('');
+	setState({scrollTo: `.${BROWSE_CLASS} [src="${src}"]`});
 
 	refreshWindows({
 		Comp,
@@ -643,15 +628,14 @@ function exitFolder({
 		},
 	});
 	const rp = Comp.getReqProps();
-	const {state} = Comp.getDeps();
-	const path = state.path;
-	const sep = [state.sep].join('');
+	const {state, setState} = Comp.getDeps();
+	const src = [state.sep, state.path].join('');
 	
 	rp.server.backward()
 		.then(onNavigate)
 		.then(() => {
 			
-			scrollToSelector({Comp, selector: `[src="${sep}${path}"]`});
+			setState({scrollTo: `.${BROWSE_CLASS} [src="${src}"]`});
 			refreshOppositeWindow();
 		});
 }
@@ -671,6 +655,7 @@ function getStateInit() {
 		path: '',
 		curPhotoInd: -1,
 		scrollY: 0,
+		scrollTo: undefined,
 		files: [],
 		dirs: [],
 		selections: [],

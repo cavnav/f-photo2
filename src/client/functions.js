@@ -611,3 +611,19 @@ export function saveActionLists({
       JSON.stringify(state),
     );
 }
+
+export function scrollToSelector({selector}) {
+	const SCROLL_CLASS = 'scroll-to';
+
+	const curPhotoEl = document.querySelector(selector);
+	if (curPhotoEl) {
+		curPhotoEl.scrollIntoView();
+		curPhotoEl.classList.add(SCROLL_CLASS);
+	}
+	else {
+		const curPhotoEl = document.querySelector(SCROLL_CLASS);
+		if (curPhotoEl) {
+			curPhotoEl.classList.remove(SCROLL_CLASS);
+		}
+	}
+}

@@ -1,7 +1,6 @@
 import './styles.css';
 
 import React, {useEffect} from 'react';
-import { Empty } from '../';
 import { ResumeObj } from '../../resumeObj';
 import { getOppositeWindow, myArray, 
   updateActionsLists, refreshOppositeWindow, isBanMoveItems, 
@@ -126,6 +125,9 @@ function render(
       PhotoStatuses,
     } = rp;
     const id = `${resumeBrowse.path}${resumeBrowse.sep}${state.curPhoto}`;
+
+    const currentTotal = `${state.curPhotoInd + 1} / ${state.files.items.length}`; 
+
     return (
       <div 
         className="OnePhoto fitScreen"
@@ -147,7 +149,7 @@ function render(
             />
           </>
         )}
-        {state.isNoItems && <Empty />}
+        <div className="current-total">{currentTotal}</div>
       </div>
     );
   }
