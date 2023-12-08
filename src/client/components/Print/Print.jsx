@@ -71,29 +71,7 @@ function render({
 			files: items,
 			requiredFilesToPrint: requiredFilesToPrintUpd,
 		});
-	}
-
-	const onChangeSelectionsHandler = ({event, src, checked})=> {
-		if (checked) {
-			if (checkFilesExcess({files: state.requiredFilesToPrint, delta: 1})) {
-				rp.DialogAPI.showConfirmation({
-					message: 'Выбрано максимальное количество фотографий для записи на флешку.',
-				});
-				event.preventDefault();
-				return;
-			}
-			state.requiredFilesToPrint[src] = state.files[src];
-		}
-		else {
-			delete state.requiredFilesToPrint[src];
-		}
-
-		setStateSilent({
-			requiredFilesToPrint: state.requiredFilesToPrint,
-		});
-	};
-
-	const onChangeThisSelections = onChangeSelections({handler: onChangeSelectionsHandler});
+	}	
 
 	const steps = React.useMemo(
 		() => {
@@ -155,10 +133,14 @@ function render({
 
 	const isEmpty = Object.keys(state.files).length === 0;
 
-	const onClickItem = (event) => {		
+	const onChangeThisSelections = onChangeSelections({Comp, handler: onChangeSelectionsHandler});
+	const onOpenItemFolder = onChangeSelections({Comp, handler: onOpenItemFolderHandler});
+
+	const onSelectItem = (event) => {		
 		const handler = event.target.getAttribute('handler');
 		const eventHandlers = {
-			onChangeThisSelections,
+			onChangeThisSelections, 
+			onOpenItemFolder,
 		};
 		eventHandlers[handler]?.(event);
 	}
@@ -253,7 +235,7 @@ function render({
 	return (
 		<div
 			className="Print layout"
-			onClick={onClickItem}
+			onClick={onSelectItem}
 		>
 			{steps 
 				? <Stepper
@@ -262,7 +244,8 @@ function render({
 				: <PrintItemsRender 
 					items={state.files}
 					onChangeItems={onChangeFiles} 
-					onChangeSelectionsName={state.isFilesExcess ? getVarName({onChangeThisSelections}) : undefined}
+					onRequiredItemName={getVarName({onOpenItemFolder})}
+					onChangeSelectionsName={state.isFilesExcess ? getVarName({onChangeThisSelections:1}) : undefined}
 				/>			
 			}
 
@@ -359,6 +342,7 @@ function getStateDefault() {
 		requiredFilesToPrint: {}, 
 		isSaveToFlash: false, 
 		isFilesExcess: false,
+		scrollTo: undefined,
 	};
 }
 
@@ -383,12 +367,16 @@ function getComps({
 	channelComps,
 }) {
 	const {
+		App,
 		AdditionalPanel,
 		Dialog,
+		Browse,
 	} = channelComps;
 	return {		
 		items: {
+			App,
 			Dialog,
+			Browse,
 			AdditionalPanel,
 		},
 	};
@@ -406,3 +394,45 @@ function getResumeObj({name}) {
 function checkFilesExcess({files, delta = 0}) {
 	return Object.keys(files).length + delta > MAX_FILES_COUNT;
 }
+
+function onOpenItemFolderHandler({Comp, src}) {
+	const rp = Comp.getReqProps();
+
+	rp.BrowseAPI.setToResumeObj({
+		val: {
+			path: '\\2023-07-26T070804',
+			scrollTo: `[src="dog4 - Copy (9).jpg"]`,
+		}
+	});
+
+	const {setStateSilent} = Comp.getDeps();
+	setStateSilent({
+
+	});
+
+	rp.AppAPI.toggleAction({
+		action: rp.Browse.name,	
+	});
+}
+
+function onChangeSelectionsHandler({Comp, event, src, checked}) {
+	const {state, setStateSilent} = Comp.getDeps();
+
+	if (checked) {
+		if (checkFilesExcess({files: state.requiredFilesToPrint, delta: 1})) {
+			rp.DialogAPI.showConfirmation({
+				message: 'Выбрано максимальное количество фотографий для записи на флешку.',
+			});
+			event.preventDefault();
+			return;
+		}
+		state.requiredFilesToPrint[src] = state.files[src];
+	}
+	else {
+		delete state.requiredFilesToPrint[src];
+	}
+
+	setStateSilent({
+		requiredFilesToPrint: state.requiredFilesToPrint,
+	});
+};

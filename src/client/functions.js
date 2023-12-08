@@ -513,12 +513,13 @@ export function myRequest({ request, onResponse }) {
 		});
 }
 
-export function onChangeSelections({handler}) {
+export function onChangeSelections({Comp, handler}) {
 	return (event) => {
 		const src = event.target.getAttribute('src');
 		const { checked } = event.target;
 
 		handler({
+			Comp,
 			src,
 			checked,
 			event,

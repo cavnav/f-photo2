@@ -9,6 +9,7 @@ export function PrintItemsRender({
     items,
     onChangeItems,
     onChangeSelectionsName,
+    onRequiredItemName,
 }) {
 	const [state, setState] = useMutedReducer({
 		initialState: getInitialState(),
@@ -44,6 +45,8 @@ export function PrintItemsRender({
                             style={getBackgroundImageStyle({
                                 file: src,
                             })}
+                            src={src}
+                            handler={onRequiredItemName}
                         >
                             {onChangeSelectionsName && (
                                 <ItemSelector 

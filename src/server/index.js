@@ -43,7 +43,9 @@ if (process.env.NODE_ENV?.trim() === 'production') {
 	app.use(express.static('public'));
 }
 
-app.listen(process.env.PORT || 8080, () => console.log(`Listening on port ${process.env.PORT || 8080}!`));
+app.listen(8080, () => console.log('listening on port 8080'));
+
+//app.listen(process.env.PORT || 8080, () => console.log(`Listening on port ${process.env.PORT || 8080}!`));
 
 app.post('/api/share', async (req, response) => {
 	response.send(req.body);

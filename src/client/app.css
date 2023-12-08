@@ -3,6 +3,7 @@
   --print-gap-between-rows: 120px;
   --base-gap: 20px;
   --white: white;
+  --color-golden: goldenrod;
   --red: red;
   --black: black;
   --blue: lightskyblue;
@@ -24,6 +25,17 @@ iframe {
 body {
   margin: 0;
   font-family: Tahoma;
+}
+
+.scroll-to::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: inherit;
+  height: inherit;
+  border: 8px solid var(--red);
+  z-index: 1000;
 }
 
 iframe,

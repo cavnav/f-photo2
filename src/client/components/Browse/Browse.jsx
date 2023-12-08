@@ -588,12 +588,15 @@ function getComps({
 
 function resetTo({
 	Comp,
+	path, 
 }) {
 	const rp = Comp.getReqProps();
 	const {
 		state,
 		setState,
 	} = Comp.getDeps();
+
+	const pathUpd = path ?? state.path;
 
 	const {
 		onNavigate,
@@ -602,8 +605,9 @@ function resetTo({
 	setState({
 		loading: true,
 	});
+
 	rp.server.toward({
-		resetTo: state.path,
+		resetTo: pathUpd,
 	})
 		.then(onNavigate)
 		.then(() => setState({

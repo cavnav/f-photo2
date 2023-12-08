@@ -1,5 +1,10 @@
 // update version
 // forward to photo location from print by click
+	// reset curPhotoInd when open folder
+	// set scrollTo on Print, Printed
+	// make up open folder from Print
+	// check excess count
+// connect android by wifi
 // whatsapp / telegram.
 
 // I
@@ -191,7 +196,9 @@ export function getAPI({
 		action,
 	}) {		
 		let Action = deps.state.actions.find((action) => action.id === deps.state.action);
-		Action.isEnabled = false;
+		if (Action.name === OnePhoto.name) {
+			Action.isEnabled = false;
+		}
 		Action = deps.state.actions.find((actionItem) => actionItem.id === action);
 		Action.isEnabled = true;
 

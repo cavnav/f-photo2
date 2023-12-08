@@ -12,31 +12,39 @@
 <body>
     <div id="explorer" />
     <script>
-        const LOCALHOST = "http://localhost:3000";
+        // const LOCALHOST = "http://192.168.35.150:8080";
         const resumeObj = JSON.parse(localStorage.getItem('resume'));
         const {
             browserCount,
-        } = resumeObj ?? {};
+        } = resumeObj ?? {};    
+
         
         if (window.self === window.top) {
-            const container = document.createElement('div');
-            container.id = "leftWindow";
-            const iframe = document.createElement("iframe");
-            iframe.src = LOCALHOST;
-            iframe.name = "leftWindow";
-            container.append(iframe);
-            document.getElementById("explorer").append(container);                
+            createFrame({
+                containerId: "leftWindow",
+                frameName: "leftWindow",
+            });
         
 
             if (browserCount === 2) {
-                const container = document.createElement('div');
-                container.id = "rightWindow";
-                const iframe = document.createElement("iframe");
-                iframe.src = LOCALHOST;
-                iframe.name = "rightWindow";
-                container.append(iframe);
-                document.getElementById("explorer").append(container);
+                createFrame({
+                    containerId: "rightWindow",
+                    frameName: "rightWindow",
+                });
             }
+        }
+
+        function createFrame({
+            containerId,
+            frameName,
+        }) {
+            const container = document.createElement('div');
+            container.id = containerId;
+            const iframe = document.createElement("iframe");
+            iframe.src = window.location.href;
+            iframe.name = frameName;
+            container.append(iframe);
+            document.getElementById("explorer").append(container);    
         }
     </script>
 </body>
