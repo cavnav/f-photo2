@@ -12,15 +12,12 @@ export const ToggleWindow = channel.addComp({
 
 function render() {
     const Comp = this;
+    const rp = Comp.getReqProps();
+    const {Label} = rp.comps;
     const {
-        comps: {
-            Label,
-        },
         resumeObj,
-    } = Comp.get({
-        comps: 1,
-        resumeObj: 1,
-    });
+        serverAPI,
+    } = rp;
 
     const [state] = useMutedReducer({
         initialState: {
@@ -30,19 +27,7 @@ function render() {
         setCompDeps: Comp.setCompDeps,
     });
 
-    const onClick = async () => {        
-        const {
-            deps: {
-                state,
-            },
-            resumeObj,
-            server,
-        } = Comp.get({
-            deps: 1,
-            resumeObj: 1,
-            server: 1,
-        });
-
+    const onClick = async () => {            
         const toggle = {
             1: 2,
             2: 1,
@@ -65,7 +50,7 @@ function render() {
                     },
                 });
             }
-            await server.resetNavigation({
+            await serverAPI.resetNavigation({
                 curWindow: 'rightWindow',
             });
         } else {

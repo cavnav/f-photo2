@@ -614,7 +614,11 @@ export function saveActionLists({
 }
 
 export function scrollToSelector({selector}) {
-	const SCROLL_CLASS = 'scroll-to';
+	if (!selector) {
+		return;
+	}
+	
+	const SCROLL_CLASS = 'scroll-to';	
 
 	const curPhotoEl = document.querySelector(selector);
 	if (curPhotoEl) {

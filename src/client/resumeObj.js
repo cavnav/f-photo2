@@ -5,6 +5,7 @@ export const STORAGE_ITEM = 'resume';
 const KEY_BROWSER_COUNT = 'browserCount';
 export class ResumeObj {
   defAppState = {
+    sep: '\\',
     [KEY_BROWSER_COUNT]: 1,
     leftWindow: {
       // OnePhoto: {},

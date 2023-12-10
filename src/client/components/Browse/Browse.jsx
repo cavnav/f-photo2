@@ -146,11 +146,16 @@ function onChangeDir({
 			onNavigate,
 		} = Comp.getAPI();
 
+		const {setStateSilent} = Comp.getDeps();
+		setStateSilent({
+			scrollTo: "",
+		});
+
 		const dir = event.target.getAttribute('src');
 		
 		rp.server.toward({ dir })
 			.then(onNavigate)
-			.then(() => {
+			.then(() => {				
 				changeSelections({
 					Comp,
 				});
@@ -232,21 +237,26 @@ function getAPI({
 		});
 	}
 
-	function onNavigate(
-		res,
-	) {
+	function onNavigate({
+		dirs,
+		files,
+		path,
+		sep,
+	}) {
 		const {
 			setState,
 		} = deps;
 
 		setState({
-			...res,
-			loading: false,
+			dirs,
+			files,
+			path,
+			sep,
 		});
 
 		const rp = Comp.getReqProps();
 		rp.ExitFromFolderAPI.forceUpdate({
-			title: res.path ? `Закрыть альбом ${res.path}` : '',
+			title: path ? `Закрыть альбом ${path}` : '',
 			onClick: () => {
 				exitFolder({ Comp });
 			}
@@ -339,13 +349,9 @@ function onRefreshWindow({
 }) {
 	const rp = Comp.getReqProps();
 	const deps = Comp.getDeps();
-	deps.setState({
-		loading: true,
-	});
 	rp.server.toward()			
 		.then((res) => {
 			deps.setState({
-				loading: false,
 				files: res.files,
 				dirs: res.dirs,
 			});
@@ -593,7 +599,6 @@ function resetTo({
 	const rp = Comp.getReqProps();
 	const {
 		state,
-		setState,
 	} = Comp.getDeps();
 
 	const pathUpd = path ?? state.path;
@@ -602,17 +607,10 @@ function resetTo({
 		onNavigate,
 	} = Comp.getAPI();
 
-	setState({
-		loading: true,
-	});
-
 	rp.server.toward({
 		resetTo: pathUpd,
 	})
-		.then(onNavigate)
-		.then(() => setState({
-			loading: false,
-		}));
+	.then(onNavigate);		
 }
 
 function exitFolder({
@@ -650,20 +648,21 @@ function isShowRename([itemName], sep) {
 
 function getStateInit() {
 	const resumed = resumeObj.get();
+
 	return {
-		loading: true,
 		previewWidth: 100,
 		previewHeight: 100,
 		progress: 100,
 		sep: undefined,
 		path: '',
 		curPhotoInd: -1,
-		scrollY: 0,
-		scrollTo: undefined,
+		scrollY: 0,				
+		selections: [],
+		scrollTo: "",
+
+		...resumed,	
+		
 		files: [],
 		dirs: [],
-		selections: [],
-
-		...resumed,		
 	};
 }

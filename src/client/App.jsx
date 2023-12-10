@@ -1,11 +1,12 @@
 // update version
 // forward to photo location from print by click
 	// reset curPhotoInd when open folder
+	// change curPhotoInd when next item in onePhoto mode.
 	// set scrollTo on Print, Printed
-	// make up open folder from Print
+	// +make up open folder from Print
 	// check excess count
-// connect android by wifi
 // whatsapp / telegram.
+// connect android by wifi
 
 // I
 // show overwrite confirmation for every files

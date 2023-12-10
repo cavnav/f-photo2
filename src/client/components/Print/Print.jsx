@@ -222,7 +222,7 @@ function render({
 
 	useEffect(
 		() => {
-			scrollToSelector({selector: `#${LAST_ELEMENT}`});
+			scrollToSelector({selector: state.scrollTo});
 		},
 		[state.files]
 	)
@@ -342,7 +342,7 @@ function getStateDefault() {
 		requiredFilesToPrint: {}, 
 		isSaveToFlash: false, 
 		isFilesExcess: false,
-		scrollTo: undefined,
+		scrollTo: `#${LAST_ELEMENT}`,
 	};
 }
 
@@ -397,17 +397,21 @@ function checkFilesExcess({files, delta = 0}) {
 
 function onOpenItemFolderHandler({Comp, src}) {
 	const rp = Comp.getReqProps();
+	const {sep} = rp.resumeObj.state;
+	const lastIndexSeparator = src.lastIndexOf(sep);
+	const path = src.substr(0, lastIndexSeparator);
+	const item = src.substr(-lastIndexSeparator + 1);
 
 	rp.BrowseAPI.setToResumeObj({
 		val: {
-			path: '\\2023-07-26T070804',
-			scrollTo: `[src="dog4 - Copy (9).jpg"]`,
+			path,
+			scrollTo: `[src="${item}"]`,
 		}
 	});
 
-	const {setStateSilent} = Comp.getDeps();
-	setStateSilent({
-
+	const {setState} = Comp.getDeps();
+	setState({
+		scrollTo: src,
 	});
 
 	rp.AppAPI.toggleAction({

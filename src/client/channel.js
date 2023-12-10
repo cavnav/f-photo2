@@ -193,20 +193,6 @@ class ChannelComp {
         };
     }
 
-    get(props) {
-        const res = {};
-        const additionalProps = {
-            server: channel.server,
-            comps: this.getComps(),
-        };
-
-        for (const prop in props) {
-            res[prop] = this[prop] || additionalProps[prop];
-        };
-
-        return res;
-    }
-
     getReqProps() {
         const res = {
             channel,
