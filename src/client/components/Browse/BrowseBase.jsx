@@ -12,6 +12,7 @@ export const BrowseBase = channel.addComp({
 
 function render(props) {
     const {
+        refHandler,
         Files,
         Dirs,
         ...eventHandlers
@@ -33,6 +34,7 @@ function render(props) {
 
     return (
         <div
+            ref={refHandler}
 			className={`browse-base layout`}
 			onClick={onClickItem}
 		>

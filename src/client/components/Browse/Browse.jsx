@@ -46,8 +46,9 @@ function render(
 		fn: ({
 			state,
 		}) => {
+			const {refHandler, ...stateUpd} = state;
 			resumeObj.save({
-				val: state,
+				val: stateUpd,
 			});
 		}
 	});
@@ -110,6 +111,7 @@ function render(
 
 	return (
 		<BrowseBase 
+			refHandler={state.refHandler}
 			Files={FilesComp}
 			Dirs={DirsComp}
 			onChangeDir={onChangeDirUpd}
@@ -146,9 +148,15 @@ function onChangeDir({
 			onNavigate,
 		} = Comp.getAPI();
 
+		const {state} = Comp.getDeps();
+		if (state.refHandler.current) {
+			state.refHandler.current.scrollTop = 0;
+		}
+
 		const {setStateSilent} = Comp.getDeps();
 		setStateSilent({
 			scrollTo: "",
+
 		});
 
 		const dir = event.target.getAttribute('src');
@@ -182,7 +190,7 @@ function onRequestFile({Comp}) {
 
 		deps.setState({
 			curPhotoInd,
-			scrollTo: `.${BROWSE_CLASS} [ind="${curPhotoInd}"]`,
+			scrollTo: getFileSelector({id: curPhotoInd}),
 		});
 
 		rp.AppAPI.toggleAction({
@@ -232,8 +240,15 @@ function getAPI({
 	function setToResumeObj({
 		val,
 	}) {
+
+		let {state} = Comp.getDeps();
+		let scrollTo = val.hasOwnProperty('curPhotoInd') ? getFileSelector({id: val.curPhotoInd}) : state.scrollTo;
+
 		resumeObj.save({
-			val,
+			val: {
+				scrollTo,
+				...val,
+			},
 		});
 	}
 
@@ -382,7 +397,7 @@ async function onAddAlbum({
 
 	const {state, setState} = Comp.getDeps();	
 	const src = [state.sep, state.sep, name].join('');
-	setState({scrollTo: `.${BROWSE_CLASS} [src="${src}"]`});
+	setState({scrollTo: getFolderSelector({id: src})});
 
 	refreshWindows({
 		Comp,
@@ -635,9 +650,8 @@ function exitFolder({
 	
 	rp.server.backward()
 		.then(onNavigate)
-		.then(() => {
-			
-			setState({scrollTo: `.${BROWSE_CLASS} [src="${src}"]`});
+		.then(() => {			
+			setState({scrollTo: getFolderSelector({id: src})});
 			refreshOppositeWindow();
 		});
 }
@@ -646,10 +660,19 @@ function isShowRename([itemName], sep) {
 	return itemName?.includes(sep) ?? false;
 }
 
+function getFolderSelector({id}) {
+	return `.${BROWSE_CLASS} [src="${id}"]`;
+}
+
+function getFileSelector({id}) {
+	return `.${BROWSE_CLASS} [ind="${id}"]`;
+}
+
 function getStateInit() {
 	const resumed = resumeObj.get();
 
 	return {
+		refHandler: {current: undefined},
 		previewWidth: 100,
 		previewHeight: 100,
 		progress: 100,

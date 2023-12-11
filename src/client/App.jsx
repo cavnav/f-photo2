@@ -1,7 +1,8 @@
 // update version
 // forward to photo location from print by click
-	// reset curPhotoInd when open folder
-	// change curPhotoInd when next item in onePhoto mode.
+	// +reset curPhotoInd when open folder
+	// +scroll to top when open folder.
+	// +change curPhotoInd when next item in onePhoto mode.
 	// set scrollTo on Print, Printed
 	// +make up open folder from Print
 	// check excess count
