@@ -3,6 +3,7 @@ import { get as _get, set as _set } from 'lodash';
 
 export const STORAGE_ITEM = 'resume';
 const KEY_BROWSER_COUNT = 'browserCount';
+
 export class ResumeObj {
   defAppState = {
     sep: '\\',

@@ -613,11 +613,15 @@ export function saveActionLists({
     );
 }
 
+export function getSelector({id}) {
+	return `[src="${id}"]`;
+}
+
 export function scrollToSelector({selector}) {
 	if (!selector) {
 		return;
 	}
-	
+
 	const SCROLL_CLASS = 'scroll-to';	
 
 	const curPhotoEl = document.querySelector(selector);

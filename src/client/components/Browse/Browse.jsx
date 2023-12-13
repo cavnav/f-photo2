@@ -7,6 +7,7 @@ import {
 	updateActionsLists, updateHtmlSelectorsFromArray,
 	getUpdatedActionLists,
 	scrollToSelector,
+	getSelector,
 } from '../../functions';
 import { channel } from '../../channel';
 import { ResumeObj } from '../../resumeObj';
@@ -15,8 +16,6 @@ import { BTN_MOVE, BTN_REMOVE, setBtnTitle } from '../../common/additionalAction
 import { Files } from '../File/Files';
 import { Dirs } from '../Dirs/Dirs';
 import { eventNames } from '../../constants';
-
-const BROWSE_CLASS = 'browse-base';
 
 
 export const Browse = channel.addComp({
@@ -95,7 +94,9 @@ function render(
 	);
 
 	useEffect(
-		() => scrollToSelector({selector: state.scrollTo}),
+		() => {			
+			scrollToSelector({selector: state.scrollTo});			
+		}
 	);
 
 	const FilesComp = state.files.length === 0 ? undefined : (props) => <Files
@@ -123,7 +124,7 @@ function render(
 
 function boostPerfImgRender() {
 	const observer = new IntersectionObserver(cb, { threshold: 1 });
-	const elements = [...(document.querySelectorAll(`.${BROWSE_CLASS} .scrollwait`) || [])];
+	const elements = [...(document.querySelectorAll(`.scrollwait`) || [])];
 	const observe = observer.observe.bind(observer);
 	elements.map(observe);
 
@@ -156,7 +157,6 @@ function onChangeDir({
 		const {setStateSilent} = Comp.getDeps();
 		setStateSilent({
 			scrollTo: "",
-
 		});
 
 		const dir = event.target.getAttribute('src');
@@ -186,11 +186,10 @@ function onRequestFile({Comp}) {
 	return (event) => {
 		const rp = Comp.getReqProps();
 		const deps = Comp.getDeps();
-		const curPhotoInd = +event.target.getAttribute('ind'); 
+		const curPhotoInd = +event.target.getAttribute('ind'); 		 
 
 		deps.setState({
 			curPhotoInd,
-			scrollTo: getFileSelector({id: curPhotoInd}),
 		});
 
 		rp.AppAPI.toggleAction({
@@ -239,16 +238,9 @@ function getAPI({
 
 	function setToResumeObj({
 		val,
-	}) {
-
-		let {state} = Comp.getDeps();
-		let scrollTo = val.hasOwnProperty('curPhotoInd') ? getFileSelector({id: val.curPhotoInd}) : state.scrollTo;
-
+	}) {		
 		resumeObj.save({
-			val: {
-				scrollTo,
-				...val,
-			},
+			val,
 		});
 	}
 
@@ -397,7 +389,7 @@ async function onAddAlbum({
 
 	const {state, setState} = Comp.getDeps();	
 	const src = [state.sep, state.sep, name].join('');
-	setState({scrollTo: getFolderSelector({id: src})});
+	setState({scrollTo: getSelector({id: src})});
 
 	refreshWindows({
 		Comp,
@@ -639,11 +631,7 @@ function exitFolder({
 	changeSelections({
 		Comp,
 	});
-	resumeObj.save({
-		val: {
-			curPhotoInd: -1,
-		},
-	});
+	
 	const rp = Comp.getReqProps();
 	const {state, setState} = Comp.getDeps();
 	const src = [state.sep, state.path].join('');
@@ -651,21 +639,13 @@ function exitFolder({
 	rp.server.backward()
 		.then(onNavigate)
 		.then(() => {			
-			setState({scrollTo: getFolderSelector({id: src})});
+			setState({scrollTo: getSelector({id: src})});
 			refreshOppositeWindow();
 		});
 }
 
 function isShowRename([itemName], sep) {
 	return itemName?.includes(sep) ?? false;
-}
-
-function getFolderSelector({id}) {
-	return `.${BROWSE_CLASS} [src="${id}"]`;
-}
-
-function getFileSelector({id}) {
-	return `.${BROWSE_CLASS} [ind="${id}"]`;
 }
 
 function getStateInit() {

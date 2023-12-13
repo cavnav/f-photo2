@@ -7,7 +7,12 @@ import {
 } from '../';
 import { checkProgress, 
 	refreshOppositeWindow,
-	getVarName, onChangeSelections, updateHtmlSelectorsFromObject, scrollToSelector } from '../../functions';
+	getVarName, 
+	onChangeSelections, 
+	updateHtmlSelectorsFromObject, 
+	scrollToSelector, 
+	getSelector, 
+} from '../../functions';
 import { createSteps } from './createSteps';
 import { channel } from '../../channel';
 import { Copying } from './components/Copying';
@@ -238,20 +243,22 @@ function render({
 			onClick={onSelectItem}
 		>
 			{steps 
-				? <Stepper
+			? 	<Stepper
 					steps={steps}
 				/> 
-				: <PrintItemsRender 
-					items={state.files}
-					onChangeItems={onChangeFiles} 
-					onRequiredItemName={getVarName({onOpenItemFolder})}
-					onChangeSelectionsName={state.isFilesExcess ? getVarName({onChangeThisSelections:1}) : undefined}
-				/>			
-			}
-
-			<div id="last-element"/>
-
-			{isEmpty && <Empty/>}			
+			: 	isEmpty 
+				? 	<Empty/>
+				:	<>
+						<PrintItemsRender 
+							items={state.files}
+							onChangeItems={onChangeFiles} 
+							onRequiredItemName={getVarName({onOpenItemFolder})}
+							onChangeSelectionsName={state.isFilesExcess ? getVarName({onChangeThisSelections:1}) : undefined}
+						/>		
+						{state.scrollTo === "" && <div src="last-element"/>}
+					</>
+					
+			}						
 		</div>
 	);
 }
@@ -342,7 +349,7 @@ function getStateDefault() {
 		requiredFilesToPrint: {}, 
 		isSaveToFlash: false, 
 		isFilesExcess: false,
-		scrollTo: `#${LAST_ELEMENT}`,
+		scrollTo: "",
 	};
 }
 
@@ -400,18 +407,20 @@ function onOpenItemFolderHandler({Comp, src}) {
 	const {sep} = rp.resumeObj.state;
 	const lastIndexSeparator = src.lastIndexOf(sep);
 	const path = src.substr(0, lastIndexSeparator);
-	const item = src.substr(-lastIndexSeparator + 1);
+	const item = src.substr(lastIndexSeparator + 1);
 
 	rp.BrowseAPI.setToResumeObj({
 		val: {
 			path,
-			scrollTo: `[src="${item}"]`,
+			scrollTo: getSelector({id: item}),
 		}
 	});
 
 	const {setState} = Comp.getDeps();
+	const srcUpd = src.split(sep).join(sep.concat(sep));
+	
 	setState({
-		scrollTo: src,
+		scrollTo: getSelector({id: srcUpd}),
 	});
 
 	rp.AppAPI.toggleAction({

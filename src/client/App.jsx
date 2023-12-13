@@ -4,6 +4,9 @@
 	// +scroll to top when open folder.
 	// +change curPhotoInd when next item in onePhoto mode.
 	// set scrollTo on Print, Printed
+	// fix browse, onePhoto toggle.
+	// fix remove from onePhoto
+	// check change selections after delete in onePhoto.
 	// +make up open folder from Print
 	// check excess count
 // whatsapp / telegram.
