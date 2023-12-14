@@ -587,7 +587,7 @@ app.post('/api/copyPhotos', (req, res) => {
 			if (progress !== 100) {
 				startCopy({ photos: photos.slice(1), destDir });
 			} else {
-				//await clearUpUSB();
+				await clearUpUSB();
 				setState({
 					[curWindow]: destDir,
 				});

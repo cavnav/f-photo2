@@ -48,6 +48,7 @@ function render({
 
 	const [state, setState, setStateSilent] = useMutedReducer({		
 		initialState: getInitialState({resumeObj}),
+		reducer,
 		setCompDeps: Comp.setCompDeps,
 		...(files && {
 			props: {
@@ -79,11 +80,7 @@ function render({
 	}	
 
 	const steps = React.useMemo(
-		() => {
-			if (!state.isSaveToFlash) {
-				return undefined;
-			}
-			
+		() => {			
 			const files = Object.keys(state.requiredFilesToPrint).length  ? state.requiredFilesToPrint : state.files;			
 			
 			function saveFilesToFlash() {
@@ -105,7 +102,12 @@ function render({
 							message: progress,
 						})					
 				})
-				.then(() => rp.DialogAPI.close());
+				.then(() => {
+					rp.DialogAPI.close();	
+					setState({
+						isCancelCopyingBtn: false,
+					});		
+				});
 			}
 
 			return createSteps({
@@ -116,7 +118,7 @@ function render({
 					}
 					setState({
 						files: state.files,
-						isSaveToFlash: false,
+						isCopyingScript: false,
 						isFilesExcess: false,
 						requiredFilesToPrint: {},
 					});
@@ -124,19 +126,13 @@ function render({
 				Copying: ({
 					nextStepBtn,
 				}) => <Copying
-					nextStepBtn={nextStepBtn}
-					filesToPrint={files}
-					onCopyCanceled={() => setState({
-						isSaveToFlash: false
-					})}
+					nextStepBtn={nextStepBtn}					
 					saveFilesToFlash={saveFilesToFlash}
 				/>,
 			});
 		},
-		[state.isSaveToFlash],
+		[],
 	);
-
-	const isEmpty = Object.keys(state.files).length === 0;
 
 	const onChangeThisSelections = onChangeSelections({Comp, handler: onChangeSelectionsHandler});
 	const onOpenItemFolder = onChangeSelections({Comp, handler: onOpenItemFolderHandler});
@@ -151,16 +147,24 @@ function render({
 	}
 
 	usePrintActions({
-		isSaveToFlash: state.isSaveToFlash,
-		isEmpty,
+		isSaveToFlashBtn: state.isSaveToFlashBtn,
+		isCancelCopyingBtn: state.isCancelCopyingBtn,
 		printed,
 		render: rp.AdditionalPanelAPI.renderIt,
 		onCancelSaveToFlash: () => {
 			setState({
-				isSaveToFlash: false,
+				isCancelCopyingBtn: false,
+				isCopyingScript: false,
+				isSaveToFlashBtn: true,
 			});
 		},
 		onSaveToFlash: async () => {
+			const stateUpd = {
+				isCopyingScript: true,
+				isSaveToFlashBtn: false,
+				isCancelCopyingBtn: true,
+			};
+
 			const isResolve = await rp.DialogAPI.showChoiceConfirmation({
 				message: 'Внимание! Флешка будет очищена перед копированием. Продолжить ?',
 			});
@@ -171,9 +175,7 @@ function render({
 
 			const isRequiredFiles = Object.keys(state.requiredFilesToPrint).length > 0;
 			if (isRequiredFiles) {
-				setState({
-					isSaveToFlash: true,
-				});
+				setState(stateUpd);
 				return;
 			}
 
@@ -188,9 +190,7 @@ function render({
 				return;
 			}
 
-			setState({
-				isSaveToFlash: true,
-			});
+			setState(stateUpd);
 
 		},
 		onBackToPrinted: state.onBackToPrinted,
@@ -222,7 +222,7 @@ function render({
 				selections: state.requiredFilesToPrint,
 			});
 		}, 
-		[state.isSaveToFlash]
+		[state.isCopyingScript]
 	);
 
 	useEffect(
@@ -242,11 +242,11 @@ function render({
 			className="Print layout"
 			onClick={onSelectItem}
 		>
-			{steps 
+			{state.isCopyingScript 
 			? 	<Stepper
 					steps={steps}
 				/> 
-			: 	isEmpty 
+			: 	state.isEmpty 
 				? 	<Empty/>
 				:	<>
 						<PrintItemsRender 
@@ -255,7 +255,7 @@ function render({
 							onRequiredItemName={getVarName({onOpenItemFolder})}
 							onChangeSelectionsName={state.isFilesExcess ? getVarName({onChangeThisSelections:1}) : undefined}
 						/>		
-						{state.scrollTo === "" && <div src="last-element"/>}
+						{state.scrollTo === "" && <div src={LAST_ELEMENT} />}
 					</>
 					
 			}						
@@ -339,18 +339,6 @@ function getAPI({
 		} = deps;
 		return props.photoSrc ? state.files[props.photoSrc] : state.files;
 	}
-}
-
-function getStateDefault() {
-	return {
-		files: {},
-		// используется, когда нельзя записать все файлы на флешку разом. 
-		// Тогда надо выбрать конкретные, поставив галочку.
-		requiredFilesToPrint: {}, 
-		isSaveToFlash: false, 
-		isFilesExcess: false,
-		scrollTo: "",
-	};
 }
 
 function getInitialState({
@@ -449,3 +437,42 @@ function onChangeSelectionsHandler({Comp, event, src, checked}) {
 		requiredFilesToPrint: state.requiredFilesToPrint,
 	});
 };
+
+function reducer({
+	state,
+	upd,
+}) {
+	const stateUpd = {
+		...state,
+		...upd,
+	};
+
+	const isEmpty = Object.keys(stateUpd.files).length === 0;
+	const btns = {};
+
+	if (isEmpty) {
+		btns.isSaveToFlashBtn  = false;
+		btns.isCancelCopyingBtn = false;
+	}
+
+	return {
+		...state,		
+		...btns,
+		isEmpty,
+	};
+}
+
+function getStateDefault() {
+	return {
+		files: {},
+		// используется, когда нельзя записать все файлы на флешку разом. 
+		// Тогда надо выбрать конкретные, поставив галочку.
+		requiredFilesToPrint: {}, 
+		isSaveToFlashBtn: false,
+		isCancelCopyingBtn: false,
+		isCopyingScript: false,
+		isFilesExcess: false,
+		isEmpty: false,
+		scrollTo: "",
+	};
+}

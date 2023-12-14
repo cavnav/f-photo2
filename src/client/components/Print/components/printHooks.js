@@ -3,8 +3,8 @@ import { getComps } from '../../../functions';
 
 export function usePrintActions({
     render,
-    isSaveToFlash,
-    isEmpty,
+    isSaveToFlashBtn,
+    isCancelCopyingBtn,
     printed,
     onCancelSaveToFlash,
     onSaveToFlash,
@@ -30,13 +30,13 @@ export function usePrintActions({
                 ],
             })
             .then(() => {
-                if (isSaveToFlash) {
+                if (isCancelCopyingBtn) {
                     CancelSaveToFlashAPI.forceUpdate({
                         title: 'Отменить запись',
                         onClick: onCancelSaveToFlash,
                     });
                 } 
-                else if (!isEmpty) {
+                if (isSaveToFlashBtn) {
                     SaveToFlashAPI.forceUpdate({
                         title: 'Записать на флешку',
                         onClick: onSaveToFlash,
@@ -56,7 +56,7 @@ export function usePrintActions({
                 });
             };
         },
-        [isSaveToFlash, isEmpty]
+        [isSaveToFlashBtn, isCancelCopyingBtn]
     );
 }
 
