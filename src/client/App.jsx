@@ -1,14 +1,9 @@
 // update version
 // forward to photo location from print by click
-	// +reset curPhotoInd when open folder
-	// +scroll to top when open folder.
-	// +change curPhotoInd when next item in onePhoto mode.
-	// set scrollTo on Print, Printed
 	// fix browse, onePhoto toggle.
 	// fix remove from onePhoto
 	// check change selections after delete in onePhoto.
-	// +make up open folder from Print
-	// check excess count
+	// check excess count save to flash.
 // whatsapp / telegram.
 // connect android by wifi
 

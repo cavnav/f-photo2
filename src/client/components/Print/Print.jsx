@@ -11,7 +11,9 @@ import { checkProgress,
 	onChangeSelections, 
 	updateHtmlSelectorsFromObject, 
 	scrollToSelector, 
-	getSelector, 
+	getSelector,
+	getExistsProps,
+	getDefaultAPI, 
 } from '../../functions';
 import { createSteps } from './createSteps';
 import { channel } from '../../channel';
@@ -58,10 +60,11 @@ function render({
 			}
 		}),
 		fn: ({
-			stateUpd,
-		}) => {
+			state,
+		}) => {			
+			const val = getSavedState({state});
 			resumeObj.save({
-				val: stateUpd
+				val,
 			});
 		}
 	});
@@ -382,7 +385,7 @@ function getResumeObj({name}) {
 		selector: [
 			name,
 		],
-		val: getStateDefault(),
+		val: getSavedState({state: getStateDefault()}),
 	}
 }
 
@@ -440,26 +443,36 @@ function onChangeSelectionsHandler({Comp, event, src, checked}) {
 
 function reducer({
 	state,
-	upd,
+	stateUpd,
 }) {
-	const stateUpd = {
+	const stateNew = {
 		...state,
-		...upd,
+		...stateUpd,
 	};
 
-	const isEmpty = Object.keys(stateUpd.files).length === 0;
-	const btns = {};
+	const isEmpty = Object.keys(stateNew.files).length === 0;
+
+	stateNew.isEmpty = isEmpty;
 
 	if (isEmpty) {
-		btns.isSaveToFlashBtn  = false;
-		btns.isCancelCopyingBtn = false;
+		stateNew.isSaveToFlashBtn  = false;
+		stateNew.isCancelCopyingBtn = false;
 	}
 
-	return {
-		...state,		
-		...btns,
-		isEmpty,
-	};
+	return stateNew;
+}
+
+function getSavedState({state}) {
+	return getExistsProps({
+		obj: state,
+		rp: {
+			files: 1,
+			requiredFilesToPrint: 1,
+			isFilesExcess: 1,
+			scrollTo: 1,
+			printed: 1,
+		},
+	});
 }
 
 function getStateDefault() {
@@ -468,11 +481,15 @@ function getStateDefault() {
 		// используется, когда нельзя записать все файлы на флешку разом. 
 		// Тогда надо выбрать конкретные, поставив галочку.
 		requiredFilesToPrint: {}, 
-		isSaveToFlashBtn: false,
+		isSaveToFlashBtn: true,
 		isCancelCopyingBtn: false,
 		isCopyingScript: false,
 		isFilesExcess: false,
 		isEmpty: false,
 		scrollTo: "",
+
+		// props
+		printed: "", // printed folder name.
+		onBackToPrinted: "", // callback to printed.
 	};
 }

@@ -26,10 +26,12 @@ export function useMutedReducer({
 	const setStateWrap = useCallback(setState(context), []);
 	const setStateSilentWrap = useCallback(setState(context, false), []);
 	
-	props && React.useMemo(
-		() => setStateSilentWrap(props),
-		Object.values(props),
-	);
+	if (props) {
+		React.useMemo(
+			() => setStateSilentWrap(props),
+			Object.values(props),
+		);
+	}
 
 	setCompDeps && setCompDeps({
 		deps: {
