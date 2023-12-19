@@ -1,6 +1,6 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import {channel} from '../../channel';
-import {getVarName} from '../../functions';
+import {getVarName, scrollToSelector} from '../../functions';
 import {Empty} from '../Empty/Empty';
 
 
@@ -15,6 +15,7 @@ function render(props) {
         refHandler,
         Files,
         Dirs,
+        scrollTo,
         ...eventHandlers
     } = props;
 
@@ -31,6 +32,12 @@ function render(props) {
         const eventHandler = event.target.getAttribute('handler');
         eventHandlers[eventHandler]?.(event);
     };
+
+    useEffect(
+		() => {			
+			scrollToSelector({selector: scrollTo});			
+		}
+	);
 
     return (
         <div

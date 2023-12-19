@@ -4,6 +4,7 @@
 	// fix remove from onePhoto
 	// check change selections after delete in onePhoto.
 	// check excess count save to flash.
+	// scroll to last saved to flash.
 // whatsapp / telegram.
 // connect android by wifi
 

@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { channel } from '../../channel';
-import { initRefreshWindowEvent, myRequest } from '../../functions';
+import { getExistsProps, getSelector, initRefreshWindowEvent, myRequest } from '../../functions';
 import { useMutedReducer } from '../../mutedReducer';
 import { FilesPrinted } from '../File/FilesPrinted';
 import { getFileSrc } from '../File/FileUtils';
@@ -24,16 +24,12 @@ function render() {
         setCompDeps: Comp.setCompDeps,
         initialState: getInitialState({Comp}),
         fn: ({
-			stateUpd,
+			state,
 		}) => {
-			if (stateUpd.hasOwnProperty('requestFile')) {
-                resumeObj.save({
-                    val: {
-                        actionName: stateUpd.actionName, 
-                        requestFile: stateUpd.requestFile,
-                    }
-			    });
-            }
+            const val =  getSavedState({state});
+            resumeObj.save({
+                val,
+            });
 		}
     });    
 
@@ -55,7 +51,7 @@ function render() {
 function onRefreshWindow({
     Comp,
 }) {
-    const {state, setState} = Comp.getDeps();
+    const {state} = Comp.getDeps();
     Comp.getDeps().setState({forceUpdate: !state.forceUpdate});   
 }
 
@@ -74,10 +70,10 @@ function BrowseBaseWrap({PrintedComp}) {
         getPrinted({PrintedComp});
     }, [state.forceUpdate]);
 
-
     return (
         <BrowseBase
             Files={FilesComp}
+            scrollTo={state.scrollTo}
             onRequestFile={onRequestFile}
         />
     );
@@ -91,7 +87,13 @@ function BrowseBaseWrap({PrintedComp}) {
         const {setState} = deps;
         const actionName = rp.comps.Printed.name;
 
-        setState({actionName, requestFile: getFileSrc({event})});
+        const requestFile = getFileSrc({event});
+
+        setState({
+            actionName, 
+            requestFile,
+            scrollTo: getSelector({id: requestFile}),
+        });
     }
 }
 
@@ -108,8 +110,7 @@ function PrintWrap({PrintedComp}) {
     const onBackToPrinted = () => {
         const actionName = rp.comps.BrowseBase.name;
         setState({
-            actionName,  
-            requestFile: undefined,      
+            actionName, 
         });
     }
 
@@ -179,7 +180,19 @@ function getDefaultState() {
         requestFile: undefined,
         printedItems: {},
         forceUpdate: false,
+        scrollTo: "",
     };
+}
+
+function getSavedState({state}) {
+    return getExistsProps({
+		obj: state,
+		rp: {
+            actionName: 1,
+            requestFile: 1,
+            scrollTo: 1,
+        },
+    });
 }
 
 function getInitialState({Comp}) {

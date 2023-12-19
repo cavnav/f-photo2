@@ -13,7 +13,6 @@ import { checkProgress,
 	scrollToSelector, 
 	getSelector,
 	getExistsProps,
-	getDefaultAPI, 
 } from '../../functions';
 import { createSteps } from './createSteps';
 import { channel } from '../../channel';
@@ -39,11 +38,7 @@ export const Print = channel.addComp({
 	getComps,
 });
 
-function render({
-	files, // filesToPrint or printedFiles from folder.
-	printed, // printed folder name.
-	onBackToPrinted, // when cancel write to flash.
-}) {
+function render(props) {
 	const Comp = this;
 	const rp = Comp.getReqProps();	
 	const {resumeObj} = rp;
@@ -52,13 +47,7 @@ function render({
 		initialState: getInitialState({resumeObj}),
 		reducer,
 		setCompDeps: Comp.setCompDeps,
-		...(files && {
-			props: {
-				files,
-				printed,
-				onBackToPrinted,
-			}
-		}),
+		props,
 		fn: ({
 			state,
 		}) => {			
@@ -84,6 +73,10 @@ function render({
 
 	const steps = React.useMemo(
 		() => {			
+			if (state.isCopyingScript === false) {
+				return [];
+			}
+
 			const files = Object.keys(state.requiredFilesToPrint).length  ? state.requiredFilesToPrint : state.files;			
 			
 			function saveFilesToFlash() {
@@ -123,6 +116,7 @@ function render({
 						files: state.files,
 						isCopyingScript: false,
 						isFilesExcess: false,
+						isSaveToFlashBtn: true,
 						requiredFilesToPrint: {},
 					});
 				},
@@ -134,7 +128,7 @@ function render({
 				/>,
 			});
 		},
-		[],
+		[state.isCopyingScript],
 	);
 
 	const onChangeThisSelections = onChangeSelections({Comp, handler: onChangeSelectionsHandler});
@@ -152,7 +146,7 @@ function render({
 	usePrintActions({
 		isSaveToFlashBtn: state.isSaveToFlashBtn,
 		isCancelCopyingBtn: state.isCancelCopyingBtn,
-		printed,
+		printed: props.printed,
 		render: rp.AdditionalPanelAPI.renderIt,
 		onCancelSaveToFlash: () => {
 			setState({
@@ -182,7 +176,7 @@ function render({
 				return;
 			}
 
-			const isFilesExcess = checkFilesExcess({files: state.files});
+			const isFilesExcess = checkFilesExcess({files: state.files, delta: 0});
 			if (isFilesExcess) {				
 				rp.DialogAPI.showConfirmation({
 					message: 'Нельзя записать все фотографии на флешку за один раз. Отметь галочкой фотографии, чтобы их напечатать.',
@@ -196,7 +190,12 @@ function render({
 			setState(stateUpd);
 
 		},
-		onBackToPrinted: state.onBackToPrinted,
+		onBackToPrinted: (props) => {
+			state.onBackToPrinted(props);
+			setStateSilent({
+				scrollTo: "",
+			});
+		}
 	});
 
 	useEffect(
@@ -389,7 +388,7 @@ function getResumeObj({name}) {
 	}
 }
 
-function checkFilesExcess({files, delta = 0}) {
+function checkFilesExcess({files, delta}) {
 	return Object.keys(files).length + delta > MAX_FILES_COUNT;
 }
 
@@ -457,6 +456,9 @@ function reducer({
 	if (isEmpty) {
 		stateNew.isSaveToFlashBtn  = false;
 		stateNew.isCancelCopyingBtn = false;
+	}	
+	else if (stateNew.isCopyingScript === false) {
+		stateNew.isSaveToFlashBtn = true;
 	}
 
 	return stateNew;
@@ -477,16 +479,16 @@ function getSavedState({state}) {
 
 function getStateDefault() {
 	return {
+		// filesToPrint or printedFiles from folder.
 		files: {},
 		// используется, когда нельзя записать все файлы на флешку разом. 
 		// Тогда надо выбрать конкретные, поставив галочку.
 		requiredFilesToPrint: {}, 
-		isSaveToFlashBtn: true,
+		isSaveToFlashBtn: false,
 		isCancelCopyingBtn: false,
 		isCopyingScript: false,
 		isFilesExcess: false,
 		isEmpty: false,
-		scrollTo: "",
 
 		// props
 		printed: "", // printed folder name.

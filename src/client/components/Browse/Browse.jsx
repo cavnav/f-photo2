@@ -93,12 +93,6 @@ function render(
 		}, 
 	);
 
-	useEffect(
-		() => {			
-			scrollToSelector({selector: state.scrollTo});			
-		}
-	);
-
 	const FilesComp = state.files.length === 0 ? undefined : (props) => <Files
 		files={state.files}
 		browsePath={browsePath}
@@ -115,6 +109,7 @@ function render(
 			refHandler={state.refHandler}
 			Files={FilesComp}
 			Dirs={DirsComp}
+			scrollTo={state.scrollTo}
 			onChangeDir={onChangeDirUpd}
 			onChangeSelections={onChangeSelectionsUpd}
 			onRequestFile={onRequestFileUpd}

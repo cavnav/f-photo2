@@ -24,9 +24,9 @@ export function usePrintActions({
 
             render({
                 actions: [
+                    BackToPrinted,
                     CancelSaveToFlash,
                     SaveToFlash,
-                    BackToPrinted,
                 ],
             })
             .then(() => {
