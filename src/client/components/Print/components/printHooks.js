@@ -42,7 +42,7 @@ export function usePrintActions({
                         onClick: onSaveToFlash,
                     });
                 }
-                if (onBackToPrinted) {
+                if (printed && onBackToPrinted) {
                     BackToPrintedAPI.forceUpdate({
                         title: `Закрыть ${printed}`,
                         onClick: onBackToPrinted,
