@@ -138,10 +138,12 @@ function getAppStateInit() {
 			{
 				id: Copy.name,
 				title: 'Копировать с флешки',
+				isEnabled: true,
 			},
 			{
 				id: Browse.name,
 				title: 'Альбомы',
+				isEnabled: true,
 			},		
 			{
 				id: OnePhoto.name,
@@ -151,10 +153,12 @@ function getAppStateInit() {
 			{
 				id: Print.name,
 				title: 'Печатать',
+				isEnabled: true,
 			},
 			{
 				id: PrintedComp.name,
 				title: 'Архив печатей',
+				isEnabled: true,
 			},
 			// {
 			// 	id: Share.name,
@@ -194,12 +198,14 @@ export function getAPI({
 	function toggleAction({
 		action,
 	}) {		
-		let Action = deps.state.actions.find((action) => action.id === deps.state.action);
-		if (Action.name === OnePhoto.name) {
-			Action.isEnabled = false;
+		const currentAction = deps.state.actions.find((action) => action.id === deps.state.action);
+		
+		if ([OnePhoto.name, Browse.name].includes(currentAction.id)) {
+			currentAction.isEnabled = false;
 		}
-		Action = deps.state.actions.find((actionItem) => actionItem.id === action);
-		Action.isEnabled = true;
+		
+		const nextAction = deps.state.actions.find((actionItem) => actionItem.id === action);
+		nextAction.isEnabled = true;
 
 		deps.setState({
 			action,		
