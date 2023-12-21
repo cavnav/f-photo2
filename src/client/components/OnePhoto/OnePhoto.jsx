@@ -517,13 +517,18 @@ function renderAddPanel({
 						function onConfirm() {
 							rp.server.removeItems({
 								items: [state.curPhotoWithTime],
+								...getUpdatedActionLists(),
 							})
-								.then(() => {
-									deleteFiles({
-										Comp,
-									});
-									refreshOppositeWindow();
+							.then((result) => {
+								updateActionsLists({ lists: result?.updatedActionLists });
+								return result;
+							})
+							.then(() => {
+								deleteFiles({
+									Comp,
 								});
+								refreshOppositeWindow();
+							});
 						}
 					},
 				});

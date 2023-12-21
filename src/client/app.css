@@ -35,7 +35,7 @@ body {
   width: inherit;
   height: inherit;
   border: 8px solid var(--red);
-  z-index: 1000;
+  z-index: 90;
 }
 
 iframe,

@@ -1,8 +1,7 @@
 // update version
 // forward to photo location from print by click
-	// fix browse, onePhoto toggle.
-	// fix remove from onePhoto
 	// check change selections after delete in onePhoto.
+	// close onePhoto on remove last photo.
 // whatsapp / telegram.
 // connect android by wifi
 
