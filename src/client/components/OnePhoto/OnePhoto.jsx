@@ -388,28 +388,33 @@ function deleteFiles({
 		setState,
 	} = Comp.getDeps();
 
+	// Удалить из списка выбранных файлов Browse.
+	const rp = Comp.getReqProps();	
+	const selectionsUpd = new Set(rp.resumeBrowse.selections);
+	selectionsUpd.delete(state.curPhoto);
+	
+
+	// remove from onePhoto files.
 	state.files.delete(state.curPhotoInd);
 
 	const curPhotoIndUpd = state.files.items.length === state.curPhotoInd ?
 		state.curPhotoInd - 1 :
-		state.curPhotoInd;
+		state.curPhotoInd;	
 
 	setState({
-		action: ON_TOGGLE_PHOTO,
 		curPhotoInd: curPhotoIndUpd,
-	});
+	});	
 
-	const rp = Comp.getReqProps();
-
-	// Удалить из списка выбранных файлов Browse.
-	const selectionsUpd = new Set(rp.resumeBrowse.selections);
-	selectionsUpd.delete(state.curPhoto);
 	rp.BrowseAPI.setToResumeObj({
 		val: {
 			selections: selectionsUpd,
 			scrollTo: getSelector({id: state.curPhoto}),
 		},
 	});
+
+	setState({
+		action: ON_TOGGLE_PHOTO,
+	});	
 };
 
 function getComps({

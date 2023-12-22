@@ -6,7 +6,6 @@ import {
 	onMoveSelections, refreshWindows, refreshOppositeWindow,
 	updateActionsLists, updateHtmlSelectorsFromArray,
 	getUpdatedActionLists,
-	scrollToSelector,
 	getSelector,
 } from '../../functions';
 import { channel } from '../../channel';
