@@ -1,0 +1,20 @@
+.fitScreen {
+  position: relative;
+  display: flex;
+  overflow: hidden;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+}
+
+.OnePhoto img {
+  transition: opacity 1s linear;
+}
+
+.OnePhoto .current-total {
+  position: absolute;
+  left: 0;
+  top: 0;
+  background-color: var(--white);
+}

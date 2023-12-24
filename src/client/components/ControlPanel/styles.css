@@ -1,3 +1,9 @@
-.ControlPanel {
+.controlPanel {
+  font-size: 24px;
+  font-weight: 800;
   justify-content: space-around;
+}
+
+.action.active {
+  background-color: var(--color-golden);
 }

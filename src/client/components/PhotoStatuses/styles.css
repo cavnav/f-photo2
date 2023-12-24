@@ -1,0 +1,29 @@
+.PhotoStatusIcons {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  right: 0px;
+  bottom: 0px;
+  padding: 20px;
+  background-color: white;
+  border-radius: 40px;
+  opacity: 0.5;
+}
+
+:root {
+  --iconStatusSize: 64px;
+}
+
+.PhotoStatusIcons img {
+  width: var(--iconStatusSize);
+  height: var(--iconStatusSize);
+}
+
+@keyframes iconStatusAttention {
+  0% { 
+    opacity: 1; 
+  }
+  100% {
+    opacity: 0;
+  }
+}

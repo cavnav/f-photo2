@@ -1,0 +1,64 @@
+.Dialog {
+    z-index: 10000;
+    display: block;
+}
+
+.DialogWrap {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 200;
+    border: 1px solid;
+    opacity: 1;
+    background: var(--white);
+}
+
+.DialogWrap .btn {
+    color: var(--black);
+}
+
+.DialogWrap > * {
+    padding: var(--offset-5x);
+}
+
+.Dialog__error {
+    background: var(--red);
+    color: var(--white);
+}
+
+.Dialog__notify {
+    background: var(--blue);
+    color: var(--black);
+}
+
+.Dialog__hide {
+    opacity: 0;
+}
+
+.Dialog__none {
+    transform: translateX(-10000px);
+}
+
+.Dialog .title {
+    white-space: nowrap;
+}
+
+.Dialog input {
+    margin-right: var(--base-gap);
+}
+
+.Dialog__modalWrap {
+    position: absolute;
+    width: 100%;
+}
+
+.Dialog__modal {
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.3);
+    z-index: 1000;
+}

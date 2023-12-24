@@ -1,0 +1,45 @@
+.Stepper {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+}
+
+.Stepper .title {
+  text-align: center;
+}
+
+.Stepper .step {  
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  overflow: hidden;
+}
+
+.Stepper .step .imgBlock {
+  display: flex;
+  max-height: 80%;
+  max-width: 80%;
+  overflow: hidden;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+.Stepper .step img {
+  width: 30%;
+}
+
+.Stepper .step img:hover {
+  transform: scale(2);
+  transition: transform 0.5s;
+}
+
+.Stepper .step img {
+  transform: scale(1);
+  transition: transform 0.5s;
+}

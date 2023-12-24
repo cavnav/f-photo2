@@ -1,0 +1,37 @@
+.PrintItems {
+  display: flex;
+  flex-flow: wrap;
+}
+
+.PrintItems .fitPreview.file {
+  margin-bottom: var(--print-gap-between-rows);
+}
+
+.rowData {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.controls {
+  position: absolute;
+  bottom: 0px;
+}
+
+.changePhotoCount {
+  min-width: 150px;
+  max-width: 150px;
+  font-size: 68px;
+  font-weight: 800;
+  border: none;
+}
+
+.acceptBtn {
+  padding: 10px 20px;
+}
+
+.copyProgress {
+  padding: 20px;
+}

@@ -5,11 +5,46 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>DCS Editor</title>
+    <link rel="icon" type="favicon.png" />
+    <title>F-PHOTO</title>
 </head>
 
 <body>
-    <div id="root"></div>
-</body>
+    <div id="explorer" />
+    <script>
+        const resumeObj = JSON.parse(localStorage.getItem('resume'));
+        const {
+            browserCount,
+        } = resumeObj ?? {};    
 
+        
+        if (window.self === window.top) {
+            createFrame({
+                containerId: "leftWindow",
+                frameName: "leftWindow",
+            });
+        
+
+            if (browserCount === 2) {
+                createFrame({
+                    containerId: "rightWindow",
+                    frameName: "rightWindow",
+                });
+            }
+        }
+
+        function createFrame({
+            containerId,
+            frameName,
+        }) {
+            const container = document.createElement('div');
+            container.id = containerId;
+            const iframe = document.createElement("iframe");
+            iframe.src = window.location.href;
+            iframe.name = frameName;
+            container.append(iframe);
+            document.getElementById("explorer").append(container);    
+        }
+    </script>
+</body>
 </html>

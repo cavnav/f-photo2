@@ -1,0 +1,7 @@
+.Browse .curFile {
+  margin: 50px;
+}
+
+.Browse .scrollwait {
+  visibility: hidden;
+}
