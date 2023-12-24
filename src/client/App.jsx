@@ -1,6 +1,5 @@
 // update version
 // forward to photo location from print by click
-	// fix album and photo same time on print action and open by click location.
 	// close onePhoto on remove last photo.
 // whatsapp / telegram.
 // connect android by wifi

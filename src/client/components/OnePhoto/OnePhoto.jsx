@@ -79,6 +79,12 @@ function render(
 		const {
 			BrowseAPI,
 		} = Comp.getReqProps();
+		
+		if (state.curPhotoInd === -1) {
+			toggleBrowseAction(Comp);
+			return;
+		}
+
 		if (state.action === ON_TOGGLE_PHOTO) {
 			BrowseAPI.setToResumeObj({
 				val: {
@@ -112,10 +118,6 @@ function render(
 		}),
 		[]
 	);
-
-	useEffect(() => {
-		refreshOppositeWindow();
-	}, []);
 
 	return getRender();
 
@@ -401,18 +403,14 @@ function deleteFiles({
 		state.curPhotoInd - 1 :
 		state.curPhotoInd;	
 
-	setState({
-		curPhotoInd: curPhotoIndUpd,
-	});	
-
 	rp.BrowseAPI.setToResumeObj({
 		val: {
 			selections: selectionsUpd,
-			scrollTo: getSelector({id: state.curPhoto}),
 		},
 	});
 
 	setState({
+		curPhotoInd: curPhotoIndUpd,
 		action: ON_TOGGLE_PHOTO,
 	});	
 };
@@ -467,7 +465,6 @@ function renderAddPanel({
 			rp.ExitFromOnePhotoAPI.forceUpdate({
 				onClick: () => {
 					toggleBrowseAction(Comp);
-					refreshOppositeWindow();
 				},
 			});
 
