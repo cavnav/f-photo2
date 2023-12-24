@@ -197,14 +197,20 @@ export function getAPI({
 	function toggleAction({
 		action,
 	}) {		
-		const currentAction = deps.state.actions.find((action) => action.id === deps.state.action);
+		let actionsObj = {};
+		deps.state.actions.forEach((action) => {
+			actionsObj[action.id] = action;
+		});
+
+		actionsObj[action].isEnabled = true;
 		
-		if ([OnePhoto.name, Browse.name].includes(currentAction.id)) {
-			currentAction.isEnabled = false;
+		if (action === Browse.name) {
+			actionsObj[OnePhoto.name].isEnabled = false;
+		}
+		if (action === OnePhoto.name) {
+			actionsObj[Browse.name].isEnabled = false;
 		}
 		
-		const nextAction = deps.state.actions.find((actionItem) => actionItem.id === action);
-		nextAction.isEnabled = true;
 
 		deps.setState({
 			action,		
