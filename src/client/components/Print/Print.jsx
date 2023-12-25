@@ -20,9 +20,9 @@ import { Copying } from './components/Copying';
 import { Empty } from '../';
 import { useMutedReducer } from '../../mutedReducer';
 import { eventNames } from '../../constants';
-import { PrintItemsRender } from '../../common/PrintItemsRender';
-import { updateFiles } from './PrintUtils';
+import { PrintItemsRender } from './components/PrintItemsRender';
 import { usePrintActions } from './components/printHooks';
+import { updateFiles } from '../../functions';
 
 
 const MAX_FILES_COUNT = 5;
@@ -279,50 +279,51 @@ function getReqProps({
 
 function getAPI({
 	Comp,
-	deps,
 	resumeObj,
 }) {
 	return {
-		getFilesToPrint,
-		togglePrint,
-		isFileToPrint,
+		toggleStatus,
+		getStatus,
 	};
 
 
 	// -----------------------
 
-	function isFileToPrint({
+	function getStatusObj({
+		value,
+	}) {
+		return {
+			toPrint: value,
+		};
+	}
+
+	function getStatus({
 		src,
 	}) {
-		return isToPrint({
-			val: resumeObj.get().files?.[src],
+		return getStatusObj({
+			value: Boolean(resumeObj.get().files?.[src]),
 		});
 	}
 
-	function togglePrint({
+	function toggleStatus({
 		src,
 	}) {
 		const resumed = resumeObj.get();
-		// 0 - not to print, but show in list.
-		// 1 - to print.
-		const printed = isToPrint({
-			val: resumed.files[src]?.cnt
-		});
+		const printed = Boolean(resumed.files[src]?.cnt);
 
-		// toggle.
 		if (printed) {
 			resumed.files = updateFiles.delete({
 				files: resumed.files,
-				photoSrc: src,
-				Comp,
+				id: src,
 			});
 		}
 		else {
 			resumed.files = updateFiles.add({
 				files: resumed.files,
-				photoSrc: src,
-				cnt: 1,
-				Comp,
+				id: src,
+				item: {
+					cnt: 1,
+				}
 			});
 		}
 
@@ -332,14 +333,9 @@ function getAPI({
 			},
 		});
 
-		return !printed;
-	}
-
-	function getFilesToPrint(props = {}) {
-		const {
-			state,
-		} = deps;
-		return props.photoSrc ? state.files[props.photoSrc] : state.files;
+		return getStatusObj({
+			value: !printed,
+		});
 	}
 }
 
@@ -354,12 +350,6 @@ function getInitialState({
 	};
 }
 
-function isToPrint({
-	val,
-}) {
-	return [undefined, 0].includes(val) ? false : true;
-}
-
 function getComps({
 	channelComps,
 }) {
@@ -369,6 +359,7 @@ function getComps({
 		Dialog,
 		Browse,
 	} = channelComps;
+
 	return {		
 		items: {
 			App,
@@ -478,9 +469,7 @@ function getSavedState({state}) {
 }
 
 function getStateDefault() {
-	return {
-		// filesToPrint or printedFiles from folder.
-		files: {},
+	return {		
 		// используется, когда нельзя записать все файлы на флешку разом. 
 		// Тогда надо выбрать конкретные, поставив галочку.
 		requiredFilesToPrint: {}, 
@@ -489,8 +478,11 @@ function getStateDefault() {
 		isCopyingScript: false,
 		isFilesExcess: false,
 		isEmpty: false,
+		scrollTo: "",
 
 		// props
+		// filesToPrint or printedFiles from folder.
+		files: {},
 		printed: "", // printed folder name.
 		onBackToPrinted: "", // callback to printed.
 	};

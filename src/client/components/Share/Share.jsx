@@ -1,148 +1,212 @@
-import React from 'react';
-import { getFileDateSrcKey, tempReducer } from '../../functions';
-import { Selector } from '../';
+import React, {useMemo} from 'react';
+import { channel } from '../../channel';
+import { useMutedReducer } from '../../mutedReducer';
+import { Empty } from '../Empty/Empty';
+import { updateFiles } from '../../functions';
+import { ShareItems } from './components/ShareItems';
 
 const ADDRESSEES = [
-  'Мамао', 
-  'Мама', 
-  'Минаев', 
-  'Феликс',
-  'Любимая',
-  'ГорячеваЛариса',
-  'Вика',
-  'Женя',
-  'Эля',
-  'Польза',
+	'Мамао',
+	'Мама',
+	'Любимая',
 ];
 
-export function Share({
-  PhotoStatusesAPI,
-}) {
-  const [state, setState] = React.useReducer(tempReducer, getInitState({
-    filesWithStatuses: PhotoStatusesAPI.getFilesWithStatuses(),
-  }));
-
-  Object.assign(
-    Share,
-    getFilesSrc,
-    getFilesTitle,
-    getAdresses,
-  );
-
-  const onCancelShare = React.useCallback((e) => {
-    const fileElement = e.target;
-    const fileSrc = fileElement.getAttribute('keyid');
-    const file = state.files[fileSrc];
-    file.setToShare({
-      flag: false,
-    });
-    setState({
-      forceUpdate: !state.forceUpdate,
-    });
-  }, []);
-
-  const onChangeFilesTitle = React.useCallback((e) => {
-    setState({
-      filesTitle: e.target.value,
-    });
-  }, []);
-
-  const onChangeAddresses = React.useCallback(({
-    selectedItems,
-  }) => {
-    setState({
-      addresses: selectedItems,
-    });
-  }, []);
-
-  return (
-    <div className="Share">
-      <div>2020-10-11</div>
-      <div>Кому</div>
-      <Selector
-        onChange={onChangeAddresses}
-        options={ADDRESSEES}
-      ></Selector>
-      <div>Сообщение</div>
-      <div>
-        <input 
-          placeholder="подпиши фото"
-          allowClear
-          onChange={onChangeFilesTitle}
-          value={state.filesTitle}
-        />
-      </div>
-      { renderItems() }
-    </div>
-  );
-
-  function renderItems() {
-    return (
-      <div className="PrintItems">
-        {
-          Object.entries(state.files)
-          .map(([fileSrc, { toShare }]) => {
-            return (          
-              <div 
-                className="rowData"
-                key={fileSrc}
-                photosrc={fileSrc}
-              >
-                <div
-                  className='fitPreview100 file marginRight10'
-                  style={{ 
-                    'backgroundImage': `url(${fileSrc})`,
-                    'opactity': toShare === true ? 1 : 0.3, 
-                  }}
-                >
-                </div>              
-                <input 
-                  type="button" 
-                  keyid={fileSrc}
-                  className="marginRight10" 
-                  onClick={onRemoveFile} 
-                  value={toShare === true ? "Отменить" : "Подтвердить"} />
-              </div>
-            )
-          })
-        }
-      </div>
-    );
-  }
-
-  function getFilesSrc() {
-    return Object.keys(state.filesWithStatuses);
-  } 
-  function getFilesTitle() {
-    return state.filesTitle;
-  }
-  function getAdresses() {
-    return state.addresses;
-  }
-}
-
-Share.getReqProps = (
-) => {
-  return {};
-}
-
-Share.getAPI = () => ({
-  getItems: () => ({
-    names: Share.getAddresses().map((item) => ({
-      name: item,
-      title: Share.getFilesTitle(),
-    })),
-    files: Share.getFilesSrc(),
-  })
+export const Share = channel.addComp({
+	name: 'Share',
+	render,
+	getAPI,
+	getComps,
+	getResumeObj,
 });
 
-function getInitState({
-  filesWithStatuses,
+function render() {
+	const Comp = this;
+	const resumeObj = Comp.getResumeObj();
+
+	const initialState = useMemo(() => {
+		return {
+			...getInitialState(),
+			...resumeObj.get(),
+		};
+	}, []);
+
+	const [state, setState] = useMutedReducer({
+		reducer,
+		setCompDeps: Comp.setCompDeps,
+		initialState,
+	});
+
+	const onCancelShare = React.useCallback((e) => {
+		const fileElement = e.target;
+		const fileSrc = fileElement.getAttribute('keyid');
+		const file = state.files[fileSrc];
+		
+		file.setToShare({
+			flag: false,
+		});
+		
+		setState({
+			forceUpdate: !state.forceUpdate,
+		});
+	}, []);
+
+	const onChangeFilesTitle = React.useCallback((e) => {
+		setState({
+			filesTitle: e.target.value,
+		});
+	}, []);
+
+	const onChangeAddresses = React.useCallback(({
+		selectedItems,
+	}) => {
+		setState({
+			addresses: selectedItems,
+		});
+	}, []);
+
+	return (
+		<div className="Share layout">			
+			{state.isEmpty 
+			? <Empty />
+			: <ShareItems
+				sources={state.files}
+			/>
+			}
+		</div>
+	);
+}
+
+function getFilesSrc({
+	Comp,	
 }) {
-  return {
-    filesWithStatuses,
-    filesTitle: '',
-    addresses: [],
-    forceUpdate: false,
-  };
+	const {state} = Comp.getDeps();
+	return Object.keys(state.files);
+}
+function getFilesTitle({
+	Comp,
+}) {
+	const {state} = Comp.getDeps();
+	return state.filesTitle;
+}
+function getAddresses({
+	Comp,
+}) {
+	const {state} = Comp.getDeps();
+	return state.addresses;
+}
+
+function getAPI({
+	Comp,
+	resumeObj,
+}) {
+	return ({
+		getItems: () => ({
+			names: getAddresses({Comp}).map((item) => ({
+				name: item,
+				title: getFilesTitle({Comp}),
+			})),
+			files: getFilesSrc({Comp}),
+		}),
+		getStatus,
+		toggleStatus,
+	});
+
+
+	// ------------------------------------
+
+	function getStatusObj({
+		value,
+	}) {
+		return {
+			toShare: value,
+		};
+	}
+
+	function toggleStatus({
+		src,
+	}) {
+		const resumed = resumeObj.get();
+		const shared = Boolean(resumed.files[src]);
+
+		if (shared) {
+			resumed.files = updateFiles.delete({
+				files: resumed.files,
+				id: src,
+			})
+		}
+		else {
+			resumed.files = updateFiles.add({
+				files: resumed.files,
+				id: src,
+				item: {
+					to: "",
+				},
+			});
+		}
+
+		resumeObj.save({
+			val: {
+				files: resumed.files,
+			},
+		});
+
+		return getStatusObj({
+			value: !shared,
+		});
+	}
+
+	function getStatus({
+		src,
+	}) {
+		return getStatusObj({
+			value: Boolean(resumeObj.get().files?.[src]),
+		});
+	}
+}
+
+function getResumeObj({name}) {
+	return {
+		selector: [
+			name,
+		],
+		val: getInitialState(),
+	};
+}
+
+function reducer({
+	state,
+	stateUpd,
+}) {
+	const stateNew = {
+		...state,
+		...stateUpd,
+	};
+
+	stateNew.isEmpty = Object.keys(stateNew.files).length === 0;
+
+	return stateNew;
+}
+
+function getComps({
+	channelComps,
+}) {
+	const {
+		PhotoStatuses,
+	} = channelComps;
+
+	return {
+		items: {
+			PhotoStatuses,
+		},
+	};
+}
+
+function getInitialState(
+) { 
+	return {
+		files: {},
+		filesTitle: '',
+		addresses: [],
+		forceUpdate: false,
+	};
 }

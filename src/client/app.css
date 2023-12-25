@@ -1,17 +1,17 @@
 :root {
-  --main-browse-size: 300px;
-  --print-gap-between-rows: 120px;
-  --base-gap: 20px;
-  --white: white;
-  --color-golden: goldenrod;
-  --red: red;
-  --black: black;
-  --blue: lightskyblue;
-  --offset: 2px;
-  --offset-2x: 4px;
-  --offset-3x: 6px;
-  --offset-4x: 8px;
-  --offset-5x: 10px;
+	--main-browse-size: 300px;
+	--print-gap-between-rows: 120px;
+	--base-gap: 20px;
+	--white: white;
+	--color-golden: goldenrod;
+	--red: red;
+	--black: black;
+	--blue: lightskyblue;
+	--offset: 2px;
+	--offset-2x: 4px;
+	--offset-3x: 6px;
+	--offset-4x: 8px;
+	--offset-5x: 10px;
 }
 
 html,
@@ -19,197 +19,212 @@ body,
 #explorer,
 .f-photo,
 iframe {
-  height: 100%;
+	height: 100%;
 }
 
 body {
-  margin: 0;
-  font-family: Tahoma;
+	margin: 0;
+	font-family: Tahoma;
 }
 
 .scroll-to::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: inherit;
-  height: inherit;
-  border: 8px solid var(--red);
-  z-index: 90;
+	content: '';
+	position: absolute;
+	left: 0;
+	top: 0;
+	width: inherit;
+	height: inherit;
+	border: 8px solid var(--red);
+	z-index: 90;
 }
 
 iframe,
 .f-photo {
-  width: 100%;
-  border: 0;
+	width: 100%;
+	border: 0;
 }
 
 #explorer {
-  display: flex;
-  width: 100%;
+	display: flex;
+	width: 100%;
 }
 
 #leftWindow,
 #rightWindow {
-  flex: 2 1 50%; 
-  overflow: hidden;
+	flex: 2 1 50%;
+	overflow: hidden;
 }
 
 #rightWindow {
-  border-left: 1px solid;
+	border-left: 1px solid;
 }
 
 .positionRel {
-  position: relative;
+	position: relative;
 }
 
 .positionAbs {
-  position: absolute;
-  z-index: 100;
+	position: absolute;
+	z-index: 100;
 }
 
 .f-photo {
-  display: flex;
-  flex-direction: column;
-  font-size: 24px;
+	display: flex;
+	flex-direction: column;
+	font-size: 24px;
 }
 
 .Action {
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
+	width: 100%;
+	height: 100%;
+	overflow: hidden;
 }
+
 .action .title {
-  padding: 5px;
-  margin-right: 5px;
-  margin-top: 5px;
-  background-color: white;
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.2), 0 1px 11px 0 rgba(0, 0, 0, 0.19);
-  border: 1px solid #ddd;
-  border-radius: 4px;
+	padding: 5px;
+	margin-right: 5px;
+	margin-top: 5px;
+	background-color: white;
+	box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.2), 0 1px 11px 0 rgba(0, 0, 0, 0.19);
+	border: 1px solid #ddd;
+	border-radius: 4px;
 }
 
 .flex {
-  display: flex;
+	display: flex;
 }
 
 .flexDirColumn {
-  flex-direction: column;
+	flex-direction: column;
 }
 
 .flexJustConStart {
-  justify-content: flex-start;
+	justify-content: flex-start;
 }
 
 .flexAlignItemsCenter {
-  align-items: center;
+	align-items: center;
 }
 
 .marginRight10 {
-  margin-right: 10px;
+	margin-right: 10px;
 }
 
 .marginBottom10 {
-  margin-bottom: 10px;
+	margin-bottom: 10px;
 }
 
 .overFlowHidden {
-  overflow: hidden;
+	overflow: hidden;
 }
 
 .flexCenter {
-  display: flex!important;
-  justify-content: center;
-  align-items: center;
+	display: flex !important;
+	justify-content: center;
+	align-items: center;
 }
 
 .height100pr {
-  height: 100%;
+	height: 100%;
 }
 
 .width100pr {
-  width: 100%;
+	width: 100%;
 }
 
 .mainFont {
-  font-size: 24px;
-  text-align: center;
+	font-size: 24px;
+	text-align: center;
 }
 
 .textCenter {
-  text-align: center;
+	text-align: center;
 }
 
 .attention {
-  animation: glowing 1000ms infinite;
+	animation: glowing 1000ms infinite;
 }
 
 @-webkit-keyframes glowing {
-  0% { background-color: #fd9a9a; }
-  50% { background-color: #FF0000; }
-  100% { background-color:#fd9a9a; }
+	0% {
+		background-color: #fd9a9a;
+	}
+
+	50% {
+		background-color: #FF0000;
+	}
+
+	100% {
+		background-color: #fd9a9a;
+	}
 }
 
 .fontSize20 {
-  font-size: 20px;
+	font-size: 20px;
 }
 
 .fitPreview {
-  height: var(--main-browse-size);
-  width: var(--main-browse-size);
+	height: var(--main-browse-size);
+	width: var(--main-browse-size);
 }
 
 .fitPreview100 {
-  width: 100px;
-  height: 100px;
+	width: 100px;
+	height: 100px;
 }
 
 .fitPreview100,
-.fitPreview {  
-  padding: 5px;
-  margin-right: 5px;
-  margin-top: 5px;
-  background-color: white;
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.2), 0 1px 11px 0 rgba(0, 0, 0, 0.19);
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  background-repeat: no-repeat;
-  background-position: center center;
-  background-size: contain;
+.fitPreview {
+	padding: 5px;
+	margin-right: 5px;
+	margin-top: 5px;
+	background-color: white;
+	box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.2), 0 1px 11px 0 rgba(0, 0, 0, 0.19);
+	border: 1px solid #ddd;
+	border-radius: 4px;
+	background-repeat: no-repeat;
+	background-position: center center;
+	background-size: contain;
 }
 
 .layout {
-  position: relative;
-  display: flex;
-  align-content: flex-start;
-  flex-wrap: wrap;
-  height: 100%;
-  overflow-y: auto;
+	position: relative;
+	display: flex;
+	align-content: flex-start;
+	flex-wrap: wrap;
+	height: 100%;
+	overflow-y: auto;
 }
 
-.itemSelector {  
-  --size: 40px;
+.layout-items {
+	display: flex;
+	flex-flow: wrap;
+}
 
-  left: 4px;
-  bottom: 4px; 
-  width: var(--size);
-  height: var(--size);
-} 
+.itemSelector {
+	--size: 40px;
+
+	left: 4px;
+	bottom: 4px;
+	width: var(--size);
+	height: var(--size);
+}
 
 .ant-spin {
-  position: absolute;
-  top: 40px;
-  width: 100%;
-  z-index: 10000;
+	position: absolute;
+	top: 40px;
+	width: 100%;
+	z-index: 10000;
 }
 
-.btns > div, .btn {
-  padding: 5px;
-  user-select: none;
-  margin-right: 5px;
-  margin-top: 5px;
-  background-color: white;
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.2), 0 1px 11px 0 rgba(0, 0, 0, 0.19);
-  border: 1px solid #ddd;
-  border-radius: 4px;
+.btns>div,
+.btn {
+	padding: 5px;
+	user-select: none;
+	margin-right: 5px;
+	margin-top: 5px;
+	background-color: white;
+	box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.2), 0 1px 11px 0 rgba(0, 0, 0, 0.19);
+	border: 1px solid #ddd;
+	border-radius: 4px;
 }

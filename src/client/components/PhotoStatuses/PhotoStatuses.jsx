@@ -1,122 +1,124 @@
 import './styles.css';
 import React from 'react';
-import { ResumeObj } from '../../resumeObj';
 import { channel } from '../../channel';
-import { Print } from '../';
 import { useMutedReducer } from '../../mutedReducer';
 
 
 
 export const PhotoStatuses = channel.addComp({
-  name: 'PhotoStatuses',
-  render,
-  getAPI,
-  getReqProps,
+	name: 'PhotoStatuses',
+	render,
+	getAPI,
+	getComps,
+	getReqProps,	
 });
 
-const resumeObj = new ResumeObj({
-  selector: [
-    PhotoStatuses.name,
-  ],
-  val: getStateInit(),
-});
 
 function render(
-  props,
+	props,
 ) {
-  const [state] = useMutedReducer({
-    initialState: {
-      ...getStateInit(),
-    },
-    setCompDeps: ({
-      deps,
-    }) => this.setCompDeps({
-      deps: {
-        ...deps,
-        id: props.id,
-      },
-    }),
-    fn: ({
-      stateUpd,
-    }) => {
-      resumeObj.save({ 
-        val: stateUpd,
-      });
-    },
-  });
+	const Comp = this;
 
-  React.useEffect(
-    () => {
-      const rp = this.getReqProps();
-      const statusesUpd = rp.checkStatuses.reduce((res, check) => {
-        const status = Object.keys(getStateInit()).find((status) => new RegExp(status, 'i').test(check.name));
-        res[status] = check({
-          src: props.id,
-        });
-        return res;
-      },
-      {});
-      this.deps.setState(statusesUpd);
-    },
-    [props.id]
-  );
+	const [state, setState] = useMutedReducer({
+		initialState: {
+			id: "",
+			// ...statuses.
+		},
+		props,
+		setCompDeps: Comp.setCompDeps,
+	});
 
-  const statuses = getStatuses();
+	React.useEffect(
+		() => {
+			const statusesUpd = {};			
+			const rp = Comp.getReqProps();
 
-  return (statuses.length === 0) ? null : (
-    <div className="PhotoStatusIcons">
-      { statuses }
-    </div>
-  );
+			rp.statusesAPI.forEach((statusAPI) => {
+				const status = statusAPI.getStatus({
+					src: props.id,
+				});
+
+				Object.assign(
+					statusesUpd,
+					status,
+				);					
+			});
+			
+
+			setState(statusesUpd);
+		},
+		[props.id]
+	);
+
+	const statuses = getStatuses();
+
+	return (statuses.length === 0) ? null : (
+		<div className="PhotoStatusIcons">
+			{statuses}
+		</div>
+	);
 
 
-  // ----------------------------------
-  function getStatuses() {
-    return Object.entries(state)
-      .map(([status, val]) => {
-        return val === false ? null : (
-          <img key={status} src={`${status}.png`} />
-        );
-      })
-      .filter((status) => status);     
-  }
+	// ----------------------------------
+	function getStatuses() {
+		const {
+			id,
+			...statuses
+		} = state;
+
+		return Object.entries(statuses).map(
+				([status, value]) => {
+					return value === false ? null : (
+						<img key={status} src={`${status}.png`} />
+					);
+				}
+			)
+			.filter((status) => status);
+	}
 }
 
 function getReqProps({
-  channel,
+	comps,
 }) {
-  const PrintAPI = Print.getAPI();
-  return {
-    PrintAPI,
-    checkStatuses: [
-      PrintAPI.isFileToPrint,
-    ],
-  };
+	return {
+		statusesAPI: [
+			comps.PrintAPI, 
+			comps.ShareAPI
+		],
+	};
+}
+
+function getComps({
+	channelComps,
+}) {
+	const {
+		Print,
+		Share,
+	} = channelComps;
+
+	return {
+		items: {
+			Print,
+			Share,
+		},
+	};
 }
 
 function getAPI({
-  deps,
+	Comp,
 }) {
-  // Create auto-generated list of fns to toggle status.
-  return {
+	const deps = Comp.getDeps();
 
-    changePrintStatus: () => {
-      const rp = PhotoStatuses.getReqProps();
-      const statusUpd = rp.PrintAPI.togglePrint({
-        src: deps.id,
-      });
-      deps.setState({
-        toPrint: statusUpd,
-      });
-    }, 
-  }
+	return {
+		changeStatus: ({Comp}) => {
+			const CompAPI = Comp.getAPI();
+			const statusUpd = CompAPI.toggleStatus({
+				src: deps.state.id,
+			});
+
+			deps.setState(statusUpd);
+		},
+	}
 };
-
-function getStateInit() {
-  return {
-    toPrint: false,
-    toShare: false,
-  };
-}
 
 

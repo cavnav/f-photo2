@@ -1,6 +1,4 @@
-// update version
-// forward to photo location from print by click
-	// close onePhoto on remove last photo.
+// after remove in Browse mode scroll to next item.
 // whatsapp / telegram.
 // connect android by wifi
 
@@ -158,10 +156,11 @@ function getAppStateInit() {
 				title: 'Архив печатей',
 				isEnabled: true,
 			},
-			// {
-			// 	id: Share.name,
-			// 	title: 'Отправить',
-			// },
+			{
+				id: Share.name,
+				title: 'Отправить',
+				isEnabled: true,
+			},
 			// Help: {
 			//   title: '?',
 			//   isEnabled: true,
@@ -228,6 +227,7 @@ function getComps({
 		OnePhoto,
 		Welcome,
 		PrintedComp,
+		Share,
 	} = channelComps;
 
 	return {
@@ -238,6 +238,7 @@ function getComps({
 			OnePhoto,
 			Welcome,
 			PrintedComp,
+			Share,
 		}
 	}
 }

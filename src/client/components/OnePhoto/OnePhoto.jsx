@@ -198,15 +198,18 @@ function render(
 			filesLength: files.items.length,
 		});
 		const rp = Comp.getReqProps();
+		const comps = Comp.getComps();
 		const stateUpd = {};
 
 		switch (e.which) {
 			case 13: // enter.
-				rp.PhotoStatusesAPI.changeShareStatus();
+				rp.PhotoStatusesAPI.changeStatus({Comp: comps.Share});
+				refreshOppositeWindow();
+
 				break;
 
 			case 32:  // Space
-				rp.PhotoStatusesAPI.changePrintStatus();
+				rp.PhotoStatusesAPI.changeStatus({Comp: comps.Print});
 				refreshOppositeWindow();
 
 				break;
@@ -426,6 +429,8 @@ function getComps({
 		ToggleWindow,
 		Label,
 		Dialog,
+		Print,
+		Share,
 	} = channelComps;
 
 	return {
@@ -441,6 +446,8 @@ function getComps({
 			AdditionalPanel,
 			PhotoStatuses,
 			Dialog,
+			Print,
+			Share,
 		},
 	};
 }

@@ -1,8 +1,3 @@
-.PrintItems {
-  display: flex;
-  flex-flow: wrap;
-}
-
 .PrintItems .fitPreview.file {
   margin-bottom: var(--print-gap-between-rows);
 }

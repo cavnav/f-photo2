@@ -636,3 +636,22 @@ export function scrollToSelector({selector}) {
 		}
 	}
 }
+
+export const updateFiles = {
+	update(props) {
+		props.files[props.id] = {
+			...files[props.id],
+			...props.item,
+		};
+		return props.files;
+	},
+	add(props) {
+		props.files[props.id] = props.item;
+		return props.files;
+
+	},
+	delete(props) {
+		delete props.files[props.id];
+		return props.files;
+	},
+}

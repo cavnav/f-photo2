@@ -308,11 +308,6 @@ app.get('/api/checkProgress', (req, res) => {
 	});
 });
 
-app.get('/api/saveChanges', (req, res) => {
-	let { action } = req.query;
-	res.redirect(action);
-});
-
 app.get('/api/remove', async (req, res) => {
 	const {
 		file,
