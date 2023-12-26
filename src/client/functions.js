@@ -403,7 +403,7 @@ export function onMoveSelections({
 }
 
 export function notifyServerError(error) {
-	const {DialogAPI} = getComps({
+	const {DialogAPI} = getChannelComps({
 		callback: ({
 			Dialog,
 		}) => ({items: {Dialog}}),
@@ -420,7 +420,7 @@ export function notifyServerError(error) {
 export function loader({
 	isActive,
 }) {
-	const {DialogAPI} = getComps({
+	const {DialogAPI} = getChannelComps({
 		callback: ({
 			Dialog,
 		}) => ({items: {Dialog}}),
@@ -455,7 +455,7 @@ export function checkProgress({
 	return new Promise((resolve) => {
 		coreFunc();
 
-		const {DialogAPI} = getComps({
+		const {DialogAPI} = getChannelComps({
 			callback: ({
 				Dialog,
 			}) => ({items: {Dialog}}),
@@ -565,7 +565,7 @@ function updateHtmlSelectors({handler}) {
 	});	
 }
 
-export function getComps({callback}) {
+export function getChannelComps({callback}) {
 	const required = callback?.(channel.comps);
     return getCompsAPI(required);
 }

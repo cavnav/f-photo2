@@ -4,6 +4,7 @@ import { useMutedReducer } from '../../mutedReducer';
 import { Empty } from '../Empty/Empty';
 import { updateFiles } from '../../functions';
 import { ShareItems } from './components/ShareItems';
+import { useShareActions } from './useShareActions';
 
 const ADDRESSEES = [
 	'Мамао',
@@ -34,6 +35,16 @@ function render() {
 		reducer,
 		setCompDeps: Comp.setCompDeps,
 		initialState,
+	});
+
+	const comps = Comp.getComps();
+
+	useShareActions({
+		additionalPanelRender: comps.AdditionalPanelAPI.renderIt,
+		isSelectTo: state.isSelectTo,
+		isBackwardToPhotos: state.isBackwardToPhotos,
+		onSelectTo: onThisSelectTo({Comp}),
+		onBackwardToPhotos: onThisBackwardToPhotos({Comp}),
 	});
 
 	const onCancelShare = React.useCallback((e) => {
@@ -192,13 +203,39 @@ function getComps({
 }) {
 	const {
 		PhotoStatuses,
+		AdditionalPanel,
 	} = channelComps;
 
 	return {
 		items: {
 			PhotoStatuses,
+			AdditionalPanel,
 		},
 	};
+}
+
+function onThisSelectTo({
+	Comp
+}) {
+	return (event) => {
+		const {state, setState} = Comp.getDeps();
+		setState({
+			isSelectTo: false,
+			isBackwardToPhotos: true,
+		});
+	};
+}
+
+function onThisBackwardToPhotos({
+	Comp,
+}) {
+	return (event) => {
+		const {state, setState} = Comp.getDeps();
+		setState({
+			isBackwardToPhotos: false,
+			isSelectTo: true,
+		});
+	}
 }
 
 function getInitialState(
@@ -208,5 +245,7 @@ function getInitialState(
 		filesTitle: '',
 		addresses: [],
 		forceUpdate: false,
+		isSelectTo: true,
+		isBackwardToPhotos: false,
 	};
 }
