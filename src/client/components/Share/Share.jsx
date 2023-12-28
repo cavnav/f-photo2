@@ -5,12 +5,8 @@ import { Empty } from '../Empty/Empty';
 import { updateFiles } from '../../functions';
 import { ShareItems } from './components/ShareItems';
 import { useShareActions } from './useShareActions';
+import { Recipients } from './shareSteps';
 
-const ADDRESSEES = [
-	'Мамао',
-	'Мама',
-	'Любимая',
-];
 
 export const Share = channel.addComp({
 	name: 'Share',
@@ -41,8 +37,8 @@ function render() {
 
 	useShareActions({
 		additionalPanelRender: comps.AdditionalPanelAPI.renderIt,
-		isSelectTo: state.isSelectTo,
-		isBackwardToPhotos: state.isBackwardToPhotos,
+		isButtonSelectTo: state.isButtonSelectTo,
+		isButtonBackwardToPhotos: state.isButtonBackwardToPhotos,
 		onSelectTo: onThisSelectTo({Comp}),
 		onBackwardToPhotos: onThisBackwardToPhotos({Comp}),
 	});
@@ -76,13 +72,16 @@ function render() {
 	}, []);
 
 	return (
-		<div className="Share layout">			
-			{state.isEmpty 
-			? <Empty />
-			: <ShareItems
-				sources={state.files}
-			/>
-			}
+		<div className="Share layout">		
+			{state.isButtonBackwardToPhotos 
+			?	<Recipients />
+			: state.isEmpty 
+				? <Empty />
+				: <ShareItems
+					sources={state.files}
+				/>
+			}	
+			
 		</div>
 	);
 }
@@ -220,8 +219,8 @@ function onThisSelectTo({
 	return (event) => {
 		const {state, setState} = Comp.getDeps();
 		setState({
-			isSelectTo: false,
-			isBackwardToPhotos: true,
+			isButtonSelectTo: false,
+			isButtonBackwardToPhotos: true,
 		});
 	};
 }
@@ -230,10 +229,10 @@ function onThisBackwardToPhotos({
 	Comp,
 }) {
 	return (event) => {
-		const {state, setState} = Comp.getDeps();
+		const {setState} = Comp.getDeps();
 		setState({
-			isBackwardToPhotos: false,
-			isSelectTo: true,
+			isButtonBackwardToPhotos: false,
+			isButtonSelectTo: true,
 		});
 	}
 }
@@ -245,7 +244,7 @@ function getInitialState(
 		filesTitle: '',
 		addresses: [],
 		forceUpdate: false,
-		isSelectTo: true,
-		isBackwardToPhotos: false,
+		isButtonSelectTo: true,
+		isButtonBackwardToPhotos: false,
 	};
 }

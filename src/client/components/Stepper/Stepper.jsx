@@ -102,7 +102,9 @@ const stepStruct = {
     photoSrc: ({ key, step }) => <div className="imgBlock marginBottom10" key={key}>
         <img className="copyWizardImg" src={step.photoSrc} />
     </div>,
-    toRender: ({ key, step, nextStepBtn }) => <div key={key}>{step.toRender({ step, nextStepBtn })}</div>,
+    toRender: ({ key, step, nextStepBtn }) => {
+        return <div key={key}>{step.toRender({ step, nextStepBtn })}</div>;
+    },
 };
 
 const initialState = {

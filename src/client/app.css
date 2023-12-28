@@ -173,7 +173,13 @@ iframe,
 	height: 100px;
 }
 
+.fitPreview150 {
+	width: 150px;
+	height: 150px;
+}
+
 .fitPreview100,
+.fitPreview150,
 .fitPreview {
 	padding: 5px;
 	margin-right: 5px;

@@ -4,8 +4,8 @@ import { getChannelComps } from '../../functions';
 
 export function useShareActions({
     additionalPanelRender: render,
-    isSelectTo,
-    isBackwardToPhotos,
+    isButtonSelectTo,
+    isButtonBackwardToPhotos,
     onSelectTo,
     onBackwardToPhotos,
 }) {
@@ -29,13 +29,13 @@ export function useShareActions({
             })
             .then(
                 () => {
-                    if (isSelectTo) {
+                    if (isButtonSelectTo) {
                         SelectToAPI.forceUpdate({
                             title: 'Выбрать получателей',
                             onClick: onSelectTo,
                         });
                     }
-                    if (isBackwardToPhotos) {
+                    if (isButtonBackwardToPhotos) {
                         BackwardToPhotosAPI.forceUpdate({
                             title: 'Вернуться к фото',
                             onClick: onBackwardToPhotos,
@@ -51,7 +51,7 @@ export function useShareActions({
                 });
             };
         },
-        [isSelectTo, isBackwardToPhotos]
+        [isButtonSelectTo, isButtonBackwardToPhotos]
     );
 }
 
