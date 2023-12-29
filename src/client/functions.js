@@ -655,3 +655,13 @@ export const updateFiles = {
 		return props.files;
 	},
 }
+
+export function getOnClickItem({
+	eventHandlers,
+}) {
+	return (event) => {
+		const eventHandler = event.target.getAttribute('handler');
+		eventHandlers[eventHandler]?.(event);
+	};
+};
+	

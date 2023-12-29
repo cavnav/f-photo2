@@ -16,6 +16,8 @@ const app = express();
 const ALBUM_DIR = path.join(path.resolve('../../'), 'album');
 const PRINTED_DIR = path.join(ALBUM_DIR, 'printed');
 const PRINTED_JSON = path.join(PRINTED_DIR, 'printed.json');
+const SHARED_DIR = path.resolve('../../shared');
+const RESPONSE_WORKING = "WORKING";
 
 
 let state = {
@@ -48,30 +50,30 @@ app.listen(8080, () => console.log('listening on port 8080'));
 //app.listen(process.env.PORT || 8080, () => console.log(`Listening on port ${process.env.PORT || 8080}!`));
 
 app.post('/api/share', async (req, response) => {
-	response.send(req.body);
-	const date = getCurMoment();
+	const {
+		files,
+		recipients,
+	} = req.body;
 
-	const sharedFolder = path.resolve(ALBUM_DIR, date);
+	response.send(RESPONSE_WORKING);
+
+	// copy selected files to shared folder.
 	await (async () => {
-		const { filesSrc } = req.body;
 		for (let index = 0; index < files.length; index++) {
-			const fileFrom = path.resolve(ALBUM_DIR, filesSrc[index]);
-			const fileTo = path.resolve(sharedFolder, path.basename(fileFrom));
+			const fileFrom = path.join(ALBUM_DIR, files[index]);
+			const fileTo = path.join(SHARED_DIR, path.basename(fileFrom));
 			await fs.copy(fileFrom, fileTo);
 		}
 	})();
 
-	setState({
-		progress: 100,
-	});
-
 	const whatsappBot = new WhatsappBot({
 		botParams: {
-			names: req.body.names,
-			sharedFolder,
+			recipients,
+			sharedFolder: SHARED_DIR,
 		},
 		onClose: () => { },
 	});
+
 	whatsappBot.run();
 });
 

@@ -2,57 +2,93 @@ import React, {useEffect} from 'react';
 import { getChannelComps } from '../../functions';
 
 
-export function useShareActions({
-    additionalPanelRender: render,
-    isButtonSelectTo,
-    isButtonBackwardToPhotos,
-    onSelectTo,
-    onBackwardToPhotos,
-}) {
+export function useShareActions(props) {
+    const deps = [];
+
     useEffect(
-        () => {
-            const {
+        effectRenderAdditionalActions({props, deps}),
+        deps
+    );
+}
+
+
+
+
+
+function effectRenderAdditionalActions({
+    props,
+    deps,
+}) {
+    const {
+        additionalPanelRender: render,
+        state: {
+            isButtonSelectTo,
+            isButtonBackwardToPhotos,
+            isButtonSend,
+        },    
+        onSelectTo,
+        onBackwardToPhotos,
+        onSend,
+        
+    } = props;
+
+    deps.push(...[
+        isButtonSelectTo, 
+        isButtonBackwardToPhotos,
+        isButtonSend,
+    ]);
+
+    return () => {
+        const {
+            SelectTo,
+            BackwardToPhotos,
+            Send,
+
+            SelectToAPI,
+            BackwardToPhotosAPI,
+            SendAPI,
+            
+        } = getChannelComps({
+            callback: getCompsCallback,
+        });
+
+        render({
+            actions: [
                 SelectTo,
                 BackwardToPhotos,
-
-                SelectToAPI,
-                BackwardToPhotosAPI,
-            } = getChannelComps({
-                callback: getCompsCallback,
-            });
-
-            render({
-                actions: [
-                    SelectTo,
-                    BackwardToPhotos,
-                ],
-            })
-            .then(
-                () => {
-                    if (isButtonSelectTo) {
-                        SelectToAPI.forceUpdate({
-                            title: 'Выбрать получателей',
-                            onClick: onSelectTo,
-                        });
-                    }
-                    if (isButtonBackwardToPhotos) {
-                        BackwardToPhotosAPI.forceUpdate({
-                            title: 'Вернуться к фото',
-                            onClick: onBackwardToPhotos,
-                        });
-                    }
-
+                Send,
+            ],
+        })
+        .then(
+            () => {
+                if (isButtonSelectTo) {
+                    SelectToAPI.forceUpdate({
+                        title: 'Выбрать получателей',
+                        onClick: onSelectTo,
+                    });
                 }
-            );
+                if (isButtonBackwardToPhotos) {
+                    BackwardToPhotosAPI.forceUpdate({
+                        title: 'Вернуться к фото',
+                        onClick: onBackwardToPhotos,
+                    });
+                }
+                if (isButtonSend) {
+                    SendAPI.forceUpdate({
+                        title: 'Отправить',
+                        onClick: onSend,                    
+                    });
+                }
 
-            return () => {
-                render({
-                    actions: []
-                });
-            };
-        },
-        [isButtonSelectTo, isButtonBackwardToPhotos]
-    );
+            }
+        );
+
+        return () => {
+            render({
+                actions: []
+            });
+        };
+    };
 }
 
 function getCompsCallback({
@@ -62,6 +98,7 @@ function getCompsCallback({
         toClone: {
             SelectTo: Label,
             BackwardToPhotos: Label,
+            Send: Label,
         },
     };
 }

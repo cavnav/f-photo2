@@ -1,11 +1,12 @@
-import React, {useMemo} from 'react';
+import React, {useCallback, useMemo} from 'react';
 import { channel } from '../../channel';
 import { useMutedReducer } from '../../mutedReducer';
 import { Empty } from '../Empty/Empty';
 import { updateFiles } from '../../functions';
 import { ShareItems } from './components/ShareItems';
 import { useShareActions } from './useShareActions';
-import { Recipients } from './shareSteps';
+import { Recipients } from './components/Recipients';
+import { fetchWithLoader } from '../../ServerApi';
 
 
 export const Share = channel.addComp({
@@ -35,13 +36,18 @@ function render() {
 
 	const comps = Comp.getComps();
 
+	const onChangeRecipients = useCallback(onThisChangeRecipients({Comp}), []);
+
 	useShareActions({
 		additionalPanelRender: comps.AdditionalPanelAPI.renderIt,
-		isButtonSelectTo: state.isButtonSelectTo,
-		isButtonBackwardToPhotos: state.isButtonBackwardToPhotos,
+		state,
+
 		onSelectTo: onThisSelectTo({Comp}),
 		onBackwardToPhotos: onThisBackwardToPhotos({Comp}),
+		onSend: onThisSend({Comp}),
 	});
+
+
 
 	const onCancelShare = React.useCallback((e) => {
 		const fileElement = e.target;
@@ -72,9 +78,11 @@ function render() {
 	}, []);
 
 	return (
-		<div className="Share layout">		
+		<div className="Share">		
 			{state.isButtonBackwardToPhotos 
-			?	<Recipients />
+			?	<Recipients 
+					onChange={onChangeRecipients}
+				/>
 			: state.isEmpty 
 				? <Empty />
 				: <ShareItems
@@ -225,6 +233,22 @@ function onThisSelectTo({
 	};
 }
 
+function onThisChangeRecipients({
+	Comp,
+}) {
+	return ({
+		items,
+	}) => {
+		const {
+			setStateSilent,
+		} = Comp.getDeps();
+		
+		setStateSilent({
+			recipients: items,
+		});
+	};
+}
+
 function onThisBackwardToPhotos({
 	Comp,
 }) {
@@ -237,6 +261,28 @@ function onThisBackwardToPhotos({
 	}
 }
 
+function onThisSend({Comp}) {
+	return () => {
+		const server = Comp.getServer();
+
+		const {state} = Comp.getDeps();
+
+		const recipients = [];
+		Object.values(state.recipients).forEach((name) => {		
+			const recipient = {
+				name,
+				title: "извини, тестирую",
+			};
+			recipients.push(recipient); 
+		});	
+
+		server.share({
+			files: Object.keys(state.files), 
+			recipients,
+		});
+	};
+}
+
 function getInitialState(
 ) { 
 	return {
@@ -244,7 +290,9 @@ function getInitialState(
 		filesTitle: '',
 		addresses: [],
 		forceUpdate: false,
+		recipients: {},
 		isButtonSelectTo: true,
 		isButtonBackwardToPhotos: false,
+		isButtonSend: true,
 	};
 }

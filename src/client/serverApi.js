@@ -45,7 +45,7 @@ export class AppServerAPI {
 
 	// не смог использовать function - declaration. В channel.addAPI контекст теряется.
 
-	$share = (params) => {
+	share = (params) => {
 		return fetch(
 			this.getFullUrl({ url: 'share' }),
 			new PostObjTmp({
