@@ -3,7 +3,6 @@ export { Notification } from './Notification/Notification';
 export { Label } from './Label/Label';
 export { AddAlbum } from './AddAlbum/AddAlbum';
 export { Dirs } from './Dirs/Dirs';
-export { Copying } from './Copying/Copying';
 export { ControlPanel } from './ControlPanel/ControlPanel';
 export { AdditionalPanel} from './AdditionalPanel/AddPanel';
 export { Stepper } from './Stepper/Stepper';

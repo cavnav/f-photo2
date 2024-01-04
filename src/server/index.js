@@ -1,15 +1,12 @@
 
-const WhatsappBot = require('./scriptWhatsappBot');
-
 const express = require('express');
 const bodyParser = require('body-parser');
 const fs = require('fs-extra');
-const Jimp = require('jimp');
 const path = require('path');
 const usbDetect = require('usb-detection');
 const drivelist = require('drivelist');
 const find = require('find');
-
+const SharedBot = require('./scriptRunSharedBot');
 
 const app = express();
 
@@ -18,6 +15,7 @@ const PRINTED_DIR = path.join(ALBUM_DIR, 'printed');
 const PRINTED_JSON = path.join(PRINTED_DIR, 'printed.json');
 const SHARED_DIR = path.resolve('../../shared');
 const RESPONSE_WORKING = "WORKING";
+const CHAT_IDS_FILE = path.join(__dirname, './chatIDs.json');
 
 
 let state = {
@@ -32,6 +30,7 @@ let state = {
 	rightWindow: ALBUM_DIR,
 	usbDriveLetter: undefined,
 	reqBody: {},
+	error: '',
 };
 
 
@@ -49,13 +48,48 @@ app.listen(8080, () => console.log('listening on port 8080'));
 
 //app.listen(process.env.PORT || 8080, () => console.log(`Listening on port ${process.env.PORT || 8080}!`));
 
+app.get('/api/getSharedRecipients', async (req, response) => {
+	const recipients = await getRecipients();
+
+	const recipientsUpd = Object.values(recipients).map(({
+		id,
+		first_name,
+	}) => {
+		return {
+			id,
+			name: first_name,
+		};
+	});
+
+	response.send({
+		recipients: recipientsUpd,
+	});
+
+	async function getRecipients() {
+		// Load chat IDs from chatIDsFile (Replace this with your own logic)
+		try {
+			const data = fs.readFileSync(CHAT_IDS_FILE, 'utf8');
+			const chatIDs = JSON.parse(data);
+			return chatIDs;
+		} catch (err) {
+			console.error('Error reading chat IDs file:', err);
+			return [];
+		}
+	}
+});
+
 app.post('/api/share', async (req, response) => {
 	const {
 		files,
 		recipients,
 	} = req.body;
 
+	setState({
+		progress: 0,
+	});
+
 	response.send(RESPONSE_WORKING);
+
 
 	// copy selected files to shared folder.
 	await (async () => {
@@ -66,15 +100,26 @@ app.post('/api/share', async (req, response) => {
 		}
 	})();
 
-	const whatsappBot = new WhatsappBot({
+
+	const Bot = new SharedBot({
 		botParams: {
 			recipients,
 			sharedFolder: SHARED_DIR,
 		},
-		onClose: () => { },
+		onClose: () => { 
+			setState({
+				progress: 100,
+			});
+		},
+		onError: (error) => {
+			setState({
+				progress: 100,
+				error,
+			});
+		},
 	});
 
-	whatsappBot.run();
+	Bot.run();
 });
 
 app.get('/api/getUsbDevices', (req, res) => {
@@ -307,6 +352,7 @@ app.post('/api/towardPrinted', async (req, res) => {
 app.get('/api/checkProgress', (req, res) => {
 	res.send({
 		progress: state.progress,
+		error: state.error,
 	});
 });
 
@@ -321,26 +367,6 @@ app.get('/api/remove', async (req, res) => {
 	function resolve() {
 		res.send(req.query);
 	}
-});
-
-app.get('/api/imgRotate', (req, response) => {
-	let {
-		img,
-		deg = 0,
-		path,
-		curWindow,
-	} = req.query;
-	const imgUpd = state[curWindow].concat('\\', img);
-	const pathUpd = state[curWindow].concat('\\', path);
-
-	Jimp.read(imgUpd)
-		.then(imgUpd => {
-			return imgUpd
-				.rotate(-deg)
-				.write(pathUpd); // save
-		})
-		.then(res => response.send(req.query))
-		.catch(console.error);
 });
 
 app.post('/api/saveFilesToFlash', async (req, response) => {

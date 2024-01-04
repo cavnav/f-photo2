@@ -5,19 +5,16 @@ import { getOnClickItem, getVarName } from '../../../functions';
 
 import '../styles.css';
 
-const RECIPIENTS = [
-	'Мамао',
-	'Мама',
-	'Любимая',
-];
-
 
 export function Recipients(props) {
     const [state, setState] = useMutedReducer({
         initialState: {
-            recipients: "",
-            selection: {},
+            items: {}, // list of recipients.            
+            
+            recipients: "", // result.
+            selection: {}, // selection recipients.            
         },
+        props,
     });
     const onChangeSelection = useCallback(onThisChangeSelection({state, setState, props}), []);
 
@@ -41,11 +38,11 @@ export function Recipients(props) {
             <div 
                 className="recipients layout-items flexDirColumn"
             >
-                {RECIPIENTS.map((recepient, ind) => {
+                {state.items.map(({name}, ind) => {
                     return <File
                         key={ind} 
                         className="positionRel fitPreview150"
-                        title={recepient}
+                        title={name}
                         ident={ind} 
                         onSelectFile={getVarName({onChangeSelection})}
                     />;
@@ -69,18 +66,21 @@ function onThisChangeSelection({
             delete selection[itemId];
         }
         else {
-            selection[itemId] = RECIPIENTS[itemId];
+            selection[itemId] = {
+                ...props.items[itemId],
+                caption: 'test',
+            }
         }
         
-        const recipients =  Object.values(selection).join(','); 
+        const recipients =  Object.values(selection);
     
         setState({
             selection,
-            recipients,
+            recipients: recipients.map((item) => item.name).join(', '),
         });  
         
         props?.onChange({
-            items: selection,
+            recipients,
         });
     }
 }

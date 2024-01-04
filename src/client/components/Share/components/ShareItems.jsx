@@ -10,10 +10,11 @@ export function ShareItems(props) {
 	});
 
     const Comp = useRef({state, setState}).current;
-    const onCancelShareWrap = (event) => onCancelShare({event, Comp, onChangeItems});
-
+    
     return (
-        <div className="ShareItems layout-items">
+        <div 
+            className="ShareItems layout-items"
+        >
         {
             Object.entries(state.sources).map(([src]) => {
                 const key = src;

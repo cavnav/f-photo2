@@ -52,6 +52,8 @@ function effectRenderAdditionalActions({
             callback: getCompsCallback,
         });
 
+
+
         render({
             actions: [
                 SelectTo,

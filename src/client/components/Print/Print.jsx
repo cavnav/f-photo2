@@ -91,15 +91,9 @@ function render(props) {
 
 			function checkProgressWrap() {
 				return checkProgress({
-					checkFunc: rp.server.checkProgress,
-					notificationAPI: ({
-							progress,
-						}) => rp.DialogAPI.showNotification({
-							message: progress,
-						})					
+					checkFunc: rp.server.checkProgress,				
 				})
 				.then(() => {
-					rp.DialogAPI.close();	
 					setState({
 						isCancelCopyingBtn: false,
 					});		

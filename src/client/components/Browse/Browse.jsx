@@ -649,7 +649,6 @@ function getStateInit() {
 		refHandler: {current: undefined},
 		previewWidth: 100,
 		previewHeight: 100,
-		progress: 100,
 		sep: undefined,
 		path: '',
 		curPhotoInd: -1,

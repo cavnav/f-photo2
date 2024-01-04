@@ -220,8 +220,9 @@ function getAPI({
 			type: type ?? 'confirmation',
 			isModal: true,
 			isHide: false,
-			confirmBtn: confirmBtn ?? {
-				title: 'Понятно',
+			confirmBtn: {
+				title: 'понятно',
+				...confirmBtn,
 			},
 			rejectBtn,
 			message,

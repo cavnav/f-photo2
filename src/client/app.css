@@ -12,6 +12,7 @@
 	--offset-3x: 6px;
 	--offset-4x: 8px;
 	--offset-5x: 10px;
+	--font-size-main: 24px;
 }
 
 html,
@@ -92,6 +93,10 @@ iframe,
 
 .flex {
 	display: flex;
+}
+
+.noInputBorder {
+	font-size: var(--font-size-main);
 }
 
 .flexDirColumn {

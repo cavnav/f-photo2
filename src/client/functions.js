@@ -383,7 +383,7 @@ export function refreshWindows(
 export function ProgressTitle({
 	progress,
 }) {
-	return `Подожди. ${progress} %`;
+	return progress ? `Подожди. ${progress} %` : 'Подожди';
 }
 
 export function onMoveSelections({
@@ -467,19 +467,33 @@ export function checkProgress({
 		function coreFunc() {
 			return checkFunc()
 			.then((res) => {
-				const isCopyCompleted = res.progress === 100;
-				setTimeout(() => (isCopyCompleted ? null : coreFunc()), 500);        
+				const isRequestCompleted = res.error || res.progress === 100;
+				setTimeout(() => (isRequestCompleted ? null : coreFunc()), 500);        
 
-				DialogAPI.update({
-					message: ProgressTitle({
-						progress: res.progress,
-					}),
+				const message = res.error ? TEXT_SERVER_ERROR : ProgressTitle({
+					progress: res.progress,						
 				});
 
-				if (isCopyCompleted) {					
-					DialogAPI.close();     
-					resolve();    					
+				if (res.error) {
+					DialogAPI.showConfirmation({
+						message,
+						type: 'error',
+						confirmBtn: {
+							onConfirm: resolve,
+						},
+					});
 				}
+				else {
+					DialogAPI.show({
+						message,
+						isHide: false,
+					});
+
+					if (isRequestCompleted) {					
+						DialogAPI.close();     
+						resolve();    					
+					}
+				}				
 			});
 		}
 	});
@@ -665,3 +679,19 @@ export function getOnClickItem({
 	};
 };
 	
+function checkProgressWrap() {
+	return checkProgress({
+		checkFunc: rp.server.checkProgress,
+		notificationAPI: ({
+				progress,
+			}) => rp.DialogAPI.showNotification({
+				message: progress,
+			})					
+	})
+	.then(() => {
+		rp.DialogAPI.close();	
+		setState({
+			isCancelCopyingBtn: false,
+		});		
+	});
+}

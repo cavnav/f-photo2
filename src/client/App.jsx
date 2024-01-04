@@ -1,5 +1,5 @@
 // after remove in Browse mode scroll to next item.
-// whatsapp / telegram.
+// magnifying.
 // connect android by wifi
 
 // I

@@ -4,6 +4,17 @@ import {getVarName, scrollToSelector} from '../../functions';
 import {Empty} from '../Empty/Empty';
 
 
+/* TODO: 
+
+refactoring:
+
+props:
+refHandler,
+scrollTo,
+children,
+
+*/
+
 export const BrowseBase = channel.addComp({
     name: 'BrowseBase',
     render,

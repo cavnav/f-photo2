@@ -1,12 +1,11 @@
-import React, {useCallback, useMemo} from 'react';
+import React, {useCallback, useMemo, useEffect} from 'react';
 import { channel } from '../../channel';
 import { useMutedReducer } from '../../mutedReducer';
 import { Empty } from '../Empty/Empty';
-import { updateFiles } from '../../functions';
+import { checkProgress, updateFiles } from '../../functions';
 import { ShareItems } from './components/ShareItems';
 import { useShareActions } from './useShareActions';
 import { Recipients } from './components/Recipients';
-import { fetchWithLoader } from '../../ServerApi';
 
 
 export const Share = channel.addComp({
@@ -47,42 +46,44 @@ function render() {
 		onSend: onThisSend({Comp}),
 	});
 
+	const onChangeCaption = onChangeCaptionWith({Comp});
 
+	useEffect(
+		() => {
+			const server = Comp.getServer();
 
-	const onCancelShare = React.useCallback((e) => {
-		const fileElement = e.target;
-		const fileSrc = fileElement.getAttribute('keyid');
-		const file = state.files[fileSrc];
-		
-		file.setToShare({
-			flag: false,
-		});
-		
-		setState({
-			forceUpdate: !state.forceUpdate,
-		});
-	}, []);
-
-	const onChangeFilesTitle = React.useCallback((e) => {
-		setState({
-			filesTitle: e.target.value,
-		});
-	}, []);
-
-	const onChangeAddresses = React.useCallback(({
-		selectedItems,
-	}) => {
-		setState({
-			addresses: selectedItems,
-		});
-	}, []);
+			server.getSharedRecipients()
+			.then(({
+				recipients,
+			}) => {
+				const {
+					setState,
+				} = Comp.getDeps();
+				
+				setState({
+					recipientsAll: recipients,
+				});
+			});
+		}, 
+		[]
+	);
 
 	return (
 		<div className="Share">		
 			{state.isButtonBackwardToPhotos 
-			?	<Recipients 
-					onChange={onChangeRecipients}
-				/>
+			?	<div>
+					подпись:{' '}  			
+					<input 
+						className='noInputBorder'
+						type="text" 
+						value={state.caption} 
+						onChange={onChangeCaption}
+					/>				
+					<Recipients 
+						items={state.recipientsAll}						
+						onChange={onChangeRecipients}
+					/>
+				</div>
 			: state.isEmpty 
 				? <Empty />
 				: <ShareItems
@@ -94,37 +95,11 @@ function render() {
 	);
 }
 
-function getFilesSrc({
-	Comp,	
-}) {
-	const {state} = Comp.getDeps();
-	return Object.keys(state.files);
-}
-function getFilesTitle({
-	Comp,
-}) {
-	const {state} = Comp.getDeps();
-	return state.filesTitle;
-}
-function getAddresses({
-	Comp,
-}) {
-	const {state} = Comp.getDeps();
-	return state.addresses;
-}
-
 function getAPI({
 	Comp,
 	resumeObj,
 }) {
 	return ({
-		getItems: () => ({
-			names: getAddresses({Comp}).map((item) => ({
-				name: item,
-				title: getFilesTitle({Comp}),
-			})),
-			files: getFilesSrc({Comp}),
-		}),
 		getStatus,
 		toggleStatus,
 	});
@@ -237,14 +212,14 @@ function onThisChangeRecipients({
 	Comp,
 }) {
 	return ({
-		items,
+		recipients,
 	}) => {
 		const {
 			setStateSilent,
 		} = Comp.getDeps();
 		
 		setStateSilent({
-			recipients: items,
+			recipients,
 		});
 	};
 }
@@ -265,32 +240,45 @@ function onThisSend({Comp}) {
 	return () => {
 		const server = Comp.getServer();
 
-		const {state} = Comp.getDeps();
+		const {state} = Comp.getDeps();	
 
-		const recipients = [];
-		Object.values(state.recipients).forEach((name) => {		
-			const recipient = {
-				name,
-				title: "извини, тестирую",
-			};
-			recipients.push(recipient); 
-		});	
+		const caption = state.caption;
 
 		server.share({
 			files: Object.keys(state.files), 
-			recipients,
+			recipients: state.recipients.map((item) => {
+				item.caption = caption;
+				return item;
+			}),
+		})
+		.then(() => {
+			return checkProgress({
+				checkFunc: server.checkProgress,
+			})
 		});
 	};
+}
+
+function onChangeCaptionWith({
+	Comp,
+}) {
+	return (event) => {
+		const {setState} = Comp.getDeps();
+		setState({
+			caption: event.target.value,
+		});
+	};	
 }
 
 function getInitialState(
 ) { 
 	return {
 		files: {},
-		filesTitle: '',
-		addresses: [],
+		filesSelected: {},
 		forceUpdate: false,
+		caption: '',
 		recipients: {},
+		recipientsAll: {},
 		isButtonSelectTo: true,
 		isButtonBackwardToPhotos: false,
 		isButtonSend: true,

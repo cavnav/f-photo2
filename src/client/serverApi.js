@@ -46,12 +46,20 @@ export class AppServerAPI {
 	// не смог использовать function - declaration. В channel.addAPI контекст теряется.
 
 	share = (params) => {
-		return fetch(
+		return fetchWithLoader(
 			this.getFullUrl({ url: 'share' }),
 			new PostObjTmp({
 				body: params,
 			}),
 		);
+	}
+
+	getSharedRecipients = () => {
+		return fetchWithLoader(
+			this.getFullUrl({
+				url: 'getSharedRecipients',
+			}))
+			.then(response => response.json());
 	}
 
 	$saveFilesToFlash = (params) => {
