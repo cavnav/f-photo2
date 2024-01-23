@@ -11,7 +11,7 @@ export const Label = channel.addComp({
 
 function render(props) {
   const Comp = this;
-  const [state] = useMutedReducer({
+  const {state} = useMutedReducer({
     initialState: stateInit,
     props,
     setCompDeps: Comp.setCompDeps,

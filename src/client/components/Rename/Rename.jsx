@@ -12,7 +12,7 @@ export const Rename = channel.addComp({
 
 function render() {
     const Comp = this;
-    const [state] = useMutedReducer({
+    const {state} = useMutedReducer({
         initialState,
         setCompDeps: Comp.setCompDeps,
     });

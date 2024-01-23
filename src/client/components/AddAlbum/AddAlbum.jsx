@@ -15,7 +15,7 @@ export const AddAlbum = channel.addComp({
 function render() {
   const Comp = this;
 
-  const [state] = useMutedReducer({
+  const {state} = useMutedReducer({
     setCompDeps: Comp.setCompDeps,
     initialState: stateInit,
   });

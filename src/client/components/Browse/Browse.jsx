@@ -2,11 +2,14 @@ import React, {useCallback, useEffect} from 'react';
 import './styles.css';
 import {
 	getItemName, getOppositeWindow, initRefreshWindowEvent, isBanMoveItems, myCrop,
-	onChangeSelections,
 	onMoveSelections, refreshWindows, refreshOppositeWindow,
-	updateActionsLists, updateHtmlSelectorsFromArray,
+	updateActionsLists,
 	getUpdatedActionLists,
 	getSelector,
+	getVarName,
+	useOnClickItem,
+	useOnChangeSelections,
+	useEffectSetHtmlSelection,
 } from '../../functions';
 import { channel } from '../../channel';
 import { ResumeObj } from '../../resumeObj';
@@ -15,6 +18,7 @@ import { BTN_MOVE, BTN_REMOVE, setBtnTitle } from '../../common/additionalAction
 import { Files } from '../File/Files';
 import { Dirs } from '../Dirs/Dirs';
 import { eventNames } from '../../constants';
+import { BrowseBase } from '../BrowseBase/BrowseBase';
 
 
 export const Browse = channel.addComp({
@@ -35,10 +39,8 @@ const resumeObj = new ResumeObj({
 function render(
 ) {
 	const Comp = this;
-	const rp = Comp.getReqProps();
-	const BrowseBase = rp.BrowseBase.r;
 
-	const [state] = useMutedReducer({
+	const {state} = useMutedReducer({
 		setCompDeps: Comp.setCompDeps,
 		initialState: getStateInit(),
 		fn: ({
@@ -52,21 +54,32 @@ function render(
 	});
 	const browsePath = state.path + state.sep;
 	const onChangeDirUpd = useCallback(onChangeDir({Comp}), []);
-	const onChangeSelectionsUpd = useCallback(onChangeThisSelections({Comp}), []);
+	const onChangeSelectionsUpd = useOnChangeSelections({
+		Comp,
+		deps: [],
+		handler: changeSelections,
+	});
 	const onRequestFileUpd = useCallback(onRequestFile({Comp}), []);
+	const onFilesMount = useCallback(
+		() => {
+			const {setState} = Comp.getDeps();
+			setState({});
+		},
+		[]
+	);
 
-	React.useEffect(() => {
+	useEffect(() => {
 		const returnCb = renderAddPanel({ Comp });		
 		return returnCb;
 	}, []);
 
-	React.useEffect(() => {
+	useEffect(() => {
 		resetTo({
 			Comp,
 		});
 	}, []);
 
-	React.useEffect(
+	useEffect(
 		() => initRefreshWindowEvent({ 
 			eventName: eventNames.refreshWindow,
 			callback: () => onRefreshWindow({ Comp }),
@@ -74,7 +87,7 @@ function render(
 		[]
 	);
 
-	React.useEffect(
+	useEffect(
 		() => initRefreshWindowEvent({ 
 			eventName: eventNames.exitFolder,
 			callback: () => exitFolder({ Comp }),
@@ -82,39 +95,45 @@ function render(
 		[]
 	);
 
-	React.useEffect(boostPerfImgRender, [state.files]);
+	useEffect(boostPerfImgRender, [state.files]);
 
-	React.useEffect(
-		() => {
-			updateHtmlSelectorsFromArray({
-				selections: state.selections,
-			});
-		}, 
-	);
+	useEffectSetHtmlSelection({
+		selection: state.selections,
+	});
 
-	const FilesComp = state.files.length === 0 ? undefined : (props) => <Files
+	const FilesComp = state.files.length === 0 ? null : <Files
 		files={state.files}
 		browsePath={browsePath}
-		{...props}
+		onSelectFile={getVarName({onChangeSelectionsUpd})}
+		onRequestFile={getVarName({onRequestFileUpd})}
+	/>
+
+	const DirsComp = state.dirs.length === 0 ? null : <Dirs
+		dirs={state.dirs}
+		onChangeDir={getVarName({onChangeDirUpd})}
+		onSelectDir={getVarName({onChangeSelectionsUpd})}
 	/>;
 
-	const DirsComp = state.dirs.length === 0 ? undefined : (props) => <Dirs
-		dirs={state.dirs}
-		{...props}
-	/>;
+	const eventHandlers = {
+        onChangeDirUpd,
+        onChangeSelectionsUpd,
+        onRequestFileUpd,
+    };
+
+	const onClickItem = useOnClickItem({eventHandlers});
 
 	return (
 		<BrowseBase 
-			refHandler={state.refHandler}
-			Files={FilesComp}
-			Dirs={DirsComp}
+			refHandler={state.refHandler}			
 			scrollTo={state.scrollTo}
-			onChangeDir={onChangeDirUpd}
-			onChangeSelections={onChangeSelectionsUpd}
-			onRequestFile={onRequestFileUpd}
-		/>
+			onClick={onClickItem}
+		>
+			{DirsComp}
+			{FilesComp}
+		</BrowseBase>
 	);
 }
+
 
 function boostPerfImgRender() {
 	const observer = new IntersectionObserver(cb, { threshold: 1 });
@@ -165,16 +184,6 @@ function onChangeDir({
 			});
 	};
 }
-
-function onChangeThisSelections({Comp}) {
-	return onChangeSelections({handler: ({src, checked}) => {
-		return changeSelections({
-			Comp,
-			src,
-			checked,
-		});
-	}});
-};
 
 function onRequestFile({Comp}) {
 	return (event) => {
@@ -310,10 +319,12 @@ function updateSelectionDeps({
 
 function changeSelections({
 	Comp,
-	src,
+	ident,
 	checked,
 } = {}
 ) {
+	// onRename selection will be reset.
+
 	const {
 		state,
 		setStateSilent,
@@ -330,15 +341,15 @@ function changeSelections({
 	// ------------------------------------
 	function updateSelections() {
 		// i.e. clickFolder event or exitFromFolder.
-		if (src === undefined) return [];
+		if (ident === undefined) return [];
 
 		const action = ({ true: 'add', false: 'delete' })[checked];
 
 		if (action === 'add') {
-			state.selections.push(src);
+			state.selections.push(ident);
 		}
 		else if (action === 'delete') {
-			state.selections = state.selections.filter(item => item !== src);
+			state.selections = state.selections.filter(item => item !== ident);
 		}
 
 		return state.selections;
@@ -565,7 +576,6 @@ function getComps({
 		App,
 		OnePhoto,
 		AdditionalPanel,
-		BrowseBase,
 
 		AddAlbum,
 		Label,
@@ -576,7 +586,6 @@ function getComps({
 
 	return {
 		toClone: {
-			BrowseBase,
 			ToggleWindow,
 			AddAlbum,
 			Rename,

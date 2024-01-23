@@ -6,7 +6,7 @@ export const Copying = React.memo(function ({
 	saveFilesToFlash,
 	nextStepBtn,
 }) {
-	const [state, setState] = useMutedReducer({
+	const {state, setState} = useMutedReducer({
 		initialState,
 	});
 

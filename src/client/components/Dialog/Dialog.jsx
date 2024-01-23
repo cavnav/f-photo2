@@ -23,7 +23,7 @@ function render(props) {
 	const Comp = this;
 	const ref = useRef();
 	const timerIdRef = useRef();
-	const [state, _, setStateSilent] = useMutedReducer({
+	const {state, setStateSilent} = useMutedReducer({
 		setCompDeps: Comp.setCompDeps,
 		initialState,
 		props,
@@ -121,19 +121,16 @@ function render(props) {
 }
 
 function getReqProps({
-	channel,
+	comps,
 }) {
 	// может сделать привязку события в этом компоненте ?
-	const props = channel.crop({
-		s: {
-			mouse: 1,
-		},
-	});
+	const {AppAPI} = comps;
+	const mouse = AppAPI?.state?.mouse ?? {};
 
 	return {
 		mouse: {
-			x: props.mouse.x + 10,
-			y: props.mouse.y + 10,
+			x: mouse.x + 10,
+			y: mouse.y + 10,
 		},
 	};
 }

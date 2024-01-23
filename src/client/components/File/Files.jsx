@@ -1,16 +1,16 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { getBackgroundImageStyle } from '../../functions';
 import {File} from './File';
 
 
 export function Files({
-    browsePath,
+    browsePath = '',
     files,
     onSelectFile,
     onRequestFile,
 }) {
     const className = 'positionRel fitPreview file scrollwait';
-    
+
     return (
         <>
             {files.map((file, ind) => {

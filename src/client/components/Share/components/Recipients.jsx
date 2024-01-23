@@ -1,33 +1,41 @@
-import React, {useCallback} from 'react';
+import React, {useRef} from 'react';
 import { useMutedReducer } from '../../../mutedReducer';
 import { File } from '../../File/File';
-import { getOnClickItem, getVarName } from '../../../functions';
+import {getVarName, useOnChangeSelections, useOnClickItem } from '../../../functions';
 
 import '../styles.css';
 
 
 export function Recipients(props) {
-    const [state, setState] = useMutedReducer({
-        initialState: {
-            items: {}, // list of recipients.            
-            
-            recipients: "", // result.
-            selection: {}, // selection recipients.            
-        },
+    // items,
+    // selection,
+    // onChange
+
+    const {state, setState} = useMutedReducer({
+        initialState: getInitialState(),
         props,
+        reducer,
     });
-    const onChangeSelection = useCallback(onThisChangeSelection({state, setState, props}), []);
+
+    const Comp = useRef({state, setState}).current;
+
+    const onChangeSelection = useOnChangeSelections({
+        Comp,
+        ident: 'ident',
+        handler: onChangeSelection_,        
+        deps: [],
+    });
 
     const eventHandlers = {
         onChangeSelection,
     };
 
-    const onClickItem = getOnClickItem({eventHandlers});
+    const onClickItem = useOnClickItem({eventHandlers});
         
 
     return (
         <div 
-            class="selector"
+            className="selector"
             onClick={onClickItem}
         >
             <div
@@ -52,35 +60,61 @@ export function Recipients(props) {
     );
 }
 
-function onThisChangeSelection({
-    state,
-    setState,
-
-    props
+function onChangeSelection_({
+    Comp,
+    ident,
 }) {
-    return (event) => {
-        const selection = state.selection;
-        const itemId = event.target.getAttribute("ident");
+    const {
+        state,
+        setState,
+    } = Comp;
 
-        if (selection.hasOwnProperty(itemId)) {
-            delete selection[itemId];
-        }
-        else {
-            selection[itemId] = {
-                ...props.items[itemId],
-                caption: 'test',
-            }
-        }
-        
-        const recipients =  Object.values(selection);
-    
-        setState({
-            selection,
-            recipients: recipients.map((item) => item.name).join(', '),
-        });  
-        
-        props?.onChange({
-            recipients,
-        });
+    const selection = state.selection;
+
+    if (selection.hasOwnProperty(ident)) {
+        delete selection[ident];
     }
+    else {
+        selection[ident] = state.items[ident];
+    }
+    
+    setState({
+        selection,
+    });  
+    
+    state.onChange?.({
+        recipients: selection,
+    });
+}
+
+function reducer({
+    state,
+    stateUpd,
+}) {
+    const stateNew = {
+        ...state,
+        ...stateUpd,
+    };
+
+    if (stateUpd.hasOwnProperty('selection')) {
+
+        stateNew.recipients = formatRecipients({items: stateNew.selection});        
+    }
+    
+    return stateNew;
+}
+
+function formatRecipients({
+    items,
+}) {
+    
+    return Object.values(items).map((item) => item.name).join(', ');
+}
+
+function getInitialState(){
+    return {
+        items: {}, // list of all recipients.                    
+        recipients: "", // result.
+        selection: {}, // selection recipients.   
+    };
 }

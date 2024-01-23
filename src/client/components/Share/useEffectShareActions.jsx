@@ -1,13 +1,11 @@
-import React, {useEffect} from 'react';
+import {useEffect} from 'react';
 import { getChannelComps } from '../../functions';
 
 
-export function useShareActions(props) {
-    const deps = [];
-
+export function useEffectShareActions(props) {
     useEffect(
-        effectRenderAdditionalActions({props, deps}),
-        deps
+        render({props}),
+        props.deps
     );
 }
 
@@ -15,15 +13,14 @@ export function useShareActions(props) {
 
 
 
-function effectRenderAdditionalActions({
+function render({
     props,
-    deps,
 }) {
     const {
-        additionalPanelRender: render,
+        additionalPanelRender,
         state: {
             isButtonSelectTo,
-            isButtonBackwardToPhotos,
+            isButtonBackward,
             isButtonSend,
         },    
         onSelectTo,
@@ -32,12 +29,7 @@ function effectRenderAdditionalActions({
         
     } = props;
 
-    deps.push(...[
-        isButtonSelectTo, 
-        isButtonBackwardToPhotos,
-        isButtonSend,
-    ]);
-
+    
     return () => {
         const {
             SelectTo,
@@ -54,7 +46,7 @@ function effectRenderAdditionalActions({
 
 
 
-        render({
+        additionalPanelRender({
             actions: [
                 SelectTo,
                 BackwardToPhotos,
@@ -69,7 +61,7 @@ function effectRenderAdditionalActions({
                         onClick: onSelectTo,
                     });
                 }
-                if (isButtonBackwardToPhotos) {
+                if (isButtonBackward) {
                     BackwardToPhotosAPI.forceUpdate({
                         title: 'Вернуться к фото',
                         onClick: onBackwardToPhotos,
@@ -86,7 +78,7 @@ function effectRenderAdditionalActions({
         );
 
         return () => {
-            render({
+            additionalPanelRender({
                 actions: []
             });
         };

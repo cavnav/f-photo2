@@ -7,7 +7,7 @@ const STEP_NUM_DELTA = +1;
 
 export function Stepper(props) {
 
-    const [state, dispatch] = useMutedReducer({
+    const {state, setState:dispatch} = useMutedReducer({
         initialState,
         reducer: stateReducer,
         props, 

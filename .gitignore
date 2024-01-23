@@ -6,4 +6,7 @@ yarn.lock
 package-lock.json
 public/root
 build
-server/chatIDs.json
+src/server/chatIDs.json
+src/server/printed.json
+src/server/shared.json
+src/server/shared

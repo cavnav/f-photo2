@@ -1,22 +1,28 @@
-import React, { useState, useCallback, useReducer } from 'react';
+import React, { useState, useCallback, useReducer, useMemo } from 'react';
 
 export function useMutedReducer({
 	initialState = {},
 	reducer,
 	props, // props will inject to state.
 	setCompDeps, // rename with less details.
-	fn = () => { },
-	init = () => {
-		return reducer ? reducer({
-			state: initialState,
-			stateUpd: {},
-		}) : {
-			...initialState,
-		};
-	},
+	fn = () => { },	
 }) {
 	const [_, forceUpdate] = useReducer((x) => !x, false);
-	const [state] = useState(init());
+	const init = useMemo(
+		() => {
+			return reducer 
+				? 	reducer({
+						state: initialState,
+						stateUpd: {},
+					}) 
+				: 	{
+						// important! to create new state for every instance.
+						...initialState
+					};
+		},
+		[]
+	);
+	const [state] = useState(init);
 	const [context] = useState({
 		state, 		
 		reducer,
@@ -42,7 +48,11 @@ export function useMutedReducer({
 		},
 	});
 
-	return [state, setStateWrap, setStateSilentWrap];
+	return {
+		state, 
+		setState: setStateWrap, 
+		setStateSilent: setStateSilentWrap,
+	};
 }
 
 function setState(context, isForceUpdate = true) {

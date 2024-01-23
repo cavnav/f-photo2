@@ -4,7 +4,7 @@ import { useMutedReducer } from '../../../mutedReducer';
 import { getBackgroundImageStyle } from '../../../functions';
 
 export function ShareItems(props) {
-    const [state, setState] = useMutedReducer({
+    const {state, setState} = useMutedReducer({
 		initialState: {},
         props,
 	});

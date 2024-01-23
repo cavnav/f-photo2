@@ -19,7 +19,7 @@ function render() {
         serverAPI,
     } = rp;
 
-    const [state] = useMutedReducer({
+    const {state} = useMutedReducer({
         initialState: {
             browserCount: resumeObj.get(),
             title: 'Доп. окно',

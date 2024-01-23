@@ -34,11 +34,6 @@ function fetchWithLoader(...params) {
 }
 
 export class AppServerAPI {
-	constructor({ d, s }) {
-		this.d = d;
-		this.s = s;
-	}
-
 	getFullUrl({ url }) {
 		return `/api/${url}`;
 	}

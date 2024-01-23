@@ -1,3 +1,4 @@
+import {useCallback, useEffect} from 'react';
 import { channel } from './channel';
 import { Dialog } from './components';
 import { DIALOG_TYPES } from './components/Dialog/Dialog';
@@ -527,55 +528,66 @@ export function myRequest({ request, onResponse }) {
 		});
 }
 
-export function onChangeSelections({Comp, handler}) {
-	return (event) => {
-		const src = event.target.getAttribute('src');
-		const { checked } = event.target;
+export function useOnChangeSelections({
+	Comp, 
+	handler, 
+	ident = 'src', 
+	deps,
+}) {
+	return useCallback(
+		(event) => {
+			const identVal = event.target.getAttribute(ident);
+			const { checked } = event.target;
 
-		handler({
-			Comp,
-			src,
-			checked,
-			event,
-		});
-	}
+			handler({
+				Comp,
+				ident: identVal,
+				checked,
+				event,
+			});
+		},
+		deps,
+	);
 };
 
 export function updateHtmlSelectorsFromArray({
-	selections,
+	selection,
+	ident,
 }) {
-	const selectionsUpd = [];
-	function handler({item, src}) {
-		const isChecked = Boolean(selections?.includes(src));
+	const updated = updateHtmlSelectors({handler, ident});
+
+	return updated;
+
+	// ---------------------------------
+	function handler({item, ident}) {
+		const isChecked = Boolean(selection?.includes(ident));
 		item.checked = isChecked;
 	}
-
-	updateHtmlSelectors({handler});
-
-	return selectionsUpd;
 }
 
 export function updateHtmlSelectorsFromObject({
-	selections,
+	selection,
+	ident,
 }) {
-	const selectionsUpd = {};
-	function handler({item, src}) {
-		const isChecked = selections[src];
+	const updated = updateHtmlSelectors({handler, ident});
+
+	return updated;
+
+	// ----------------
+	function handler({item, ident}) {
+		const selectionsUpd = {};	
+		const isChecked = selection[ident];
 		item.checked = isChecked;
 		if (isChecked) {
-			selectionsUpd[src] = selections[src];
+			selectionsUpd[ident] = selection[ident];
 		}
 	}
-
-	updateHtmlSelectors({handler});
-
-	return selectionsUpd;
 }
 
-function updateHtmlSelectors({handler}) {	
+function updateHtmlSelectors({handler, ident = 'src'}) {	
 	[...document.querySelectorAll('.itemSelector')].forEach((item) => {
-		const src = item.getAttribute('src');
-		handler({item, src});
+		const identVal = item.getAttribute(ident);
+		handler({item, ident: identVal});
 	});	
 }
 
@@ -632,23 +644,25 @@ export function getSelector({id}) {
 }
 
 export function scrollToSelector({selector}) {
-	if (!selector) {
-		return;
+	if (selector === undefined || selector === "") {
+		return false;
 	}
 
 	const SCROLL_CLASS = 'scroll-to';	
 
-	const curPhotoEl = document.querySelector(selector);
-	if (curPhotoEl) {
-		curPhotoEl.scrollIntoView();
-		curPhotoEl.classList.add(SCROLL_CLASS);
+	const elementPrevScroll = document.querySelector(SCROLL_CLASS);
+	elementPrevScroll?.classList.remove(SCROLL_CLASS);
+
+	const elementTarget = document.querySelector(selector);
+
+	if (elementTarget === null) {
+		return false;
 	}
-	else {
-		const curPhotoEl = document.querySelector(SCROLL_CLASS);
-		if (curPhotoEl) {
-			curPhotoEl.classList.remove(SCROLL_CLASS);
-		}
-	}
+
+	elementTarget.scrollIntoView();
+	elementTarget.classList.add(SCROLL_CLASS);
+
+	return true;
 }
 
 export const updateFiles = {
@@ -669,29 +683,70 @@ export const updateFiles = {
 		return props.files;
 	},
 }
-
-export function getOnClickItem({
-	eventHandlers,
-}) {
-	return (event) => {
-		const eventHandler = event.target.getAttribute('handler');
-		eventHandlers[eventHandler]?.(event);
-	};
-};
 	
-function checkProgressWrap() {
-	return checkProgress({
-		checkFunc: rp.server.checkProgress,
-		notificationAPI: ({
-				progress,
-			}) => rp.DialogAPI.showNotification({
-				message: progress,
-			})					
-	})
-	.then(() => {
-		rp.DialogAPI.close();	
-		setState({
-			isCancelCopyingBtn: false,
-		});		
+export function useOnClickItem({eventHandlers}) {
+	return useCallback(
+		(event) => {
+			const eventHandler = event.target.getAttribute('handler');
+			eventHandlers[eventHandler]?.(event);
+		},
+		[]
+	);
+};
+
+export function useEffectSetHtmlSelection({
+	selection,
+	ident,
+}) {
+	useEffect(
+		() => {
+			if (selection.constructor === Array) {
+				updateHtmlSelectorsFromArray({
+					selection,
+					ident,
+				});
+			}
+			else if (selection.constructor === Object) {
+				updateHtmlSelectorsFromObject({
+					selection,
+					ident,
+				});
+			}
+		}, 
+	);
+}
+
+export function getRequestFileHandler({
+	Comp, 
+	ident:src,	
+}) {
+	const {
+		AppAPI,
+		Browse,
+		BrowseAPI,
+	} = Comp.getComps();
+
+	const {sep} = Comp.getResumeObj().state;
+	const lastIndexSeparator = src.lastIndexOf(sep);
+	const path = src.substr(0, lastIndexSeparator);
+	const item = src.substr(lastIndexSeparator + 1);
+
+	const {setState} = Comp.getDeps();
+	const identUpd = src.split(sep).join(sep.concat(sep));
+	
+	setState({
+		scrollTo: getSelector({id: identUpd}),
+	});
+
+
+	BrowseAPI.setToResumeObj({
+		val: {
+			path,
+			scrollTo: getSelector({id: item}),
+		}
+	});
+
+	AppAPI.toggleAction({
+		action: Browse.name,	
 	});
 }

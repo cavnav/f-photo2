@@ -20,7 +20,7 @@
 }
 
 .DialogWrap > * {
-    padding: var(--offset-5x);
+    padding: var(--offset10);
 }
 
 .Dialog__error {

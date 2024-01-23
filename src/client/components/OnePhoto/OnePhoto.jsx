@@ -48,7 +48,7 @@ function render(
 		[resumeBrowse.files]
 	);
 
-	const [state, setState] = useMutedReducer({
+	const {state, setState} = useMutedReducer({
 		reducer: selfReducer,
 		setCompDeps: Comp.setCompDeps,
 		initialState: {

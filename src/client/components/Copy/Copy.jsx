@@ -15,7 +15,7 @@ export const Copy = channel.addComp({
 
 function render() {
 	const Comp = this;
-	const [state, setState] = useMutedReducer({
+	const {state, setState} = useMutedReducer({
 		initialState,
 		setCompDeps: Comp.setCompDeps,
 	});
@@ -88,8 +88,8 @@ function render() {
 				stepNumDelta: -2,
 			}, {
 				trigger: () => {
-					const rp = Comp.getReqProps();
-					rp.setAppState({
+					const {AppAPI} = Comp.comps();
+					AppAPI.setState({
 						action: rp.BrowseName,
 					});
 				}
@@ -152,7 +152,6 @@ function getReqProps({
 	channel,
 }) {
 	return {
-		setAppState: channel.d.setAppState,
 		server: channel.server,
 		BrowseName: comps.Browse.name,
 		...comps,
@@ -164,6 +163,7 @@ function getComps({
 }) {
 	return {
 		items: {
+			App: channelComps.App,
 			Browse: channelComps.Browse,
 			Notification: channelComps.Notification,
 		},

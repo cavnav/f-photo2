@@ -10,7 +10,7 @@ export function PrintItemsRender({
     onChangeSelectionsName,
     onRequiredItemName,
 }) {
-	const [state, setState] = useMutedReducer({
+	const {state, setState} = useMutedReducer({
 		initialState: getInitialState(),
         props: {
             items,

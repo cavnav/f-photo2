@@ -1,10 +1,13 @@
+// arch of shared.
+// fix mouse coordinates.
 // after remove in Browse mode scroll to next item.
+// change share list on remove, move, rename.
 // magnifying.
-// connect android by wifi
 
 // I
 // show overwrite confirmation for every files
 // remove ctg file
+// connect android by wifi
 
 // II
 // magnifying glass
@@ -36,30 +39,12 @@ import { get as _get } from 'lodash';
 import { channel } from './channel';
 import { ResumeObj } from './resumeObj';
 import { useMutedReducer } from './mutedReducer';
-import { Copy,
-	Browse,
-	Print,
-	OnePhoto,
-	Welcome,
-	Share,
-	PrintedComp, 
-} from './components';
 
 export const App = channel.addComp({
 	name: 'App',
 	render,
 	getAPI,
-	getComps,
-	getReqProps,
-
-	// чтобы вызвать автоматическое включение этих компонент в channel.
-	Copy,
-	Browse,
-	Print,
-	OnePhoto,
-	Welcome,
-	Share,
-	PrintedComp,
+	getComps,	
 });
 
 const resumeObj = new ResumeObj({
@@ -71,30 +56,25 @@ const resumeObj = new ResumeObj({
 
 function render() {
 	const Comp = this;
-	let s; // state
-	const [d] = React.useState({}); // dispatch.
 
-	[s, d.setAppState] = useMutedReducer({
+	const {state} = useMutedReducer({
 		initialState: getAppStateInit(),
 		setCompDeps: Comp.setCompDeps,
 		fn: resumeUpdFn,
 	});
 
-	channel.preset({
-		s,
-		d,
-	});
 
-	React.useEffect(() => {
-		const onMouseUpWrap = (e) => onMouseUp({ Comp, e });
-		document.addEventListener('mouseup', onMouseUpWrap);
-		return () => document.removeEventListener('mouseup', onMouseUpWrap);
-	},
+	React.useEffect(
+		() => {
+			const onMouseUpWrap = (e) => onMouseUp({ Comp, e });
+			document.addEventListener('mouseup', onMouseUpWrap);
+			return () => document.removeEventListener('mouseup', onMouseUpWrap);
+		},
 		[]
 	);
 
 
-	const Action = Comp.getReqProps().comps[s.action];
+	const Action = Comp.getReqProps().comps[state.action];
 
 	return (
 		<div className="f-photo">
@@ -120,8 +100,16 @@ function resumeUpdFn({
 
 function getAppStateInit() {
 	const resumed = resumeObj.get();
-	const rp = App.getReqProps();
-	const { comps } = rp;
+	const comps = App.getComps();
+	const {
+		Copy,
+		Browse,
+		OnePhoto,
+		Print,
+		PrintedComp,
+		Share,
+		Shared,
+	} = comps;
 
 	return {
 		action: comps.Welcome.name,
@@ -161,6 +149,11 @@ function getAppStateInit() {
 				title: 'Отправить',
 				isEnabled: true,
 			},
+			{
+				id: Shared.name,
+				title: 'Архив отправленных',
+				isEnabled: true,
+			}
 			// Help: {
 			//   title: '?',
 			//   isEnabled: true,
@@ -185,9 +178,11 @@ function onMouseUp({
 }
 
 export function getAPI({
+	Comp,
 	deps,
 }) {
 	return {
+		state: deps.state,
 		setState: deps.setState,
 		toggleAction,
 	};
@@ -201,6 +196,8 @@ export function getAPI({
 		});
 
 		actionsObj[action].isEnabled = true;
+
+		const {Browse, OnePhoto} = Comp.getComps();
 		
 		if (action === Browse.name) {
 			actionsObj[OnePhoto.name].isEnabled = false;
@@ -228,6 +225,7 @@ function getComps({
 		Welcome,
 		PrintedComp,
 		Share,
+		Shared,
 	} = channelComps;
 
 	return {
@@ -239,14 +237,7 @@ function getComps({
 			Welcome,
 			PrintedComp,
 			Share,
-		}
+			Shared,
+		},
 	}
-}
-
-function getReqProps({
-	comps,
-}) {
-	return {
-		comps,
-	};
 }

@@ -19,7 +19,7 @@ function render(
 ) {
 	const Comp = this;
 
-	const [state, setState] = useMutedReducer({
+	const {state, setState} = useMutedReducer({
 		initialState: {
 			id: "",
 			// ...statuses.

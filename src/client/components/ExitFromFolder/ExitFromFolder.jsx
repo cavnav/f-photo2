@@ -13,7 +13,7 @@ export const ExitFromFolder = channel.addComp({
 function render(
 ) {
 
-  const [state] = useMutedReducer({
+  const {state} = useMutedReducer({
     initialState: stateInit,
     setCompDeps: Comp.setCompDeps,
   });

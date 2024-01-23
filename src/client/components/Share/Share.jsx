@@ -1,11 +1,12 @@
-import React, {useCallback, useMemo, useEffect} from 'react';
+import React, {useCallback, useMemo, useEffect, useRef} from 'react';
 import { channel } from '../../channel';
 import { useMutedReducer } from '../../mutedReducer';
 import { Empty } from '../Empty/Empty';
-import { checkProgress, updateFiles } from '../../functions';
-import { ShareItems } from './components/ShareItems';
-import { useShareActions } from './useShareActions';
+import { checkProgress, getRequestFileHandler, getVarName, updateFiles, useEffectSetHtmlSelection, useOnChangeSelections, useOnClickItem } from '../../functions';
 import { Recipients } from './components/Recipients';
+import { Files } from '../File/Files';
+import { useEffectShareActions } from './useEffectShareActions';
+import { BrowseBase } from '../BrowseBase/BrowseBase';
 
 
 export const Share = channel.addComp({
@@ -18,6 +19,7 @@ export const Share = channel.addComp({
 
 function render() {
 	const Comp = this;
+	const ref = useRef();
 	const resumeObj = Comp.getResumeObj();
 
 	const initialState = useMemo(() => {
@@ -27,50 +29,71 @@ function render() {
 		};
 	}, []);
 
-	const [state, setState] = useMutedReducer({
-		reducer,
+	const {state} = useMutedReducer({
 		setCompDeps: Comp.setCompDeps,
 		initialState,
+		reducer,
+		fn: onChangeState({Comp}),
 	});
 
 	const comps = Comp.getComps();
 
-	const onChangeRecipients = useCallback(onThisChangeRecipients({Comp}), []);
+	const onChangeCaption = onChangeCaption_({Comp});
+	const onChangeRecipients = useCallback(onChangeRecipients_({Comp}), []);	
+	const onRequestFile = useOnChangeSelections({
+		Comp,
+		deps: [],
+		handler: getRequestFileHandler,
+	});
 
-	useShareActions({
+	const onSelectFile = useOnChangeSelections({
+		Comp,
+		deps: [],		
+		handler: onSelectFile_,
+	});
+
+	const eventHandlers = {
+		onSelectFile,
+		onRequestFile,		
+	};
+
+	const onClickItem = useOnClickItem({eventHandlers});
+
+	const files = Object.keys(state.files);
+
+	const FilesComp = files.length === 0 ? undefined : <Files
+		files={files}
+		onSelectFile={getVarName({onSelectFile})}
+		onRequestFile={getVarName({onRequestFile})}
+	/>
+
+	useEffectGetSharedReceptients({Comp, deps: []});
+
+	useEffectShareActions({
 		additionalPanelRender: comps.AdditionalPanelAPI.renderIt,
 		state,
 
-		onSelectTo: onThisSelectTo({Comp}),
-		onBackwardToPhotos: onThisBackwardToPhotos({Comp}),
-		onSend: onThisSend({Comp}),
+		onSelectTo: onSelectTo_({Comp}),
+		onBackwardToPhotos: onBackwardToPhotos({Comp}),
+		onSend: onSend({Comp}),
+		deps: [
+			state.isButtonSelectTo, 
+			state.isButtonBackward,
+			state.isButtonSend,
+		]
 	});
 
-	const onChangeCaption = onChangeCaptionWith({Comp});
+	const selectionProps = {
+		selection: state.isButtonBackward ? state.recipients : state.filesSelected,
+		ident: state.isButtonBackward ? 'ident' : undefined,
+	};
 
-	useEffect(
-		() => {
-			const server = Comp.getServer();
+	useEffectSetHtmlSelection(selectionProps);
 
-			server.getSharedRecipients()
-			.then(({
-				recipients,
-			}) => {
-				const {
-					setState,
-				} = Comp.getDeps();
-				
-				setState({
-					recipientsAll: recipients,
-				});
-			});
-		}, 
-		[]
-	);
 
 	return (
-		<div className="Share">		
-			{state.isButtonBackwardToPhotos 
+		<div className="Share layout">		
+			{state.isButtonBackward 
 			?	<div>
 					подпись:{' '}  			
 					<input 
@@ -80,23 +103,25 @@ function render() {
 						onChange={onChangeCaption}
 					/>				
 					<Recipients 
-						items={state.recipientsAll}						
+						items={state.recipientsAll}		
+						selection={state.recipients}				
 						onChange={onChangeRecipients}
 					/>
 				</div>
-			: state.isEmpty 
-				? <Empty />
-				: <ShareItems
-					sources={state.files}
-				/>
-			}	
-			
+
+			: 	<BrowseBase 
+					refHandler={ref}			
+					scrollTo={state.scrollTo}
+					onClick={onClickItem}
+				>
+					{FilesComp}
+				</BrowseBase>
+			}				
 		</div>
 	);
 }
 
 function getAPI({
-	Comp,
 	resumeObj,
 }) {
 	return ({
@@ -176,6 +201,8 @@ function reducer({
 	};
 
 	stateNew.isEmpty = Object.keys(stateNew.files).length === 0;
+	stateNew.isButtonSelectTo =  stateNew.isButtonBackward === false && stateNew.filesSelected.length > 0;
+	stateNew.isButtonSend = Object.keys(stateNew.recipients).length > 0 && stateNew.filesSelected.length > 0;
 
 	return stateNew;
 }
@@ -186,57 +213,61 @@ function getComps({
 	const {
 		PhotoStatuses,
 		AdditionalPanel,
+		App,
+		Browse,
 	} = channelComps;
 
 	return {
 		items: {
+			App,
+			Browse,
 			PhotoStatuses,
 			AdditionalPanel,
 		},
 	};
 }
 
-function onThisSelectTo({
+function onSelectTo_({
 	Comp
 }) {
-	return (event) => {
-		const {state, setState} = Comp.getDeps();
+	return () => {
+		const {setState} = Comp.getDeps();
 		setState({
 			isButtonSelectTo: false,
-			isButtonBackwardToPhotos: true,
+			isButtonBackward: true,
 		});
 	};
 }
 
-function onThisChangeRecipients({
+function onChangeRecipients_({
 	Comp,
 }) {
 	return ({
 		recipients,
 	}) => {
 		const {
-			setStateSilent,
+			setState,
 		} = Comp.getDeps();
 		
-		setStateSilent({
+		setState({
 			recipients,
 		});
 	};
 }
 
-function onThisBackwardToPhotos({
+function onBackwardToPhotos({
 	Comp,
 }) {
 	return (event) => {
 		const {setState} = Comp.getDeps();
 		setState({
-			isButtonBackwardToPhotos: false,
+			isButtonBackward: false,
 			isButtonSelectTo: true,
 		});
 	}
 }
 
-function onThisSend({Comp}) {
+function onSend({Comp}) {
 	return () => {
 		const server = Comp.getServer();
 
@@ -245,21 +276,33 @@ function onThisSend({Comp}) {
 		const caption = state.caption;
 
 		server.share({
-			files: Object.keys(state.files), 
-			recipients: state.recipients.map((item) => {
+			files: state.filesSelected, 
+			recipients: Object.values(state.recipients).map((item) => {
 				item.caption = caption;
+
 				return item;
 			}),
 		})
 		.then(() => {
 			return checkProgress({
 				checkFunc: server.checkProgress,
-			})
+			});
+		})
+		.then(() => {
+			const {state, setState} = Comp.getDeps();
+			for (let file of state.filesSelected) {
+				delete state.files[file];
+			}
+			setState({
+				files: state.files,
+				filesSelected: [],
+				isButtonBackward: false,
+			});		
 		});
 	};
 }
 
-function onChangeCaptionWith({
+function onChangeCaption_({
 	Comp,
 }) {
 	return (event) => {
@@ -270,17 +313,94 @@ function onChangeCaptionWith({
 	};	
 }
 
+function onSelectFile_({
+	Comp,
+	ident,
+	checked,
+}) {
+	const {
+		state,
+		setState,
+	} = Comp.getDeps();
+
+	if (checked) {
+		state.filesSelected.push(ident);
+	}		
+	else {
+		state.filesSelected = state.filesSelected.filter(item => item !== ident);
+	}
+
+	setState({
+		filesSelected: state.filesSelected, 
+		scrollTo: "",
+	});
+}
+
+function useEffectGetSharedReceptients({
+	Comp,
+	deps,
+}) {
+	useEffect(
+		() => {
+			const server = Comp.getServer();
+
+			server.getSharedRecipients()
+			.then(
+				({
+					recipients,
+				}) => {
+					const {
+						setState,
+					} = Comp.getDeps();
+					
+					setState({
+						recipientsAll: recipients,
+					});
+				}
+			);
+		}, 
+		deps
+	);	
+}
+
+function onChangeState({
+	Comp,
+}) {
+	return ({
+		stateUpd,
+	}) => {
+		const resumeObj = Comp.getResumeObj();
+		let value = {};
+
+		if (stateUpd.hasOwnProperty('scrollTo')) {
+			value = {
+				scrollTo: stateUpd.scrollTo,
+			};
+		}
+
+		if (stateUpd.hasOwnProperty('files')) {
+			value = {
+				files: stateUpd.files,
+			};
+		}
+
+		resumeObj.save({
+			val: value,
+		});
+	};
+}
+
 function getInitialState(
 ) { 
 	return {
 		files: {},
-		filesSelected: {},
-		forceUpdate: false,
+		filesSelected: [],
 		caption: '',
-		recipients: {},
+		recipients: {},		
 		recipientsAll: {},
-		isButtonSelectTo: true,
-		isButtonBackwardToPhotos: false,
-		isButtonSend: true,
+		scrollTo: '',
+		isButtonSelectTo: false,
+		isButtonBackward: false,
+		isButtonSend: false,
 	};
 }

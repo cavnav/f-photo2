@@ -8,11 +8,11 @@ import {
 import { checkProgress, 
 	refreshOppositeWindow,
 	getVarName, 
-	onChangeSelections, 
 	updateHtmlSelectorsFromObject, 
 	scrollToSelector, 
-	getSelector,
 	getExistsProps,
+	useOnChangeSelections,
+	getRequestFileHandler,
 } from '../../functions';
 import { createSteps } from './createSteps';
 import { channel } from '../../channel';
@@ -43,7 +43,7 @@ function render(props) {
 	const rp = Comp.getReqProps();	
 	const {resumeObj} = rp;
 
-	const [state, setState, setStateSilent] = useMutedReducer({		
+	const {state, setState, setStateSilent} = useMutedReducer({		
 		initialState: getInitialState({resumeObj}),
 		reducer,
 		setCompDeps: Comp.setCompDeps,
@@ -125,8 +125,8 @@ function render(props) {
 		[state.isCopyingScript],
 	);
 
-	const onChangeThisSelections = onChangeSelections({Comp, handler: onChangeSelectionsHandler});
-	const onOpenItemFolder = onChangeSelections({Comp, handler: onOpenItemFolderHandler});
+	const onChangeThisSelections = useOnChangeSelections({Comp, handler: onChangeSelectionsHandler, deps: []});
+	const onOpenItemFolder = useOnChangeSelections({Comp, handler: getRequestFileHandler, deps: []});
 
 	const onSelectItem = (event) => {		
 		const handler = event.target.getAttribute('handler');
@@ -215,7 +215,7 @@ function render(props) {
 	useEffect(
 		() => {
 			updateHtmlSelectorsFromObject({
-				selections: state.requiredFilesToPrint,
+				selection: state.requiredFilesToPrint,
 			});
 		}, 
 		[state.isCopyingScript]
@@ -272,7 +272,6 @@ function getReqProps({
 };
 
 function getAPI({
-	Comp,
 	resumeObj,
 }) {
 	return {
@@ -377,33 +376,7 @@ function checkFilesExcess({files, delta}) {
 	return Object.keys(files).length + delta > MAX_FILES_COUNT;
 }
 
-function onOpenItemFolderHandler({Comp, src}) {
-	const rp = Comp.getReqProps();
-	const {sep} = rp.resumeObj.state;
-	const lastIndexSeparator = src.lastIndexOf(sep);
-	const path = src.substr(0, lastIndexSeparator);
-	const item = src.substr(lastIndexSeparator + 1);
-
-	rp.BrowseAPI.setToResumeObj({
-		val: {
-			path,
-			scrollTo: getSelector({id: item}),
-		}
-	});
-
-	const {setState} = Comp.getDeps();
-	const srcUpd = src.split(sep).join(sep.concat(sep));
-	
-	setState({
-		scrollTo: getSelector({id: srcUpd}),
-	});
-
-	rp.AppAPI.toggleAction({
-		action: rp.Browse.name,	
-	});
-}
-
-function onChangeSelectionsHandler({Comp, event, src, checked}) {
+function onChangeSelectionsHandler({Comp, event, ident, checked}) {
 	const {state, setStateSilent} = Comp.getDeps();
 
 	if (checked) {
@@ -414,10 +387,10 @@ function onChangeSelectionsHandler({Comp, event, src, checked}) {
 			event.preventDefault();
 			return;
 		}
-		state.requiredFilesToPrint[src] = state.files[src];
+		state.requiredFilesToPrint[ident] = state.files[ident];
 	}
 	else {
-		delete state.requiredFilesToPrint[src];
+		delete state.requiredFilesToPrint[ident];
 	}
 
 	setStateSilent({

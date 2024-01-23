@@ -7,11 +7,11 @@
 	--red: red;
 	--black: black;
 	--blue: lightskyblue;
-	--offset: 2px;
-	--offset-2x: 4px;
-	--offset-3x: 6px;
-	--offset-4x: 8px;
-	--offset-5x: 10px;
+	--offset2: 2px;
+	--offset4: 4px;
+	--offset6: 6px;
+	--offset8: 8px;
+	--offset10: 10px;
 	--font-size-main: 24px;
 }
 
@@ -204,6 +204,7 @@ iframe,
 	align-content: flex-start;
 	flex-wrap: wrap;
 	height: 100%;
+	width: 100%;
 	overflow-y: auto;
 }
 

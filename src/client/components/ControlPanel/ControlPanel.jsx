@@ -8,7 +8,6 @@ import { useMutedReducer } from '../../mutedReducer';
 export const ControlPanel = channel.addComp({
 	name: 'ControlPanel',
 	render,
-	getReqProps,
 	getComps,
 });
 
@@ -19,19 +18,20 @@ function render() {
 		setCompDeps: Comp.setCompDeps,
 	});
 
-	const rp = Comp.getReqProps();
+	const {AppAPI} = Comp.getComps();
+
 	return (
 		<div
 			className="controlPanel flex"
 			onClick={onClickAction}
 		>{
-			rp.actions
+			AppAPI.state.actions
 				.filter((action) => action.isEnabled !== false)
 				.map((props) => {
 					const classNames = cn({
 						action: true,
 						btn: true,
-						active: props.id === rp.appStateAction,
+						active: props.id === AppAPI.state.action,
 					});
 					return (
 						<div key={props.id} className={classNames} data-id={props.id}>
@@ -48,39 +48,24 @@ function render() {
 		const actionId = e.target.getAttribute('data-id');
 
 		if (actionId !== null) {
-			rp.setAppState({
+			AppAPI.setState({
 				action: actionId,
 			});
 		}
 	};
 }
 
-function getReqProps({ comps, channel }) {
-	const cropped = channel.crop({
-		s: {
-			action: 'appStateAction',
-			actions: 1,
-		},
-		d: {
-			setAppState: 1,
-		},
-	});
-
-	return {
-		...cropped,
-		...comps,
-	};
-};
-
 function getComps({
 	channelComps,
 }) {
 	const {
+		App,
 		Print,
 		Notification,
 	} = channelComps;
 	return {
 		items: {
+			App,
 			Print,
 			Notification,
 		},

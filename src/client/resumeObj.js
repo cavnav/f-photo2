@@ -5,113 +5,113 @@ export const STORAGE_ITEM = 'resume';
 const KEY_BROWSER_COUNT = 'browserCount';
 
 export class ResumeObj {
-  defAppState = {
-    sep: '\\',
-    [KEY_BROWSER_COUNT]: 1,
-    leftWindow: {
-      // OnePhoto: {},
-    },
-    rightWindow: undefined,
-    // [Print.name]: {},
-    // [Share.name]: {},
-  };
-  
-  constructor(
-    props = {},
-  ) {
+    defAppState = {
+        sep: '\\',
+        [KEY_BROWSER_COUNT]: 1,
+        leftWindow: {
+            // OnePhoto: {},
+        },
+        rightWindow: undefined,
+        // [Print.name]: {},
+        // [Share.name]: {},
+    };
 
-    const {
-      selector = [],
-      val,
-    } = props;
-
-    this.selector = selector;
-    if (this.state === null) {
-      this.saveCore({
-        val: this.defAppState,
-      });      
-    }   
-    
-    if (Object.keys(this.get()).length === 0 &&
-      props.hasOwnProperty('selector') && 
-      props.hasOwnProperty('val')
+    constructor(
+        props = {},
     ) {
-      this.save({
-        val,
-      });
+
+        const {
+            selector = [],
+            val,
+        } = props;
+
+        this.selector = selector;
+        if (this.state === null) {
+            this.saveCore({
+                val: this.defAppState,
+            });
+        }
+
+        if (Object.keys(this.get()).length === 0 &&
+            props.hasOwnProperty('selector') &&
+            props.hasOwnProperty('val')
+        ) {
+            this.save({
+                val,
+            });
+        }
     }
-  }
 
-  save({ 
-    val, 
-    selector = this.selector,
-  }) { 
-    const resumeObj = this.state;
-    const selectorObj = _get(
-      resumeObj,
-      selector,  
-      {},    
-    ); 
-    Object.assign(
-      selectorObj,
-      val,
-    ); 
-    _set(
-      resumeObj,
-      selector,
-      selectorObj,
-    );
-
-    this.saveCore({
-      val: resumeObj,
-    });
-  }
-
-  saveCore({
-    val,
-  }) {
-    localStorage.setItem(
-      STORAGE_ITEM, 
-      JSON.stringify(
+    save({
         val,
-      ),
-    );
-  }
+        selector = this.selector,
+    }) {
+        const resumeObj = this.state;
+        const selectorObj = _get(
+            resumeObj,
+            selector,
+            {},
+        );
+        Object.assign(
+            selectorObj,
+            val,
+        );
+        _set(
+            resumeObj,
+            selector,
+            selectorObj,
+        );
 
-  saveMerge({
-    val,
-  }) {
-    localStorage.setItem(
-      STORAGE_ITEM,
-      JSON.stringify({
-        ...this.state,
-        ...val,
-      }),
-    );
-  }
+        this.saveCore({
+            val: resumeObj,
+        });
+    }
 
-  load({
-    selector,
-  }) {
-    return myCrop({
-      from: this.state,
-      selector,
-    });
-  }
+    saveCore({
+        val,
+    }) {
+        localStorage.setItem(
+            STORAGE_ITEM,
+            JSON.stringify(
+                val,
+            ),
+        );
+    }
 
-  get({
-    selector = this.selector,
-    defVal = {},
-  } = {}) {
-    return _get(
-      this.state,
-      selector,
-      defVal,
-    );
-  }
+    saveMerge({
+        val,
+    }) {
+        localStorage.setItem(
+            STORAGE_ITEM,
+            JSON.stringify({
+                ...this.state,
+                ...val,
+            }),
+        );
+    }
 
-  get state() {
-    const storage = localStorage.getItem(STORAGE_ITEM);
-    return storage ? JSON.parse(storage) : this.defAppState;
-  }  
+    load({
+        selector,
+    }) {
+        return myCrop({
+            from: this.state,
+            selector,
+        });
+    }
+
+    get({
+        selector = this.selector,
+        defVal = {},
+    } = {}) {
+        return _get(
+            this.state,
+            selector,
+            defVal,
+        );
+    }
+
+    get state() {
+        const storage = localStorage.getItem(STORAGE_ITEM);
+        return storage ? JSON.parse(storage) : this.defAppState;
+    }
 }

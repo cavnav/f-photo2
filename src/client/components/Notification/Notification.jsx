@@ -12,7 +12,7 @@ export const Notification = channel.addComp({
 
 function render(props) {
   const Comp = this;
-  const [state, setState] = useMutedReducer({
+  const {state, setState} = useMutedReducer({
     initialState,
     props,
     setCompDeps: Comp.setCompDeps,

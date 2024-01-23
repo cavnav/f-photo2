@@ -11,9 +11,9 @@ const SharedBot = require('./scriptRunSharedBot');
 const app = express();
 
 const ALBUM_DIR = path.join(path.resolve('../../'), 'album');
-const PRINTED_DIR = path.join(ALBUM_DIR, 'printed');
-const PRINTED_JSON = path.join(PRINTED_DIR, 'printed.json');
-const SHARED_DIR = path.resolve('../../shared');
+const PRINTED_JSON = path.join(__dirname, 'printed.json');
+const SHARED_JSON = path.join(__dirname, 'shared.json');
+const SHARED_DIR = path.join(__dirname, 'shared');
 const RESPONSE_WORKING = "WORKING";
 const CHAT_IDS_FILE = path.join(__dirname, './chatIDs.json');
 
@@ -90,6 +90,7 @@ app.post('/api/share', async (req, response) => {
 
 	response.send(RESPONSE_WORKING);
 
+	await fs.remove(SHARED_DIR);
 
 	// copy selected files to shared folder.
 	await (async () => {
@@ -99,7 +100,6 @@ app.post('/api/share', async (req, response) => {
 			await fs.copy(fileFrom, fileTo);
 		}
 	})();
-
 
 	const Bot = new SharedBot({
 		botParams: {
@@ -120,6 +120,11 @@ app.post('/api/share', async (req, response) => {
 	});
 
 	Bot.run();
+
+	await logShared({
+		files,
+		recipients,
+	});
 });
 
 app.get('/api/getUsbDevices', (req, res) => {
@@ -322,13 +327,11 @@ app.post('/api/resetNavigation', (req, res) => {
 		curWindow,
 	} = req.body;
 
-	// Not only ALBUM_DIR, PRINTED_DIR too.
 	const resetToUpd = path.join(ALBUM_DIR, resetTo);
 	state[curWindow] && setState({
 		[curWindow]: resetToUpd,
 	});
 
-	console.log("resetTo", state[curWindow])
 	res.send(req.body);
 });
 
@@ -428,7 +431,6 @@ app.post('/api/saveFilesToFlash', async (req, response) => {
 		}
 	})
 	.catch((error) => {
-		console.error(777, error);
 		response.send({error});
 	});
 });
@@ -718,7 +720,6 @@ async function findFiles({
 	const { sep } = path;
 	const browseDirs = dirs
 		.filter(isTopLevelFile)
-		.filter(removePrintedFolder)
 		.sort(sortByBirthday)
 		.map((dir) => path.join(sep, path.basename(dir)));	
 
@@ -729,9 +730,6 @@ async function findFiles({
 
 
 	// ------------------------------------------- 
-	function removePrintedFolder(file) {
-		return !file.includes(PRINTED_DIR);
-	}
 	function isNotSVI(file) {
 		return !file.includes('System Volume Information');
 	}
@@ -857,6 +855,33 @@ async function browseFiles({
 		path: myPath,
 		sep: path.sep,
 	});
+}
+
+async function logShared({
+	files,
+	recipients,
+}) {
+	const src = SHARED_JSON;
+	let json = {};
+	
+	try {
+		json = await fs.readJson(src);
+			
+	} catch ({code}) {
+		if (code != 'ENOENT') {
+			throw new Error(code);
+		}
+	}
+
+	json[getCurMoment()] = {
+		files,
+		recipients,
+	};
+
+	await fs.writeJson(
+		src,		
+		json,
+	);
 }
 
 async function updatePrinted({

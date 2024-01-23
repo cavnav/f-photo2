@@ -11,21 +11,9 @@ import {
 import { ResumeObj } from './resumeObj';
 
 class Channel {
-    s; // states;
-    d; // dispatches;
     comps = {};
 
-    preset({
-        s,
-        d
-    }) {
-        this.s = s;
-        this.d = d;
-        this.server = new AppServerAPI({
-            s,
-            d
-        });
-    }
+    server = new AppServerAPI();
 
     addComp({
         name,
@@ -49,6 +37,7 @@ class Channel {
         return baseComp;
     }
 
+    // TODO. remove from here.
     crop(
         source,
         context,
@@ -131,7 +120,7 @@ class ChannelComp {
         this.deps = {};
         this.comps = undefined;
         this.r = render.bind(this);
-        this.resumeObj = getResumeObj ? new ResumeObj(getResumeObj({name})) : {};
+        this.resumeObj = new ResumeObj(getResumeObj?.({name}));
         this.props = {
             name,
             render,

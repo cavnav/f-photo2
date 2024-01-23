@@ -14,7 +14,7 @@ export const AdditionalPanel = channel.addComp({
 function render(
 ) {
   const Comp = this;
-  const [state] = useMutedReducer({ 
+  const {state} = useMutedReducer({ 
     initialState: getInitialState(),
     setCompDeps: Comp.setCompDeps,
   });

@@ -1,10 +1,10 @@
 import React, { useEffect } from 'react';
 import { channel } from '../../channel';
-import { getExistsProps, getSelector, initRefreshWindowEvent, myRequest } from '../../functions';
+import { getExistsProps, getSelector, getVarName, initRefreshWindowEvent, myRequest, useOnChangeSelections, useOnClickItem } from '../../functions';
 import { useMutedReducer } from '../../mutedReducer';
 import { FilesPrinted } from '../File/FilesPrinted';
-import { getFileSrc } from '../File/FileUtils';
 import { eventNames } from '../../constants';
+import { BrowseBase } from '../BrowseBase/BrowseBase';
 
 
 const STATE_NAMES = {BrowseBase: BrowseBaseWrap, Printed: PrintWrap};
@@ -20,7 +20,7 @@ function render() {
     const Comp = this;
     const resumeObj = Comp.getResumeObj();
 
-    const [state] = useMutedReducer({
+    const {state} = useMutedReducer({
         setCompDeps: Comp.setCompDeps,
         initialState: getInitialState({Comp}),
         fn: ({
@@ -44,7 +44,10 @@ function render() {
 	);
     
     return (
-        StateComp && <StateComp key={state.forceUpdate} PrintedComp={Comp}/>
+        <StateComp 
+            key={state.forceUpdate} 
+            PrintedComp={Comp}
+        />
     );
 }
 
@@ -58,43 +61,38 @@ function onRefreshWindow({
 function BrowseBaseWrap({PrintedComp}) {
     const rp = PrintedComp.getReqProps();
     const {deps} = rp;
-    const BrowseBase = rp.comps.BrowseBase.r;
 
     const {state} = deps;
-    const FilesComp = state.printed.length === 0 ? undefined : (props) => <FilesPrinted
+
+    const onRequestFile = useOnChangeSelections({
+        Comp: PrintedComp,
+        deps: [],
+        handler: onRequestFileHandler,
+    });
+    
+    const FilesComp = state.printed.length === 0 ? undefined : <FilesPrinted
         files={state.printed}
-        {...props}
-        />;
+        onRequestFile={getVarName({onRequestFile})}
+    />;
+
+    const eventHandlers = {
+        onRequestFile,
+    };
+
+    const onClickItem = useOnClickItem({eventHandlers});
 
     useEffect(() => {    
         getPrinted({PrintedComp});
     }, [state.forceUpdate]);
 
     return (
-        <BrowseBase
-            Files={FilesComp}
+        <BrowseBase        
             scrollTo={state.scrollTo}
-            onRequestFile={onRequestFile}
-        />
+            onClick={onClickItem}
+        >
+            {FilesComp}
+        </BrowseBase>
     );
-
-
-    // ------------------------------------------------
-
-    function onRequestFile(event) {
-        const rp = PrintedComp.getReqProps();
-        const {deps} = rp;
-        const {setState} = deps;
-        const actionName = rp.comps.Printed.name;
-
-        const requestFile = getFileSrc({event});
-
-        setState({
-            actionName, 
-            requestFile,
-            scrollTo: getSelector({id: requestFile}),
-        });
-    }
 }
 
 function PrintWrap({PrintedComp}) {
@@ -108,9 +106,8 @@ function PrintWrap({PrintedComp}) {
     }, []);
 
     const onBackToPrinted = () => {
-        const actionName = rp.comps.BrowseBase.name;
         setState({
-            actionName, 
+            actionName: BrowseBase.name, 
         });
     }
 
@@ -151,12 +148,10 @@ function getComps({
     const {
         Print,
         Dialog,
-        BrowseBase,
     } = channelComps;
 
     return {
         toClone: {
-            BrowseBase,
             Printed: Print,
         },
         items: {
@@ -195,9 +190,23 @@ function getSavedState({state}) {
     });
 }
 
-function getInitialState({Comp}) {
+function onRequestFileHandler({
+    Comp,
+    ident:src
+}) {
     const rp = Comp.getReqProps();
-    const actionBrowseName = rp.comps.BrowseBase.name;
+    const {deps} = rp;
+    const actionName = rp.comps.Printed.name;
+
+    deps.setState({
+        actionName, 
+        requestFile: src,
+        scrollTo: getSelector({id: src}),
+    });
+}
+
+function getInitialState({Comp}) {
+    const actionBrowseName = BrowseBase.name;
     const resumeObj = Comp.getResumeObj().get();
 
     return {

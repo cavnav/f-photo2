@@ -7,19 +7,15 @@ export function FilesPrinted({
     onRequestFile,
 }) {
     return (
-        <>
-        {
-            files.map((file, ind) => (
-                <File
-                    key={file} 
-                    title={file}
-                    ind={ind}
-                    src={file}
-                    className="positionRel fitPreview file"
-                    onRequestFile={onRequestFile}
-                />
-            ))
-        }
-        </>
+        files.map((file, ind) => (
+            <File
+                key={file} 
+                className="positionRel fitPreview file"
+                title={file}
+                ind={ind}
+                src={file}
+                onRequestFile={onRequestFile}
+            />
+        ))
     );
 }
