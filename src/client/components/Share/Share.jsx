@@ -1,7 +1,6 @@
 import React, {useCallback, useMemo, useEffect, useRef} from 'react';
 import { channel } from '../../channel';
 import { useMutedReducer } from '../../mutedReducer';
-import { Empty } from '../Empty/Empty';
 import { checkProgress, getRequestFileHandler, getVarName, updateFiles, useEffectSetHtmlSelection, useOnChangeSelections, useOnClickItem } from '../../functions';
 import { Recipients } from './components/Recipients';
 import { Files } from '../File/Files';

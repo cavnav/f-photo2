@@ -21,6 +21,7 @@ module.exports = class SharedBot {
 			[], 
 			{
 				cwd: scriptPath,
+				//execArgv: ['--trace-deprecation'],
 				stdio: 'inherit', // Redirect child's stdio to parent (optional)
 			}
 		);

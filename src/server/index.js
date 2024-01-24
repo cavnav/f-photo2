@@ -10,13 +10,12 @@ const SharedBot = require('./scriptRunSharedBot');
 
 const app = express();
 
-const ALBUM_DIR = path.join(path.resolve('../../'), 'album');
+const ALBUM_DIR = path.resolve(__dirname, '../../../album');
 const PRINTED_JSON = path.join(__dirname, 'printed.json');
 const SHARED_JSON = path.join(__dirname, 'shared.json');
 const SHARED_DIR = path.join(__dirname, 'shared');
 const RESPONSE_WORKING = "WORKING";
 const CHAT_IDS_FILE = path.join(__dirname, './chatIDs.json');
-
 
 let state = {
 	newPhotos: [],
@@ -45,8 +44,6 @@ if (process.env.NODE_ENV?.trim() === 'production') {
 }
 
 app.listen(8080, () => console.log('listening on port 8080'));
-
-//app.listen(process.env.PORT || 8080, () => console.log(`Listening on port ${process.env.PORT || 8080}!`));
 
 app.get('/api/getSharedRecipients', async (req, response) => {
 	const recipients = await getRecipients();
@@ -84,11 +81,12 @@ app.post('/api/share', async (req, response) => {
 		recipients,
 	} = req.body;
 
+	response.send(RESPONSE_WORKING);
+	
 	setState({
 		progress: 0,
 	});
 
-	response.send(RESPONSE_WORKING);
 
 	await fs.remove(SHARED_DIR);
 
@@ -127,26 +125,24 @@ app.post('/api/share', async (req, response) => {
 	});
 });
 
-app.get('/api/getUsbDevices', (req, res) => {
-	(async () => {
-		const drives = await drivelist.list();
-		const [usbDriveLetter] = drives
-			.filter(drive => drive.isUSB)
-			.slice(-1)
-			.map((drive) => {
-				const [mountpoint] = drive.mountpoints.slice(-1);
-				return mountpoint.path;
-			});
-
-		const usbDriveLetterUpd = (usbDriveLetter) ? path.join(usbDriveLetter, path.sep) : usbDriveLetter;
-		setState({
-			usbDriveLetter: usbDriveLetterUpd,
+app.get('/api/getUsbDevices', async (req, res) => {
+	const drives = await drivelist.list();
+	const [usbDriveLetter] = drives
+		.filter(drive => drive.isUSB)
+		.slice(-1)
+		.map((drive) => {
+			const [mountpoint] = drive.mountpoints.slice(-1);
+			return mountpoint.path;
 		});
 
-		res.send({
-			driveLetter: usbDriveLetter,
-		});
-	})();
+	const usbDriveLetterUpd = (usbDriveLetter) ? path.join(usbDriveLetter, path.sep) : usbDriveLetter;
+	setState({
+		usbDriveLetter: usbDriveLetterUpd,
+	});
+
+	res.send({
+		driveLetter: usbDriveLetter,
+	});
 });
 
 app.get('/api/getNewPhotos', async (req, res) => {
