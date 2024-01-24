@@ -124,6 +124,11 @@ export class AppServerAPI {
 		url: 'towardPrinted',
 	});
 
+	towardShared = (props) => this.toward({
+		...props,
+		url: 'towardShared',
+	});
+
 	toward = ({
 		resetTo,
 		dir,

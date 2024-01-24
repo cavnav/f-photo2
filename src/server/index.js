@@ -87,7 +87,6 @@ app.post('/api/share', async (req, response) => {
 		progress: 0,
 	});
 
-
 	await fs.remove(SHARED_DIR);
 
 	// copy selected files to shared folder.
@@ -341,11 +340,26 @@ app.post('/api/towardPrinted', async (req, res) => {
 	const {body} = req;
 
 	const dir = body.dir ? path.basename(body.dir) : undefined;
-	const result = await mapResponsePrinted({
-		dir,
+	const jsonItem = await getJsonItem({
+		ident: dir,
+		jsonPath: PRINTED_JSON
 	});
 
-	res.send(result);
+	res.send({
+		files: jsonItem,
+	});
+});
+
+app.post('/api/towardShared', async (req, res) => {
+	const {body} = req;
+
+	const dir = body.dir ? path.basename(body.dir) : undefined;
+	const jsonItem = await getJsonItem({
+		ident: dir,
+		jsonPath: SHARED_JSON,
+	});
+
+	res.send(jsonItem);
 });
 
 app.get('/api/checkProgress', (req, res) => {
@@ -815,21 +829,6 @@ function getToward({
 	}
 }
 
-function getBackward({
-	rootDir,
-} = {}) {
-	return (req, res) => getToward(
-		{
-			rootDir,
-			reqPath: getBackwardPath({
-				rootDir,
-				curWindow: req.body.curWindow,
-			}),
-			mapResponse: mapResponsePrinted,
-		},
-	)(req, res);
-};
-
 async function browseFiles({
 	reqPath,
 	rootDir,
@@ -893,14 +892,22 @@ async function updatePrinted({
 	);
 }
 
-async function mapResponsePrinted({
-	dir,
+async function getJsonItem({
+	ident,
+	jsonPath,
 }) {
-	const json = await fs.readJson(PRINTED_JSON).catch(e => new Object());
+	let json = {};
+	
+	try {
+		json = await fs.readJson(jsonPath);
+			
+	} catch ({code}) {
+		if (code != 'ENOENT') {
+			throw new Error(code);
+		}
+	}
 
-	return {
-		files: json[dir] ?? json,
-	};
+	return json[ident] ?? json;
 }
 
 /**

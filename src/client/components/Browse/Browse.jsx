@@ -46,9 +46,8 @@ function render(
 		fn: ({
 			state,
 		}) => {
-			const {refHandler, ...stateUpd} = state;
 			resumeObj.save({
-				val: stateUpd,
+				val: state,
 			});
 		}
 	});
@@ -124,7 +123,6 @@ function render(
 
 	return (
 		<BrowseBase 
-			refHandler={state.refHandler}			
 			scrollTo={state.scrollTo}
 			onClick={onClickItem}
 		>
@@ -161,11 +159,6 @@ function onChangeDir({
 		const {
 			onNavigate,
 		} = Comp.getAPI();
-
-		const {state} = Comp.getDeps();
-		if (state.refHandler.current) {
-			state.refHandler.current.scrollTop = 0;
-		}
 
 		const {setStateSilent} = Comp.getDeps();
 		setStateSilent({
@@ -655,7 +648,6 @@ function getStateInit() {
 	const resumed = resumeObj.get();
 
 	return {
-		refHandler: {current: undefined},
 		previewWidth: 100,
 		previewHeight: 100,
 		sep: undefined,

@@ -2,11 +2,11 @@ import React from 'react';
 import {File} from './File';
 
 
-export function FilesPrinted({
+export function FilesOne({
     files,
     onRequestFile,
 }) {
-    return (
+    return files.length === 0 ? undefined : (
         files.map((file, ind) => (
             <File
                 key={file} 

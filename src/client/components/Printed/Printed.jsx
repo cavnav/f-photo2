@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
 import { channel } from '../../channel';
-import { getExistsProps, getSelector, getVarName, initRefreshWindowEvent, myRequest, useOnChangeSelections, useOnClickItem } from '../../functions';
+import { getExistsProps, getSelector, getVarName, initRefreshWindowEvent, useOnChangeSelections, useOnClickItem } from '../../functions';
 import { useMutedReducer } from '../../mutedReducer';
-import { FilesPrinted } from '../File/FilesPrinted';
+import { FilesOne } from '../File/FilesOne';
 import { eventNames } from '../../constants';
 import { BrowseBase } from '../BrowseBase/BrowseBase';
 
@@ -70,7 +70,7 @@ function BrowseBaseWrap({PrintedComp}) {
         handler: onRequestFileHandler,
     });
     
-    const FilesComp = state.printed.length === 0 ? undefined : <FilesPrinted
+    const FilesComp = <FilesOne
         files={state.printed}
         onRequestFile={getVarName({onRequestFile})}
     />;
@@ -119,26 +119,34 @@ function PrintWrap({PrintedComp}) {
 }
 
 function getPrintedItems({PrintedComp, requestFile}) {
-    const rp = PrintedComp.getReqProps();
-    myRequest({
-        request: () => rp.serverAPI.towardPrinted({dir: requestFile}),
-        onResponse: ({files}) => {
-            rp.deps.setState({
-                printedItems: files,
-            });
-        },
+    const {
+        serverAPI,
+        deps,
+    } = PrintedComp.getReqProps();
+
+    serverAPI.towardPrinted({
+        dir: requestFile,
+    })
+    .then(({
+        files
+    }) => {
+        deps.setState({
+            printedItems: files,
+        });
     });
 }
 
 function getPrinted({PrintedComp}) {
-    const rp = PrintedComp.getReqProps();
-    myRequest({
-        request: () => rp.serverAPI.towardPrinted({resetTo: ''}),
-        onResponse: ({ files }) => {
-            rp.deps.setState({
-                printed: Object.keys(files),
-            });
-        },
+    const {
+        serverAPI,
+        deps,
+    } = PrintedComp.getReqProps();
+    
+    serverAPI.towardPrinted({resetTo: ''})
+    .then(({ files }) => {
+        deps.setState({
+            printed: Object.keys(files),
+        });
     });
 }
 
@@ -147,15 +155,11 @@ function getComps({
 }) {
     const {
         Print,
-        Dialog,
     } = channelComps;
 
     return {
         toClone: {
             Printed: Print,
-        },
-        items: {
-            Dialog,
         },
     };
 }

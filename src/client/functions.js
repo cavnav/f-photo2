@@ -513,21 +513,6 @@ export function getItemName([itemName], sep) {
 	return itemName?.replace(sep, '');
 }
 
-export function myRequest({ request, onResponse }) {
-    const DialogAPI = Dialog.getAPI();
-
-	DialogAPI.show({
-		message: 'Подожди.',
-		isModal: true,
-		isHide: false,
-	});
-	return request?.()
-		.then(onResponse)
-		.then(() => {
-			DialogAPI.close();
-		});
-}
-
 export function useOnChangeSelections({
 	Comp, 
 	handler, 

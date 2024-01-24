@@ -21,20 +21,13 @@ class Channel {
         getResumeObj,
         getAPI,
         getReqProps,
-        getComps = () => ({}),
-    }) {
-        const baseComp = new ChannelComp({
-            name,
-            render,
-            getResumeObj,
-            getAPI,
-            getReqProps,
-            getComps,
-        });
+        getComps,
+    } = arguments) {
+        const comp = new ChannelComp(arguments);
 
-        this.comps[name] = baseComp;
+        this.comps[props.name] = comp;
 
-        return baseComp;
+        return comp;
     }
 
     // TODO. remove from here.
@@ -106,7 +99,7 @@ class Channel {
     }
 }
 
-class ChannelComp {
+export class ChannelComp {
     constructor({
         name,
         render,

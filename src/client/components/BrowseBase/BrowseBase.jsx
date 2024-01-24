@@ -12,7 +12,7 @@ export function BrowseBase(props) {
         onClick,
     } = props;
 
-    const isEmpty = props.children === undefined;
+    const isEmpty = Boolean(props.children);
 
     const {state, setStateSilent} = useMutedReducer({
         initialState: {

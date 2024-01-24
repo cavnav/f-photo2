@@ -16,9 +16,8 @@ export const Share = channel.addComp({
 	getResumeObj,
 });
 
-function render() {
+function render(props) {
 	const Comp = this;
-	const ref = useRef();
 	const resumeObj = Comp.getResumeObj();
 
 	const initialState = useMemo(() => {
@@ -31,6 +30,7 @@ function render() {
 	const {state} = useMutedReducer({
 		setCompDeps: Comp.setCompDeps,
 		initialState,
+		props,
 		reducer,
 		fn: onChangeState({Comp}),
 	});
@@ -109,7 +109,6 @@ function render() {
 				</div>
 
 			: 	<BrowseBase 
-					refHandler={ref}			
 					scrollTo={state.scrollTo}
 					onClick={onClickItem}
 				>
@@ -295,6 +294,7 @@ function onSend({Comp}) {
 			setState({
 				files: state.files,
 				filesSelected: [],
+				recipients: {},
 				isButtonBackward: false,
 			});		
 		});
@@ -392,10 +392,12 @@ function onChangeState({
 function getInitialState(
 ) { 
 	return {
+		// props
 		files: {},
-		filesSelected: [],
 		caption: '',
 		recipients: {},		
+
+		filesSelected: [],
 		recipientsAll: {},
 		scrollTo: '',
 		isButtonSelectTo: false,
