@@ -22,10 +22,17 @@ class Channel {
         getAPI,
         getReqProps,
         getComps,
-    } = arguments) {
-        const comp = new ChannelComp(arguments);
+    }) {
+        const comp = new ChannelComp({
+            name,
+            render,
+            getResumeObj,
+            getAPI,
+            getReqProps,
+            getComps,
+        });
 
-        this.comps[props.name] = comp;
+        this.comps[name] = comp;
 
         return comp;
     }
@@ -106,10 +113,13 @@ export class ChannelComp {
         getResumeObj,
         getAPI,
         getReqProps,
-        getComps,
+        getComps = () => { return {}; },
 
     } = {}) {
-        if (name) this.name = name;
+        if (name) {
+            this.name = name;
+        }
+        
         this.deps = {};
         this.comps = undefined;
         this.r = render.bind(this);

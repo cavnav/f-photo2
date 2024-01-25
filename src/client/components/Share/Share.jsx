@@ -394,9 +394,9 @@ function getInitialState(
 	return {
 		// props
 		files: {},
-		caption: '',
 		recipients: {},		
-
+		
+		caption: '',
 		filesSelected: [],
 		recipientsAll: {},
 		scrollTo: '',

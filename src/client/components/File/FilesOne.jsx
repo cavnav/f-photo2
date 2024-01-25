@@ -6,7 +6,7 @@ export function FilesOne({
     files,
     onRequestFile,
 }) {
-    return files.length === 0 ? undefined : (
+    return files.length === 0 ? null : (
         files.map((file, ind) => (
             <File
                 key={file} 

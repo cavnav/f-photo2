@@ -351,14 +351,18 @@ app.post('/api/towardPrinted', async (req, res) => {
 });
 
 app.post('/api/towardShared', async (req, res) => {
-	const {body} = req;
-
-	const dir = body.dir ? path.basename(body.dir) : undefined;
-	const jsonItem = await getJsonItem({
-		ident: dir,
-		jsonPath: SHARED_JSON,
+	const jsonItem = await getShared({
+		body: req.body,
 	});
+	res.send({
+		files: Object.keys(jsonItem),
+	});
+});
 
+app.post('/api/towardSharedItems', async (req, res) => {
+	const jsonItem = await getShared({
+		body: req.body,
+	});
 	res.send(jsonItem);
 });
 
@@ -1023,4 +1027,16 @@ function progressUpdate({
 		progress: progress,
 		countCopiedPhotos: countProcessed,
 	});
+}
+
+async function getShared({
+	body,
+}) {
+	const dir = body.dir ? path.basename(body.dir) : undefined;
+	const jsonItem = await getJsonItem({
+		ident: dir,
+		jsonPath: SHARED_JSON,
+	});
+
+	return jsonItem;
 }

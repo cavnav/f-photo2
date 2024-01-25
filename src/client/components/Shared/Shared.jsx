@@ -1,8 +1,9 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { ChannelComp, channel } from "../../channel";
 import { getSelector, getVarName, useOnChangeSelections, useOnClickItem } from '../../functions';
 import { useMutedReducer } from '../../mutedReducer';
 import { FilesOne } from '../File/FilesOne';
+import { BrowseBase } from '../BrowseBase/BrowseBase';
 
 export const Shared = channel.addComp({
     name: 'Shared',
@@ -10,57 +11,48 @@ export const Shared = channel.addComp({
     render,
 });
 
-const Components = {
-    BrowseBase: BrowseBaseWrap,
-    Shared: SharedWrap,
-};
-
+const BrowseWrap = new ChannelComp({
+    name: 'BrowseWrap',
+    render: browseWrapRender,
+});
 
 function render() {
     const Comp = this;
 
     const {
-        state
+        state,
     } = useMutedReducer({
         setCompDeps: Comp.setCompDeps,
         initialState: getInitialState(),
     });    
 
-    const ActiveComp = Components[state.activeComp];
+    const comps = Comp.getComps();
+    const SharedRender = comps.Shared.r;
 
     return (
-        <ActiveComp
-            MainComp={Comp}
-        />
+        <>
+            {state.activeComp === BrowseWrap.name && (
+                <BrowseWrap.r 
+                    MainComp={Comp}
+                    {...state.browseProps}
+                />
+            )}
+            {state.activeComp === comps.Shared.name && (
+                <SharedRender
+                    MainComp={Comp}
+                    {...state.sharedProps}
+                />
+            )}            
+        </>        
     );
 }
 
-function SharedWrap({
-    Comp,
-}) {
-    const {
-        comps,
-    } = Comp.getReqProps();
 
-    const Share = comps.Share.r;
-
-    return (
-        <Share
-            files={state.files}
-            recipients={state.recipients}
-        />
-    );
-}
-
-const BrowseBaseWrap = new ChannelComp({
-    name: 'BrowseBase',
-    render: browseRender,
-});
-
-function browseRender({
-    MainComp,    
+function browseWrapRender({
+    MainComp,
 }){
     const Comp = this;
+
     const {
         state,
     } = useMutedReducer({
@@ -69,7 +61,10 @@ function browseRender({
     });
 
     const onRequestFile = useOnChangeSelections({
-        Comp,
+        Comp: {
+            BrowseComp: Comp,
+            MainComp,
+        },
         deps: [],
         handler: onRequestFileHandler,
     });
@@ -87,10 +82,6 @@ function browseRender({
         deps: []
     });
 
-    useEffectSetActiveComponent({
-        Comp: MainComp,
-        deps: [state.requestFile],
-    });
 
     return (
         <BrowseBase
@@ -106,9 +97,8 @@ function browseRender({
 
 function getBrowseInitialState() {
     return {
-        files: {},
-        recipients: {},
-        requiredFile: undefined,
+        files: [],
+        scrollTo: "",
     };
 }
 
@@ -135,33 +125,12 @@ function getShared({
     } = Comp.getReqProps();
 
     
-    serverAPI.towardShared({
-        resetTo: ''
-    })
-    .then((
-        props
-    ) => {
-        deps.setState(props);
-    });
-}
-
-function getSharedItems({
-    Comp, 
-    requestFile,
-}) {
-    const {
-        serverAPI,
-        deps,
-    } = Comp.getReqProps();
-
-    serverAPI.towardPrinted({
-        dir: requestFile
-    })
-    .then((
-        props,
-    ) => {
-        deps.setState(props);
-    });
+    serverAPI.towardShared()
+    .then(
+        (props) => {
+            deps.setState(props);
+        }
+    );
 }
 
 function onRequestFileHandler({
@@ -169,32 +138,35 @@ function onRequestFileHandler({
     ident:src
 }) {
     const {
-        deps,
-    } = Comp.getReqProps();    
+        BrowseComp,
+        MainComp,
+    } = Comp;   
+    
+    const {
+        deps: browseDeps,
+        serverAPI,
+    } = BrowseComp.getReqProps();
 
-    deps.setState({ 
-        requestFile: src,
-        scrollTo: getSelector({id: src}),
-    });
-}
-
-function useEffectSetActiveComponent({
-    Comp,
-    deps,
-}) {
-    useEffect(
-        () => {
-            const {
-                deps,
-                comps,
-            } = Comp.getReqProps();
-
-            deps.setState({
-                activeComp: comps.Shared.name,
+    serverAPI.towardSharedItems({
+        dir: src,
+    })
+    .then(
+        (response) => {
+            browseDeps.setState({                 
+                scrollTo: getSelector({id: src}),
             });
-        },
-        deps,
-    );
+
+            const {
+                comps,
+                deps: mainDeps,
+            } = MainComp.getReqProps();
+
+            mainDeps.setState({
+                activeComp: comps.Shared.name,
+                sharedProps: response,
+            });
+        }
+    );    
 }
 
 function useEffectGetShared({
@@ -213,6 +185,8 @@ function useEffectGetShared({
 
 function getInitialState() {
     return {
-        activeComp: BrowseBase.name,
+        activeComp: BrowseWrap.name,
+        sharedProps: {},
+        browseProps: {},
     };
 }

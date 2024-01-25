@@ -129,6 +129,11 @@ export class AppServerAPI {
 		url: 'towardShared',
 	});
 
+	towardSharedItems = (props) => this.toward({
+		...props,
+		url: 'towardSharedItems',
+	});
+
 	toward = ({
 		resetTo,
 		dir,
