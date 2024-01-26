@@ -161,9 +161,23 @@ function onRequestFileHandler({
                 deps: mainDeps,
             } = MainComp.getReqProps();
 
+            const {
+                recipients
+            } = response;
+
+            let recipientsUpd = {};
+            recipients.forEach(
+                (item, ind) => {
+                    recipientsUpd[ind] = item;
+                }
+            );
+
             mainDeps.setState({
                 activeComp: comps.Shared.name,
-                sharedProps: response,
+                sharedProps: {
+                    ...response,
+                    recipients: recipientsUpd,
+                },
             });
         }
     );    

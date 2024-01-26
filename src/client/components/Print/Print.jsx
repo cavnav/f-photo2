@@ -437,6 +437,12 @@ function getSavedState({state}) {
 
 function getStateDefault() {
 	return {		
+		// props	
+		// filesToPrint or printedFiles from folder.
+		files: {},
+		printed: "", // printed folder name.
+		onBackToPrinted: "", // callback to printed.
+
 		// используется, когда нельзя записать все файлы на флешку разом. 
 		// Тогда надо выбрать конкретные, поставив галочку.
 		requiredFilesToPrint: {}, 
@@ -445,12 +451,6 @@ function getStateDefault() {
 		isCopyingScript: false,
 		isFilesExcess: false,
 		isEmpty: false,
-		scrollTo: "",
-
-		// props
-		// filesToPrint or printedFiles from folder.
-		files: {},
-		printed: "", // printed folder name.
-		onBackToPrinted: "", // callback to printed.
+		scrollTo: "",		
 	};
 }

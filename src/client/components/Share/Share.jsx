@@ -58,10 +58,8 @@ function render(props) {
 
 	const onClickItem = useOnClickItem({eventHandlers});
 
-	const files = Object.keys(state.files);
-
-	const FilesComp = files.length === 0 ? undefined : <Files
-		files={files}
+	const FilesComp = <Files
+		files={state.files}
 		onSelectFile={getVarName({onSelectFile})}
 		onRequestFile={getVarName({onRequestFile})}
 	/>
@@ -198,8 +196,6 @@ function reducer({
 		...stateUpd,
 	};
 
-	stateNew.isEmpty = Object.keys(stateNew.files).length === 0;
-	stateNew.isButtonSelectTo =  stateNew.isButtonBackward === false && stateNew.filesSelected.length > 0;
 	stateNew.isButtonSend = Object.keys(stateNew.recipients).length > 0 && stateNew.filesSelected.length > 0;
 
 	return stateNew;
@@ -256,7 +252,7 @@ function onChangeRecipients_({
 function onBackwardToPhotos({
 	Comp,
 }) {
-	return (event) => {
+	return () => {
 		const {setState} = Comp.getDeps();
 		setState({
 			isButtonBackward: false,
@@ -400,7 +396,7 @@ function getInitialState(
 		filesSelected: [],
 		recipientsAll: {},
 		scrollTo: '',
-		isButtonSelectTo: false,
+		isButtonSelectTo: true,
 		isButtonBackward: false,
 		isButtonSend: false,
 	};
