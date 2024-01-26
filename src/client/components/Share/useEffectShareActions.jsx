@@ -19,14 +19,15 @@ function render({
     const {
         additionalPanelRender,
         state: {
+            shared,
             isButtonSelectTo,
             isButtonBackward,
             isButtonSend,
+            onClose,
         },    
         onSelectTo,
         onBackwardToPhotos,
         onSend,
-        
     } = props;
 
     
@@ -35,10 +36,12 @@ function render({
             SelectTo,
             BackwardToPhotos,
             Send,
+            Close,
 
             SelectToAPI,
             BackwardToPhotosAPI,
             SendAPI,
+            CloseAPI,
             
         } = getChannelComps({
             callback: getCompsCallback,
@@ -48,6 +51,7 @@ function render({
 
         additionalPanelRender({
             actions: [
+                Close,
                 SelectTo,
                 BackwardToPhotos,
                 Send,
@@ -73,7 +77,12 @@ function render({
                         onClick: onSend,                    
                     });
                 }
-
+                if (shared) {
+                    CloseAPI.forceUpdate({
+                        title: `Закрыть ${shared}`,
+                        onClick: onClose,
+                    });
+                }
             }
         );
 
@@ -93,6 +102,7 @@ function getCompsCallback({
             SelectTo: Label,
             BackwardToPhotos: Label,
             Send: Label,
+            Close: Label,
         },
     };
 }

@@ -177,6 +177,12 @@ function onRequestFileHandler({
                 sharedProps: {
                     ...response,
                     recipients: recipientsUpd,
+                    shared: src,
+                    onClose: () => {
+                        mainDeps.setState({
+                            activeComp: BrowseWrap.name,
+                        });
+                    }
                 },
             });
         }

@@ -390,7 +390,9 @@ function getInitialState(
 	return {
 		// props
 		files: {},
-		recipients: {},		
+		recipients: {},
+		shared: '',	
+		onClose: undefined,	
 		
 		caption: '',
 		filesSelected: [],

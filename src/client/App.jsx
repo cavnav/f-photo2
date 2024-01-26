@@ -11,7 +11,6 @@
 // connect android by wifi
 
 // II
-// magnifying glass
 // tablet using
 // unselect all
 // select all
