@@ -35,6 +35,8 @@ function render(props) {
 		fn: onChangeState({Comp}),
 	});
 
+	const files = Object.keys(state.files);
+
 	const comps = Comp.getComps();
 
 	const onChangeCaption = onChangeCaption_({Comp});
@@ -59,7 +61,7 @@ function render(props) {
 	const onClickItem = useOnClickItem({eventHandlers});
 
 	const FilesComp = <Files
-		files={state.files}
+		files={files}
 		onSelectFile={getVarName({onSelectFile})}
 		onRequestFile={getVarName({onRequestFile})}
 	/>
@@ -363,21 +365,22 @@ function onChangeState({
 }) {
 	return ({
 		stateUpd,
-	}) => {
-		const resumeObj = Comp.getResumeObj();
+	}) => {		
 		let value = {};
 
 		if (stateUpd.hasOwnProperty('scrollTo')) {
-			value = {
-				scrollTo: stateUpd.scrollTo,
-			};
+			value.scrollTo = stateUpd.scrollTo;
 		}
 
 		if (stateUpd.hasOwnProperty('files')) {
-			value = {
-				files: stateUpd.files,
-			};
+			value.files = stateUpd.files;
 		}
+
+		if (stateUpd.hasOwnProperty('shared')) {
+			value.shared = stateUpd.shared;
+		}
+
+		const resumeObj = Comp.getResumeObj();
 
 		resumeObj.save({
 			val: value,

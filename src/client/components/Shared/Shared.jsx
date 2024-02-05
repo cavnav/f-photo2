@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect } from 'react';
 import { ChannelComp, channel } from "../../channel";
 import { getSelector, getVarName, useOnChangeSelections, useOnClickItem } from '../../functions';
 import { useMutedReducer } from '../../mutedReducer';
@@ -6,8 +6,9 @@ import { FilesOne } from '../File/FilesOne';
 import { BrowseBase } from '../BrowseBase/BrowseBase';
 
 export const Shared = channel.addComp({
-    name: 'Shared',
+    name: 'SharedComp',
     getComps,
+    getResumeObj,
     render,
 });
 
@@ -23,8 +24,20 @@ function render() {
         state,
     } = useMutedReducer({
         setCompDeps: Comp.setCompDeps,
-        initialState: getInitialState(),
+        initialState: getInitialState({Comp}),        
+        fn: onChangeState({Comp}),
     });    
+
+    const onSharedClose = ({shared}) => {
+        const deps = Comp.getDeps();
+        
+        deps.setState({
+            activeComp: BrowseWrap.name,
+            browseProps: {
+                scrollTo: getSelector({id: shared}),  
+            }
+        });
+    }
 
     const comps = Comp.getComps();
     const SharedRender = comps.Shared.r;
@@ -38,8 +51,8 @@ function render() {
                 />
             )}
             {state.activeComp === comps.Shared.name && (
-                <SharedRender
-                    MainComp={Comp}
+                <SharedRender    
+                    onClose={onSharedClose}                
                     {...state.sharedProps}
                 />
             )}            
@@ -50,19 +63,20 @@ function render() {
 
 function browseWrapRender({
     MainComp,
+    ...props
 }){
     const Comp = this;
-
+    
     const {
         state,
     } = useMutedReducer({
-        initialState: getBrowseInitialState(),
+        initialState: getBrowseInitialState({Comp: MainComp}),
+        props,
         setCompDeps: Comp.setCompDeps,
     });
 
     const onRequestFile = useOnChangeSelections({
         Comp: {
-            BrowseComp: Comp,
             MainComp,
         },
         deps: [],
@@ -85,6 +99,7 @@ function browseWrapRender({
 
     return (
         <BrowseBase
+            scrollTo={state.scrollTo}
             onClick={onClickItem}
         >
             <FilesOne
@@ -138,32 +153,32 @@ function onRequestFileHandler({
     ident:src
 }) {
     const {
-        BrowseComp,
         MainComp,
     } = Comp;   
     
     const {
-        deps: browseDeps,
         serverAPI,
-    } = BrowseComp.getReqProps();
+    } = MainComp.getReqProps();
 
     serverAPI.towardSharedItems({
         dir: src,
     })
     .then(
-        (response) => {
-            browseDeps.setState({                 
-                scrollTo: getSelector({id: src}),
-            });
-
+        (response) => {            
             const {
                 comps,
                 deps: mainDeps,
             } = MainComp.getReqProps();
 
             const {
-                recipients
+                recipients,
+                files,
             } = response;
+
+            let filesUpd = {};
+            files.forEach((file) => {
+                filesUpd[file] = {};
+            });
 
             let recipientsUpd = {};
             recipients.forEach(
@@ -174,19 +189,38 @@ function onRequestFileHandler({
 
             mainDeps.setState({
                 activeComp: comps.Shared.name,
-                sharedProps: {
-                    ...response,
+                sharedProps: {                                      
+                    files: filesUpd,
                     recipients: recipientsUpd,
-                    shared: src,
-                    onClose: () => {
-                        mainDeps.setState({
-                            activeComp: BrowseWrap.name,
-                        });
-                    }
+                    shared: src,                    
                 },
             });
         }
     );    
+}
+
+function getResumeObj({
+    name,
+}) {
+    return {
+        selector: [name],
+    }
+}
+
+function onChangeState({
+    Comp
+}) {
+    return ({
+        stateUpd,
+    }) => {
+        const resumeObj = Comp.getResumeObj();
+
+        resumeObj.save({
+            val: {
+                activeComp: stateUpd.activeComp,
+            },
+        });
+    };
 }
 
 function useEffectGetShared({
@@ -203,10 +237,14 @@ function useEffectGetShared({
     );
 }
 
-function getInitialState() {
+function getInitialState({Comp}) {
+    const resumed = Comp.getResumeObj().get();
+
     return {
         activeComp: BrowseWrap.name,
         sharedProps: {},
         browseProps: {},
+        
+        ...resumed,
     };
 }

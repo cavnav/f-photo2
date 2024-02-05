@@ -108,7 +108,7 @@ function getAppStateInit() {
 		Print,
 		PrintedComp,
 		Share,
-		Shared,
+		SharedComp,
 	} = comps;
 
 	return {
@@ -150,7 +150,7 @@ function getAppStateInit() {
 				isEnabled: true,
 			},
 			{
-				id: Shared.name,
+				id: SharedComp.name,
 				title: 'Архив отправленных',
 				isEnabled: true,
 			}
@@ -225,7 +225,7 @@ function getComps({
 		Welcome,
 		PrintedComp,
 		Share,
-		Shared,
+		SharedComp,
 	} = channelComps;
 
 	return {
@@ -237,7 +237,7 @@ function getComps({
 			Welcome,
 			PrintedComp,
 			Share,
-			Shared,
+			SharedComp,
 		},
 	}
 }

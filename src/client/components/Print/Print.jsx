@@ -184,8 +184,8 @@ function render(props) {
 			setState(stateUpd);
 
 		},
-		onBackToPrinted: (props) => {
-			state.onBackToPrinted(props);
+		onBackToPrinted: () => {
+			state.onBackToPrinted();
 			setStateSilent({
 				scrollTo: "",
 			});
