@@ -110,7 +110,11 @@ export class ChannelComp {
     constructor({
         name,
         render,
-        getResumeObj,
+        getResumeObj = ({name}) => {
+            return {
+                selector: [name],
+            };
+        },
         getAPI,
         getReqProps,
         getComps = () => { return {}; },
@@ -123,7 +127,7 @@ export class ChannelComp {
         this.deps = {};
         this.comps = undefined;
         this.r = render.bind(this);
-        this.resumeObj = new ResumeObj(getResumeObj?.({name}));
+        this.resumeObj = new ResumeObj(getResumeObj({name}));
         this.props = {
             name,
             render,

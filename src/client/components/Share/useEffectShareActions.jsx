@@ -80,7 +80,7 @@ function render({
                 if (shared) {
                     CloseAPI.forceUpdate({
                         title: `Закрыть ${shared}`,
-                        onClick: () => onClose?.({shared}),
+                        onClick: onClose,
                     });
                 }
             }

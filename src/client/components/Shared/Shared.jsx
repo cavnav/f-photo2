@@ -8,7 +8,6 @@ import { BrowseBase } from '../BrowseBase/BrowseBase';
 export const Shared = channel.addComp({
     name: 'SharedComp',
     getComps,
-    getResumeObj,
     render,
 });
 
@@ -22,38 +21,45 @@ function render() {
 
     const {
         state,
+        setState,
     } = useMutedReducer({
+        initialState: getInitialState({Comp}),  
         setCompDeps: Comp.setCompDeps,
-        initialState: getInitialState({Comp}),        
         fn: onChangeState({Comp}),
     });    
 
-    const onSharedClose = ({shared}) => {
-        const deps = Comp.getDeps();
-        
-        deps.setState({
-            activeComp: BrowseWrap.name,
-            browseProps: {
-                scrollTo: getSelector({id: shared}),  
-            }
-        });
-    }
-
     const comps = Comp.getComps();
     const SharedRender = comps.Shared.r;
+
+    const onCloseShared = () => {
+        setState({
+            activeComp: BrowseWrap.name,
+            sharedItems: {},
+            recipients: [],
+            shared: '',
+        });
+    };     
+
+    useEffectGetSharedItems({
+        Comp,
+        deps: [],
+    });
 
     return (
         <>
             {state.activeComp === BrowseWrap.name && (
                 <BrowseWrap.r 
                     MainComp={Comp}
-                    {...state.browseProps}
+                    files={state.files}
+                    scrollTo={state.scrollTo}
                 />
             )}
             {state.activeComp === comps.Shared.name && (
-                <SharedRender    
-                    onClose={onSharedClose}                
-                    {...state.sharedProps}
+                <SharedRender            
+                    files={state.sharedItems}
+                    recipients={state.recipients}
+                    shared={state.shared}    
+                    onClose={onCloseShared}
                 />
             )}            
         </>        
@@ -63,22 +69,11 @@ function render() {
 
 function browseWrapRender({
     MainComp,
-    ...props
+    files,
+    scrollTo,
 }){
-    const Comp = this;
-    
-    const {
-        state,
-    } = useMutedReducer({
-        initialState: getBrowseInitialState({Comp: MainComp}),
-        props,
-        setCompDeps: Comp.setCompDeps,
-    });
-
     const onRequestFile = useOnChangeSelections({
-        Comp: {
-            MainComp,
-        },
+        Comp: MainComp,
         deps: [],
         handler: onRequestFileHandler,
     });
@@ -92,29 +87,22 @@ function browseWrapRender({
     });
 
     useEffectGetShared({
-        Comp,
+        Comp: MainComp,
         deps: []
     });
 
 
     return (
         <BrowseBase
-            scrollTo={state.scrollTo}
+            scrollTo={scrollTo}
             onClick={onClickItem}
         >
             <FilesOne
-                files={state.files}
+                files={files}
                 onRequestFile={getVarName({onRequestFile})}
             />
         </BrowseBase>
     );
-}
-
-function getBrowseInitialState() {
-    return {
-        files: [],
-        scrollTo: "",
-    };
 }
 
 function getComps({
@@ -131,45 +119,21 @@ function getComps({
     };
 }
 
-function getShared({
-    Comp,
-}) {
-    const {
-        serverAPI,
-        deps,
-    } = Comp.getReqProps();
-
-    
-    serverAPI.towardShared()
-    .then(
-        (props) => {
-            deps.setState(props);
-        }
-    );
-}
-
 function onRequestFileHandler({
     Comp,
     ident:src
 }) {
     const {
-        MainComp,
-    } = Comp;   
-    
-    const {
         serverAPI,
-    } = MainComp.getReqProps();
+        comps,
+        deps,
+    } = Comp.getReqProps();
 
     serverAPI.towardSharedItems({
         dir: src,
     })
     .then(
-        (response) => {            
-            const {
-                comps,
-                deps: mainDeps,
-            } = MainComp.getReqProps();
-
+        (response) => {                       
             const {
                 recipients,
                 files,
@@ -187,40 +151,15 @@ function onRequestFileHandler({
                 }
             );
 
-            mainDeps.setState({
+            deps.setState({
                 activeComp: comps.Shared.name,
-                sharedProps: {                                      
-                    files: filesUpd,
-                    recipients: recipientsUpd,
-                    shared: src,                    
-                },
+                sharedItems: filesUpd,
+                recipients: recipientsUpd,
+                shared: src,       
+                scrollTo: getSelector({id: src}),                
             });
         }
     );    
-}
-
-function getResumeObj({
-    name,
-}) {
-    return {
-        selector: [name],
-    }
-}
-
-function onChangeState({
-    Comp
-}) {
-    return ({
-        stateUpd,
-    }) => {
-        const resumeObj = Comp.getResumeObj();
-
-        resumeObj.save({
-            val: {
-                activeComp: stateUpd.activeComp,
-            },
-        });
-    };
 }
 
 function useEffectGetShared({
@@ -229,12 +168,71 @@ function useEffectGetShared({
 }) {
     useEffect(
         () => {
-            getShared({
-                Comp,
-            });
+            const {
+                serverAPI,
+                deps: compDeps,
+            } = Comp.getReqProps();
+        
+            
+            serverAPI.towardShared()
+            .then(
+                (props) => {
+                    compDeps.setState(props);
+                }
+            );            
         },
         deps
     );
+}
+
+function onChangeState({
+    Comp,
+}) {
+    return ({
+        stateUpd,
+    }) => {
+        const {
+            resumeObj,
+        } = Comp.getReqProps();
+
+        const value = {};
+
+        if (stateUpd.hasOwnProperty('scrollTo')) {
+            value.scrollTo = stateUpd.scrollTo;
+        }
+        if (stateUpd.hasOwnProperty('activeComp')) {
+            value.activeComp = stateUpd.activeComp;
+        }
+        if (stateUpd.hasOwnProperty('shared')) {
+            value.shared = stateUpd.shared;
+        }
+
+        resumeObj.save({
+            val: value,
+        });
+    };
+}
+
+function useEffectGetSharedItems({
+    Comp,
+    deps,
+}) {
+    useEffect(
+        () => {
+            const {
+                deps,
+                comps,
+            } = Comp.getReqProps();
+
+            if (deps.state.activeComp === comps.Shared.name) {
+                onRequestFileHandler({
+                    Comp,
+                    ident: deps.state.shared,
+                });
+            }            
+        },
+        deps
+    );    
 }
 
 function getInitialState({Comp}) {
@@ -242,9 +240,13 @@ function getInitialState({Comp}) {
 
     return {
         activeComp: BrowseWrap.name,
-        sharedProps: {},
-        browseProps: {},
-        
+        files: [],
+        scrollTo: '',
+
+        sharedItems: {},
+        recipients: {},
+        shared: '',
+
         ...resumed,
     };
 }
