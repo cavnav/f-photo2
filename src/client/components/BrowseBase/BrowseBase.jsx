@@ -1,8 +1,9 @@
 import React, {useEffect} from 'react';
-import {scrollToSelector} from '../../functions';
+import {getSelector, scrollToSelector} from '../../functions';
 import {Empty} from '../Empty/Empty';
 import { useMutedReducer } from '../../mutedReducer';
 
+const LAST_ELEMENT = 'last-element';
 
 export function BrowseBase(props) {
     const {
@@ -23,14 +24,24 @@ export function BrowseBase(props) {
 
 
     useEffect(
-		() => {			 
-			if (state.isScrolled === false) {
-                const isScrolled = scrollToSelector({selector: scrollTo});
+		() => {	
+            // i need wait while items will be rendered.           		 
+			//if (state.isScrolled === false) {
+                let selector;
+
+                if (!scrollTo) {
+                    selector = getSelector({id: LAST_ELEMENT});
+                } 
+                else {
+                    selector = scrollTo;
+                }
+
+                const isScrolled = scrollToSelector({selector});
 
                 setStateSilent({
                     isScrolled,
                 });			
-            }
+            //}
 		},
 	);
 
@@ -41,6 +52,12 @@ export function BrowseBase(props) {
             onClick={onClick}
 		>
 			{props.children}
+
+            <div 
+                src={LAST_ELEMENT}  
+                style={{width: "100%"}} 
+            />
+
             {isEmpty && <Empty/>}
 		</div>
     );

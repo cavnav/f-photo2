@@ -1,9 +1,9 @@
-// arch of shared.
 // fix mouse coordinates.
+// remove items from share.
 // after remove in Browse mode scroll to next item.
 // change share list on remove, move, rename.
 // magnifying.
-// check scrollTo on BrowseBase.
+// infinity cycle on both side printed.
 
 // I
 // show overwrite confirmation for every files

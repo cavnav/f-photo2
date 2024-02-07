@@ -1,6 +1,5 @@
 import {useCallback, useEffect} from 'react';
 import { channel } from './channel';
-import { Dialog } from './components';
 import { DIALOG_TYPES } from './components/Dialog/Dialog';
 import {
 	eventNames

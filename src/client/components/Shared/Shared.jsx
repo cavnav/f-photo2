@@ -5,6 +5,7 @@ import { useMutedReducer } from '../../mutedReducer';
 import { FilesOne } from '../File/FilesOne';
 import { BrowseBase } from '../BrowseBase/BrowseBase';
 
+
 export const Shared = channel.addComp({
     name: 'SharedComp',
     getComps,
@@ -43,10 +44,10 @@ function render() {
     useEffectGetSharedItems({
         Comp,
         deps: [],
-    });
+    });    
 
-    return (
-        <>
+    return (     
+        <>  
             {state.activeComp === BrowseWrap.name && (
                 <BrowseWrap.r 
                     MainComp={Comp}
@@ -62,7 +63,7 @@ function render() {
                     onClose={onCloseShared}
                 />
             )}            
-        </>        
+        </>
     );
 }
 

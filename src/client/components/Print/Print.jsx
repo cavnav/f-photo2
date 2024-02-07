@@ -3,6 +3,7 @@ import './styles.css';
 import React, {useEffect} from 'react';
 
 import {
+	BrowseBase,
 	Stepper,
 } from '../';
 import { checkProgress, 
@@ -13,6 +14,7 @@ import { checkProgress,
 	getExistsProps,
 	useOnChangeSelections,
 	getRequestFileHandler,
+	ElementToScroll,
 } from '../../functions';
 import { createSteps } from './createSteps';
 import { channel } from '../../channel';
@@ -26,7 +28,6 @@ import { updateFiles } from '../../functions';
 
 
 const MAX_FILES_COUNT = 5;
-const LAST_ELEMENT = 'last-element';
 
 
 export const Print = channel.addComp({
@@ -128,14 +129,12 @@ function render(props) {
 	const onChangeThisSelections = useOnChangeSelections({Comp, handler: onChangeSelectionsHandler, deps: []});
 	const onOpenItemFolder = useOnChangeSelections({Comp, handler: getRequestFileHandler, deps: []});
 
-	const onSelectItem = (event) => {		
-		const handler = event.target.getAttribute('handler');
-		const eventHandlers = {
-			onChangeThisSelections, 
-			onOpenItemFolder,
-		};
-		eventHandlers[handler]?.(event);
-	}
+	const eventHandlers = {
+		onChangeThisSelections, 
+		onOpenItemFolder,
+	};
+
+	const onClickItem = useOnClickItem({eventHandlers});
 
 	usePrintActions({
 		isSaveToFlashBtn: state.isSaveToFlashBtn,
@@ -236,25 +235,23 @@ function render(props) {
 	return (
 		<div
 			className="Print layout"
-			onClick={onSelectItem}
 		>
 			{state.isCopyingScript 
 			? 	<Stepper
 					steps={steps}
 				/> 
-			: 	state.isEmpty 
-				? 	<Empty/>
-				:	<>
-						<PrintItemsRender 
-							items={state.files}
-							onChangeItems={onChangeFiles} 
-							onRequiredItemName={getVarName({onOpenItemFolder})}
-							onChangeSelectionsName={state.isFilesExcess ? getVarName({onChangeThisSelections:1}) : undefined}
-						/>		
-						{state.scrollTo === "" && <div src={LAST_ELEMENT} />}
-					</>
-					
-			}						
+			: 	<BrowseBase
+					scrollTo={state.scrollTo}
+					onClick={onClickItem}
+				>
+					<PrintItemsRender 
+						items={state.files}
+						onChangeItems={onChangeFiles} 
+						onRequiredItemName={getVarName({onOpenItemFolder})}
+						onChangeSelectionsName={state.isFilesExcess ? getVarName({onChangeThisSelections:1}) : undefined}
+					/>	
+				</BrowseBase>
+			}					
 		</div>
 	);
 }

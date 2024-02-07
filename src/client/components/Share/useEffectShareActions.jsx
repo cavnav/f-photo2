@@ -23,8 +23,10 @@ function render({
             isButtonSelectTo,
             isButtonBackward,
             isButtonSend,
-            onClose,
-        },    
+            filesSelected,
+        }, 
+        onCancelShare,
+        onClose,   
         onSelectTo,
         onBackwardToPhotos,
         onSend,
@@ -37,7 +39,10 @@ function render({
             BackwardToPhotos,
             Send,
             Close,
+            Cancel,
 
+            DialogAPI,
+            CancelAPI,
             SelectToAPI,
             BackwardToPhotosAPI,
             SendAPI,
@@ -52,6 +57,7 @@ function render({
         additionalPanelRender({
             actions: [
                 Close,
+                Cancel,
                 SelectTo,
                 BackwardToPhotos,
                 Send,
@@ -83,6 +89,21 @@ function render({
                         onClick: onClose,
                     });
                 }
+                const cancelItemsCount = filesSelected.length;
+                if (cancelItemsCount > 0) {
+                    const onClick = () => {
+                        DialogAPI.showChoiceConfirmation({
+                            message: "",
+                            onConfirm: onCancelShare,
+                        });
+                    };
+
+                    CancelAPI.forceUpdate({
+                        title: `Отменить отправку ${cancelItemsCount}`,
+                        onClick,
+                    });
+                }
+
             }
         );
 
@@ -95,14 +116,19 @@ function render({
 }
 
 function getCompsCallback({
+    Dialog,
     Label,
 }) {
     return {
+        items: {
+            Dialog,
+        },
         toClone: {
             SelectTo: Label,
             BackwardToPhotos: Label,
             Send: Label,
             Close: Label,
+            Cancel: Label,
         },
     };
 }

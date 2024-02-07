@@ -1,11 +1,12 @@
 import React, {useCallback, useMemo, useEffect, useRef} from 'react';
 import { channel } from '../../channel';
 import { useMutedReducer } from '../../mutedReducer';
-import { checkProgress, getRequestFileHandler, getVarName, updateFiles, useEffectSetHtmlSelection, useOnChangeSelections, useOnClickItem } from '../../functions';
+import { checkProgress, getRequestFileHandler, getSelector, getVarName, refreshOppositeWindow, updateFiles, useEffectSetHtmlSelection, useOnChangeSelections, useOnClickItem } from '../../functions';
 import { Recipients } from './components/Recipients';
 import { Files } from '../File/Files';
 import { useEffectShareActions } from './useEffectShareActions';
 import { BrowseBase } from '../BrowseBase/BrowseBase';
+import { eventNames } from '../../constants';
 
 
 export const Share = channel.addComp({
@@ -27,7 +28,10 @@ function render(props) {
 		};
 	}, []);
 
-	const {state} = useMutedReducer({
+	const {
+		state,
+		setState,
+	} = useMutedReducer({
 		setCompDeps: Comp.setCompDeps,
 		initialState,
 		props,
@@ -44,7 +48,12 @@ function render(props) {
 	const onRequestFile = useOnChangeSelections({
 		Comp,
 		deps: [],
-		handler: getRequestFileHandler,
+		handler: (props) => {
+			setState({
+				scrollTo: getSelector({id: props.ident}),
+			});
+			getRequestFileHandler(props);
+		},
 	});
 
 	const onSelectFile = useOnChangeSelections({
@@ -66,16 +75,30 @@ function render(props) {
 		onRequestFile={getVarName({onRequestFile})}
 	/>
 
+	useInitRefreshWindow({
+        Comp,
+        deps: [],
+    });
+
 	useEffectGetSharedReceptients({Comp, deps: []});
 
 	useEffectShareActions({
 		additionalPanelRender: comps.AdditionalPanelAPI.renderIt,
 		state,
 
+		onClose: () => {
+			setState({
+				scrollTo: '',
+			});
+			state.onClose?.();
+		},
+		onCancelShare: onCancel_({Comp}),
 		onSelectTo: onSelectTo_({Comp}),
 		onBackwardToPhotos: onBackwardToPhotos({Comp}),
 		onSend: onSend({Comp}),
+		
 		deps: [
+			state.filesSelected,
 			state.isButtonSelectTo, 
 			state.isButtonBackward,
 			state.isButtonSend,
@@ -89,9 +112,10 @@ function render(props) {
 
 	useEffectSetHtmlSelection(selectionProps);
 
-
 	return (
-		<div className="Share layout">		
+		<div 
+			className="Share layout"
+		>		
 			{state.isButtonBackward 
 			?	<div>
 					подпись:{' '}  			
@@ -223,6 +247,28 @@ function getComps({
 	};
 }
 
+function onCancel_({
+	Comp,
+}) {
+	return () => {
+		const deps = Comp.getDeps();
+		const {
+			state,
+			setState,
+		} = deps;
+
+		for (let file of state.filesSelected) {
+			delete state.files[file];
+		}
+
+		setState({
+			files: state.files,
+		});
+
+		refreshOppositeWindow();
+	};
+}
+
 function onSelectTo_({
 	Comp
 }) {
@@ -321,7 +367,7 @@ function onSelectFile_({
 	} = Comp.getDeps();
 
 	if (checked) {
-		state.filesSelected.push(ident);
+		state.filesSelected = state.filesSelected.concat(ident);
 	}		
 	else {
 		state.filesSelected = state.filesSelected.filter(item => item !== ident);
@@ -329,7 +375,6 @@ function onSelectFile_({
 
 	setState({
 		filesSelected: state.filesSelected, 
-		scrollTo: "",
 	});
 }
 
@@ -386,6 +431,31 @@ function onChangeState({
 			val: value,
 		});
 	};
+}
+
+function useInitRefreshWindow({
+    Comp,
+    deps,
+}) {
+    useEffect(
+        () => {
+            const callback = () => {
+                const {
+					deps,
+					resumeObj,
+				 } = Comp.getReqProps();
+
+				deps.setState({
+					files: resumeObj.get().files,
+					scrollTo: "",
+				});				
+			};
+            document.addEventListener(eventNames.refreshWindow, callback);
+			
+			return () => document.removeEventListener(eventNames.refreshWindow, callback);
+        },
+        deps,
+    );
 }
 
 function getInitialState(
