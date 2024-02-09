@@ -1,4 +1,4 @@
-import React, {useCallback, useMemo, useEffect, useRef} from 'react';
+import React, {useCallback, useMemo, useEffect} from 'react';
 import { channel } from '../../channel';
 import { useMutedReducer } from '../../mutedReducer';
 import { checkProgress, getRequestFileHandler, getSelector, getVarName, refreshOppositeWindow, updateFiles, useEffectSetHtmlSelection, useOnChangeSelections, useOnClickItem } from '../../functions';

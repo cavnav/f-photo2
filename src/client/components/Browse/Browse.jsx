@@ -59,13 +59,6 @@ function render(
 		handler: changeSelections,
 	});
 	const onRequestFileUpd = useCallback(onRequestFile({Comp}), []);
-	const onFilesMount = useCallback(
-		() => {
-			const {setState} = Comp.getDeps();
-			setState({});
-		},
-		[]
-	);
 
 	useEffect(() => {
 		const returnCb = renderAddPanel({ Comp });		

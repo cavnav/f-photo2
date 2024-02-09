@@ -26,7 +26,7 @@ export function BrowseBase(props) {
     useEffect(
 		() => {	
             // i need wait while items will be rendered.           		 
-			//if (state.isScrolled === false) {
+			if (state.isScrolled === false) {
                 let selector;
 
                 if (!scrollTo) {
@@ -41,7 +41,7 @@ export function BrowseBase(props) {
                 setStateSilent({
                     isScrolled,
                 });			
-            //}
+            }
 		},
 	);
 

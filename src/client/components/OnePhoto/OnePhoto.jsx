@@ -1,6 +1,6 @@
 import './styles.css';
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { ResumeObj } from '../../resumeObj';
 import {
 	getOppositeWindow, myArray,
@@ -92,7 +92,7 @@ function render(
 				},
 			});
 		}
-	}, [state.curPhotoInd]);
+	}, [state.curPhoto]);
 
 	React.useEffect(() => renderAddPanel({
 		Comp,
@@ -215,9 +215,9 @@ function render(
 				break;
 
 			case 37: // prev 
+				stateUpd.action = ON_TOGGLE_PHOTO;
 				stateUpd.curPhotoInd = prevPhotoInd;
 				stateUpd.curPhotoRotateDeg = 0;
-				stateUpd.action = ON_TOGGLE_PHOTO;
 
 				break;
 
@@ -395,8 +395,17 @@ function deleteFiles({
 
 	// Удалить из списка выбранных файлов Browse.
 	const rp = Comp.getReqProps();	
-	const selectionsUpd = new Set(rp.resumeBrowse.selections);
-	selectionsUpd.delete(state.curPhoto);
+	const browseSelections = rp.resumeBrowse.selections;
+	if (browseSelections) {
+		const selectionsUpd = new Set(browseSelections);
+		selectionsUpd.delete(state.curPhoto);
+		
+		rp.BrowseAPI.setToResumeObj({
+			val: {
+				selections: selectionsUpd.values(),
+			},
+		});
+	}
 	
 
 	// remove from onePhoto files.
@@ -404,13 +413,7 @@ function deleteFiles({
 
 	const curPhotoIndUpd = state.files.items.length === state.curPhotoInd ?
 		state.curPhotoInd - 1 :
-		state.curPhotoInd;	
-
-	rp.BrowseAPI.setToResumeObj({
-		val: {
-			selections: selectionsUpd,
-		},
-	});
+		state.curPhotoInd;		
 
 	setState({
 		curPhotoInd: curPhotoIndUpd,

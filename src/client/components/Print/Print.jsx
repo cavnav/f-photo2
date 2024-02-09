@@ -7,19 +7,17 @@ import {
 	Stepper,
 } from '../';
 import { checkProgress, 
-	refreshOppositeWindow,
 	getVarName, 
 	updateHtmlSelectorsFromObject, 
 	scrollToSelector, 
 	getExistsProps,
 	useOnChangeSelections,
 	getRequestFileHandler,
-	ElementToScroll,
+	useOnClickItem,
 } from '../../functions';
 import { createSteps } from './createSteps';
 import { channel } from '../../channel';
 import { Copying } from './components/Copying';
-import { Empty } from '../';
 import { useMutedReducer } from '../../mutedReducer';
 import { eventNames } from '../../constants';
 import { PrintItemsRender } from './components/PrintItemsRender';
@@ -225,11 +223,7 @@ function render(props) {
 			scrollToSelector({selector: state.scrollTo});
 		},
 		[state.files]
-	)
-
-	useEffect(() => {
-		refreshOppositeWindow();
-	}, []);
+	);
 
 
 	return (
