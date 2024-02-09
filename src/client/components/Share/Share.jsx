@@ -263,6 +263,7 @@ function onCancel_({
 
 		setState({
 			files: state.files,
+			filesSelected: [],
 		});
 
 		refreshOppositeWindow();

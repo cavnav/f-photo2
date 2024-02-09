@@ -17,6 +17,7 @@ export const Dialog = channel.addComp({
 	render,
 	getAPI,
 	getReqProps,
+	getComps,
 });
 
 function render(props) {
@@ -131,6 +132,20 @@ function getReqProps({
 		mouse: {
 			x: mouse.x + 10,
 			y: mouse.y + 10,
+		},
+	};
+}
+
+function getComps({
+	channelComps,
+}) {
+	const {
+		App,
+	} = channelComps;
+
+	return {
+		items: {
+			App,
 		},
 	};
 }
