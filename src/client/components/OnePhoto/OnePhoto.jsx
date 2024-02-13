@@ -54,7 +54,6 @@ function render(
 		initialState: {
 			...getStateInit(),
 			curPhotoInd: resumeBrowse.curPhotoInd,
-			selections: resumeBrowse.selections,
 			files: myFiles,
 		},
 	});
@@ -292,10 +291,7 @@ function selfReducer({
 	stateReduced = {
 		...stateReduced,
 		curPhoto,
-		isNoItems: curPhoto ? false : true,
-		selections: {
-			size: curPhoto ? 1 : 0,
-		},
+		isNoItems: curPhoto ? false : true,		
 		...getProps({ stateReduced }),
 	};
 
@@ -397,12 +393,16 @@ function deleteFiles({
 	const rp = Comp.getReqProps();	
 	const browseSelections = rp.resumeBrowse.selections;
 	if (browseSelections) {
-		const selectionsUpd = new Set(browseSelections);
-		selectionsUpd.delete(state.curPhoto);
+		const selectionsUpd = [];
+		browseSelections.forEach((item) => {
+			if (item != state.curPhoto) {
+				selectionsUpd.push(item);
+			}
+		});
 		
 		rp.BrowseAPI.setToResumeObj({
 			val: {
-				selections: selectionsUpd.values(),
+				selections: selectionsUpd,
 			},
 		});
 	}
@@ -482,7 +482,7 @@ function renderAddPanel({
 				rp.MoveSelectionsAPI.forceUpdate({
 					title: setBtnTitle({
 						prefix: BTN_MOVE,
-						title: state.selections.size,
+						title: 1,
 					}),
 					onClick: () => {
 						rp.server.moveToPath({
@@ -518,7 +518,7 @@ function renderAddPanel({
 				rp.RemoveSelectionsAPI.forceUpdate({
 					title: setBtnTitle({
 						prefix: BTN_REMOVE,
-						title: state.selections.size,
+						title: 1,
 					}),
 					onClick: () => {
 						rp.DialogAPI.showChoiceConfirmation({
