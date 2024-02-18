@@ -1,3 +1,4 @@
+// 541 onRefreshWindow. Browse. useEffect 74.
 // remove items from Browse mode.
 // after remove in Browse mode scroll to next item.
 // remove in OnePhoto any item and scroll to next item in Browse.

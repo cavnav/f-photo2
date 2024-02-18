@@ -538,7 +538,7 @@ function renderAddPanel({
 							}),
 						}))
 						.then(() => {
-							onRefreshWindow({Comp});
+							//onRefreshWindow({Comp});
 							refreshOppositeWindow({
 								eventName: eventNames.exitFolder,
 							});

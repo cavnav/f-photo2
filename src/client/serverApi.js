@@ -13,6 +13,7 @@ class PostObjTmp {
 };
 
 function fetchUpd(...params) {
+	console.log('params', params, +new Date());
 	return fetch.apply(null, params)
 		.catch((error) => {
 			notifyServerError(error);
@@ -160,7 +161,14 @@ export class AppServerAPI {
 				},
 			})
 		)
-		.then(res => res.json())
+		.then(res => {
+			try {
+				return res.json();
+			}
+			catch(e) {
+				console.log(111, e);
+			}
+		});
 	}
 
 	addAlbum = async ({
