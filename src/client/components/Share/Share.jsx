@@ -69,11 +69,11 @@ function render(props) {
 
 	const onClickItem = useOnClickItem({eventHandlers});
 
-	const FilesComp = <Files
+	const FilesComp = files.length === 0 ? null : <Files
 		files={files}
 		onSelectFile={getVarName({onSelectFile})}
 		onRequestFile={getVarName({onRequestFile})}
-	/>
+	/>;
 
 	useInitRefreshWindow({
         Comp,
@@ -341,7 +341,9 @@ function onSend({Comp}) {
 				filesSelected: [],
 				recipients: {},
 				isButtonBackward: false,
-			});		
+			});	
+			
+			refreshOppositeWindow();
 		});
 	};
 }

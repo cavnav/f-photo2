@@ -2,10 +2,9 @@
 // remove items from Browse mode.
 // after remove in Browse mode scroll to next item.
 // remove in OnePhoto any item and scroll to next item in Browse.
-// scroll every time in BrowseBase.
+// share. save selected photos in localStore.
+// refresh shared on share end.
 // change share list on remove, move, rename.
-// empty browseBase not showed.
-// border around lastItem in BrowseBase
 // magnifying.
 
 // I

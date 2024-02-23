@@ -12,7 +12,8 @@ export function BrowseBase(props) {
         onClick,
     } = props;
 
-    const isEmpty = Boolean(props.children) === false;
+    const isEmpty = props.children && props.children.some((child) => child != null) ? false : true;
+
 
     useEffect(
 		() => {	
