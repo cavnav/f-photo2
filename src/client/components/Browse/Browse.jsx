@@ -106,6 +106,8 @@ function render(
 		onSelectDir={getVarName({onChangeSelectionsUpd})}
 	/>;
 
+	const isEmpty = FilesComp && DirsComp ? false : true;
+
 	const eventHandlers = {
         onChangeDirUpd,
         onChangeSelectionsUpd,
@@ -116,6 +118,7 @@ function render(
 
 	return (
 		<BrowseBase 
+			isEmpty
 			scrollTo={state.scrollTo}
 			onClick={onClickItem}
 		>

@@ -8,29 +8,27 @@ export function BrowseBase(props) {
     const {
         refHandler,
         scrollTo,
+        isEmpty,
 
         onClick,
     } = props;
-
-    const isEmpty = props.children && props.children.some((child) => child != null) ? false : true;
 
 
     useEffect(
 		() => {	
             // i need wait while items will be rendered.           		 
 			
-                let selector;
+            let selector;
 
-                if (!scrollTo) {
-                    selector = getSelector({id: LAST_ELEMENT});
-                } 
-                else {
-                    selector = scrollTo;
-                }
+            if (!scrollTo) {
+                selector = getSelector({id: LAST_ELEMENT});
+            } 
+            else {
+                selector = scrollTo;
+            }
 
-                scrollToSelector({selector});
+            scrollToSelector({selector});
 		},
-        [props.children, scrollTo]
 	);
 
     return (
@@ -53,10 +51,4 @@ export function BrowseBase(props) {
             {isEmpty && <Empty/>}
 		</div>
     );
-}
-
-function setCompDeps({
-    deps,
-}) {
-    return deps;
 }

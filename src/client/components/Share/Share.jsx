@@ -69,7 +69,9 @@ function render(props) {
 
 	const onClickItem = useOnClickItem({eventHandlers});
 
-	const FilesComp = files.length === 0 ? null : <Files
+	const isEmpty = files.length === 0;
+
+	const FilesComp = isEmpty ? null : <Files
 		files={files}
 		onSelectFile={getVarName({onSelectFile})}
 		onRequestFile={getVarName({onRequestFile})}
@@ -133,7 +135,9 @@ function render(props) {
 				</div>
 
 			: 	<BrowseBase 
+					isEmpty={isEmpty}
 					scrollTo={state.scrollTo}
+
 					onClick={onClickItem}
 				>
 					{FilesComp}
@@ -366,7 +370,7 @@ function onSelectFile_({
 }) {
 	const {
 		state,
-		setState,
+		setStateSilent,
 	} = Comp.getDeps();
 
 	if (checked) {
@@ -376,7 +380,7 @@ function onSelectFile_({
 		state.filesSelected = state.filesSelected.filter(item => item !== ident);
 	}
 
-	setState({
+	setStateSilent({
 		filesSelected: state.filesSelected, 
 	});
 }
