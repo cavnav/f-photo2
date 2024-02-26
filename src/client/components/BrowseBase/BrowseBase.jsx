@@ -11,23 +11,25 @@ export function BrowseBase(props) {
         isEmpty,
 
         onClick,
-    } = props;
+    } = props;    
+
+    useEffect(
+        () => {
+            if (!scrollTo) {
+                scrollToSelector({selector: getSelector({id: LAST_ELEMENT})});
+            }
+
+            return () => console.log("unmount");
+        },
+        []
+    );
+
 
 
     useEffect(
 		() => {	
             // i need wait while items will be rendered.           		 
-			
-            let selector;
-
-            if (!scrollTo) {
-                selector = getSelector({id: LAST_ELEMENT});
-            } 
-            else {
-                selector = scrollTo;
-            }
-
-            scrollToSelector({selector});
+            scrollToSelector({selector: scrollTo});
 		},
 	);
 

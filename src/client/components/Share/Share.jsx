@@ -370,7 +370,7 @@ function onSelectFile_({
 }) {
 	const {
 		state,
-		setStateSilent,
+		setState,
 	} = Comp.getDeps();
 
 	if (checked) {
@@ -380,7 +380,7 @@ function onSelectFile_({
 		state.filesSelected = state.filesSelected.filter(item => item !== ident);
 	}
 
-	setStateSilent({
+	setState({
 		filesSelected: state.filesSelected, 
 	});
 }
