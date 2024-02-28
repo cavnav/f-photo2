@@ -1,8 +1,7 @@
 import React, {useEffect} from 'react';
-import {getSelector, scrollToSelector} from '../../functions';
+import {scrollToSelector} from '../../functions';
 import {Empty} from '../Empty/Empty';
-
-const LAST_ELEMENT = 'last-element';
+import { LAST_ELEMENT } from '../../constants';
 
 export function BrowseBase(props) {
     const {
@@ -14,23 +13,10 @@ export function BrowseBase(props) {
     } = props;    
 
     useEffect(
-        () => {
-            if (!scrollTo) {
-                scrollToSelector({selector: getSelector({id: LAST_ELEMENT})});
-            }
-
-            return () => console.log("unmount");
-        },
-        []
-    );
-
-
-
-    useEffect(
-		() => {	
-            // i need wait while items will be rendered.           		 
+		() => {	            
             scrollToSelector({selector: scrollTo});
 		},
+        // i need wait while items will be rendered.           		 
 	);
 
     return (

@@ -3,3 +3,5 @@ export const eventNames = {
   refreshWindow: 'refreshWindow',
   exitFolder: 'exitFolder'
 };
+
+export const LAST_ELEMENT = 'last-element';

@@ -634,7 +634,7 @@ export function scrollToSelector({selector}) {
 
 	const SCROLL_CLASS = 'scroll-to';	
 
-	const elementPrevScroll = document.querySelector(SCROLL_CLASS);
+	const elementPrevScroll = document.querySelector(`.${SCROLL_CLASS}`);
 	elementPrevScroll?.classList.remove(SCROLL_CLASS);
 
 	const elementTarget = document.querySelector(selector);
@@ -710,18 +710,17 @@ export function getRequestFileHandler({
 		BrowseAPI,
 	} = Comp.getComps();
 
-	const {sep} = Comp.getResumeObj().state;
+	const {sep} = RESUME_OBJ.state;
 	const lastIndexSeparator = src.lastIndexOf(sep);
 	const path = src.substr(0, lastIndexSeparator);
 	const item = src.substr(lastIndexSeparator + 1);
 
 	const {setState} = Comp.getDeps();
-	const identUpd = src.split(sep).join(sep.concat(sep));
+	const identUpd = getSelectorSrc({src});
 	
 	setState({
 		scrollTo: getSelector({id: identUpd}),
 	});
-
 
 	BrowseAPI.setToResumeObj({
 		val: {
@@ -733,4 +732,11 @@ export function getRequestFileHandler({
 	AppAPI.toggleAction({
 		action: Browse.name,	
 	});
+}
+
+export function getSelectorSrc({
+	src,
+}) {
+	const {sep} = RESUME_OBJ.state;
+	return src.split(sep).join(sep.concat(sep));	
 }

@@ -1,12 +1,15 @@
 import React, {useCallback, useMemo, useEffect} from 'react';
 import { channel } from '../../channel';
 import { useMutedReducer } from '../../mutedReducer';
-import { checkProgress, getRequestFileHandler, getSelector, getVarName, refreshOppositeWindow, updateFiles, useEffectSetHtmlSelection, useOnChangeSelections, useOnClickItem } from '../../functions';
+import { checkProgress, getRequestFileHandler, getSelector, 
+	getVarName, refreshOppositeWindow, updateFiles, 
+	useEffectSetHtmlSelection, useOnChangeSelections, useOnClickItem 
+} from '../../functions';
 import { Recipients } from './components/Recipients';
 import { Files } from '../File/Files';
 import { useEffectShareActions } from './useEffectShareActions';
 import { BrowseBase } from '../BrowseBase/BrowseBase';
-import { eventNames } from '../../constants';
+import { LAST_ELEMENT, eventNames } from '../../constants';
 
 
 export const Share = channel.addComp({
@@ -49,9 +52,6 @@ function render(props) {
 		Comp,
 		deps: [],
 		handler: (props) => {
-			setState({
-				scrollTo: getSelector({id: props.ident}),
-			});
 			getRequestFileHandler(props);
 		},
 	});
@@ -380,8 +380,11 @@ function onSelectFile_({
 		state.filesSelected = state.filesSelected.filter(item => item !== ident);
 	}
 
+	const scrollTo = state.scrollTo === getSelector({id: LAST_ELEMENT}) ? "" : state.scrollTo;
+
 	setState({
 		filesSelected: state.filesSelected, 
+		scrollTo,
 	});
 }
 
@@ -454,7 +457,7 @@ function useInitRefreshWindow({
 
 				deps.setState({
 					files: resumeObj.get().files,
-					scrollTo: "",
+					scrollTo: getSelector({id: LAST_ELEMENT}),
 				});				
 			};
             document.addEventListener(eventNames.refreshWindow, callback);
