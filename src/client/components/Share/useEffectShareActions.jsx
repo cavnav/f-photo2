@@ -20,10 +20,11 @@ function render({
         additionalPanelRender,
         state: {
             shared,
+            filesSelected,
             isButtonSelectTo,
             isButtonBackward,
             isButtonSend,
-            filesSelected,
+            isButtonCancel,
         }, 
         onCancelShare,
         onClose,   
@@ -89,8 +90,8 @@ function render({
                         onClick: onClose,
                     });
                 }
-                const cancelItemsCount = filesSelected.length;
-                if (cancelItemsCount > 0) {
+                
+                if (isButtonCancel) {
                     const onClick = () => {
                         DialogAPI.showChoiceConfirmation({
                             message: "",
@@ -99,7 +100,7 @@ function render({
                     };
 
                     CancelAPI.forceUpdate({
-                        title: `Отменить отправку ${cancelItemsCount}`,
+                        title: `Отменить отправку ${filesSelected.length}`,
                         onClick,
                     });
                 }

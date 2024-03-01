@@ -2,6 +2,7 @@ import {useCallback, useEffect} from 'react';
 import { channel } from './channel';
 import { DIALOG_TYPES } from './components/Dialog/Dialog';
 import {
+	LAST_ELEMENT,
 	eventNames
 } from './constants';
 import {
@@ -625,6 +626,10 @@ export function saveActionLists({
 
 export function getSelector({id}) {
 	return `[src="${id}"]`;
+}
+
+export function scrollToLastElement() {
+	scrollToSelector({selector: getSelector({id: LAST_ELEMENT})});
 }
 
 export function scrollToSelector({selector}) {

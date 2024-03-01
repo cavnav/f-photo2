@@ -1,15 +1,15 @@
 import React, {useCallback, useMemo, useEffect} from 'react';
 import { channel } from '../../channel';
 import { useMutedReducer } from '../../mutedReducer';
-import { checkProgress, getRequestFileHandler, getSelector, 
-	getVarName, refreshOppositeWindow, updateFiles, 
+import { checkProgress, getRequestFileHandler, 
+	getVarName, refreshOppositeWindow, scrollToLastElement, scrollToSelector, updateFiles, 
 	useEffectSetHtmlSelection, useOnChangeSelections, useOnClickItem 
 } from '../../functions';
 import { Recipients } from './components/Recipients';
 import { Files } from '../File/Files';
 import { useEffectShareActions } from './useEffectShareActions';
 import { BrowseBase } from '../BrowseBase/BrowseBase';
-import { LAST_ELEMENT, eventNames } from '../../constants';
+import { eventNames } from '../../constants';
 
 
 export const Share = channel.addComp({
@@ -101,6 +101,7 @@ function render(props) {
 		
 		deps: [
 			state.filesSelected,
+			state.isButtonCancel,
 			state.isButtonSelectTo, 
 			state.isButtonBackward,
 			state.isButtonSend,
@@ -113,6 +114,23 @@ function render(props) {
 	};
 
 	useEffectSetHtmlSelection(selectionProps);
+
+	useEffect(
+		() => {
+			scrollToSelector({selector: state.scrollTo});
+		},
+		[]
+	);
+
+	useEffect(
+		() => {
+			if (state.flagScrollToLastElement) {
+				scrollToLastElement();
+
+			}
+		},
+		[state.flagScrollToLastElement]
+	);
 
 	return (
 		<div 
@@ -136,7 +154,6 @@ function render(props) {
 
 			: 	<BrowseBase 
 					isEmpty={isEmpty}
-					scrollTo={state.scrollTo}
 
 					onClick={onClickItem}
 				>
@@ -226,6 +243,9 @@ function reducer({
 		...stateUpd,
 	};
 
+	const isSelected = stateNew.filesSelected.length > 0 ? true : false;
+	stateNew.isButtonCancel = isSelected;
+	stateNew.isButtonSelectTo = isSelected;
 	stateNew.isButtonSend = Object.keys(stateNew.recipients).length > 0 && stateNew.filesSelected.length > 0;
 
 	return stateNew;
@@ -268,6 +288,7 @@ function onCancel_({
 		setState({
 			files: state.files,
 			filesSelected: [],
+			scrollTo: '',
 		});
 
 		refreshOppositeWindow();
@@ -280,7 +301,6 @@ function onSelectTo_({
 	return () => {
 		const {setState} = Comp.getDeps();
 		setState({
-			isButtonSelectTo: false,
 			isButtonBackward: true,
 		});
 	};
@@ -309,7 +329,6 @@ function onBackwardToPhotos({
 		const {setState} = Comp.getDeps();
 		setState({
 			isButtonBackward: false,
-			isButtonSelectTo: true,
 		});
 	}
 }
@@ -380,11 +399,9 @@ function onSelectFile_({
 		state.filesSelected = state.filesSelected.filter(item => item !== ident);
 	}
 
-	const scrollTo = state.scrollTo === getSelector({id: LAST_ELEMENT}) ? "" : state.scrollTo;
-
 	setState({
-		filesSelected: state.filesSelected, 
-		scrollTo,
+		filesSelected: state.filesSelected,
+		isButtonSelectTo: true, 
 	});
 }
 
@@ -423,16 +440,27 @@ function onChangeState({
 	}) => {		
 		let value = {};
 
-		if (stateUpd.hasOwnProperty('scrollTo')) {
-			value.scrollTo = stateUpd.scrollTo;
+		const {
+			scrollTo,
+			files,
+			shared,
+			filesSelected,
+		} = stateUpd;
+
+		if (stateUpd.hasOwnProperty(getVarName({scrollTo}))) {
+			value.scrollTo = scrollTo;
 		}
 
-		if (stateUpd.hasOwnProperty('files')) {
-			value.files = stateUpd.files;
+		if (stateUpd.hasOwnProperty(getVarName({files}))) {
+			value.files = files;
 		}
 
-		if (stateUpd.hasOwnProperty('shared')) {
-			value.shared = stateUpd.shared;
+		if (stateUpd.hasOwnProperty(getVarName({shared}))) {
+			value.shared = shared;
+		}
+
+		if (stateUpd.hasOwnProperty(getVarName({filesSelected}))) {
+			value.filesSelected = filesSelected;
 		}
 
 		const resumeObj = Comp.getResumeObj();
@@ -455,10 +483,14 @@ function useInitRefreshWindow({
 					resumeObj,
 				 } = Comp.getReqProps();
 
+				const {files, filesSelected} = resumeObj.get();
+
 				deps.setState({
-					files: resumeObj.get().files,
-					scrollTo: getSelector({id: LAST_ELEMENT}),
-				});				
+					files,
+					filesSelected,
+					scrollTo: '',
+					flagScrollToLastElement: {},
+				});			
 			};
             document.addEventListener(eventNames.refreshWindow, callback);
 			
@@ -481,7 +513,9 @@ function getInitialState(
 		filesSelected: [],
 		recipientsAll: {},
 		scrollTo: '',
-		isButtonSelectTo: true,
+		flagScrollToLastElement: undefined,
+		isButtonCancel: false,
+		isButtonSelectTo: false,
 		isButtonBackward: false,
 		isButtonSend: false,
 	};

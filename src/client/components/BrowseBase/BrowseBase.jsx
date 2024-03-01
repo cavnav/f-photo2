@@ -1,23 +1,14 @@
-import React, {useEffect} from 'react';
-import {scrollToSelector} from '../../functions';
+import React from 'react';
 import {Empty} from '../Empty/Empty';
 import { LAST_ELEMENT } from '../../constants';
 
 export function BrowseBase(props) {
     const {
         refHandler,
-        scrollTo,
         isEmpty,
 
         onClick,
     } = props;    
-
-    useEffect(
-		() => {	            
-            scrollToSelector({selector: scrollTo});
-		},
-        // i need wait while items will be rendered.           		 
-	);
 
     return (
         <div
