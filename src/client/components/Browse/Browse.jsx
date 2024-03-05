@@ -10,6 +10,7 @@ import {
 	useOnClickItem,
 	useOnChangeSelections,
 	useEffectSetHtmlSelection,
+	useScrollTo,
 } from '../../functions';
 import { channel } from '../../channel';
 import { ResumeObj } from '../../resumeObj';
@@ -93,6 +94,8 @@ function render(
 		selection: state.selections,
 	});
 
+	useScrollTo({selector: state.scrollTo});
+
 	const FilesComp = state.files.length === 0 ? null : <Files
 		files={state.files}
 		browsePath={browsePath}
@@ -116,9 +119,11 @@ function render(
 
 	const onClickItem = useOnClickItem({eventHandlers});
 
+	
+
 	return (
 		<BrowseBase 
-			isEmpty
+			isEmpty={isEmpty}
 			scrollTo={state.scrollTo}
 			onClick={onClickItem}
 		>
@@ -181,7 +186,7 @@ function onRequestFile({Comp}) {
 		const curPhotoInd = +event.target.getAttribute('ind'); 		 
 
 		deps.setState({
-			curPhotoInd,
+			curPhotoInd,	
 		});
 
 		rp.AppAPI.toggleAction({

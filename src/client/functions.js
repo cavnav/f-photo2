@@ -745,3 +745,13 @@ export function getSelectorSrc({
 	const {sep} = RESUME_OBJ.state;
 	return src.split(sep).join(sep.concat(sep));	
 }
+
+export function useScrollTo({
+	selector,
+}) {
+	useEffect(
+		() => {
+			scrollToSelector({selector});
+		},
+	);
+}
