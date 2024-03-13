@@ -462,40 +462,38 @@ export function checkProgress({
 			}) => ({items: {Dialog}}),
 		});
 
-		DialogAPI.show({isHide: false});
-
 		// --------------------------
 		function coreFunc() {
-			return checkFunc()
-			.then((res) => {
-				const isRequestCompleted = res.error || res.progress === 100;
-				setTimeout(() => (isRequestCompleted ? null : coreFunc()), 500);        
+			checkFunc()
+				.then((res) => {
+					const isRequestCompleted = res.error || res.progress === 100;
+					setTimeout(() => (isRequestCompleted ? null : coreFunc()), 500);        
 
-				const message = res.error ? TEXT_SERVER_ERROR : ProgressTitle({
-					progress: res.progress,						
-				});
-
-				if (res.error) {
-					DialogAPI.showConfirmation({
-						message,
-						type: 'error',
-						confirmBtn: {
-							onConfirm: resolve,
-						},
-					});
-				}
-				else {
-					DialogAPI.show({
-						message,
-						isHide: false,
+					const message = res.error ? TEXT_SERVER_ERROR : ProgressTitle({
+						progress: res.progress,						
 					});
 
-					if (isRequestCompleted) {					
-						DialogAPI.close();     
-						resolve();    					
+					if (res.error) {
+						DialogAPI.showConfirmation({
+							message,
+							type: 'error',
+							confirmBtn: {
+								onConfirm: resolve,
+							},
+						});
 					}
-				}				
-			});
+					else {
+						DialogAPI.show({
+							message,
+							isHide: false,
+						});
+
+						if (isRequestCompleted) {					
+							DialogAPI.close();     
+							resolve();    					
+						}
+					}				
+				});
 		}
 	});
 }

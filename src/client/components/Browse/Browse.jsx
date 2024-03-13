@@ -109,7 +109,7 @@ function render(
 		onSelectDir={getVarName({onChangeSelectionsUpd})}
 	/>;
 
-	const isEmpty = FilesComp && DirsComp ? false : true;
+	const isEmpty = FilesComp || DirsComp ? false : true;
 
 	const eventHandlers = {
         onChangeDirUpd,
@@ -529,7 +529,7 @@ function renderAddPanel({
 						onConfirm,
 					});
 					
-					function onConfirm() {
+					function onConfirm() {			
 						rp.server.removeItems({
 							items: state.selections,
 							...getUpdatedActionLists(),
@@ -538,15 +538,13 @@ function renderAddPanel({
 							updateActionsLists({ lists: result.updatedActionLists });
 							return result;
 						})
-						.then(({
-						}) => onMoveSelections({
+						.then(() => onMoveSelections({
 							Comp,
 							onChangeSelections: () => changeSelections({
 								Comp,
 							}),
 						}))
-						.then(() => {
-							//onRefreshWindow({Comp});
+						.then(() => {							
 							refreshOppositeWindow({
 								eventName: eventNames.exitFolder,
 							});

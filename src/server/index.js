@@ -257,10 +257,30 @@ app.post('/api/removeItems',
 			updatedActionLists,
 		} = req.body;
 
+		res.send({			
+			updatedActionLists: [],		
+		});
+
 		setState({
 			progress: 0,
 			countCopiedPhotos: 0,
 		});
+
+		setTimeout(() => {
+			setState({
+				progress: 100,
+				countCopiedPhotos: 1,
+			});
+		}, 2000);
+
+		return;
+
+		setState({
+			progress: 0,
+			countCopiedPhotos: 0,
+		});
+
+
 
 		const source = state[curWindow];
 		const allItems = await getAllItems({
@@ -276,8 +296,7 @@ app.post('/api/removeItems',
 			isDelete: true,
 		});
 
-		res.send({
-			...req.body,	
+		res.send({			
 			updatedActionLists: updatedActionListsUpd,		
 		});
 

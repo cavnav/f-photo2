@@ -1,4 +1,5 @@
 // on remove item: Browse. 541 onRefreshWindow. useEffect 74.
+// check error on api.
 // remove items from Browse mode.
 // after remove in Browse mode scroll to next item.
 // change share list on remove, move, rename.
