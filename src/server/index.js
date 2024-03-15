@@ -255,32 +255,12 @@ app.post('/api/removeItems',
 			curWindow,
 			items,
 			updatedActionLists,
-		} = req.body;
-
-		res.send({			
-			updatedActionLists: [],		
-		});
+		} = req.body;		
 
 		setState({
 			progress: 0,
 			countCopiedPhotos: 0,
 		});
-
-		setTimeout(() => {
-			setState({
-				progress: 100,
-				countCopiedPhotos: 1,
-			});
-		}, 2000);
-
-		return;
-
-		setState({
-			progress: 0,
-			countCopiedPhotos: 0,
-		});
-
-
 
 		const source = state[curWindow];
 		const allItems = await getAllItems({
@@ -294,13 +274,13 @@ app.post('/api/removeItems',
 			items: flattedItems,
 			source,
 			isDelete: true,
-		});
+		});				
 
 		res.send({			
 			updatedActionLists: updatedActionListsUpd,		
 		});
 
-		remove({
+		await remove({
 			slicedItems: items,
 		});
 
@@ -310,24 +290,24 @@ app.post('/api/removeItems',
 		}) {
 			const [item] = slicedItems;
 			const src = path.resolve(state[curWindow], path.basename(item));
+			
 			await fs.remove(
 				src,
 			);
 
 			const countProcessed = state.countCopiedPhotos + 1;
-
 			const progress = calcProgress({
 				cntProcessed: countProcessed,
 				total: items.length,
 			});
-
+			
 			setState({
 				progress: progress,
 				countCopiedPhotos: countProcessed,
 			});
 
 			if (progress !== 100 && slicedItems.length > 1) {
-				remove({
+				await remove({
 					slicedItems: slicedItems.slice(1),
 				});
 			}
@@ -909,7 +889,7 @@ async function updatePrinted({
 
 	json[getCurMoment()] = files;
 
-	await fs.writeJSON(
+	await fs.writeJson(
 		PRINTED_JSON,		
 		json,
 	);
@@ -945,7 +925,7 @@ async function updateActionLists({
 	isDelete,
 }) {
 	const sourceRel = source.replace(ALBUM_DIR, '');	
-	const printed = await fs.readJson(PRINTED_JSON).catch(e => ({}));
+	const printed = await fs.readJson(PRINTED_JSON).catch(e => new Object());
 	const updatedListsArr = Object.values(updatedLists).concat(Object.values(printed));
 
 	for (let item of items) {
@@ -962,7 +942,7 @@ async function updateActionLists({
 		});
 	}
 
-	await fs.writeJSON(
+	await fs.writeJson(
 		PRINTED_JSON,		
 		printed,
 	);

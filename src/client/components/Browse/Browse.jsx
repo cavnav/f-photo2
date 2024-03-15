@@ -508,7 +508,6 @@ function renderAddPanel({
 							Comp,
 						}),
 					}))
-					.then(() => refreshWindows())
 					.catch((error) => { 
 						if (error.name !== 'responseError') {
 							console.log(error);

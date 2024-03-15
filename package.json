@@ -9,7 +9,7 @@
     "startb": "npm run build && set NODE_ENV=production && npm run server",
     "startLocal": "",
     "client": "webpack-dev-server --mode development --devtool inline-source-map --hot",
-    "server": "nodemon src/server/index.js --ignore src/server/shared.json",
+    "server": "nodemon src/server/index.js",
     "serverp": "set NODE_ENV=production && npm run server",
     "start": "concurrently \"npm run server\" \"npm run client\"",
     "test": "jest"
@@ -50,7 +50,7 @@
     "file-loader": "^6.2.0",
     "html-webpack-plugin": "^5.5.0",
     "mini-css-extract-plugin": "^2.7.7",
-    "nodemon": "^2.0.3",
+    "nodemon": "^3.1.0",
     "style-loader": "^0.23.0",
     "url-loader": "^4.1.1",
     "webpack": "^5.89.0",
