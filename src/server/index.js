@@ -218,20 +218,17 @@ app.post('/api/rename',
 		const srcName = path.join(state[curWindow], path.sep, name, path.sep);
 		const srcNewName = path.join(state[curWindow], path.sep, newName, path.sep);
 
-		const error = await rename({
-			name: srcName,
-			newName: srcNewName,
-		});
-
-		let result;
-		if (error) {
-			result = error;
-		} else {
+		try {
+			await rename({
+				name: srcName,
+				newName: srcNewName,
+			});
+			
 			const allItems = await getAllItems({
 				items: [path.sep],
 				source: srcNewName,
 			});
-	
+
 			const flattedItems = allItems.flat();
 			const actionListsUpd = await updateActionLists({
 				updatedLists: actionLists,
@@ -243,9 +240,12 @@ app.post('/api/rename',
 			result = {
 				actionLists: actionListsUpd,
 			};
-		}
 
-		res.send(result);
+			res.send(result);
+
+		} catch (error) {
+			res.send({error: error.message});
+		}		
 	}
 );
 
@@ -262,27 +262,32 @@ app.post('/api/removeItems',
 			countCopiedPhotos: 0,
 		});
 
-		const source = state[curWindow];
-		const allItems = await getAllItems({
-			items,
-			source,
-		});
+		try {
+			const source = state[curWindow];
+			const allItems = await getAllItems({
+				items,
+				source,
+			});
 
-		const flattedItems = allItems.flat();
-		const updatedActionListsUpd = await updateActionLists({
-			updatedLists: updatedActionLists,
-			items: flattedItems,
-			source,
-			isDelete: true,
-		});				
+			const flattedItems = allItems.flat();
+			const updatedActionListsUpd = await updateActionLists({
+				updatedLists: updatedActionLists,
+				items: flattedItems,
+				source,
+				isDelete: true,
+			});							
 
-		res.send({			
-			updatedActionLists: updatedActionListsUpd,		
-		});
+			await remove({
+				slicedItems: items,
+			});
 
-		await remove({
-			slicedItems: items,
-		});
+			res.send({			
+				updatedActionLists: updatedActionListsUpd,		
+			});
+
+		} catch (error) {
+			res.send({error});
+		}
 
 		// ----------------------
 		async function remove({
@@ -998,19 +1003,11 @@ async function rename({
 	name,
 	newName,
 }) {
-	try {
-		return await fs.rename(name, newName)
-		.then((result) => result)
-		.catch((error) => {
-			return { 
-				error: 'Попробуй другое название' 
-			};
-		});
-	} catch(error) {
-		return {
-			error,
-		};
-	};
+	return await fs.rename(name, newName)
+	.then((result) => result)
+	.catch(() => {
+		throw new Error('Попробуй другое название');
+	});
 }
 
 function progressUpdate({

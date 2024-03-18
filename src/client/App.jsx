@@ -1,4 +1,5 @@
 // check error on api.
+// check rename error and algorithm.
 // remove file lead to remove scrollTo value.
 // remove file dont lead to remove scrollTo value.
 // change share list on remove, move, rename.

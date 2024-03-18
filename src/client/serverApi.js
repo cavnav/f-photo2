@@ -13,13 +13,23 @@ class PostObjTmp {
 };
 
 function fetchUpd(...params) {
-	console.log('params', params, +new Date());
 	return fetch.apply(null, params)
-		.catch((error) => {
-			notifyServerError(error);
+	.then(async (result) => {
+		const json = await result.json();
+		if (json.error) {
+			raiseError({error: json.error});
+		}
+		return json;
+	})
+	.catch((error) => raiseError({error}));	
 
-			throw error;
-		});
+
+
+	function raiseError({error}) {
+		notifyServerError(error);
+
+		throw error;
+	}
 }
 
 function fetchWithLoader(...params) {
@@ -54,22 +64,14 @@ export class AppServerAPI {
 		return fetchWithLoader(
 			this.getFullUrl({
 				url: 'getSharedRecipients',
-			}))
-			.then(response => response.json());
+			}));
 	}
 
 	$saveFilesToFlash = (params) => {
 		return fetchWithLoader(
 			this.getFullUrl({ url: 'saveFilesToFlash' }),
-			new PostObjTmp({ body: params }))
-			.then(res => res.json());
+			new PostObjTmp({ body: params }));
 	};
-
-	imgRotate(params) {
-		const url = this.getUrlWithParams({ url: this.imgRotate.name, params });
-		return fetch(url)
-			.then(res => res.json());
-	}
 
 	$remove = (params) => {
 		const url = this.getUrlWithParams({
@@ -78,8 +80,7 @@ export class AppServerAPI {
 				curWindow: window.name,
 			}
 		});
-		return fetchWithLoader(url)
-			.then(res => res.json());
+		return fetchWithLoader(url);
 	}
 
 	getUrlWithParams({
@@ -160,15 +161,7 @@ export class AppServerAPI {
 					...(!params.curWindow && { curWindow: window.name }),
 				},
 			})
-		)
-		.then(res => {
-			try {
-				return res.json();
-			}
-			catch(e) {
-				console.log(111, e);
-			}
-		});
+		);
 	}
 
 	addAlbum = async ({
@@ -185,8 +178,7 @@ export class AppServerAPI {
 					curWindow: window.name,
 				},
 			})
-			)
-			.then((res) => res.json());
+		);
 	};
 
 	rename = async ({
@@ -208,10 +200,7 @@ export class AppServerAPI {
 					curWindow: window.name,
 				}
 			})
-		)
-		.then((result) => {
-			return result?.json();
-		});
+		);
 	}
 
 	getPrintedItems = ({
@@ -227,8 +216,7 @@ export class AppServerAPI {
 					curWindow: window.name,
 				},
 			})
-		)
-		.then(res => res.json());
+		);
 	}
 
 	removeItems = ({
@@ -247,8 +235,7 @@ export class AppServerAPI {
 					updatedActionLists,
 				},
 			})
-		)
-		.then((res) => res.json());
+		);
 	};
 
 	moveToPath = ({
@@ -268,8 +255,7 @@ export class AppServerAPI {
 					curWindow: window.name,
 				}
 			})
-		)
-			.then(res => res.json());
+		);
 	}
 
 	$copyPhotos = () => {
@@ -283,19 +269,18 @@ export class AppServerAPI {
 			body: JSON.stringify({
 				curWindow: window.name,
 			})
-		}).then(res => res.json());
+		});
 	}
 
 	$getNewPhotos = () => {
-		return fetchWithLoader(this.getFullUrl({ url: 'getNewPhotos' })).then(res => res.json());
+		return fetchWithLoader(this.getFullUrl({ url: 'getNewPhotos' }));
 	}
 
 	checkProgress = () => {
 		return fetchUpd(
 			this.getFullUrl({
 				url: 'checkProgress'
-			}))
-			.then(res => res.json())
+			}));
 	}
 
 	$getUsbDevices = (params = {}) => {
