@@ -410,9 +410,17 @@ export function notifyServerError(error) {
 		}) => ({items: {Dialog}}),
 	});
 
+	let message = "";
+
+	if (error.constructor === TypeError) {
+		message = TEXT_SERVER_ERROR;		
+	} else {
+		message = error;
+	}
+
 	console.log(error);
 	DialogAPI.showConfirmation({
-		message: TEXT_SERVER_ERROR, 
+		message, 
 		isHide: false, 
 		type: DIALOG_TYPES.error,
 	});
