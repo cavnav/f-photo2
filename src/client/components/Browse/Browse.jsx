@@ -10,7 +10,7 @@ import {
 	useOnChangeSelections,
 	useEffectSetHtmlSelection,
 	useScrollTo,
-	getSelectorFolder,
+	getSelectorSrc,
 } from '../../functions';
 import { channel } from '../../channel';
 import { ResumeObj } from '../../resumeObj';
@@ -18,7 +18,7 @@ import { useMutedReducer } from '../../mutedReducer';
 import { BTN_MOVE, BTN_REMOVE, setBtnTitle } from '../../common/additionalActions/const';
 import { Files } from '../File/Files';
 import { Dirs } from '../Dirs/Dirs';
-import { eventNames } from '../../constants';
+import { SEP, eventNames } from '../../constants';
 import { BrowseBase } from '../BrowseBase/BrowseBase';
 
 
@@ -164,7 +164,7 @@ function onChangeDir({
 
 		setStateSilent({
 			scrollTo: "",
-			path: dir,
+			path: setForwardPath({Comp, path: dir}),
 		});
 		
 		rp.server.toward({ dir })
@@ -384,7 +384,7 @@ async function onAddAlbum({
 	}
 
 	const {setState} = Comp.getDeps();	
-	setState({scrollTo: getSelectorFolder({src: name})});
+	setState({scrollTo: getSelectorSrc({id: name})});
 
 	refreshWindows({
 		Comp,
@@ -422,7 +422,7 @@ async function onRename({
 	const deps = Comp.getDeps();
 
 	deps.setState({
-		scrollTo: getSelectorFolder({src: newName}),
+		scrollTo: getSelectorSrc({id: newName}),
 	});
   
 	refreshWindows({
@@ -620,18 +620,44 @@ function exitFolder({
 	});
 	
 	const rp = Comp.getReqProps();
-	const {state, setState} = Comp.getDeps();
+	const {state, setState, setStateSilent} = Comp.getDeps();
+
+	const {
+		backwardPath,
+		prevDir,
+	} = getBackwardPath({Comp});
+
+	setStateSilent({
+		path: backwardPath,
+	});
 	
 	rp.server.backward()
 		.then(response => onNavigate({Comp, ...response}))
 		.then(() => {			
-			setState({scrollTo: getSelectorFolder({src: state.path})});
+			setState({scrollTo: getSelectorSrc({id: prevDir})});
 			refreshOppositeWindow();
 		});
 }
 
 function isShowRename([itemName], sep) {
 	return itemName?.includes(sep) ?? false;
+}
+
+function setForwardPath({Comp, path}) {
+	const deps = Comp.getDeps();
+
+	return deps.state.path.concat(SEP, path);
+}
+
+function getBackwardPath({Comp}) {
+	const deps = Comp.getDeps();
+
+	const lastIndex = deps.state.path.lastIndexOf(SEP);
+
+	return {
+		backwardPath: deps.state.path.slice(0, lastIndex),
+		prevDir: deps.state.path.slice(lastIndex + 1),
+	};
 }
 
 function getStateInit() {

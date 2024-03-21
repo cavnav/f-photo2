@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { ChannelComp, channel } from "../../channel";
-import { getSelector, getVarName, useOnChangeSelections, useOnClickItem } from '../../functions';
+import { getSelectorSrc, getVarName, useOnChangeSelections, useOnClickItem } from '../../functions';
 import { useMutedReducer } from '../../mutedReducer';
 import { FilesOne } from '../File/FilesOne';
 import { BrowseBase } from '../BrowseBase/BrowseBase';
@@ -157,7 +157,7 @@ function onRequestFileHandler({
                 sharedItems: filesUpd,
                 recipients: recipientsUpd,
                 shared: src,       
-                scrollTo: getSelector({id: src}),                
+                scrollTo: getSelectorSrc({id: src}),                
             });
         }
     );    

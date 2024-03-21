@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { channel } from '../../channel';
-import { getExistsProps, getSelector, getVarName, initRefreshWindowEvent, useOnChangeSelections, useOnClickItem } from '../../functions';
+import { getExistsProps, getSelectorSrc, getVarName, initRefreshWindowEvent, useOnChangeSelections, useOnClickItem } from '../../functions';
 import { useMutedReducer } from '../../mutedReducer';
 import { FilesOne } from '../File/FilesOne';
 import { eventNames } from '../../constants';
@@ -205,7 +205,7 @@ function onRequestFileHandler({
     deps.setState({
         actionName, 
         requestFile: src,
-        scrollTo: getSelector({id: src}),
+        scrollTo: getSelectorSrc({id: src}),
     });
 }
 

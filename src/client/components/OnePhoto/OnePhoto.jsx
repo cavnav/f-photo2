@@ -7,7 +7,7 @@ import {
 	updateActionsLists, refreshOppositeWindow, isBanMoveItems,
 	initRefreshWindowEvent,
 	getUpdatedActionLists,
-	getSelector,
+	getSelectorSrc,
 } from '../../functions';
 import { channel } from '../../channel';
 import { getCurDate } from '../../functions';
@@ -87,7 +87,7 @@ function render(
 		if (state.action === ON_TOGGLE_PHOTO) {
 			BrowseAPI.setToResumeObj({
 				val: {
-					scrollTo: getSelector({id: state.curPhoto}),
+					scrollTo: getSelectorSrc({id: state.curPhoto}),
 				},
 			});
 		}

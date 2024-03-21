@@ -631,12 +631,12 @@ export function saveActionLists({
     );
 }
 
-export function getSelector({id}) {
+export function getSelectorSrc({id}) {
 	return `[src="${id}"]`;
 }
 
 export function scrollToLastElement() {
-	scrollToSelector({selector: getSelector({id: LAST_ELEMENT})});
+	scrollToSelector({selector: getSelectorSrc({id: LAST_ELEMENT})});
 }
 
 export function scrollToSelector({selector}) {
@@ -730,25 +730,19 @@ export function getRequestFileHandler({
 	const identUpd = getSelectorSrc({src});
 	
 	setState({
-		scrollTo: getSelector({id: identUpd}),
+		scrollTo: getSelectorSrc({id: identUpd}),
 	});
 
 	BrowseAPI.setToResumeObj({
 		val: {
 			path,
-			scrollTo: getSelector({id: item}),
+			scrollTo: getSelectorSrc({id: item}),
 		}
 	});
 
 	AppAPI.toggleAction({
 		action: Browse.name,	
 	});
-}
-
-export function getSelectorFolder({
-	src,
-}) {
-	return sep.concat(src).split(sep).join(sep.concat(sep));	
 }
 
 export function useScrollTo({
