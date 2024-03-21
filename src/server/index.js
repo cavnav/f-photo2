@@ -16,6 +16,9 @@ const SHARED_JSON = path.join(__dirname, 'shared.json');
 const SHARED_DIR = path.join(__dirname, 'shared');
 const RESPONSE_WORKING = "WORKING";
 const CHAT_IDS_FILE = path.join(__dirname, './chatIDs.json');
+const SEP = '/';
+const PATH_SEP_REG_EXP = /[\\/]/g;
+const WEB_SRC_REG_EXP = new RegExp(SEP, "g");
 
 let state = {
 	newPhotos: [],
@@ -275,14 +278,14 @@ app.post('/api/removeItems',
 				items: flattedItems,
 				source,
 				isDelete: true,
-			});							
+			});			
+			
+			res.send({			
+				updatedActionLists: updatedActionListsUpd,		
+			});
 
 			await remove({
 				slicedItems: items,
-			});
-
-			res.send({			
-				updatedActionLists: updatedActionListsUpd,		
 			});
 
 		} catch (error) {
@@ -326,12 +329,12 @@ app.post('/api/resetNavigation', (req, res) => {
 		curWindow,
 	} = req.body;
 
-	const resetToUpd = path.join(ALBUM_DIR, resetTo);
+	const resetToUpd = path.join(ALBUM_DIR, getSystemSrc({src: resetTo}));
 	state[curWindow] && setState({
 		[curWindow]: resetToUpd,
 	});
 
-	res.send(req.body);
+	res.send({});
 });
 
 app.post('/api/toward', getToward());
@@ -594,10 +597,7 @@ app.post('/api/copyPhotos', (req, res) => {
 	const curMoment = getCurMoment();
 	const destDir = path.resolve(ALBUM_DIR, curMoment);
 
-	res.send({
-		...req.body,
-		destDir: path.join(destDir).replace(ALBUM_DIR, ''),
-	});
+	res.send({});
 
 	if (fs.existsSync(destDir)) {
 		return;
@@ -606,6 +606,7 @@ app.post('/api/copyPhotos', (req, res) => {
 	setState({
 		progress: 0,
 		countCopiedPhotos: 0,
+		[curWindow]: destDir,
 	});
 
 	startCopy({ photos: state.newPhotos, destDir });
@@ -694,14 +695,6 @@ function getBackwardPath({
 	);
 }
 
-function saveToFile({
-	path = './src/server/log.txt',
-	content,
-}) {
-	const contentStr = JSON.stringify(content)
-	fs.writeFileSync(path, contentStr);
-}
-
 async function findFiles({
 	reqPath = state[state.curWindow],
 
@@ -735,11 +728,14 @@ async function findFiles({
 		dirs = await new Promise((resolve) => find.dir(reqPath, resolve));
 	}
 
-	const { sep } = path;
-	const browseDirs = dirs
+	let browseDirs = dirs
 		.filter(isTopLevelFile)
 		.sort(sortByBirthday)
-		.map((dir) => path.join(sep, path.basename(dir)));	
+		
+	if (!doNeedFullPath) browseDirs = browseDirs.map((dir) => {
+		const dirUpd = path.basename(dir);
+		return dirUpd;
+	});
 
 	return {
 		files: browseFiles,
@@ -793,7 +789,6 @@ function setState(propsUpd) {
 function getToward({
 	rootDir = ALBUM_DIR,
 	isBackward,
-	mapResponse,
 } = {}) {
 	return async (
 		{
@@ -821,17 +816,18 @@ function getToward({
 			curWindow,
 		});
 
-		const mappedResult = mapResponse && await mapResponse({
-			result,
-			reqPath: pathUpd,
-		});
-
-		res.send(mappedResult || result);
+		res.send(result);
 
 
 		// --------------------------------------------------------------
 		function getReqPath() {
-			return (resetTo !== undefined && path.join(rootDir, resetTo)) ||
+			let resetToUpd;
+
+			if (resetTo !== undefined) {
+				resetToUpd = resetTo.replace(WEB_SRC_REG_EXP, path.sep);
+			}
+
+			return (resetTo !== undefined && path.join(rootDir, resetToUpd)) ||
 				path.join(state[curWindow], path.basename(dir));
 		}
 	}
@@ -847,6 +843,7 @@ async function browseFiles({
 	} = await findFiles({
 		reqPath,
 		doNeedDirs: true,
+		doNeedFullPath: false,
 	});
 
 	const myPath = reqPath === rootDir ? '' :
@@ -855,8 +852,6 @@ async function browseFiles({
 	return ({
 		files,
 		dirs,
-		path: myPath,
-		sep: path.sep,
 	});
 }
 
@@ -1035,4 +1030,12 @@ async function getShared({
 	});
 
 	return jsonItem;
+}
+
+function getWebSrc({src}) {
+	return src.replace(PATH_SEP_REG_EXP, SEP);
+}
+
+function getSystemSrc({src}) {
+	return src.replace(WEB_SRC_REG_EXP, path.sep);
 }

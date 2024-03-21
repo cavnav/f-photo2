@@ -3,6 +3,7 @@ import { channel } from './channel';
 import { DIALOG_TYPES } from './components/Dialog/Dialog';
 import {
 	LAST_ELEMENT,
+	SEP,
 	eventNames
 } from './constants';
 import {
@@ -515,8 +516,8 @@ export function updateActionsLists({
 	});
 }
 
-export function getItemName([itemName], sep) {
-	return itemName?.replace(sep, '');
+export function getItemName([itemName]) {
+	return itemName?.replace(SEP, '');
 }
 
 export function useOnChangeSelections({
@@ -721,8 +722,7 @@ export function getRequestFileHandler({
 		BrowseAPI,
 	} = Comp.getComps();
 
-	const {sep} = RESUME_OBJ.state;
-	const lastIndexSeparator = src.lastIndexOf(sep);
+	const lastIndexSeparator = src.lastIndexOf(SEP);
 	const path = src.substr(0, lastIndexSeparator);
 	const item = src.substr(lastIndexSeparator + 1);
 
@@ -745,11 +745,10 @@ export function getRequestFileHandler({
 	});
 }
 
-export function getSelectorSrc({
+export function getSelectorFolder({
 	src,
 }) {
-	const {sep} = RESUME_OBJ.state;
-	return src.split(sep).join(sep.concat(sep));	
+	return sep.concat(src).split(sep).join(sep.concat(sep));	
 }
 
 export function useScrollTo({

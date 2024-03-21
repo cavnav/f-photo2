@@ -1,6 +1,7 @@
 import React from 'react';
 import { getBackgroundImageStyle } from '../../functions';
 import {File} from './File';
+import { SEP } from '../../constants';
 
 
 export function Files({
@@ -14,7 +15,7 @@ export function Files({
     return (        
         files.map((file, ind) => {
             const style = getBackgroundImageStyle({
-                file: `${browsePath}${file}`,
+                file: `${browsePath}${SEP}${file}`,
             });
 
             return (

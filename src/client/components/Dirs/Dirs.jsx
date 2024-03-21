@@ -18,7 +18,7 @@ export function Dirs({
 						src={dir}
 						handler={onChangeDir}
 					>
-						{dir.slice(1)}
+						{dir}
 						<input
 							className={selectorClassNames}
 							type="checkbox"

@@ -127,7 +127,7 @@ function render(
 			resumeBrowse,
 			PhotoStatuses,
 		} = rp;
-		const id = `${resumeBrowse.path}${resumeBrowse.sep}${state.curPhoto}`;
+		const id = `${resumeBrowse.path}${state.curPhoto}`;
 
 		const currentTotal = `${state.curPhotoInd + 1} / ${state.files.items.length}`;
 
@@ -368,7 +368,6 @@ function getReqProps({ comps, channel, }) {
 		selector: {
 			files: 1,
 			path: 1,
-			sep: 1,
 			curPhotoInd: 1,
 			selections: 1,
 		},

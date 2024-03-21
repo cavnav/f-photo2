@@ -5,3 +5,5 @@ export const eventNames = {
 };
 
 export const LAST_ELEMENT = 'last-element';
+
+export const SEP = '/';

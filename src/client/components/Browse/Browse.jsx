@@ -5,12 +5,12 @@ import {
 	onMoveSelections, refreshWindows, refreshOppositeWindow,
 	updateActionsLists,
 	getUpdatedActionLists,
-	getSelector,
 	getVarName,
 	useOnClickItem,
 	useOnChangeSelections,
 	useEffectSetHtmlSelection,
 	useScrollTo,
+	getSelectorFolder,
 } from '../../functions';
 import { channel } from '../../channel';
 import { ResumeObj } from '../../resumeObj';
@@ -52,7 +52,7 @@ function render(
 			});
 		}
 	});
-	const browsePath = state.path + state.sep;
+
 	const onChangeDirUpd = useCallback(onChangeDir({Comp}), []);
 	const onChangeSelectionsUpd = useOnChangeSelections({
 		Comp,
@@ -98,7 +98,7 @@ function render(
 
 	const FilesComp = state.files.length === 0 ? null : <Files
 		files={state.files}
-		browsePath={browsePath}
+		browsePath={state.path}
 		onSelectFile={getVarName({onChangeSelectionsUpd})}
 		onRequestFile={getVarName({onRequestFileUpd})}
 	/>
@@ -157,19 +157,18 @@ function onChangeDir({
 }) {
 	return (event) => {
 		const rp = Comp.getReqProps();
-		const {
-			onNavigate,
-		} = Comp.getAPI();
 
-		const {setStateSilent} = Comp.getDeps();
-		setStateSilent({
-			scrollTo: "",
-		});
+		const {setStateSilent} = Comp.getDeps();		
 
 		const dir = event.target.getAttribute('src');
+
+		setStateSilent({
+			scrollTo: "",
+			path: dir,
+		});
 		
 		rp.server.toward({ dir })
-			.then(onNavigate)
+			.then(response => onNavigate({Comp, ...response}))
 			.then(() => {				
 				changeSelections({
 					Comp,
@@ -207,12 +206,9 @@ function getReqProps({
 
 function getAPI({
 	Comp,
-	deps,
 }) {
 	return {
-		resetTo,
 		exitFolder: () => exitFolder({Comp}),
-		onNavigate,
 		setToResumeObj,
 		getResumeObj,
 		changeSelections,
@@ -240,32 +236,32 @@ function getAPI({
 			val,
 		});
 	}
+}
 
-	function onNavigate({
+function onNavigate({
+	Comp,
+	dirs,
+	files,
+}) {
+	const deps = Comp.getDeps();
+
+	const {
+		state,
+		setState,
+	} = deps;
+
+	setState({
 		dirs,
 		files,
-		path,
-		sep,
-	}) {
-		const {
-			setState,
-		} = deps;
+	});
 
-		setState({
-			dirs,
-			files,
-			path,
-			sep,
-		});
-
-		const rp = Comp.getReqProps();
-		rp.ExitFromFolderAPI.forceUpdate({
-			title: path ? `Закрыть альбом ${path}` : '',
-			onClick: () => {
-				exitFolder({ Comp });
-			}
-		});	
-	}
+	const rp = Comp.getReqProps();
+	rp.ExitFromFolderAPI.forceUpdate({
+		title: state.path ? `Закрыть альбом ${state.path}` : '',
+		onClick: () => {
+			exitFolder({ Comp });
+		}
+	});	
 }
 
 function updateSelectionDeps({
@@ -278,6 +274,7 @@ function updateSelectionDeps({
 	const isMoveBtn = !isBanMoveItems({
 		path: state.path,
 	});
+
 	rp.MoveSelectionsAPI.forceUpdate({
 		title: isMoveBtn ? setBtnTitle({
 			prefix: BTN_MOVE,
@@ -386,9 +383,8 @@ async function onAddAlbum({
 		return;
 	}
 
-	const {state, setState} = Comp.getDeps();	
-	const src = [state.sep, state.sep, name].join('');
-	setState({scrollTo: getSelector({id: src})});
+	const {setState} = Comp.getDeps();	
+	setState({scrollTo: getSelectorFolder({src: name})});
 
 	refreshWindows({
 		Comp,
@@ -422,6 +418,12 @@ async function onRename({
 	updateActionsLists({
 		lists: res.actionLists,
 	});
+
+	const deps = Comp.getDeps();
+
+	deps.setState({
+		scrollTo: getSelectorFolder({src: newName}),
+	});
   
 	refreshWindows({
 	  Comp,
@@ -434,6 +436,7 @@ function renderAddPanel({
 	const rp = Comp.getReqProps();
 	const {
 		state,
+		setState,
 	} = Comp.getDeps();
 
 	const additionalActions = [
@@ -487,17 +490,6 @@ function renderAddPanel({
 						destWindow: getOppositeWindow().name,
 						...getUpdatedActionLists(),
 					})
-					.then((res) => {
-						if (res?.error) {
-							rp.DialogAPI.show({
-							  type: 'error',
-							  message: res.error,
-							  isModal: false,
-							});		
-							throw new Error({ name: 'responseError' });					
-						} 
-						return res;
-					})					
 					.then((result) => {
 						updateActionsLists({ lists: result.updatedActionLists });
 						return result;
@@ -508,10 +500,10 @@ function renderAddPanel({
 							Comp,
 						}),
 					}))
-					.catch((error) => { 
-						if (error.name !== 'responseError') {
-							console.log(error);
-						}
+					.then(() => {
+						setState({
+							scrollTo: "",
+						});
 					});
 				},
 			});
@@ -535,6 +527,7 @@ function renderAddPanel({
 						})
 						.then((result) => {							
 							updateActionsLists({ lists: result.updatedActionLists });
+
 							return result;
 						})
 						.then(() => onMoveSelections({
@@ -546,6 +539,11 @@ function renderAddPanel({
 						.then(() => {							
 							refreshOppositeWindow({
 								eventName: eventNames.exitFolder,
+							});
+						})
+						.then(() => {
+							setState({
+								scrollTo: "",
 							});
 						});
 					}					
@@ -604,14 +602,10 @@ function resetTo({
 
 	const pathUpd = path ?? state.path;
 
-	const {
-		onNavigate,
-	} = Comp.getAPI();
-
 	rp.server.toward({
 		resetTo: pathUpd,
 	})
-	.then(onNavigate);		
+	.then(response => onNavigate({Comp, ...response}));
 }
 
 function exitFolder({
@@ -619,7 +613,6 @@ function exitFolder({
 }) {
 	const {
 		changeSelections,
-		onNavigate,
 	} = Comp.getAPI();
 
 	changeSelections({
@@ -628,12 +621,11 @@ function exitFolder({
 	
 	const rp = Comp.getReqProps();
 	const {state, setState} = Comp.getDeps();
-	const src = [state.sep, state.path].join('');
 	
 	rp.server.backward()
-		.then(onNavigate)
+		.then(response => onNavigate({Comp, ...response}))
 		.then(() => {			
-			setState({scrollTo: getSelector({id: src})});
+			setState({scrollTo: getSelectorFolder({src: state.path})});
 			refreshOppositeWindow();
 		});
 }
@@ -646,12 +638,8 @@ function getStateInit() {
 	const resumed = resumeObj.get();
 
 	return {
-		previewWidth: 100,
-		previewHeight: 100,
-		sep: undefined,
 		path: '',
 		curPhotoInd: -1,
-		scrollY: 0,				
 		selections: [],
 		scrollTo: "",
 

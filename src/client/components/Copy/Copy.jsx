@@ -125,14 +125,6 @@ function render() {
 		return rp.server.$copyPhotos({
 				userDirName: '',
 			})
-			.then((res) => {
-				const rp = Comp.getReqProps();
-				rp.BrowseAPI.setToResumeObj({
-					val: {
-						path: res.destDir,
-					},
-				});
-			})
 			.then(() => {
 				return checkProgress({
 					checkFunc: rp.server.checkProgress,
