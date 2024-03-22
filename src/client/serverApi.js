@@ -286,6 +286,6 @@ export class AppServerAPI {
 	$getUsbDevices = (params = {}) => {
 		const url = this.getUrlWithParams({ url: 'getUsbDevices', params });
 		return fetchWithLoader(url)
-			.then(res => res.json()).then(res => { console.log('usbDevices', res); return res; });
+			.then(res => { console.log('usbDevices', res); return res; });
 	}
 }

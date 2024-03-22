@@ -57,6 +57,7 @@ function render() {
 			{
 				toRender: getCopyingContent,
 				trigger: $getNewPhotosWrap,
+				isNextBtn: state.countNewPhotos > 0,
 			},
 			{
 				toRender: () => {
@@ -88,9 +89,13 @@ function render() {
 				stepNumDelta: -2,
 			}, {
 				trigger: () => {
-					const {AppAPI} = Comp.comps();
+					const {AppAPI, Browse, BrowseAPI} = Comp.getReqProps();
+					const {state} = Comp.getDeps();
+
+					BrowseAPI.setForwardPath({path: state.destDir});
+
 					AppAPI.setState({
-						action: rp.BrowseName,
+						action: Browse.name,
 					});
 				}
 			}
@@ -122,10 +127,17 @@ function render() {
 
 	function $onCopyWrap() {
 		const rp = Comp.getReqProps();
-		return rp.server.$copyPhotos({
+		return (
+			rp.server.$copyPhotos({
 				userDirName: '',
 			})
-			.then(() => {
+			.then(({
+				destDir,
+			}) => {
+				const {setStateSilent} = Comp.getDeps();
+				
+				setStateSilent({destDir});
+
 				return checkProgress({
 					checkFunc: rp.server.checkProgress,
 					notificationAPI: rp.NotificationAPI.forceUpdate,
@@ -135,7 +147,8 @@ function render() {
 				setState({
 					isCopyCompleted: true,
 				});
-			});
+			})
+		);
 	}
 }
 
@@ -145,7 +158,7 @@ function getReqProps({
 }) {
 	return {
 		server: channel.server,
-		BrowseName: comps.Browse.name,
+		Browse: comps.Browse,
 		...comps,
 	};
 }
@@ -153,16 +166,23 @@ function getReqProps({
 function getComps({
 	channelComps,
 }) {
+	const {
+		App,
+		Browse,
+		Notification,
+	} = channelComps;
+
 	return {
 		items: {
-			App: channelComps.App,
-			Browse: channelComps.Browse,
-			Notification: channelComps.Notification,
+			App,
+			Browse,
+			Notification,
 		},
 	};
 }
 
 const initialState = {
+	destDir: '',
 	copyProgress: 0,
 	countNewPhotos: 0,
 	isHelp: false,

@@ -1,8 +1,6 @@
 // remove file lead to remove scrollTo value.
 // systemPath and webSrc.
-// scrollTo: getSelector({id: getSelectorSrc({src: newName})}),
 // print. remove all files, but write to flash button exists.
-// remove file dont lead to remove scrollTo value.
 // change share list on remove, move, rename.
 // magnifying.
 

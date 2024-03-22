@@ -597,7 +597,7 @@ app.post('/api/copyPhotos', (req, res) => {
 	const curMoment = getCurMoment();
 	const destDir = path.resolve(ALBUM_DIR, curMoment);
 
-	res.send({});
+	res.send({destDir: path.basename(destDir)});
 
 	if (fs.existsSync(destDir)) {
 		return;

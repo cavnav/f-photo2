@@ -208,6 +208,14 @@ function getAPI({
 	Comp,
 }) {
 	return {
+		setForwardPath: ({path}) => {
+			const pathUpd = setForwardPath({Comp, path});
+			resumeObj.save({
+				val: {
+					path: pathUpd,
+				},
+			});
+		},
 		exitFolder: () => exitFolder({Comp}),
 		setToResumeObj,
 		getResumeObj,
