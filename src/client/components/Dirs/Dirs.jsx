@@ -1,4 +1,5 @@
 import React from 'react';
+import { BROWSE_ITEM_TYPES } from '../../constants';
 
 export function Dirs({
 	dirs,
@@ -16,6 +17,7 @@ export function Dirs({
 						className={dirClassNames}
 						key={dir}
 						src={dir}
+						type={BROWSE_ITEM_TYPES.folder}
 						handler={onChangeDir}
 					>
 						{dir}

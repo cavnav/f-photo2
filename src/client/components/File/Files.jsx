@@ -1,7 +1,7 @@
 import React from 'react';
 import { getBackgroundImageStyle } from '../../functions';
 import {File} from './File';
-import { SEP } from '../../constants';
+import { BROWSE_ITEM_TYPES, SEP } from '../../constants';
 
 
 export function Files({
@@ -25,6 +25,7 @@ export function Files({
                     style={style}
                     ind={ind}
                     src={file}
+                    type={BROWSE_ITEM_TYPES.file}
                     onSelectFile={onSelectFile}
                     onRequestFile={onRequestFile}
                 />

@@ -3,7 +3,7 @@ import { channel } from '../../channel';
 import { getExistsProps, getSelectorSrc, getVarName, initRefreshWindowEvent, useOnChangeSelections, useOnClickItem } from '../../functions';
 import { useMutedReducer } from '../../mutedReducer';
 import { FilesOne } from '../File/FilesOne';
-import { eventNames } from '../../constants';
+import { EVENT_NAMES } from '../../constants';
 import { BrowseBase } from '../BrowseBase/BrowseBase';
 
 
@@ -37,7 +37,7 @@ function render() {
 
     React.useEffect(
 		() => initRefreshWindowEvent({ 
-			eventName: eventNames.refreshWindow,
+			eventName: EVENT_NAMES.refreshWindow,
 			callback: () => onRefreshWindow({ Comp }),
 		}),
 		[]

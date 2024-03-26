@@ -4,7 +4,7 @@ import { DIALOG_TYPES } from './components/Dialog/Dialog';
 import {
 	LAST_ELEMENT,
 	SEP,
-	eventNames
+	EVENT_NAMES
 } from './constants';
 import {
 	ResumeObj, STORAGE_ITEM,
@@ -155,7 +155,7 @@ export function getOppositeWindow() {
 
 
 export function refreshOppositeWindow({
-	eventName = eventNames.refreshWindow,
+	eventName = EVENT_NAMES.refreshWindow,
 } = {}) {
 	const oppositeWindow = getOppositeWindow();
 	oppositeWindow?.document.dispatchEvent(
@@ -166,7 +166,7 @@ export function refreshOppositeWindow({
 export function oppositeWindowExitFolder() {
 	const oppositeWindow = getOppositeWindow();
 	oppositeWindow?.document.dispatchEvent(
-		new Event(eventNames.exitFolder)
+		new Event(EVENT_NAMES.exitFolder)
 	);
 }
 
@@ -373,12 +373,12 @@ export function getCompsAPI({
 export function refreshWindows(
 ) {
 	window.document.dispatchEvent(
-		new Event(eventNames.refreshWindow),
+		new Event(EVENT_NAMES.refreshWindow),
 	);
 
 	const oppositeWindow = getOppositeWindow();
 	oppositeWindow?.document.dispatchEvent(
-		new Event(eventNames.refreshWindow),
+		new Event(EVENT_NAMES.refreshWindow),
 	);
 }
 
@@ -516,10 +516,6 @@ export function updateActionsLists({
 	});
 }
 
-export function getItemName([itemName]) {
-	return itemName?.replace(SEP, '');
-}
-
 export function useOnChangeSelections({
 	Comp, 
 	handler, 
@@ -529,7 +525,7 @@ export function useOnChangeSelections({
 	return useCallback(
 		(event) => {
 			const identVal = event.target.getAttribute(ident);
-			const { checked } = event.target;
+			const { checked } = event.target;			
 
 			handler({
 				Comp,

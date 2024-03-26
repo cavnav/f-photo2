@@ -9,7 +9,7 @@ import { Recipients } from './components/Recipients';
 import { Files } from '../File/Files';
 import { useEffectShareActions } from './useEffectShareActions';
 import { BrowseBase } from '../BrowseBase/BrowseBase';
-import { eventNames } from '../../constants';
+import { EVENT_NAMES } from '../../constants';
 
 
 export const Share = channel.addComp({
@@ -492,9 +492,9 @@ function useInitRefreshWindow({
 					flagScrollToLastElement: {},
 				});			
 			};
-            document.addEventListener(eventNames.refreshWindow, callback);
+            document.addEventListener(EVENT_NAMES.refreshWindow, callback);
 			
-			return () => document.removeEventListener(eventNames.refreshWindow, callback);
+			return () => document.removeEventListener(EVENT_NAMES.refreshWindow, callback);
         },
         deps,
     );

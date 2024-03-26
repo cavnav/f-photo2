@@ -19,7 +19,7 @@ import { createSteps } from './createSteps';
 import { channel } from '../../channel';
 import { Copying } from './components/Copying';
 import { useMutedReducer } from '../../mutedReducer';
-import { eventNames } from '../../constants';
+import { EVENT_NAMES } from '../../constants';
 import { PrintItemsRender } from './components/PrintItemsRender';
 import { usePrintActions } from './components/printHooks';
 import { updateFiles } from '../../functions';
@@ -202,9 +202,9 @@ function render(props) {
 				});				
 			};
 
-			document.addEventListener(eventNames.refreshWindow, refreshWindowWrap);
+			document.addEventListener(EVENT_NAMES.refreshWindow, refreshWindowWrap);
 			
-			return () => document.removeEventListener(eventNames.refreshWindow, refreshWindowWrap);
+			return () => document.removeEventListener(EVENT_NAMES.refreshWindow, refreshWindowWrap);
 		},
 		[]
 	);

@@ -18,7 +18,7 @@ import { useMutedReducer } from '../../mutedReducer';
 import { BTN_MOVE, BTN_REMOVE, setBtnTitle } from '../../common/additionalActions/const';
 import { Files } from '../File/Files';
 import { Dirs } from '../Dirs/Dirs';
-import { SEP, eventNames } from '../../constants';
+import { SEP, EVENT_NAMES, BROWSE_ITEM_TYPES } from '../../constants';
 import { BrowseBase } from '../BrowseBase/BrowseBase';
 
 
@@ -74,7 +74,7 @@ function render(
 
 	useEffect(
 		() => initRefreshWindowEvent({ 
-			eventName: eventNames.refreshWindow,
+			eventName: EVENT_NAMES.refreshWindow,
 			callback: () => onRefreshWindow({ Comp }),
 		}),
 		[]
@@ -82,7 +82,7 @@ function render(
 
 	useEffect(
 		() => initRefreshWindowEvent({ 
-			eventName: eventNames.exitFolder,
+			eventName: EVENT_NAMES.exitFolder,
 			callback: () => exitFolder({ Comp }),
 		}),
 		[]
@@ -93,6 +93,15 @@ function render(
 	useEffectSetHtmlSelection({
 		selection: state.selections,
 	});
+
+	useEffect(
+		() => {
+			updateSelectionDeps({
+				Comp,
+			});
+		},
+		[state.selections]
+	);
 
 	useScrollTo({selector: state.scrollTo});
 
@@ -298,10 +307,10 @@ function updateSelectionDeps({
 		}),
 	});
 
-	const curName = getItemName(state.selections, state.sep);
+	const [name] = state.selections;
 	rp.RenameAPI.forceUpdate({
-		isShow: isShowRename(state.selections, state.sep),
-		name: curName,
+		isShow: isShowRename({selections: state.selections}),
+		name,
 		onSubmit: ({
 			name,
 			newName, 
@@ -326,15 +335,11 @@ function changeSelections({
 
 	const {
 		state,
-		setStateSilent,
+		setState,
 	} = Comp.getDeps();
 
-	setStateSilent({
+	setState({
 		selections: updateSelections(),
-	});
-
-	updateSelectionDeps({
-		Comp,
 	});
 
 	// ------------------------------------
@@ -345,7 +350,7 @@ function changeSelections({
 		const action = ({ true: 'add', false: 'delete' })[checked];
 
 		if (action === 'add') {
-			state.selections.push(ident);
+			state.selections = state.selections.concat(ident);
 		}
 		else if (action === 'delete') {
 			state.selections = state.selections.filter(item => item !== ident);
@@ -365,9 +370,6 @@ function onRefreshWindow({
 			deps.setState({
 				files: res.files,
 				dirs: res.dirs,
-			});
-			updateSelectionDeps({
-				Comp,
 			});
 		});
 }
@@ -467,9 +469,10 @@ function renderAddPanel({
 				name: newName,
 			}));
 
+			const [name] = state.selections;
 			rp.RenameAPI.forceUpdate({
-				isShow: isShowRename(state.selections, state.sep),	
-				name: getItemName(state.selections, state.sep),
+				isShow: isShowRename({selections: state.selections}),	
+				name,
 				onSubmit: ({
 					name,
 					newName, 
@@ -546,7 +549,7 @@ function renderAddPanel({
 						}))
 						.then(() => {							
 							refreshOppositeWindow({
-								eventName: eventNames.exitFolder,
+								eventName: EVENT_NAMES.exitFolder,
 							});
 						})
 						.then(() => {
@@ -647,8 +650,16 @@ function exitFolder({
 		});
 }
 
-function isShowRename([itemName], sep) {
-	return itemName?.includes(sep) ?? false;
+function isShowRename({selections}) {
+	if (selections.length > 1) {
+		return false;
+	}
+
+	const [item] = selections; 
+	const selector = getSelectorSrc({id: item});
+	const type = document.querySelector(selector)?.getAttribute('type');
+
+	return type === BROWSE_ITEM_TYPES.folder ?? false;
 }
 
 function setForwardPath({Comp, path}) {
