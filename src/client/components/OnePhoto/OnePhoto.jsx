@@ -13,7 +13,7 @@ import { channel } from '../../channel';
 import { getCurDate } from '../../functions';
 import { useMutedReducer } from '../../mutedReducer';
 import { BTN_MOVE, BTN_REMOVE, setBtnTitle } from '../../common/additionalActions/const';
-import { EVENT_NAMES } from '../../constants';
+import { EVENT_NAMES, SEP } from '../../constants';
 
 export const OnePhoto = channel.addComp({
 	name: 'OnePhoto',
@@ -127,7 +127,8 @@ function render(
 			resumeBrowse,
 			PhotoStatuses,
 		} = rp;
-		const id = `${resumeBrowse.path}${state.curPhoto}`;
+		
+		const id = `${resumeBrowse.path}${SEP}${state.curPhoto}`;
 
 		const currentTotal = `${state.curPhotoInd + 1} / ${state.files.items.length}`;
 

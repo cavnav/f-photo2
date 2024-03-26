@@ -3,6 +3,10 @@ import { ItemSelector } from '../../ItemSelector/ItemSelector';
 import { getBackgroundImageStyle, getChannelComps, updateFiles} from '../../../functions';
 import { useMutedReducer } from '../../../mutedReducer';
 
+const KEY_ZERO = 48;
+const KEY_NINE = 57;
+const COUNT_MAX = 100;
+
 
 export function PrintItemsRender({
     items,
@@ -103,11 +107,23 @@ function onKeyDown({ event, Comp }) {
 
     if (photoSrc === null) return;
 
-    const cntSource = Number(input.value);
-    const getCntUpd = {
-        38: () => (cntSource + 1),
-        40: () => (cntSource > 1 ? cntSource - 1 : cntSource),
-    }[event.which] ?? (() => cntSource);
+    let count = Number(input.value);
+
+    const key = event.which;
+
+    if (key >= KEY_ZERO && key <= KEY_NINE && count < COUNT_MAX) {
+        const keyNumber = String.fromCharCode(key);
+
+        if (key === KEY_ZERO) {
+            count = keyNumber;
+        }
+        else {
+            const countUpd = Number(`${count}${keyNumber}`);
+            if (countUpd < COUNT_MAX) {
+                count = countUpd;
+            }
+        }
+    }
 
     const { state, setState } = Comp;
 
@@ -116,7 +132,7 @@ function onKeyDown({ event, Comp }) {
             files: state.items,
             id: photoSrc,
             item: {
-                cnt: getCntUpd(),
+                cnt: count,
             },
         }),
     });

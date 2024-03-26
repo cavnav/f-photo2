@@ -658,21 +658,32 @@ export function scrollToSelector({selector}) {
 }
 
 export const updateFiles = {
-	update(props) {
-		props.files[props.id] = {
-			...files[props.id],
-			...props.item,
+	update({
+		files,
+		id,
+		item
+	}) {
+		files[id] = {
+			...files[id],
+			...item,
 		};
-		return props.files;
+		return files;
 	},
-	add(props) {
-		props.files[props.id] = props.item;
-		return props.files;
+	add({
+		files,
+		id,
+		item,
+	}) {
+		files[id] = item;
+		return files;
 
 	},
-	delete(props) {
-		delete props.files[props.id];
-		return props.files;
+	delete({
+		files,
+		id,		
+	}) {
+		delete files[id];
+		return files;
 	},
 }
 	
@@ -723,10 +734,9 @@ export function getRequestFileHandler({
 	const item = src.substr(lastIndexSeparator + 1);
 
 	const {setState} = Comp.getDeps();
-	const identUpd = getSelectorSrc({src});
 	
 	setState({
-		scrollTo: getSelectorSrc({id: identUpd}),
+		scrollTo: getSelectorSrc({id: src}),
 	});
 
 	BrowseAPI.setToResumeObj({
