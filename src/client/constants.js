@@ -1,7 +1,8 @@
 export const EVENT_NAMES = {
     checkSameWindowPaths: 'checkSameWindowPaths',
     refreshWindow: 'refreshWindow',
-    exitFolder: 'exitFolder'
+    exitFolder: 'exitFolder',
+    scrollTo: 'scrollTo',
 };
 
 export const LAST_ELEMENT = 'last-element';

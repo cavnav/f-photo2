@@ -1,7 +1,5 @@
 // systemPath and webSrc.
-// Print empty on write to flash.
-// Print change focus on keydown.
-// print. remove all files, but write to flash button exists.
+// remove error with cant load images.
 // check all updates lists.
 // change share list on remove, move, rename.
 // magnifying.

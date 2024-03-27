@@ -88,6 +88,14 @@ function render(
 		[]
 	);
 
+	useEffect(
+		() => initRefreshWindowEvent({
+			eventName: EVENT_NAMES.scrollTo,
+			callback: ({detail}) => onScrollTo({Comp, detail}),
+		}),
+		[]
+	)
+
 	useEffect(boostPerfImgRender, [state.files]);
 
 	useEffectSetHtmlSelection({
@@ -127,8 +135,6 @@ function render(
     };
 
 	const onClickItem = useOnClickItem({eventHandlers});
-
-	
 
 	return (
 		<BrowseBase 
@@ -173,11 +179,14 @@ function onChangeDir({
 
 		setStateSilent({
 			scrollTo: "",
-			path: setForwardPath({Comp, path: dir}),
 		});
 		
 		rp.server.toward({ dir })
-			.then(response => onNavigate({Comp, ...response}))
+			.then(response => onNavigate({
+				Comp, 
+				path: getForwardPath({Comp, path: dir}),
+				...response
+			}))
 			.then(() => {				
 				changeSelections({
 					Comp,
@@ -218,7 +227,7 @@ function getAPI({
 }) {
 	return {
 		setForwardPath: ({path}) => {
-			const pathUpd = setForwardPath({Comp, path});
+			const pathUpd = getForwardPath({Comp, path});
 			resumeObj.save({
 				val: {
 					path: pathUpd,
@@ -257,24 +266,25 @@ function getAPI({
 
 function onNavigate({
 	Comp,
+	path,
 	dirs,
 	files,
 }) {
 	const deps = Comp.getDeps();
 
 	const {
-		state,
 		setState,
 	} = deps;
 
 	setState({
+		path,
 		dirs,
 		files,
 	});
 
 	const rp = Comp.getReqProps();
 	rp.ExitFromFolderAPI.forceUpdate({
-		title: state.path ? `Закрыть альбом ${state.path}` : '',
+		title: path ? `Закрыть альбом ${path}` : '',
 		onClick: () => {
 			exitFolder({ Comp });
 		}
@@ -380,25 +390,17 @@ async function onAddAlbum({
 }) {
 	const rp = Comp.getReqProps();
 
-	const res = await rp.server.addAlbum({
+	await rp.server.addAlbum({
 		name,
-	});
-
-	if (res?.error) {
-		rp.DialogAPI.show({
-			type: 'error',
-			message: res.error,
-			isModal: false,
+	})
+	.then(({name}) => {
+		const {setState} = Comp.getDeps();	
+		setState({scrollTo: getSelectorSrc({id: name})});
+	
+		refreshWindows({
+			Comp,
 		});
-		return;
-	}
-
-	const {setState} = Comp.getDeps();	
-	setState({scrollTo: getSelectorSrc({id: name})});
-
-	refreshWindows({
-		Comp,
-	});
+	});	
 }
 
 async function onRename({
@@ -489,7 +491,7 @@ function renderAddPanel({
 			const isMoveBtn = !isBanMoveItems({
 				path: state.path,
 			});
-			// Надо дублировать в двух местах - здесь и в OnePhoto.
+			// Надо менять синхронно - здесь и в OnePhoto.
 			rp.MoveSelectionsAPI.forceUpdate({
 				title: isMoveBtn ? setBtnTitle({
 					prefix: BTN_MOVE,
@@ -514,7 +516,7 @@ function renderAddPanel({
 					.then(() => {
 						setState({
 							scrollTo: "",
-						});
+						});						
 					});
 				},
 			});
@@ -616,7 +618,9 @@ function resetTo({
 	rp.server.toward({
 		resetTo: pathUpd,
 	})
-	.then(response => onNavigate({Comp, ...response}));
+	.then(response => {
+		onNavigate({Comp, path: pathUpd, ...response});
+	});
 }
 
 function exitFolder({
@@ -631,20 +635,16 @@ function exitFolder({
 	});
 	
 	const rp = Comp.getReqProps();
-	const {state, setState, setStateSilent} = Comp.getDeps();
+	const {setState} = Comp.getDeps();
 
 	const {
 		backwardPath,
 		prevDir,
 	} = getBackwardPath({Comp});
 
-	setStateSilent({
-		path: backwardPath,
-	});
-	
 	rp.server.backward()
-		.then(response => onNavigate({Comp, ...response}))
-		.then(() => {			
+		.then(response => onNavigate({Comp, path: backwardPath, ...response}))
+		.then(() => {	
 			setState({scrollTo: getSelectorSrc({id: prevDir})});
 			refreshOppositeWindow();
 		});
@@ -662,7 +662,7 @@ function isShowRename({selections}) {
 	return type === BROWSE_ITEM_TYPES.folder ?? false;
 }
 
-function setForwardPath({Comp, path}) {
+function getForwardPath({Comp, path}) {
 	const deps = Comp.getDeps();
 
 	return deps.state.path.concat(SEP, path);
@@ -677,6 +677,18 @@ function getBackwardPath({Comp}) {
 		backwardPath: deps.state.path.slice(0, lastIndex),
 		prevDir: deps.state.path.slice(lastIndex + 1),
 	};
+}
+
+function onScrollTo({
+	Comp,
+	detail: {
+		scrollTo,
+	},
+}) {
+	const {setState} = Comp.getDeps();
+	setState({
+		scrollTo,
+	});
 }
 
 function getStateInit() {

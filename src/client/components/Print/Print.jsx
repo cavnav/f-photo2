@@ -64,7 +64,8 @@ function render(props) {
 				requiredFilesToPrintUpd[file] = state.files[file];
 			}
 		}
-		setStateSilent({
+		
+		setState({
 			files: items,
 			requiredFilesToPrint: requiredFilesToPrintUpd,
 		});
@@ -235,6 +236,7 @@ function render(props) {
 					steps={steps}
 				/> 
 			: 	<BrowseBase
+					isEmpty={state.isEmpty}
 					scrollTo={state.scrollTo}
 					onClick={onClickItem}
 				>

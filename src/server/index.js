@@ -497,7 +497,6 @@ app.post('/api/moveToPath',
 		});
 
 		res.send({
-			...req.body,
 			dest: dest.replace(ALBUM_DIR, ''),
 			updatedActionLists: updatedActionListsUpd,
 		});
@@ -517,45 +516,51 @@ app.post('/api/moveToPath',
 			total,
 			sourceItems,
 		}) {
-			const countProcessed = state.countCopiedPhotos + 1;
-			const progress = calcProgress({
-				cntProcessed: countProcessed,
-				total,
-			});
+			try {
+				const countProcessed = state.countCopiedPhotos + 1;
+				const progress = calcProgress({
+					cntProcessed: countProcessed,
+					total,
+				});
 
-			// either dir or file. Distinguish: fileName\ = dir; fileName = file.
-			// if item is file then dest cannot be directory
-			const [item] = items;
-			const sourceUpd = path.resolve(source, item);
-			const destUpd = path.resolve(dest, item);
+				// either dir or file. Distinguish: fileName\ = dir; fileName = file.
+				// if item is file then dest cannot be directory
+				const [item] = items;
+				const sourceUpd = path.resolve(source, item);
+				const destUpd = path.resolve(dest, item);
 
-			await fs.copy(
-				sourceUpd,
-				destUpd,
-			);
-
-			setState({
-				progress,
-				countCopiedPhotos: countProcessed,
-			});
-
-			if (progress !== 100) {
-				setTimeout(
-					() => {
-						startCopy({
-							items: items.slice(1),
-							dest,
-							total,
-							source,
-							sourceItems,
-						});
-					},
+				await fs.copy(
+					sourceUpd,
+					destUpd,
 				);
-			}
-			else {
-				startRemove({
-					items: sourceItems,
-					source,
+
+				setState({
+					progress,
+					countCopiedPhotos: countProcessed,
+				});
+
+				if (progress !== 100) {
+					setTimeout(
+						() => {
+							startCopy({
+								items: items.slice(1),
+								dest,
+								total,
+								source,
+								sourceItems,
+							});
+						},
+					);
+				}
+				else {
+					startRemove({
+						items: sourceItems,
+						source,
+					});
+				}
+			} catch(error) {
+				setState({
+					error,
 				});
 			}
 		}

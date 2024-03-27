@@ -21,9 +21,9 @@ function fetchUpd(...params) {
 		}
 		return json;
 	})
-	.catch((error) => raiseError({error}));	
-
-
+	.catch((error) => {
+		raiseError({error});
+	});	
 
 	function raiseError({error}) {
 		notifyServerError(error);
@@ -280,7 +280,8 @@ export class AppServerAPI {
 		return fetchUpd(
 			this.getFullUrl({
 				url: 'checkProgress'
-			}));
+			})
+		);
 	}
 
 	$getUsbDevices = (params = {}) => {

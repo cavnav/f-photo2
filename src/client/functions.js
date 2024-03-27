@@ -156,11 +156,14 @@ export function getOppositeWindow() {
 
 export function refreshOppositeWindow({
 	eventName = EVENT_NAMES.refreshWindow,
+	detail,
 } = {}) {
 	const oppositeWindow = getOppositeWindow();
-	oppositeWindow?.document.dispatchEvent(
-		new Event(eventName)
-	);
+	refreshWindow({
+		document: oppositeWindow?.document,
+		eventName,
+		detail,
+	});
 }
 
 export function oppositeWindowExitFolder() {
@@ -370,6 +373,21 @@ export function getCompsAPI({
 	);
 }
 
+export function refreshWindow({
+	document,
+	eventName,
+	detail,
+}) {
+	document?.dispatchEvent(
+		new CustomEvent(
+			eventName, 
+			{
+				detail,
+			},
+		)
+	);
+}
+
 export function refreshWindows(
 ) {
 	window.document.dispatchEvent(
@@ -397,11 +415,24 @@ export function onMoveSelections({
 			checkFunc: rp.server.checkProgress,
 		})
 		.then(() => {
+			const {
+				state,
+			} = Comp.getDeps();
+
+			const [lastItem] = state.selections.slice(-1);
+
 			onChangeSelections?.();
-			refreshWindows({
-				Comp,
+			
+			refreshWindows();
+			
+			refreshOppositeWindow({
+				eventName: EVENT_NAMES.scrollTo,
+				detail: {
+					scrollTo: getSelectorSrc({id: lastItem}),
+				},
 			});
 		});
+		
 }
 
 export function notifyServerError(error) {
@@ -413,7 +444,7 @@ export function notifyServerError(error) {
 
 	let message = "";
 
-	if (error.constructor === TypeError) {
+	if (error.constructor != String) {
 		message = TEXT_SERVER_ERROR;		
 	} else {
 		message = error;
@@ -474,35 +505,26 @@ export function checkProgress({
 		// --------------------------
 		function coreFunc() {
 			checkFunc()
-				.then((res) => {
-					const isRequestCompleted = res.error || res.progress === 100;
-					setTimeout(() => (isRequestCompleted ? null : coreFunc()), 500);        
+			.then((res) => {
+				const isRequestCompleted = res.error || res.progress === 100;
+				setTimeout(() => (isRequestCompleted ? null : coreFunc()), 500);        
 
-					const message = res.error ? TEXT_SERVER_ERROR : ProgressTitle({
-						progress: res.progress,						
+				const message = res.error ? TEXT_SERVER_ERROR : ProgressTitle({
+					progress: res.progress,						
+				});
+
+				if (!res.error) {
+					DialogAPI.show({
+						message,
+						isHide: false,
 					});
 
-					if (res.error) {
-						DialogAPI.showConfirmation({
-							message,
-							type: 'error',
-							confirmBtn: {
-								onConfirm: resolve,
-							},
-						});
+					if (isRequestCompleted) {					
+						DialogAPI.close();     
+						resolve();    					
 					}
-					else {
-						DialogAPI.show({
-							message,
-							isHide: false,
-						});
-
-						if (isRequestCompleted) {					
-							DialogAPI.close();     
-							resolve();    					
-						}
-					}				
-				});
+				}				
+			});
 		}
 	});
 }

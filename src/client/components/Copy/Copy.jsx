@@ -92,7 +92,7 @@ function render() {
 					const {AppAPI, Browse, BrowseAPI} = Comp.getReqProps();
 					const {state} = Comp.getDeps();
 
-					BrowseAPI.setForwardPath({path: state.destDir});
+					BrowseAPI.getForwardPath({path: state.destDir});
 
 					AppAPI.setState({
 						action: Browse.name,

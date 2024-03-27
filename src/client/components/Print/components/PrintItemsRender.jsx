@@ -27,11 +27,6 @@ export function PrintItemsRender({
     
     useEffect(() => keyDownListener({Comp}), []);
 
-    useEffect(() => {
-        setInputFocus({Comp});
-    });
-
-
     return (
         <div className="PrintItems layout-items">
         {
@@ -81,12 +76,6 @@ export function PrintItemsRender({
         }
         </div>
     );
-}
-
-function setInputFocus({Comp}) {
-    const { state } = Comp;
-    const input = document.querySelector(`input[keyid=\'${state.activeInput}\']`);
-    input && input.focus();
 }
 
 function keyDownListener({ Comp }) {
@@ -155,7 +144,6 @@ function onChangePhotoCount({ event, Comp, onChangeItems, }) {
 
     setState({
         items,
-        activeInput: photoSrc,
     });
 
     onChangeItems?.({items});
@@ -179,7 +167,6 @@ async function onCancelPrint({ event, Comp, onChangeItems }) {
 
     setState({
         items,
-        activeInput: undefined,
     });
 
     onChangeItems?.({items});
@@ -187,7 +174,6 @@ async function onCancelPrint({ event, Comp, onChangeItems }) {
 
 function getInitialState() {
     return {
-        activeInput: undefined,
         items: {},
     };
 }
