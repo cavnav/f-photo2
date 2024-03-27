@@ -1,5 +1,5 @@
 // systemPath and webSrc.
-// remove error with cant load images.
+// selection lead to scroll.
 // check all updates lists.
 // change share list on remove, move, rename.
 // magnifying.
