@@ -1,6 +1,6 @@
 // systemPath and webSrc.
-// selection lead to scroll.
 // check all updates lists.
+// double error. i.e. for move.
 // change share list on remove, move, rename.
 // magnifying.
 

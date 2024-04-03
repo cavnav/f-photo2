@@ -1,16 +1,17 @@
 import React, {useCallback, useEffect} from 'react';
 import './styles.css';
 import {
-	getItemName, getOppositeWindow, initRefreshWindowEvent, isBanMoveItems, myCrop,
-	onMoveSelections, refreshWindows, refreshOppositeWindow,
+	getOppositeWindow, initWindowEvent, isBanMoveItems, myCrop,
+	onMoveSelections, refreshWindows, sendEventOppositeWindow,
 	updateActionsLists,
 	getUpdatedActionLists,
 	getVarName,
 	useOnClickItem,
 	useOnChangeSelections,
 	useEffectSetHtmlSelection,
-	useScrollTo,
 	getSelectorSrc,
+	scrollToSelector,
+	useEventScrollTo,
 } from '../../functions';
 import { channel } from '../../channel';
 import { ResumeObj } from '../../resumeObj';
@@ -44,6 +45,7 @@ function render(
 	const {state} = useMutedReducer({
 		setCompDeps: Comp.setCompDeps,
 		initialState: getStateInit(),
+		reducer,
 		fn: ({
 			state,
 		}) => {
@@ -62,9 +64,8 @@ function render(
 	const onRequestFileUpd = useCallback(onRequestFile({Comp}), []);
 
 	useEffect(() => {
-		const returnCb = renderAddPanel({ Comp });		
-		return returnCb;
-	}, []);
+		return renderAddPanel({ Comp });		
+	}, [state.selections]);
 
 	useEffect(() => {
 		resetTo({
@@ -73,7 +74,7 @@ function render(
 	}, []);
 
 	useEffect(
-		() => initRefreshWindowEvent({ 
+		() => initWindowEvent({ 
 			eventName: EVENT_NAMES.refreshWindow,
 			callback: () => onRefreshWindow({ Comp }),
 		}),
@@ -81,20 +82,22 @@ function render(
 	);
 
 	useEffect(
-		() => initRefreshWindowEvent({ 
+		() => initWindowEvent({ 
 			eventName: EVENT_NAMES.exitFolder,
 			callback: () => exitFolder({ Comp }),
 		}),
 		[]
 	);
 
-	useEffect(
-		() => initRefreshWindowEvent({
-			eventName: EVENT_NAMES.scrollTo,
-			callback: ({detail}) => onScrollTo({Comp, detail}),
-		}),
-		[]
-	)
+	useEventScrollTo({
+		callback: ({detail}) => {
+			const {setState} = Comp.getDeps();
+
+			setState({
+				scrollTo: detail.scrollTo,
+			});	
+		},
+	});
 
 	useEffect(boostPerfImgRender, [state.files]);
 
@@ -104,14 +107,20 @@ function render(
 
 	useEffect(
 		() => {
-			updateSelectionDeps({
-				Comp,
-			});
+			scrollToSelector({selector: state.scrollTo});
 		},
-		[state.selections]
+		[state.isNeedScrollTo, state.files]
 	);
 
-	useScrollTo({selector: state.scrollTo});
+	useEffect(
+		() => initWindowEvent({
+			eventName: EVENT_NAMES.renderAddPanel,
+			callback: () => {
+				renderAddPanel({Comp});
+			},
+		}),
+		[]
+	);
 
 	const FilesComp = state.files.length === 0 ? null : <Files
 		files={state.files}
@@ -139,7 +148,6 @@ function render(
 	return (
 		<BrowseBase 
 			isEmpty={isEmpty}
-			scrollTo={state.scrollTo}
 			onClick={onClickItem}
 		>
 			{DirsComp}
@@ -191,7 +199,7 @@ function onChangeDir({
 				changeSelections({
 					Comp,
 				});
-				refreshOppositeWindow();
+				sendEventOppositeWindow();
 			});
 	};
 }
@@ -237,7 +245,6 @@ function getAPI({
 		exitFolder: () => exitFolder({Comp}),
 		setToResumeObj,
 		getResumeObj,
-		changeSelections,
 	};
 
 	// ----------------------------------------
@@ -289,50 +296,6 @@ function onNavigate({
 			exitFolder({ Comp });
 		}
 	});	
-}
-
-function updateSelectionDeps({
-	Comp,
-}) {
-	const deps = Comp.getDeps();
-	const { state } = deps;
-	const rp = Comp.getReqProps();
-	
-	const isMoveBtn = !isBanMoveItems({
-		path: state.path,
-	});
-
-	rp.MoveSelectionsAPI.forceUpdate({
-		title: isMoveBtn ? setBtnTitle({
-			prefix: BTN_MOVE,
-			title: state.selections.length,
-		}) : '',
-	});
-
-
-	rp.RemoveSelectionsAPI.forceUpdate({
-		title: setBtnTitle({
-			prefix: BTN_REMOVE,
-			title: state.selections.length,
-		}),
-	});
-
-	const [name] = state.selections;
-	rp.RenameAPI.forceUpdate({
-		isShow: isShowRename({selections: state.selections}),
-		name,
-		onSubmit: ({
-			name,
-			newName, 
-		}) => {
-			onRename({
-				Comp,	
-				name,	
-				newName,
-			});
-		},
-	});
-
 }
 
 function changeSelections({
@@ -497,7 +460,7 @@ function renderAddPanel({
 					prefix: BTN_MOVE,
 					title: state.selections.length,
 				}) : '',
-				onClick: () => {					
+				onClick: () => {	
 					rp.server.moveToPath({
 						items: state.selections,
 						destWindow: getOppositeWindow().name,
@@ -548,12 +511,7 @@ function renderAddPanel({
 							onChangeSelections: () => changeSelections({
 								Comp,
 							}),
-						}))
-						.then(() => {							
-							refreshOppositeWindow({
-								eventName: EVENT_NAMES.exitFolder,
-							});
-						})
+						}))						
 						.then(() => {
 							setState({
 								scrollTo: "",
@@ -626,10 +584,6 @@ function resetTo({
 function exitFolder({
 	Comp,
 }) {
-	const {
-		changeSelections,
-	} = Comp.getAPI();
-
 	changeSelections({
 		Comp,
 	});
@@ -646,7 +600,7 @@ function exitFolder({
 		.then(response => onNavigate({Comp, path: backwardPath, ...response}))
 		.then(() => {	
 			setState({scrollTo: getSelectorSrc({id: prevDir})});
-			refreshOppositeWindow();
+			sendEventOppositeWindow();
 		});
 }
 
@@ -679,16 +633,21 @@ function getBackwardPath({Comp}) {
 	};
 }
 
-function onScrollTo({
-	Comp,
-	detail: {
-		scrollTo,
-	},
+function reducer({
+	state,
+	stateUpd,
 }) {
-	const {setState} = Comp.getDeps();
-	setState({
-		scrollTo,
-	});
+
+	const stateNew = {
+		...state,
+		...stateUpd,
+	};
+
+	if (stateUpd.hasOwnProperty('scrollTo')) {
+		stateNew.isNeedScrollTo = {};
+	}
+
+	return stateNew;
 }
 
 function getStateInit() {
@@ -698,6 +657,7 @@ function getStateInit() {
 		path: '',
 		curPhotoInd: -1,
 		selections: [],
+		isNeedScrollTo: {},
 		scrollTo: "",
 
 		...resumed,	

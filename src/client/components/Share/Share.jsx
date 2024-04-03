@@ -2,7 +2,7 @@ import React, {useCallback, useMemo, useEffect} from 'react';
 import { channel } from '../../channel';
 import { useMutedReducer } from '../../mutedReducer';
 import { checkProgress, getRequestFileHandler, 
-	getVarName, refreshOppositeWindow, scrollToLastElement, scrollToSelector, updateFiles, 
+	getVarName, sendEventOppositeWindow, scrollToLastElement, scrollToSelector, updateFiles, 
 	useEffectSetHtmlSelection, useOnChangeSelections, useOnClickItem 
 } from '../../functions';
 import { Recipients } from './components/Recipients';
@@ -291,7 +291,7 @@ function onCancel_({
 			scrollTo: '',
 		});
 
-		refreshOppositeWindow();
+		sendEventOppositeWindow();
 	};
 }
 
@@ -366,7 +366,7 @@ function onSend({Comp}) {
 				isButtonBackward: false,
 			});	
 			
-			refreshOppositeWindow();
+			sendEventOppositeWindow();
 		});
 	};
 }

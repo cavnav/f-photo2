@@ -14,6 +14,8 @@ import { checkProgress,
 	useOnChangeSelections,
 	getRequestFileHandler,
 	useOnClickItem,
+	initWindowEvent,
+	useEventScrollTo,
 } from '../../functions';
 import { createSteps } from './createSteps';
 import { channel } from '../../channel';
@@ -192,26 +194,6 @@ function render(props) {
 
 	useEffect(
 		() => {
-			const {
-				setState,
-			} = Comp.getDeps();
-			const rp = Comp.getReqProps();
-			const {resumeObj} = rp;
-			const refreshWindowWrap = () => {
-				setState({
-					files: resumeObj.get().files,
-				});				
-			};
-
-			document.addEventListener(EVENT_NAMES.refreshWindow, refreshWindowWrap);
-			
-			return () => document.removeEventListener(EVENT_NAMES.refreshWindow, refreshWindowWrap);
-		},
-		[]
-	);
-
-	useEffect(
-		() => {
 			updateHtmlSelectorsFromObject({
 				selection: state.requiredFilesToPrint,
 			});
@@ -220,10 +202,30 @@ function render(props) {
 	);
 
 	useEffect(
+		() => initWindowEvent({
+			eventName: EVENT_NAMES.refreshWindow,
+			callback: () => {
+				setState({
+					...resumeObj.get(),
+				});				
+			},
+		})
+	)
+
+	useEventScrollTo({		
+		callback: ({detail}) => {
+			setState({
+				...resumeObj.get(),
+				scrollTo: detail.scrollTo,
+			});	
+		},
+	});
+
+	useEffect(
 		() => {
 			scrollToSelector({selector: state.scrollTo});
 		},
-		[state.files]
+		[state.isNeedScrollTo, state.files]
 	);
 
 
@@ -237,7 +239,6 @@ function render(props) {
 				/> 
 			: 	<BrowseBase
 					isEmpty={state.isEmpty}
-					scrollTo={state.scrollTo}
 					onClick={onClickItem}
 				>
 					<PrintItemsRender 
@@ -371,13 +372,18 @@ function checkFilesExcess({files, delta}) {
 
 function onChangeSelectionsHandler({Comp, event, ident, checked}) {
 	const {state, setStateSilent} = Comp.getDeps();
+	const {
+		DialogAPI,
+	} = Comp.getComps();
 
 	if (checked) {
 		if (checkFilesExcess({files: state.requiredFilesToPrint, delta: 1})) {
-			rp.DialogAPI.showConfirmation({
+			DialogAPI.showConfirmation({
 				message: 'Выбрано максимальное количество фотографий для записи на флешку.',
 			});
+
 			event.preventDefault();
+			
 			return;
 		}
 		state.requiredFilesToPrint[ident] = state.files[ident];
@@ -412,6 +418,10 @@ function reducer({
 		stateNew.isSaveToFlashBtn = true;
 	}
 
+	if (stateUpd.hasOwnProperty('scrollTo')) {
+		stateNew.isNeedScrollTo = {};
+	}
+
 	return stateNew;
 }
 
@@ -439,6 +449,7 @@ function getStateDefault() {
 		// используется, когда нельзя записать все файлы на флешку разом. 
 		// Тогда надо выбрать конкретные, поставив галочку.
 		requiredFilesToPrint: {}, 
+		isNeedScrollTo: {},
 		isSaveToFlashBtn: false,
 		isCancelCopyingBtn: false,
 		isCopyingScript: false,

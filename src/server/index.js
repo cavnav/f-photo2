@@ -712,7 +712,7 @@ async function findFiles({
 	let browseFiles = [];
 	if (isReqPathExists) {
 		const files = await new Promise((resolve) => find.file(reqPath, resolve));
-		browseFiles = files;
+		browseFiles = files.sort(sortByBirthday);
 	}
 
 	if (doNeedTopLevelSearch) browseFiles = browseFiles.filter(isTopLevelFile);

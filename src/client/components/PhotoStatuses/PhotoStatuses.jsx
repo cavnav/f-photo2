@@ -107,12 +107,11 @@ function getComps({
 function getAPI({
 	Comp,
 }) {
-	const deps = Comp.getDeps();
+	const deps = Comp.getDeps();	
 
 	return {
-		changeStatus: ({Comp}) => {
-			const CompAPI = Comp.getAPI();
-			const statusUpd = CompAPI.toggleStatus({
+		changeStatus: ({callback}) => {
+			const statusUpd = callback({
 				src: deps.state.id,
 			});
 

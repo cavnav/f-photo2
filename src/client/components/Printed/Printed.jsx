@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { channel } from '../../channel';
-import { getExistsProps, getSelectorSrc, getVarName, initRefreshWindowEvent, useOnChangeSelections, useOnClickItem } from '../../functions';
+import { getExistsProps, getSelectorSrc, getVarName, initWindowEvent, useOnChangeSelections, useOnClickItem } from '../../functions';
 import { useMutedReducer } from '../../mutedReducer';
 import { FilesOne } from '../File/FilesOne';
 import { EVENT_NAMES } from '../../constants';
@@ -36,7 +36,7 @@ function render() {
     const StateComp = STATE_NAMES[state.actionName];
 
     React.useEffect(
-		() => initRefreshWindowEvent({ 
+		() => initWindowEvent({ 
 			eventName: EVENT_NAMES.refreshWindow,
 			callback: () => onRefreshWindow({ Comp }),
 		}),

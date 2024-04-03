@@ -141,7 +141,7 @@ export function isBanMoveItems({
 	return false;
 }
 
-export function initRefreshWindowEvent({
+export function initWindowEvent({
 	eventName,
 	callback,
 }) {
@@ -153,24 +153,29 @@ export function getOppositeWindow() {
 	return window.name === "rightWindow" ? window.parent.frames[0] : window.parent.frames[1];
 }
 
+export function useEventScrollTo({
+	callback,
+}) {
+	useEffect(
+		() => initWindowEvent({
+			eventName: EVENT_NAMES.scrollTo,
+			callback,
+		}),
+		[]
+	);
+}
 
-export function refreshOppositeWindow({
+
+export function sendEventOppositeWindow({
 	eventName = EVENT_NAMES.refreshWindow,
 	detail,
 } = {}) {
 	const oppositeWindow = getOppositeWindow();
-	refreshWindow({
+	sendEventWindow({
 		document: oppositeWindow?.document,
 		eventName,
 		detail,
 	});
-}
-
-export function oppositeWindowExitFolder() {
-	const oppositeWindow = getOppositeWindow();
-	oppositeWindow?.document.dispatchEvent(
-		new Event(EVENT_NAMES.exitFolder)
-	);
 }
 
 export function getCurDate() {
@@ -373,7 +378,7 @@ export function getCompsAPI({
 	);
 }
 
-export function refreshWindow({
+export function sendEventWindow({
 	document,
 	eventName,
 	detail,
@@ -425,7 +430,7 @@ export function onMoveSelections({
 			
 			refreshWindows();
 			
-			refreshOppositeWindow({
+			sendEventOppositeWindow({
 				eventName: EVENT_NAMES.scrollTo,
 				detail: {
 					scrollTo: getSelectorSrc({id: lastItem}),
@@ -654,7 +659,7 @@ export function getSelectorSrc({id}) {
 }
 
 export function scrollToLastElement() {
-	scrollToSelector({selector: getSelectorSrc({id: LAST_ELEMENT})});
+	scrollToSelector({selector: `[src^="${LAST_ELEMENT}"]`});
 }
 
 export function scrollToSelector({selector}) {
@@ -771,14 +776,4 @@ export function getRequestFileHandler({
 	AppAPI.toggleAction({
 		action: Browse.name,	
 	});
-}
-
-export function useScrollTo({
-	selector,
-}) {
-	useEffect(
-		() => {
-			scrollToSelector({selector});
-		},
-	);
 }

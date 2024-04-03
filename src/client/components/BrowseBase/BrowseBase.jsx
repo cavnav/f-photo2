@@ -6,9 +6,9 @@ export function BrowseBase(props) {
     const {
         refHandler,
         isEmpty,
-
+        
         onClick,
-    } = props;    
+    } = props;  
 
     return (
         <div

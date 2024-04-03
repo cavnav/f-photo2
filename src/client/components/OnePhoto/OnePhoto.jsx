@@ -1,11 +1,11 @@
 import './styles.css';
 
-import React from 'react';
+import React, {useEffect, useMemo, useRef} from 'react';
 import { ResumeObj } from '../../resumeObj';
 import {
 	getOppositeWindow, myArray,
-	updateActionsLists, refreshOppositeWindow, isBanMoveItems,
-	initRefreshWindowEvent,
+	updateActionsLists, sendEventOppositeWindow, isBanMoveItems,
+	initWindowEvent as initWindowEvent,
 	getUpdatedActionLists,
 	getSelectorSrc,
 } from '../../functions';
@@ -41,7 +41,7 @@ function render(
 		server,
 	} = Comp.getReqProps();
 
-	const myFiles = React.useMemo(
+	const myFiles = useMemo(
 		() => myArray({
 			items: resumeBrowse.files,
 		}),
@@ -49,7 +49,7 @@ function render(
 	);
 
 	const {state, setState} = useMutedReducer({
-		reducer: selfReducer,
+		reducer: (props) => selfReducer({...props, browsePath: resumeBrowse.path,}),
 		setCompDeps: Comp.setCompDeps,
 		initialState: {
 			...getStateInit(),
@@ -58,10 +58,10 @@ function render(
 		},
 	});
 
-	const imgRef = React.useRef(null);
+	const imgRef = useRef(null);
 
-	React.useEffect(addKeyDownListener);
-	React.useEffect(() => {
+	useEffect(addKeyDownListener);
+	useEffect(() => {
 		if ({
 			[ON_TOGGLE_PHOTO]: 1,
 			onImgServerRotate: 1
@@ -74,7 +74,7 @@ function render(
 		}, 200);
 	});
 
-	React.useEffect(() => {
+	useEffect(() => {
 		const {
 			BrowseAPI,
 		} = Comp.getReqProps();
@@ -93,12 +93,12 @@ function render(
 		}
 	}, [state.curPhoto]);
 
-	React.useEffect(() => renderAddPanel({
+	useEffect(() => renderAddPanel({
 		Comp,
 	}), [state.isNoItems]);
 
-	React.useEffect(
-		() => initRefreshWindowEvent({
+	useEffect(
+		() => initWindowEvent({
 			eventName: EVENT_NAMES.refreshWindow,
 			callback: () => {
 				// когда удалил или переместил или еще что. чтобы не усложнять.
@@ -108,15 +108,15 @@ function render(
 		[]
 	);
 
-	React.useEffect(
-		() => initRefreshWindowEvent({
-			eventName: EVENT_NAMES.exitFolder,
-			callback: () => {
-				rp.BrowseAPI.exitFolder();
-			},
-		}),
+	useEffect(
+		() => {
+			sendEventOppositeWindow({
+				eventName: EVENT_NAMES.renderAddPanel,
+			});
+		},
 		[]
 	);
+	
 
 	return getRender();
 
@@ -127,8 +127,6 @@ function render(
 			resumeBrowse,
 			PhotoStatuses,
 		} = rp;
-		
-		const id = `${resumeBrowse.path}${SEP}${state.curPhoto}`;
 
 		const currentTotal = `${state.curPhotoInd + 1} / ${state.files.items.length}`;
 
@@ -149,7 +147,7 @@ function render(
 							onLoad={fitCurPhotoSize}
 						/>
 						<PhotoStatuses.r
-							id={id}
+							id={state.id}
 						/>
 					</>
 				)}
@@ -198,19 +196,23 @@ function render(
 			filesLength: files.items.length,
 		});
 		const rp = Comp.getReqProps();
-		const comps = Comp.getComps();
+		const {
+			ShareAPI,
+			PrintAPI,
+		} = Comp.getComps();
+
 		const stateUpd = {};
 
 		switch (e.which) {
 			case 13: // enter.
-				rp.PhotoStatusesAPI.changeStatus({Comp: comps.Share});
-				refreshOppositeWindow();
+				rp.PhotoStatusesAPI.changeStatus({callback: ShareAPI.toggleStatus});
+				sendEventScrollTo({item: state.id});
 
 				break;
 
 			case 32:  // Space
-				rp.PhotoStatusesAPI.changeStatus({Comp: comps.Print});
-				refreshOppositeWindow();
+				rp.PhotoStatusesAPI.changeStatus({callback: PrintAPI.toggleStatus});				
+				sendEventScrollTo({item: state.id});
 
 				break;
 
@@ -274,6 +276,7 @@ function render(
 }
 
 function selfReducer({
+	browsePath,
 	state,
 	stateUpd = {},
 }) {
@@ -287,14 +290,17 @@ function selfReducer({
 		files,
 	} = stateReduced;
 
-	const curPhoto = files.items[stateReduced.curPhotoInd];
+	const curPhoto = files.items[stateReduced.curPhotoInd];	
+
+	const id = `${browsePath}${SEP}${curPhoto}`;
 
 	stateReduced = {
 		...stateReduced,
+		id,
 		curPhoto,
 		isNoItems: curPhoto ? false : true,		
 		...getProps({ stateReduced }),
-	};
+	};	
 
 	resumeObj.save({
 		val: stateReduced
@@ -475,6 +481,9 @@ function renderAddPanel({
 			rp.ExitFromOnePhotoAPI.forceUpdate({
 				onClick: () => {
 					toggleBrowseAction(Comp);
+					sendEventOppositeWindow({
+						eventName: EVENT_NAMES.renderAddPanel,
+					});
 				},
 			});
 
@@ -507,7 +516,7 @@ function renderAddPanel({
 							})
 							.then(() => {
 								deleteFiles({ Comp });
-								refreshOppositeWindow();
+								sendEventOppositeWindow();
 							})
 							.catch(() => { });
 					}
@@ -539,7 +548,7 @@ function renderAddPanel({
 								deleteFiles({
 									Comp,
 								});
-								refreshOppositeWindow();
+								sendEventOppositeWindow();
 							});
 						}
 					},
@@ -569,9 +578,21 @@ function toggleBrowseAction(Comp) {
 	});
 }
 
+function sendEventScrollTo({
+	item,
+}) {
+	sendEventOppositeWindow({
+		eventName: EVENT_NAMES.scrollTo,
+		detail: {
+			scrollTo: getSelectorSrc({id: item}),
+		},
+	});
+}
+
 function getStateInit() {
 	const resumed = resumeObj.get();
 	return {
+		id: undefined,
 		files: {},
 		path: undefined,
 		loading: false,
@@ -585,7 +606,6 @@ function getStateInit() {
 		visibility: 'visible',
 		action: ON_TOGGLE_PHOTO,
 		isNoItems: false,
-		resumeBrowse: {},
 
 		...resumed,
 	};

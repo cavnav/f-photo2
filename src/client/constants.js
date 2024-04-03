@@ -3,6 +3,7 @@ export const EVENT_NAMES = {
     refreshWindow: 'refreshWindow',
     exitFolder: 'exitFolder',
     scrollTo: 'scrollTo',
+    renderAddPanel: 'renderAddPanel',
 };
 
 export const LAST_ELEMENT = 'last-element';
