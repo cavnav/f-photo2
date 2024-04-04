@@ -1,7 +1,7 @@
 import React, {useCallback, useMemo, useEffect} from 'react';
 import { channel } from '../../channel';
 import { useMutedReducer } from '../../mutedReducer';
-import { checkProgress, getRequestFileHandler, 
+import { getRequestFileHandler, 
 	getVarName, sendEventOppositeWindow, scrollToLastElement, scrollToSelector, updateFiles, 
 	useEffectSetHtmlSelection, useOnChangeSelections, useOnClickItem 
 } from '../../functions';
@@ -350,23 +350,23 @@ function onSend({Comp}) {
 			}),
 		})
 		.then(() => {
-			return checkProgress({
-				checkFunc: server.checkProgress,
+			const {serverAPI} = Comp.getReqProps();
+
+			serverAPI.checkProgress()
+			.then(() => {
+				const {state, setState} = Comp.getDeps();
+				for (let file of state.filesSelected) {
+					delete state.files[file];
+				}
+				setState({
+					files: state.files,
+					filesSelected: [],
+					recipients: {},
+					isButtonBackward: false,
+				});	
+				
+				sendEventOppositeWindow();
 			});
-		})
-		.then(() => {
-			const {state, setState} = Comp.getDeps();
-			for (let file of state.filesSelected) {
-				delete state.files[file];
-			}
-			setState({
-				files: state.files,
-				filesSelected: [],
-				recipients: {},
-				isButtonBackward: false,
-			});	
-			
-			sendEventOppositeWindow();
 		});
 	};
 }

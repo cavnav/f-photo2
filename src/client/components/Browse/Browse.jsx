@@ -2,7 +2,7 @@ import React, {useCallback, useEffect} from 'react';
 import './styles.css';
 import {
 	getOppositeWindow, initWindowEvent, isBanMoveItems, myCrop,
-	onMoveSelections, refreshWindows, sendEventOppositeWindow,
+	refreshWindows, sendEventOppositeWindow,
 	updateActionsLists,
 	getUpdatedActionLists,
 	getVarName,
@@ -63,9 +63,11 @@ function render(
 	});
 	const onRequestFileUpd = useCallback(onRequestFile({Comp}), []);
 
+	useEventChangeSelections({Comp});
+
 	useEffect(() => {
 		return renderAddPanel({ Comp });		
-	}, [state.selections]);
+	});
 
 	useEffect(() => {
 		resetTo({
@@ -288,14 +290,6 @@ function onNavigate({
 		dirs,
 		files,
 	});
-
-	const rp = Comp.getReqProps();
-	rp.ExitFromFolderAPI.forceUpdate({
-		title: path ? `Закрыть альбом ${path}` : '',
-		onClick: () => {
-			exitFolder({ Comp });
-		}
-	});	
 }
 
 function changeSelections({
@@ -314,6 +308,9 @@ function changeSelections({
 	setState({
 		selections: updateSelections(),
 	});
+
+	return state.selections;
+
 
 	// ------------------------------------
 	function updateSelections() {
@@ -434,6 +431,13 @@ function renderAddPanel({
 				name: newName,
 			}));
 
+			rp.ExitFromFolderAPI.forceUpdate({
+				title: state.path ? `Закрыть альбом ${state.path}` : '',
+				onClick: () => {
+					exitFolder({ Comp });
+				}
+			});	
+
 			const [name] = state.selections;
 			rp.RenameAPI.forceUpdate({
 				isShow: isShowRename({selections: state.selections}),	
@@ -450,7 +454,6 @@ function renderAddPanel({
 				},						
 			});
 
-
 			const isMoveBtn = !isBanMoveItems({
 				path: state.path,
 			});
@@ -466,20 +469,23 @@ function renderAddPanel({
 						destWindow: getOppositeWindow().name,
 						...getUpdatedActionLists(),
 					})
-					.then((result) => {
-						updateActionsLists({ lists: result.updatedActionLists });
-						return result;
-					})
-					.then(() => onMoveSelections({
-						Comp,
-						onChangeSelections: () => changeSelections({
-							Comp,
-						}),
-					}))
-					.then(() => {
-						setState({
-							scrollTo: "",
-						});						
+					.then((result) => {										
+						rp.server.checkProgress()
+						.then(() => {
+							const [lastItem] = state.selections.slice(-1);
+
+							onMoveSelections({
+								Comp,
+								actionLists:  result.updatedActionLists,
+							});
+
+							sendEventOppositeWindow({
+								eventName: EVENT_NAMES.scrollTo,
+								detail: {
+									scrollTo: getSelectorSrc({id: lastItem}),
+								},
+							});													
+						});
 					});
 				},
 			});
@@ -501,23 +507,22 @@ function renderAddPanel({
 							items: state.selections,
 							...getUpdatedActionLists(),
 						})
-						.then((result) => {							
-							updateActionsLists({ lists: result.updatedActionLists });
+						.then((result) => {		
+							const selections = state.selections;
 
-							return result;
-						})
-						.then(() => onMoveSelections({
-							Comp,
-							onChangeSelections: () => changeSelections({
+							onMoveSelections({
 								Comp,
-							}),
-						}))						
-						.then(() => {
-							setState({
-								scrollTo: "",
+								actionLists:  result.updatedActionLists,
+							});
+						
+							sendEventOppositeWindow({
+								eventName: EVENT_NAMES.moveSelections,
+								detail: {
+									selections,
+								},
 							});
 						});
-					}					
+					}							
 				},
 			});
 		});
@@ -648,6 +653,49 @@ function reducer({
 	}
 
 	return stateNew;
+}
+
+function useEventChangeSelections({
+	Comp,
+}) {
+	const {state, setState} = Comp.getDeps();
+
+	useEffect(
+		() => initWindowEvent({
+			eventName: EVENT_NAMES.moveSelections,
+			callback: ({
+				detail,
+			}) => {		
+				const {selections} = detail;	
+				
+				const selectionsUpd = state.selections.filter((item) => !selections.includes(item));
+			
+				setState({
+					selections: selectionsUpd,
+				});
+			}
+		}),
+		[]
+	);
+}
+
+function onMoveSelections({
+	Comp,
+	actionLists,
+}) {
+	updateActionsLists({lists: actionLists});	
+
+	changeSelections({
+		Comp,
+	});
+
+	const {setState} = Comp.getDeps();
+	
+	setState({
+		scrollTo: "",
+	});			
+	
+	refreshWindows();
 }
 
 function getStateInit() {

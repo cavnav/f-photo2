@@ -28,37 +28,6 @@ class MyItems {
 	}
 }
 
-export function setItSilent({
-	state,
-	stateUpd,
-}) {
-	if (stateUpd.setItSilent) {
-		stateUpd.setItSilent.apply(state);
-	}
-}
-
-export function tempReducer(
-	prevState,
-	newState = {},
-) {
-	if (newState.setItSilent) {
-		newState.setItSilent.apply(prevState);
-		return prevState;
-	}
-
-	return {
-		...prevState,
-		...newState,
-	};
-};
-
-export function getFileDateSrcKey({
-	date,
-	fileSrc
-}) {
-	return `${date}-${fileSrc}`;
-}
-
 export function myArray({
 	items,
 }) {
@@ -411,35 +380,6 @@ export function ProgressTitle({
 	return progress ? `Подожди. ${progress} %` : 'Подожди';
 }
 
-export function onMoveSelections({
-	Comp,
-	onChangeSelections,
-}) {
-	const rp = Comp.getReqProps();
-	return checkProgress({
-			checkFunc: rp.server.checkProgress,
-		})
-		.then(() => {
-			const {
-				state,
-			} = Comp.getDeps();
-
-			const [lastItem] = state.selections.slice(-1);
-
-			onChangeSelections?.();
-			
-			refreshWindows();
-			
-			sendEventOppositeWindow({
-				eventName: EVENT_NAMES.scrollTo,
-				detail: {
-					scrollTo: getSelectorSrc({id: lastItem}),
-				},
-			});
-		});
-		
-}
-
 export function notifyServerError(error) {
 	const {DialogAPI} = getChannelComps({
 		callback: ({
@@ -493,45 +433,6 @@ export function loader({
 	else {
 		DialogAPI.close();
 	}
-}
-
-export function checkProgress({
-	checkFunc,
-}) {
-	return new Promise((resolve) => {
-		coreFunc();
-
-		const {DialogAPI} = getChannelComps({
-			callback: ({
-				Dialog,
-			}) => ({items: {Dialog}}),
-		});
-
-		// --------------------------
-		function coreFunc() {
-			checkFunc()
-			.then((res) => {
-				const isRequestCompleted = res.error || res.progress === 100;
-				setTimeout(() => (isRequestCompleted ? null : coreFunc()), 500);        
-
-				const message = res.error ? TEXT_SERVER_ERROR : ProgressTitle({
-					progress: res.progress,						
-				});
-
-				if (!res.error) {
-					DialogAPI.show({
-						message,
-						isHide: false,
-					});
-
-					if (isRequestCompleted) {					
-						DialogAPI.close();     
-						resolve();    					
-					}
-				}				
-			});
-		}
-	});
 }
 
 export function updateActionsLists({

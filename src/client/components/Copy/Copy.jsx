@@ -3,7 +3,6 @@ import { Stepper } from '../';
 
 import './styles.css';
 import { channel } from '../../channel';
-import { checkProgress } from '../../functions';
 import { useMutedReducer } from '../../mutedReducer';
 
 export const Copy = channel.addComp({
@@ -138,14 +137,11 @@ function render() {
 				
 				setStateSilent({destDir});
 
-				return checkProgress({
-					checkFunc: rp.server.checkProgress,
-					notificationAPI: rp.NotificationAPI.forceUpdate,
-				});
-			})
-			.then(() => {
-				setState({
-					isCopyCompleted: true,
+				rp.server.checkProgress()
+				.then(() => {
+					setState({
+						isCopyCompleted: true,
+					});
 				});
 			})
 		);

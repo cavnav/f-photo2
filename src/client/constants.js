@@ -4,6 +4,7 @@ export const EVENT_NAMES = {
     exitFolder: 'exitFolder',
     scrollTo: 'scrollTo',
     renderAddPanel: 'renderAddPanel',
+    moveSelections: 'moveSelections',
 };
 
 export const LAST_ELEMENT = 'last-element';

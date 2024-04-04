@@ -1,4 +1,4 @@
-import { loader, notifyServerError } from "./functions";
+import { getChannelComps, loader, notifyServerError } from "./functions";
 
 class PostObjTmp {
 	constructor({ body = {} } = {}) {
@@ -50,6 +50,43 @@ export class AppServerAPI {
 	}
 
 	// не смог использовать function - declaration. В channel.addAPI контекст теряется.
+
+	checkProgress = () => {
+		return new Promise((resolve) => {
+			coreFunc();
+	
+			const {DialogAPI} = getChannelComps({
+				callback: ({
+					Dialog,
+				}) => ({items: {Dialog}}),
+			});
+	
+			// --------------------------
+			function coreFunc() {
+				checkProgress()
+				.then((res) => {
+					const isRequestCompleted = res.error || res.progress === 100;
+					setTimeout(() => (isRequestCompleted ? null : coreFunc()), 500);        
+	
+					const message = res.error ? TEXT_SERVER_ERROR : ProgressTitle({
+						progress: res.progress,						
+					});
+	
+					if (!res.error) {
+						DialogAPI.show({
+							message,
+							isHide: false,
+						});
+	
+						if (isRequestCompleted) {					
+							DialogAPI.close();     
+							resolve();    					
+						}
+					}				
+				});
+			}
+		});
+	}
 
 	share = (params) => {
 		return fetchWithLoader(

@@ -1,6 +1,7 @@
 // systemPath and webSrc.
 // check all updates lists.
-// double error. i.e. for move.
+// double error. i.e. for moving to same place.
+// double renderAddPanel.
 // change share list on remove, move, rename.
 // magnifying.
 

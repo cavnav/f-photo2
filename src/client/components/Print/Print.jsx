@@ -6,7 +6,7 @@ import {
 	BrowseBase,
 	Stepper,
 } from '../';
-import { checkProgress, 
+import { 
 	getVarName, 
 	updateHtmlSelectorsFromObject, 
 	scrollToSelector, 
@@ -87,19 +87,15 @@ function render(props) {
 					folderNameField: 'cnt',
 				})				
 				.then(() => {
-					return checkProgressWrap();
+					return (
+						rp.server.checkProgress()
+						.then(() => {
+							setState({
+								isCancelCopyingBtn: false,
+							});		
+						})
+					);			
 				});				
-			}
-
-			function checkProgressWrap() {
-				return checkProgress({
-					checkFunc: rp.server.checkProgress,				
-				})
-				.then(() => {
-					setState({
-						isCancelCopyingBtn: false,
-					});		
-				});
 			}
 
 			return createSteps({
