@@ -508,20 +508,23 @@ function renderAddPanel({
 							...getUpdatedActionLists(),
 						})
 						.then((result) => {		
-							const selections = state.selections;
+							rp.server.checkProgress()
+							.then(() => {
+								const selections = state.selections;
 
-							onMoveSelections({
-								Comp,
-								actionLists:  result.updatedActionLists,
+								onMoveSelections({
+									Comp,
+									actionLists:  result.updatedActionLists,
+								});
+							
+								sendEventOppositeWindow({
+									eventName: EVENT_NAMES.moveSelections,
+									detail: {
+										selections,
+									},
+								});
 							});
-						
-							sendEventOppositeWindow({
-								eventName: EVENT_NAMES.moveSelections,
-								detail: {
-									selections,
-								},
-							});
-						});
+						})
 					}							
 				},
 			});
@@ -690,12 +693,12 @@ function onMoveSelections({
 	});
 
 	const {setState} = Comp.getDeps();
-	
+
 	setState({
 		scrollTo: "",
 	});			
 	
-	refreshWindows();
+	sendEventOppositeWindow();
 }
 
 function getStateInit() {

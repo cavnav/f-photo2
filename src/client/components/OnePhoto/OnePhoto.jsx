@@ -138,7 +138,7 @@ function render(
 					<>
 						<img
 							ref={imgRef}
-							src={`${resumeBrowse.path}/${state.curPhotoWithTime}`}
+							src={`${resumeBrowse.path}/${state.curPhoto}`}
 							style={{
 								transform: `rotate(${state.curPhotoRotateDeg}deg)`,
 								opacity: state.opacity,
@@ -316,16 +316,10 @@ function selfReducer({
 		return {
 			[stateReduced.action]: {},
 			[ON_TOGGLE_PHOTO]: {
-				curPhotoWithTime: curPhoto,
+				curPhoto,
 				opacity: '0',
 				visibility: 'hidden',
 				curPhotoRotateDeg: 0,
-			},
-			[onImgServerRotate.name]: {
-				// curPhotoRotateDeg: 0,
-				curPhotoWithTime: `${curPhoto}?${new Date().getTime()}`,
-				opacity: '0',
-				visibility: 'hidden',
 			},
 		}[stateReduced.action];
 	}
@@ -398,21 +392,20 @@ function deleteFiles({
 	// Удалить из списка выбранных файлов Browse.
 	const rp = Comp.getReqProps();	
 	const browseSelections = rp.resumeBrowse.selections;
+
 	if (browseSelections) {
-		const selectionsUpd = [];
-		browseSelections.forEach((item) => {
-			if (item != state.curPhoto) {
-				selectionsUpd.push(item);
+		const selectionsUpd = browseSelections.filter(
+			(item) => {
+				return item != state.curPhoto;
 			}
-		});
-		
+		);
+			
 		rp.BrowseAPI.setToResumeObj({
 			val: {
 				selections: selectionsUpd,
 			},
 		});
 	}
-	
 
 	// remove from onePhoto files.
 	state.files.delete(state.curPhotoInd);
@@ -493,33 +486,28 @@ function renderAddPanel({
 						prefix: BTN_MOVE,
 						title: 1,
 					}),
-					onClick: () => {
+					onClick: () => {						
 						rp.server.moveToPath({
-							items: [state.curPhotoWithTime],
+							items: [state.curPhoto],
 							destWindow: getOppositeWindow().name,
 							...getUpdatedActionLists(),
 						})
-							.then((res) => {
-								if (res?.error) {
-									rp.DialogAPI.show({
-										type: 'error',
-										message: res.error,
-										isModal: false,
-									});
-									throw new Error();
-								}
-								return res;
-							})
-							.then((result) => {
-								updateActionsLists({ lists: result?.updatedActionLists });
-								return result;
-							})
+						.then((result) => {		
+							rp.server.checkProgress()
 							.then(() => {
+								const curPhoto = state.curPhoto;
+								updateActionsLists({ lists: result?.updatedActionLists });
 								deleteFiles({ Comp });
 								sendEventOppositeWindow();
-							})
-							.catch(() => { });
-					}
+								sendEventOppositeWindow({
+									eventName: EVENT_NAMES.scrollTo,
+									detail: {
+										scrollTo: getSelectorSrc({id: curPhoto}),
+									},
+								});			
+							});	
+						});
+					},
 				});
 			}
 
@@ -535,20 +523,26 @@ function renderAddPanel({
 							onConfirm,
 						});
 
-						function onConfirm() {
+						function onConfirm() {							
 							rp.server.removeItems({
-								items: [state.curPhotoWithTime],
+								items: [curPhoto],
 								...getUpdatedActionLists(),
 							})
 							.then((result) => {
-								updateActionsLists({ lists: result?.updatedActionLists });
-								return result;
-							})
-							.then(() => {
-								deleteFiles({
-									Comp,
+								rp.server.checkProgress()
+								.then(() => {
+									const curPhoto = state.curPhoto;
+
+									updateActionsLists({ lists: result?.updatedActionLists });
+									deleteFiles({Comp});
+									sendEventOppositeWindow();
+									sendEventOppositeWindow({
+										eventName: EVENT_NAMES.moveSelections,
+										detail: {
+											selections: [curPhoto],
+										},
+									});
 								});
-								sendEventOppositeWindow();
 							});
 						}
 					},
@@ -598,7 +592,6 @@ function getStateInit() {
 		loading: false,
 		progress: 100,
 		curPhoto: '',
-		curPhotoWithTime: '',
 		curPhotoInd: -1,
 		curPhotoRotateDeg: 0,
 		curDate: getCurDate(),

@@ -26,7 +26,7 @@ let state = {
 	browseDirs: [],
 	countNewPhotos: 0,
 	progress: 0,
-	countCopiedPhotos: 0,
+	iterationNumber: 0,
 	curWindow: 'leftWindow',
 	leftWindow: ALBUM_DIR,
 	rightWindow: ALBUM_DIR,
@@ -262,7 +262,7 @@ app.post('/api/removeItems',
 
 		setState({
 			progress: 0,
-			countCopiedPhotos: 0,
+			iterationNumber: 0,
 		});
 
 		try {
@@ -303,15 +303,8 @@ app.post('/api/removeItems',
 				src,
 			);
 
-			const countProcessed = state.countCopiedPhotos + 1;
-			const progress = calcProgress({
-				cntProcessed: countProcessed,
+			const progress = setProgress({
 				total: items.length,
-			});
-			
-			setState({
-				progress: progress,
-				countCopiedPhotos: countProcessed,
 			});
 
 			if (progress !== 100 && slicedItems.length > 1) {
@@ -380,25 +373,12 @@ app.get('/api/checkProgress', (req, res) => {
 	});
 });
 
-app.get('/api/remove', async (req, res) => {
-	const {
-		file,
-		curWindow,
-	} = req.query;
-	const fileUpd = state[curWindow].concat('\\', file);
-	removeItem({ file: fileUpd, resolve });
-
-	function resolve() {
-		res.send(req.query);
-	}
-});
-
 app.post('/api/saveFilesToFlash', async (req, response) => {
 	clearUpUSB()
 	.then(async () => {
 		setState({
 			progress: 0,
-			countCopiedPhotos: 0,
+			iterationNumber: 0,
 		});
 		const {
 			files,
@@ -434,16 +414,17 @@ app.post('/api/saveFilesToFlash', async (req, response) => {
 				const folder = String(files[file][folderNameField]);
 				
 				if (folder !== '0') {
-					core({file, folder});
+					await core({file, folder});
 				};			
 
-				progressUpdate({total});		
+				setProgress({total});		
 			}
 
 			async function core({file, folder}) {
 				const fileName = path.basename(file);
 				const sourceUpd = path.join(source, file);
 				const destUpd = path.join(dest, folder, fileName);
+
 				await fs.copy(
 					sourceUpd,
 					destUpd,
@@ -452,7 +433,7 @@ app.post('/api/saveFilesToFlash', async (req, response) => {
 		}
 	})
 	.catch((error) => {
-		response.send({error});
+		setState({error});
 	});
 });
 
@@ -471,7 +452,7 @@ app.post('/api/moveToPath',
 		if (source === dest) {
 			setState({
 				progress: 100,
-				countCopiedPhotos: 0,
+				iterationNumber: 0,
 			});
 			return res.status(500).json({
 				error: 'Перемещаешь в то же место', 
@@ -480,7 +461,7 @@ app.post('/api/moveToPath',
 
 		setState({
 			progress: 0,
-			countCopiedPhotos: 0,
+			iterationNumber: 0,
 		});
 
 		const allItems = await getAllItems({
@@ -501,13 +482,13 @@ app.post('/api/moveToPath',
 			updatedActionLists: updatedActionListsUpd,
 		});
 
-		startCopy({
+		await startCopy({
 			sourceItems: items,
 			items: flattedItems,
 			total: flattedItems.length,
 			source,
 			dest,
-		});
+		});		
 
 		async function startCopy({
 			items,
@@ -516,81 +497,51 @@ app.post('/api/moveToPath',
 			total,
 			sourceItems,
 		}) {
-			try {
-				const countProcessed = state.countCopiedPhotos + 1;
-				const progress = calcProgress({
-					cntProcessed: countProcessed,
-					total,
-				});
+			try {		
+				const totalUpd = total * 2; // copy and remove.
 
 				// either dir or file. Distinguish: fileName\ = dir; fileName = file.
 				// if item is file then dest cannot be directory
-				const [item] = items;
-				const sourceUpd = path.resolve(source, item);
-				const destUpd = path.resolve(dest, item);
+				for (const item of items) {
+					const sourceUpd = path.resolve(source, item);
+					const destUpd = path.resolve(dest, item);
+		
+					await fs.copy(sourceUpd, destUpd);
 
-				await fs.copy(
-					sourceUpd,
-					destUpd,
-				);
-
-				setState({
-					progress,
-					countCopiedPhotos: countProcessed,
+					setProgress({
+						total: totalUpd,						
+					});		
+				}	
+				
+				await startRemove({
+					items: sourceItems,
+					source,
+					total: totalUpd,
 				});
-
-				if (progress !== 100) {
-					setTimeout(
-						() => {
-							startCopy({
-								items: items.slice(1),
-								dest,
-								total,
-								source,
-								sourceItems,
-							});
-						},
-					);
-				}
-				else {
-					startRemove({
-						items: sourceItems,
-						source,
-					});
-				}
+				
 			} catch(error) {
-				setState({
-					error,
-				});
+				setState({error});
 			}
 		}
 
 		// ----------------------
-		function startRemove({
+		async function startRemove({
 			items,
 			source,
+			total,
 		}) {
-			const [item] = items;
-			const basename = path.basename(item);
-			const resolvedItem = path.resolve(source, basename);
-			removeItem({
-				file: resolvedItem,
-				resolve: () => {
-					if (items.length > 1) {
-						setTimeout(
-							() => startRemove({
-								items: items.slice(1),
-								source,
-							}),
-						);
-					}
-					else {
-						setState({
-							progress: 100,
-						});
-					}
-				},
-			})
+			try {
+				for (const item of items) {
+					const basename = path.basename(item);
+					const resolvedItem = path.resolve(source, basename);
+
+					await fs.remove(resolvedItem);
+
+					setProgress({total});					
+				}				
+			} catch (error) {
+				setState({error});
+			}
 		}
 	}
 );
@@ -610,7 +561,7 @@ app.post('/api/copyPhotos', (req, res) => {
 
 	setState({
 		progress: 0,
-		countCopiedPhotos: 0,
+		iterationNumber: 0,
 		[curWindow]: destDir,
 	});
 
@@ -624,15 +575,8 @@ app.post('/api/copyPhotos', (req, res) => {
 
 			await fs.copy(photo, destPath);
 
-			const countCopiedPhotosUpd = state.countCopiedPhotos + 1;
-
-			const progress = calcprogress({ countCopiedPhotos: countCopiedPhotosUpd });
-
-			setState({
-				progress,
-				countCopiedPhotos: countCopiedPhotosUpd,
-			});
-
+			const progress = setProgress({ total: state.countNewPhotos });
+			
 			if (progress !== 100) {
 				startCopy({ photos: photos.slice(1), destDir });
 			} else {
@@ -676,16 +620,28 @@ app.post('/api/saveSettings', (req, res) => {
 		});
 });
 
-function calcprogress({ countCopiedPhotos }) {
-	const { countNewPhotos, } = state;
-	return Math.floor(countCopiedPhotos * 100 / countNewPhotos);
+function setProgress({
+	iterationNumber = state.iterationNumber + 1,
+	total,
+}) {
+	const progress = calcProgress({
+		iterationNumber,
+		total,
+	});	
+
+	setState({
+		progress,
+		iterationNumber,
+	});
+
+	return progress;
 }
 
 function calcProgress({
-	cntProcessed,
+	iterationNumber = state.iterationNumber + 1,
 	total,
 }) {
-	return Math.floor(cntProcessed * 100 / total);
+	return Math.floor(iterationNumber * 100 / total);
 }
 
 function getBackwardPath({
@@ -765,19 +721,6 @@ async function findFiles({
 function getCurMoment() {
 	const dateISO = new Date().toISOString();
 	return dateISO.slice(0, dateISO.indexOf('.')).replace(/:/g, '');
-}
-
-function removeItem({
-	file,
-	resolve = () => { },
-}) {
-	return fs.remove(file)
-		.then(() => {
-			resolve();
-		})
-		.catch(err => {
-			console.log(err);
-		});
 }
 
 function clearUpUSB() {
@@ -1007,21 +950,6 @@ async function rename({
 	.then((result) => result)
 	.catch(() => {
 		throw new Error('Попробуй другое название');
-	});
-}
-
-function progressUpdate({
-	total,
-}) {
-	const countProcessed = state.countCopiedPhotos + 1;
-	const progress = calcProgress({
-		cntProcessed: countProcessed,
-		total,
-	});
-
-	setState({
-		progress: progress,
-		countCopiedPhotos: countProcessed,
 	});
 }
 

@@ -110,16 +110,6 @@ export class AppServerAPI {
 			new PostObjTmp({ body: params }));
 	};
 
-	$remove = (params) => {
-		const url = this.getUrlWithParams({
-			url: 'remove', params: {
-				...params,
-				curWindow: window.name,
-			}
-		});
-		return fetchWithLoader(url);
-	}
-
 	getUrlWithParams({
 		url,
 		params,
