@@ -335,6 +335,7 @@ function onRefreshWindow({
 }) {
 	const rp = Comp.getReqProps();
 	const deps = Comp.getDeps();
+	
 	rp.server.toward()			
 		.then((res) => {
 			deps.setState({
@@ -408,7 +409,6 @@ function renderAddPanel({
 	const rp = Comp.getReqProps();
 	const {
 		state,
-		setState,
 	} = Comp.getDeps();
 
 	const additionalActions = [
@@ -471,13 +471,15 @@ function renderAddPanel({
 					})
 					.then((result) => {										
 						rp.server.checkProgress()
-						.then(() => {
+						.then(() => {		
+							console.log(777, '100%. ready to refresh');
+											
 							const [lastItem] = state.selections.slice(-1);
 
 							onMoveSelections({
 								Comp,
 								actionLists:  result.updatedActionLists,
-							});
+							});					
 
 							sendEventOppositeWindow({
 								eventName: EVENT_NAMES.scrollTo,
@@ -696,9 +698,9 @@ function onMoveSelections({
 
 	setState({
 		scrollTo: "",
-	});			
+	});
 	
-	sendEventOppositeWindow();
+	refreshWindows();
 }
 
 function getStateInit() {

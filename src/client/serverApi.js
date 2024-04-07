@@ -1,4 +1,4 @@
-import { getChannelComps, loader, notifyServerError } from "./functions";
+import { ProgressTitle, getChannelComps, loader, notifyServerError } from "./functions";
 
 class PostObjTmp {
 	constructor({ body = {} } = {}) {
@@ -53,6 +53,11 @@ export class AppServerAPI {
 
 	checkProgress = () => {
 		return new Promise((resolve) => {
+
+			const progressUrl = this.getFullUrl({
+				url: 'checkProgress'
+			});
+
 			coreFunc();
 	
 			const {DialogAPI} = getChannelComps({
@@ -63,8 +68,14 @@ export class AppServerAPI {
 	
 			// --------------------------
 			function coreFunc() {
-				checkProgress()
+				console.log(555, 'startCheck');
+
+				fetchWithLoader(
+					progressUrl,
+				)
 				.then((res) => {
+					console.log(444, 'progress', res.progress);
+
 					const isRequestCompleted = res.error || res.progress === 100;
 					setTimeout(() => (isRequestCompleted ? null : coreFunc()), 500);        
 	
@@ -78,7 +89,8 @@ export class AppServerAPI {
 							isHide: false,
 						});
 	
-						if (isRequestCompleted) {					
+						if (isRequestCompleted) {	
+							console.log('100%');				
 							DialogAPI.close();     
 							resolve();    					
 						}
@@ -301,14 +313,6 @@ export class AppServerAPI {
 
 	$getNewPhotos = () => {
 		return fetchWithLoader(this.getFullUrl({ url: 'getNewPhotos' }));
-	}
-
-	checkProgress = () => {
-		return fetchUpd(
-			this.getFullUrl({
-				url: 'checkProgress'
-			})
-		);
 	}
 
 	$getUsbDevices = (params = {}) => {
