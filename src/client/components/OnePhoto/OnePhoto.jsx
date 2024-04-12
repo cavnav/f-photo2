@@ -206,13 +206,11 @@ function render(
 		switch (e.which) {
 			case 13: // enter.
 				rp.PhotoStatusesAPI.changeStatus({callback: ShareAPI.toggleStatus});
-				sendEventScrollTo({item: state.id});
 
 				break;
 
 			case 32:  // Space
 				rp.PhotoStatusesAPI.changeStatus({callback: PrintAPI.toggleStatus});				
-				sendEventScrollTo({item: state.id});
 
 				break;
 
@@ -569,17 +567,6 @@ function toggleBrowseAction(Comp) {
 	} = rp;
 	rp.AppAPI.toggleAction({
 		action: Browse.name,
-	});
-}
-
-function sendEventScrollTo({
-	item,
-}) {
-	sendEventOppositeWindow({
-		eventName: EVENT_NAMES.scrollTo,
-		detail: {
-			scrollTo: getSelectorSrc({id: item}),
-		},
 	});
 }
 

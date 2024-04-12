@@ -16,6 +16,7 @@ import {
 	useOnClickItem,
 	initWindowEvent,
 	useEventScrollTo,
+	refreshWindow,
 } from '../../functions';
 import { createSteps } from './createSteps';
 import { channel } from '../../channel';
@@ -206,16 +207,7 @@ function render(props) {
 				});				
 			},
 		})
-	)
-
-	useEventScrollTo({		
-		callback: ({detail}) => {
-			setState({
-				...resumeObj.get(),
-				scrollTo: detail.scrollTo,
-			});	
-		},
-	});
+	);
 
 	useEffect(
 		() => {
@@ -297,7 +289,7 @@ function getAPI({
 		if (printed) {
 			resumed.files = updateFiles.delete({
 				files: resumed.files,
-				id: src,
+				id: src,				
 			});
 		}
 		else {
@@ -313,12 +305,11 @@ function getAPI({
 		resumeObj.save({
 			val: {
 				files: resumed.files,
+				scrollTo: printed ? getSelectorSrc({id: src}) : "",
 			},
 		});
 
-		return getStatusObj({
-			value: !printed,
-		});
+		refreshWindow();
 	}
 }
 

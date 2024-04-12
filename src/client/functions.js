@@ -362,16 +362,24 @@ export function sendEventWindow({
 	);
 }
 
+export function refreshWindow({
+	document = window.document,
+}) {
+	document.dispatchEvent(
+		new Event(EVENT_NAMES.refreshWindow),
+	);
+}
+
 export function refreshWindows(
 ) {
-	window.document.dispatchEvent(
-		new Event(EVENT_NAMES.refreshWindow),
-	);
+	refreshWindow();
 
 	const oppositeWindow = getOppositeWindow();
-	oppositeWindow?.document.dispatchEvent(
-		new Event(EVENT_NAMES.refreshWindow),
-	);
+	
+	if (oppositeWindow) {
+
+		refreshWindow({document: oppositeWindow});
+	}
 }
 
 export function ProgressTitle({

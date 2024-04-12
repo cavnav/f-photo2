@@ -482,8 +482,6 @@ app.post('/api/moveToPath',
 			updatedActionLists: updatedActionListsUpd,
 		});
 
-		console.log('000', 'startMove');
-
 		await startCopy({
 			sourceItems: items,
 			items: flattedItems,
@@ -513,8 +511,6 @@ app.post('/api/moveToPath',
 					setProgress({
 						total: totalUpd,						
 					});		
-
-					console.log(333, 'copy files', state.progress);
 				}	
 				
 				await startRemove({
@@ -541,11 +537,10 @@ app.post('/api/moveToPath',
 
 					await fs.remove(resolvedItem);	
 					setProgress({total});	
-					console.log(222, 'removeFiles', state.progress);							
 				}	
 				
 				setState({progress: 100});
-				
+
 			} catch (error) {
 				setState({error});
 			}
@@ -759,8 +754,6 @@ function getToward({
 			rootDir,
 			curWindow,
 		}) : getReqPath();
-
-		console.log(111, 'browseFiles', state.progress);
 
 		const result = await browseFiles({
 			curWindow,

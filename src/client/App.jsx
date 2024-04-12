@@ -1,7 +1,6 @@
 // systemPath and webSrc.
+// check scrollTo in Print, Share on changeStatus. add scroll into toggleStatus.
 // check all updates lists.
-// double error. i.e. for moving to same place.
-// double renderAddPanel.
 // change share list on remove, move, rename.
 // magnifying.
 

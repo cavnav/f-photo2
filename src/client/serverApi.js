@@ -17,19 +17,15 @@ function fetchUpd(...params) {
 	.then(async (result) => {
 		const json = await result.json();
 		if (json.error) {
-			raiseError({error: json.error});
+			notifyServerError(json.error);
+			
+			return Promise.reject();
 		}
 		return json;
 	})
 	.catch((error) => {
-		raiseError({error});
-	});	
-
-	function raiseError({error}) {
 		notifyServerError(error);
-
-		throw error;
-	}
+	});	
 }
 
 function fetchWithLoader(...params) {
@@ -68,14 +64,10 @@ export class AppServerAPI {
 	
 			// --------------------------
 			function coreFunc() {
-				console.log(555, 'startCheck');
-
 				fetchWithLoader(
 					progressUrl,
 				)
 				.then((res) => {
-					console.log(444, 'progress', res.progress);
-
 					const isRequestCompleted = res.error || res.progress === 100;
 					setTimeout(() => (isRequestCompleted ? null : coreFunc()), 500);        
 	
@@ -90,7 +82,6 @@ export class AppServerAPI {
 						});
 	
 						if (isRequestCompleted) {	
-							console.log('100%');				
 							DialogAPI.close();     
 							resolve();    					
 						}

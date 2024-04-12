@@ -77,10 +77,7 @@ function render(props) {
 		onRequestFile={getVarName({onRequestFile})}
 	/>;
 
-	useInitRefreshWindow({
-        Comp,
-        deps: [],
-    });
+	useInitRefreshWindow({Comp, deps: []});
 
 	useEffectGetSharedReceptients({Comp, deps: []});
 
@@ -131,6 +128,30 @@ function render(props) {
 		},
 		[state.flagScrollToLastElement]
 	);
+
+	function useEventChangeSelections({
+	Comp,
+}) {
+	const {state, setState} = Comp.getDeps();
+
+	useEffect(
+		() => initWindowEvent({
+			eventName: EVENT_NAMES.moveSelections,
+			callback: ({
+				detail,
+			}) => {		
+				const {selections} = detail;	
+				
+				const selectionsUpd = state.selections.filter((item) => !selections.includes(item));
+			
+				setState({
+					selections: selectionsUpd,
+				});
+			}
+		}),
+		[]
+	);
+}
 
 	return (
 		<div 
@@ -243,9 +264,9 @@ function reducer({
 		...stateUpd,
 	};
 
-	const isSelected = stateNew.filesSelected.length > 0 ? true : false;
-	stateNew.isButtonCancel = isSelected;
-	stateNew.isButtonSelectTo = isSelected;
+	const isFileSelected = stateNew.filesSelected.length > 0 ? true : false;
+	stateNew.isButtonCancel = isFileSelected;
+	stateNew.isButtonSelectTo = isFileSelected && stateNew.isButtonBackward === false;
 	stateNew.isButtonSend = Object.keys(stateNew.recipients).length > 0 && stateNew.filesSelected.length > 0;
 
 	return stateNew;
@@ -498,6 +519,24 @@ function useInitRefreshWindow({
         },
         deps,
     );
+}
+
+function useEventChangeSelections({
+	Comp,
+}) {
+	const {setState} = Comp.getDeps();
+
+	useEffect(
+		() => initWindowEvent({
+			eventName: EVENT_NAMES.moveSelections,
+			callback: () => {								
+				setState({
+					scrollTo: "",
+				});
+			}
+		}),
+		[]
+	);
 }
 
 function getInitialState(

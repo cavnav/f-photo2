@@ -472,8 +472,6 @@ function renderAddPanel({
 					.then((result) => {										
 						rp.server.checkProgress()
 						.then(() => {		
-							console.log(777, '100%. ready to refresh');
-											
 							const [lastItem] = state.selections.slice(-1);
 
 							onMoveSelections({
