@@ -8,11 +8,12 @@ import {
 	initWindowEvent as initWindowEvent,
 	getUpdatedActionLists,
 	getSelectorSrc,
+	magnify,
 } from '../../functions';
 import { channel } from '../../channel';
 import { getCurDate } from '../../functions';
 import { useMutedReducer } from '../../mutedReducer';
-import { BTN_MOVE, BTN_REMOVE, setBtnTitle } from '../../common/additionalActions/const';
+import { BTN_BACKWARD, BTN_MOVE, BTN_REMOVE, BTN_ZOOM, setBtnTitle } from '../../common/additionalActions/const';
 import { EVENT_NAMES, SEP } from '../../constants';
 
 export const OnePhoto = channel.addComp({
@@ -138,7 +139,7 @@ function render(
 					<>
 						<img
 							ref={imgRef}
-							src={`${resumeBrowse.path}/${state.curPhoto}`}
+							src={state.id}
 							style={{
 								transform: `rotate(${state.curPhotoRotateDeg}deg)`,
 								opacity: state.opacity,
@@ -439,6 +440,7 @@ function getComps({
 			ToggleWindow,
 			MoveSelections: Label,
 			RemoveSelections: Label,
+			Zoom: Label,
 		},
 		items: {
 			App,
@@ -464,6 +466,7 @@ function renderAddPanel({
 		rp.ToggleWindow,
 		rp.MoveSelections,
 		rp.RemoveSelections,
+		rp.Zoom,
 	];
 	rp.AdditionalPanelAPI.renderIt({
 		actions: Object.values(additionalActions),
@@ -478,7 +481,7 @@ function renderAddPanel({
 				},
 			});
 
-			if (state.isNoItems === false && !isBanMoveItems()) {
+			if (state.isNoItems === false && !isBanMoveItems()) {				
 				rp.MoveSelectionsAPI.forceUpdate({
 					title: setBtnTitle({
 						prefix: BTN_MOVE,
@@ -547,8 +550,15 @@ function renderAddPanel({
 				});
 			}
 
+			rp.ZoomAPI.forceUpdate({
+				title: BTN_ZOOM,
+				onClick: () => magnify({					
+					img: document.querySelector(getSelectorSrc({id: state.id})),					
+				}),
+			});
+
 			rp.ExitFromOnePhotoAPI.forceUpdate({
-				title: 'Вернуться',
+				title: BTN_BACKWARD,
 			});
 		});
 

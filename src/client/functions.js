@@ -1,4 +1,4 @@
-import {useCallback, useEffect} from 'react';
+import { useCallback, useEffect } from 'react';
 import { channel } from './channel';
 import { DIALOG_TYPES } from './components/Dialog/Dialog';
 import {
@@ -94,7 +94,7 @@ export function isBanMoveItems({
 				Browse: 1,
 			},
 		});
-		
+
 		if (['Welcome', 'OnePhoto', 'Print', 'PrintedComp'].includes(destAction.action)) {
 			return true;
 		}
@@ -331,18 +331,18 @@ export function getCompsAPI({
 }) {
 	const comps = Object.entries(items ?? {}).concat(Object.entries(toClone ?? {}));
 	return comps && comps.reduce((res, [name, comp]) => {
-			const compUpd = toClone[name] ? comp.clone({
-				name,
-			}) : comp;
-			
-			return {
-				...res,
-				[name]: compUpd,
-				[`${name}API`]: {
-					...compUpd?.getAPI(),
-				},
-			};
-		},
+		const compUpd = toClone[name] ? comp.clone({
+			name,
+		}) : comp;
+
+		return {
+			...res,
+			[name]: compUpd,
+			[`${name}API`]: {
+				...compUpd?.getAPI(),
+			},
+		};
+	},
 		{}
 	);
 }
@@ -354,7 +354,7 @@ export function sendEventWindow({
 }) {
 	document?.dispatchEvent(
 		new CustomEvent(
-			eventName, 
+			eventName,
 			{
 				detail,
 			},
@@ -375,10 +375,10 @@ export function refreshWindows(
 	refreshWindow();
 
 	const oppositeWindow = getOppositeWindow();
-	
+
 	if (oppositeWindow) {
 
-		refreshWindow({document: oppositeWindow});
+		refreshWindow({ document: oppositeWindow });
 	}
 }
 
@@ -389,24 +389,24 @@ export function ProgressTitle({
 }
 
 export function notifyServerError(error) {
-	const {DialogAPI} = getChannelComps({
+	const { DialogAPI } = getChannelComps({
 		callback: ({
 			Dialog,
-		}) => ({items: {Dialog}}),
+		}) => ({ items: { Dialog } }),
 	});
 
 	let message = "";
 
 	if (error.constructor != String) {
-		message = TEXT_SERVER_ERROR;		
+		message = TEXT_SERVER_ERROR;
 	} else {
 		message = error;
 	}
 
 	console.log(error);
 	DialogAPI.showConfirmation({
-		message, 
-		isHide: false, 
+		message,
+		isHide: false,
 		type: DIALOG_TYPES.error,
 	});
 
@@ -414,10 +414,10 @@ export function notifyServerError(error) {
 export function loader({
 	isActive,
 }) {
-	const {DialogAPI} = getChannelComps({
+	const { DialogAPI } = getChannelComps({
 		callback: ({
 			Dialog,
-		}) => ({items: {Dialog}}),
+		}) => ({ items: { Dialog } }),
 	});
 
 	if (isActive) {
@@ -436,7 +436,7 @@ export function loader({
 
 		Будет два вызова render, но компонент будет диалог с 'asdf'.
 		*/
-		DialogAPI.show({message: TEXT_WAIT, isHide: false, type: DIALOG_TYPES.notification});
+		DialogAPI.show({ message: TEXT_WAIT, isHide: false, type: DIALOG_TYPES.notification });
 	}
 	else {
 		DialogAPI.close();
@@ -453,15 +453,15 @@ export function updateActionsLists({
 }
 
 export function useOnChangeSelections({
-	Comp, 
-	handler, 
-	ident = 'src', 
+	Comp,
+	handler,
+	ident = 'src',
 	deps,
 }) {
 	return useCallback(
 		(event) => {
 			const identVal = event.target.getAttribute(ident);
-			const { checked } = event.target;			
+			const { checked } = event.target;
 
 			handler({
 				Comp,
@@ -478,12 +478,12 @@ export function updateHtmlSelectorsFromArray({
 	selection,
 	ident,
 }) {
-	const updated = updateHtmlSelectors({handler, ident});
+	const updated = updateHtmlSelectors({ handler, ident });
 
 	return updated;
 
 	// ---------------------------------
-	function handler({item, ident}) {
+	function handler({ item, ident }) {
 		const isChecked = Boolean(selection?.includes(ident));
 		item.checked = isChecked;
 	}
@@ -493,13 +493,13 @@ export function updateHtmlSelectorsFromObject({
 	selection,
 	ident,
 }) {
-	const updated = updateHtmlSelectors({handler, ident});
+	const updated = updateHtmlSelectors({ handler, ident });
 
 	return updated;
 
 	// ----------------
-	function handler({item, ident}) {
-		const selectionsUpd = {};	
+	function handler({ item, ident }) {
+		const selectionsUpd = {};
 		const isChecked = selection[ident];
 		item.checked = isChecked;
 		if (isChecked) {
@@ -508,33 +508,33 @@ export function updateHtmlSelectorsFromObject({
 	}
 }
 
-function updateHtmlSelectors({handler, ident = 'src'}) {	
+function updateHtmlSelectors({ handler, ident = 'src' }) {
 	[...document.querySelectorAll('.itemSelector')].forEach((item) => {
 		const identVal = item.getAttribute(ident);
-		handler({item, ident: identVal});
-	});	
+		handler({ item, ident: identVal });
+	});
 }
 
-export function getChannelComps({callback}) {
+export function getChannelComps({ callback }) {
 	const required = callback?.(channel.comps);
-    return getCompsAPI(required);
+	return getCompsAPI(required);
 }
 
 export function getActionLists() {
-    const result = {};
+	const result = {};
 
-    const actions = getActions();
-    for (let actionName in actions) {
-      result[actionName] = actions[actionName]?.files ?? '';
-    }
+	const actions = getActions();
+	for (let actionName in actions) {
+		result[actionName] = actions[actionName]?.files ?? '';
+	}
 
-    return result;
+	return result;
 }
 
 function getActions() {
-    const {
-      Print,
-    } = RESUME_OBJ.state;
+	const {
+		Print,
+	} = RESUME_OBJ.state;
 
 	return {
 		Print,
@@ -542,41 +542,41 @@ function getActions() {
 }
 
 export function getUpdatedActionLists() {
-    return {
-      updatedActionLists: getActionLists(),
-    };
+	return {
+		updatedActionLists: getActionLists(),
+	};
 }
 
 export function saveActionLists({
-    lists,
+	lists,
 }) {
 	const state = RESUME_OBJ.state;
-    Object.entries(lists).forEach(([actionName, files]) => {
-        if (state[actionName]) {
+	Object.entries(lists).forEach(([actionName, files]) => {
+		if (state[actionName]) {
 			state[actionName].files = files;
 		}
-    });
+	});
 
-    localStorage.setItem(
-      STORAGE_ITEM,
-      JSON.stringify(state),
-    );
+	localStorage.setItem(
+		STORAGE_ITEM,
+		JSON.stringify(state),
+	);
 }
 
-export function getSelectorSrc({id}) {
+export function getSelectorSrc({ id }) {
 	return `[src="${id}"]`;
 }
 
 export function scrollToLastElement() {
-	scrollToSelector({selector: `[src^="${LAST_ELEMENT}"]`});
+	scrollToSelector({ selector: `[src^="${LAST_ELEMENT}"]` });
 }
 
-export function scrollToSelector({selector}) {
+export function scrollToSelector({ selector }) {
 	if (selector === undefined || selector === "") {
 		return false;
 	}
 
-	const SCROLL_CLASS = 'scroll-to';	
+	const SCROLL_CLASS = 'scroll-to';
 
 	const elementPrevScroll = document.querySelector(`.${SCROLL_CLASS}`);
 	elementPrevScroll?.classList.remove(SCROLL_CLASS);
@@ -616,14 +616,14 @@ export const updateFiles = {
 	},
 	delete({
 		files,
-		id,		
+		id,
 	}) {
 		delete files[id];
 		return files;
 	},
 }
-	
-export function useOnClickItem({eventHandlers}) {
+
+export function useOnClickItem({ eventHandlers }) {
 	return useCallback(
 		(event) => {
 			const eventHandler = event.target.getAttribute('handler');
@@ -651,13 +651,13 @@ export function useEffectSetHtmlSelection({
 					ident,
 				});
 			}
-		}, 
+		},
 	);
 }
 
 export function getRequestFileHandler({
-	Comp, 
-	ident:src,	
+	Comp,
+	ident: src,
 }) {
 	const {
 		AppAPI,
@@ -669,20 +669,81 @@ export function getRequestFileHandler({
 	const path = src.substr(0, lastIndexSeparator);
 	const item = src.substr(lastIndexSeparator + 1);
 
-	const {setState} = Comp.getDeps();
-	
+	const { setState } = Comp.getDeps();
+
 	setState({
-		scrollTo: getSelectorSrc({id: src}),
+		scrollTo: getSelectorSrc({ id: src }),
 	});
 
 	BrowseAPI.setToResumeObj({
 		val: {
 			path,
-			scrollTo: getSelectorSrc({id: item}),
+			scrollTo: getSelectorSrc({ id: item }),
 		}
 	});
 
 	AppAPI.toggleAction({
-		action: Browse.name,	
+		action: Browse.name,
 	});
+}
+
+export function magnify({
+	img,
+	zoom = 3,
+}) {
+	var glass, w, h, bw;
+
+	const imgWidth = img.offsetWidth;
+	const imgHeight = img.offsetHeight;
+
+	/*create magnifier glass:*/
+	glass = document.createElement("DIV");
+	glass.setAttribute("class", "img-magnifier-glass");
+	/*insert magnifier glass:*/
+	img.parentElement.insertBefore(glass, img);
+	/*set background properties for the magnifier glass:*/
+	glass.style.backgroundImage = "url('" + img.src + "')";
+	glass.style.backgroundRepeat = "no-repeat";
+	glass.style.backgroundSize = (imgWidth * zoom) + "px " + (imgHeight * zoom) + "px";
+	bw = 3;
+	w = glass.offsetWidth / 2;
+	h = glass.offsetHeight / 2;
+	/*execute a function when someone moves the magnifier glass over the image:*/
+	glass.addEventListener("mousemove", moveMagnifier);
+	img.addEventListener("mousemove", moveMagnifier);
+	/*and also for touch screens:*/
+	glass.addEventListener("touchmove", moveMagnifier);
+	img.addEventListener("touchmove", moveMagnifier);
+	function moveMagnifier(e) {
+		var pos, x, y;
+		/*prevent any other actions that may occur when moving over the image*/
+		e.preventDefault();
+		/*get the cursor's x and y positions:*/
+		pos = getCursorPos(e);
+		x = pos.x;
+		y = pos.y;
+		/*prevent the magnifier glass from being positioned outside the image:*/
+		if (x > imgWidth - (w / zoom)) { x = imgWidth - (w / zoom); }
+		if (x < w / zoom) { x = w / zoom; }
+		if (y > imgHeight - (h / zoom)) { y = imgHeight - (h / zoom); }
+		if (y < h / zoom) { y = h / zoom; }
+		/*set the position of the magnifier glass:*/
+		glass.style.left = (x - w) + "px";
+		glass.style.top = (y - h) + "px";
+		/*display what the magnifier glass "sees":*/
+		glass.style.backgroundPosition = "-" + ((x * zoom) - w + bw) + "px -" + ((y * zoom) - h + bw) + "px";
+	}
+	function getCursorPos(e) {
+		var a, x = 0, y = 0;
+		e = e || window.event;
+		/*get the x and y positions of the image:*/
+		a = img.getBoundingClientRect();
+		/*calculate the cursor's x and y coordinates, relative to the image:*/
+		x = e.pageX - a.left;
+		y = e.pageY - a.top;
+		/*consider any page scrolling:*/
+		x = x - window.pageXOffset;
+		y = y - window.pageYOffset;
+		return { x: x, y: y };
+	}
 }
