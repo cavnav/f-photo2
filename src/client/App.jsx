@@ -1,5 +1,7 @@
 // systemPath and webSrc.
 // check scrollTo in Print, Share on changeStatus. add scroll into toggleStatus.
+// check scroll in Print when toggle status,
+	// when remove, move, rename.
 // check all updates lists.
 // change share list on remove, move, rename.
 

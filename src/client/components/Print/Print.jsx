@@ -15,8 +15,8 @@ import {
 	getRequestFileHandler,
 	useOnClickItem,
 	initWindowEvent,
-	useEventScrollTo,
 	refreshWindow,
+	getSelectorSrc,
 } from '../../functions';
 import { createSteps } from './createSteps';
 import { channel } from '../../channel';
@@ -305,11 +305,9 @@ function getAPI({
 		resumeObj.save({
 			val: {
 				files: resumed.files,
-				scrollTo: printed ? getSelectorSrc({id: src}) : "",
+				scrollTo: !printed ? getSelectorSrc({id: src}) : "",
 			},
-		});
-
-		refreshWindow();
+		});		
 	}
 }
 

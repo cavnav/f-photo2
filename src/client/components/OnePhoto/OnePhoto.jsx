@@ -208,11 +208,13 @@ function render(
 		switch (e.which) {
 			case 13: // enter.
 				rp.PhotoStatusesAPI.changeStatus({callback: ShareAPI.toggleStatus});
+				sendEventOppositeWindow();
 
 				break;
 
 			case 32:  // Space
-				rp.PhotoStatusesAPI.changeStatus({callback: PrintAPI.toggleStatus});				
+				rp.PhotoStatusesAPI.changeStatus({callback: PrintAPI.toggleStatus});	
+				sendEventOppositeWindow();			
 
 				break;
 

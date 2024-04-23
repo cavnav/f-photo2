@@ -366,7 +366,7 @@ export function sendEventWindow({
 
 export function refreshWindow({
 	document = window.document,
-}) {
+} = {}) {
 	document.dispatchEvent(
 		new Event(EVENT_NAMES.refreshWindow),
 	);
