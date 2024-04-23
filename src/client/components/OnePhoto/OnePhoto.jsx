@@ -9,11 +9,12 @@ import {
 	getUpdatedActionLists,
 	getSelectorSrc,
 	magnify,
+	IMG_ZOOM_CLASS,
 } from '../../functions';
 import { channel } from '../../channel';
 import { getCurDate } from '../../functions';
 import { useMutedReducer } from '../../mutedReducer';
-import { BTN_BACKWARD, BTN_MOVE, BTN_REMOVE, BTN_ZOOM, setBtnTitle } from '../../common/additionalActions/const';
+import { BTN_BACKWARD, BTN_MOVE, BTN_REMOVE, BTN_ZOOM, BTN_ZOOM_DEC, BTN_ZOOM_INC, setBtnTitle } from '../../common/additionalActions/const';
 import { EVENT_NAMES, SEP } from '../../constants';
 
 export const OnePhoto = channel.addComp({
@@ -96,7 +97,7 @@ function render(
 
 	useEffect(() => renderAddPanel({
 		Comp,
-	}), [state.isNoItems]);
+	}));
 
 	useEffect(
 		() => initWindowEvent({
@@ -458,7 +459,7 @@ function renderAddPanel({
 	Comp,
 }) {
 	const {
-		state,
+		state,	
 	} = Comp.getDeps();
 	const rp = Comp.getReqProps();
 	const additionalActions = [
@@ -550,11 +551,20 @@ function renderAddPanel({
 				});
 			}
 
+			const magnifier = document.querySelector(`.${IMG_ZOOM_CLASS}`);
 			rp.ZoomAPI.forceUpdate({
-				title: BTN_ZOOM,
-				onClick: () => magnify({					
-					img: document.querySelector(getSelectorSrc({id: state.id})),					
-				}),
+				title: magnifier ? BTN_ZOOM_DEC : BTN_ZOOM_INC,
+				onClick: magnifier ? () => {
+					magnifier.remove();
+					const {setState} = Comp.getDeps();
+					setState({});
+				 } : () => {
+					magnify({					
+						img: document.querySelector(getSelectorSrc({id: state.id})),					
+					});
+					const {setState} = Comp.getDeps();
+					setState({});
+				}
 			});
 
 			rp.ExitFromOnePhotoAPI.forceUpdate({

@@ -10,6 +10,8 @@ import {
 	ResumeObj, STORAGE_ITEM,
 } from './resumeObj';
 
+
+export const IMG_ZOOM_CLASS = 'img-magnifier-glass';
 const RESUME_OBJ = new ResumeObj();
 const TEXT_WAIT = 'подожди...';
 const TEXT_SERVER_ERROR = 'произошла ошибка. попробуй повторить свое действие или обратись в поддержку';
@@ -698,7 +700,7 @@ export function magnify({
 
 	/*create magnifier glass:*/
 	glass = document.createElement("DIV");
-	glass.setAttribute("class", "img-magnifier-glass");
+	glass.setAttribute("class", IMG_ZOOM_CLASS);
 	/*insert magnifier glass:*/
 	img.parentElement.insertBefore(glass, img);
 	/*set background properties for the magnifier glass:*/

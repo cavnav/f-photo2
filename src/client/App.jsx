@@ -2,7 +2,6 @@
 // check scrollTo in Print, Share on changeStatus. add scroll into toggleStatus.
 // check all updates lists.
 // change share list on remove, move, rename.
-// magnifying.
 
 // I
 // show overwrite confirmation for every files

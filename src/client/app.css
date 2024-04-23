@@ -253,4 +253,5 @@ iframe,
 	/*Set the size of the magnifier glass:*/
 	width: 300px;
 	height: 300px;
+	z-index: 1000;
 }
