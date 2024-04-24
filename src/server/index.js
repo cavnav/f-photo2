@@ -16,9 +16,9 @@ const SHARED_JSON = path.join(__dirname, 'shared.json');
 const SHARED_DIR = path.join(__dirname, 'shared');
 const RESPONSE_WORKING = "WORKING";
 const CHAT_IDS_FILE = path.join(__dirname, './chatIDs.json');
-const SEP = '/';
-const PATH_SEP_REG_EXP = /[\\/]/g;
-const WEB_SRC_REG_EXP = new RegExp(SEP, "g");
+const SEP = '/'; // for web src.
+const SYS_SRC_REG_EXP = new RegExp('[\\\\/]', 'g');
+const WEB_SRC_REG_EXP = new RegExp(SEP, 'g');
 
 let state = {
 	newPhotos: [],
@@ -276,8 +276,7 @@ app.post('/api/removeItems',
 			const updatedActionListsUpd = await updateActionLists({
 				updatedLists: updatedActionLists,
 				items: flattedItems,
-				source,
-				isDelete: true,
+				source,				
 			});			
 			
 			res.send({			
@@ -796,9 +795,6 @@ async function browseFiles({
 		doNeedFullPath: false,
 	});
 
-	const myPath = reqPath === rootDir ? '' :
-		path.join(reqPath).replace(rootDir, '');
-
 	return ({
 		files,
 		dirs,
@@ -869,22 +865,23 @@ async function getJsonItem({
  */
 async function updateActionLists({
 	updatedLists,
-	items,
+	items, // updated items. 
 	source,
 	dest,
-	isDelete,
 }) {
-	const sourceRel = source.replace(ALBUM_DIR, '');	
 	const printed = await fs.readJson(PRINTED_JSON).catch(e => new Object());
 	const updatedListsArr = Object.values(updatedLists).concat(Object.values(printed));
 
+	const sourceRel = source.replace(ALBUM_DIR, '');
+	const destRel = dest?.replace(ALBUM_DIR, '');	
+
 	for (let item of items) {
-		const sourceFull = path.join(sourceRel, path.sep, item);		
+		const sourceFull = getWebSrc({src: path.join(sourceRel, path.sep, item)});		
+
 		updatedListsArr.forEach((files) => {
 			if (files[sourceFull]) {
-				if (!isDelete) {
-					const destRel = dest.replace(ALBUM_DIR, '');
-					const destFull = path.join(destRel, path.sep, item);
+				if (destRel !== undefined) {					
+					const destFull = getWebSrc({src: path.join(destRel, path.sep, item)});
 					files[destFull] = files[sourceFull];
 				}
 				delete files[sourceFull];
@@ -908,14 +905,16 @@ async function getAllItems({
 	for (let index = 0; index < items.length; index++) {
 		const itemNext = items[index];
 		const basename = path.basename(itemNext);
-		if (basename === itemNext) { // if file. \\8.jpg -> 8.jpg; \\8\\ -> 8
+		if (basename === itemNext) { // file = \\8.jpg -> 8.jpg. folder = \\8\\ -> 8.
+			// if file.
 			allItems = [
 				...allItems,
 				itemNext,
 			];
 			continue;
 		}
-		const itemItems = await getItemsOfItem({ // if folder.
+		// if folder.
+		const itemItems = await getItemsOfItem({
 			item: path.resolve(source, basename),
 			source,
 		});
@@ -968,7 +967,7 @@ async function getShared({
 }
 
 function getWebSrc({src}) {
-	return src.replace(PATH_SEP_REG_EXP, SEP);
+	return src.replace(SYS_SRC_REG_EXP, SEP);
 }
 
 function getSystemSrc({src}) {

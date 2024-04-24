@@ -126,7 +126,6 @@ function render(
 
 	const FilesComp = state.files.length === 0 ? null : <Files
 		files={state.files}
-		browsePath={state.path}
 		onSelectFile={getVarName({onChangeSelectionsUpd})}
 		onRequestFile={getVarName({onRequestFileUpd})}
 	/>

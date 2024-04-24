@@ -1,11 +1,10 @@
 import React from 'react';
 import { getBackgroundImageStyle } from '../../functions';
 import {File} from './File';
-import { BROWSE_ITEM_TYPES, SEP } from '../../constants';
+import { BROWSE_ITEM_TYPES } from '../../constants';
 
 
 export function Files({
-    browsePath = '',
     files,
     onSelectFile,
     onRequestFile,

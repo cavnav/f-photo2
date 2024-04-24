@@ -15,7 +15,6 @@ import {
 	getRequestFileHandler,
 	useOnClickItem,
 	initWindowEvent,
-	refreshWindow,
 	getSelectorSrc,
 } from '../../functions';
 import { createSteps } from './createSteps';
@@ -206,7 +205,24 @@ function render(props) {
 					...resumeObj.get(),
 				});				
 			},
-		})
+		}),
+		[]
+	);
+
+	useEffect(
+		() => initWindowEvent({
+			eventName: EVENT_NAMES.moveSelections,
+			callback: ({
+				detail,
+			}) => {
+				const [id] = detail.selections;
+				setState({
+					...resumeObj.get(),
+					scrollTo: getSelectorSrc({id}),
+				});				
+			},
+		}),
+		[]
 	);
 
 	useEffect(

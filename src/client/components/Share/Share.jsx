@@ -521,23 +521,6 @@ function useInitRefreshWindow({
     );
 }
 
-function useEventChangeSelections({
-	Comp,
-}) {
-	const {setState} = Comp.getDeps();
-
-	useEffect(
-		() => initWindowEvent({
-			eventName: EVENT_NAMES.moveSelections,
-			callback: () => {								
-				setState({
-					scrollTo: "",
-				});
-			}
-		}),
-		[]
-	);
-}
 
 function getInitialState(
 ) { 

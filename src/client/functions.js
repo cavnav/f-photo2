@@ -536,10 +536,12 @@ export function getActionLists() {
 function getActions() {
 	const {
 		Print,
+		Share,
 	} = RESUME_OBJ.state;
 
 	return {
 		Print,
+		Share,
 	};
 }
 

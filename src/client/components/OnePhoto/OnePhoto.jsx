@@ -5,7 +5,7 @@ import { ResumeObj } from '../../resumeObj';
 import {
 	getOppositeWindow, myArray,
 	updateActionsLists, sendEventOppositeWindow, isBanMoveItems,
-	initWindowEvent as initWindowEvent,
+	initWindowEvent,
 	getUpdatedActionLists,
 	getSelectorSrc,
 	magnify,
@@ -82,17 +82,27 @@ function render(
 		} = Comp.getReqProps();
 		
 		if (state.curPhotoInd === -1) {
+			BrowseAPI.setToResumeObj({
+				val: {
+					curPhotoInd: -1,
+					scrollTo: '',
+				},
+			});
+
 			toggleBrowseAction(Comp);
+
 			return;
 		}
 
 		if (state.action === ON_TOGGLE_PHOTO) {
 			BrowseAPI.setToResumeObj({
 				val: {
+					curPhotoInd: state.curPhotoInd,
 					scrollTo: getSelectorSrc({id: state.curPhoto}),
 				},
 			});
-		}
+		}		
+
 	}, [state.curPhoto]);
 
 	useEffect(() => renderAddPanel({
@@ -126,7 +136,6 @@ function render(
 	function getRender() {
 		const rp = Comp.getReqProps();
 		const {
-			resumeBrowse,
 			PhotoStatuses,
 		} = rp;
 
@@ -340,6 +349,7 @@ function getIndexes({
 }) {
 	const prevPhotoInd = curPhotoInd > 0 ? curPhotoInd - 1 : 0;
 	const nextPhotoInd = curPhotoInd < filesLength - 1 ? (curPhotoInd + 1) : (filesLength - 1);
+	
 	return {
 		prevPhotoInd,
 		nextPhotoInd,
@@ -529,7 +539,7 @@ function renderAddPanel({
 
 						function onConfirm() {							
 							rp.server.removeItems({
-								items: [curPhoto],
+								items: [state.curPhoto],
 								...getUpdatedActionLists(),
 							})
 							.then((result) => {
