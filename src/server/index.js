@@ -870,7 +870,10 @@ async function updateActionLists({
 	dest,
 }) {
 	const printed = await fs.readJson(PRINTED_JSON).catch(e => new Object());
-	const updatedListsArr = Object.values(updatedLists).concat(Object.values(printed));
+	const shared = await fs.readJson(SHARED_JSON).catch(e => new Object());
+	const updatedListsArr = Object.values(updatedLists)
+		.concat(Object.values(printed))
+		.concat(Object.values(shared));
 
 	const sourceRel = source.replace(ALBUM_DIR, '');
 	const destRel = dest?.replace(ALBUM_DIR, '');	
@@ -892,6 +895,11 @@ async function updateActionLists({
 	await fs.writeJson(
 		PRINTED_JSON,		
 		printed,
+	);
+
+	await fs.writeJson(
+		SHARED_JSON,		
+		shared,
 	);
 
 	return updatedLists;

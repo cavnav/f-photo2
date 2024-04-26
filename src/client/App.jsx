@@ -3,7 +3,6 @@
 // check scroll in Print when toggle status,
 	// when remove, move, rename.
 // check all updates lists.
-// change share list on remove, move, rename.
 
 // I
 // show overwrite confirmation for every files
