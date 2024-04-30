@@ -19,36 +19,13 @@ function render(
 ) {
 	const Comp = this;
 
-	const {state, setState} = useMutedReducer({
+	useMutedReducer({
 		initialState: {
 			id: "",
-			// ...statuses.
 		},
 		props,
 		setCompDeps: Comp.setCompDeps,
 	});
-
-	React.useEffect(
-		() => {
-			const statusesUpd = {};			
-			const rp = Comp.getReqProps();
-
-			rp.statusesAPI.forEach((statusAPI) => {
-				const status = statusAPI.getStatus({
-					src: props.id,
-				});
-
-				Object.assign(
-					statusesUpd,
-					status,
-				);					
-			});
-			
-
-			setState(statusesUpd);
-		},
-		[props.id]
-	);
 
 	const statuses = getStatuses();
 
@@ -60,13 +37,22 @@ function render(
 
 
 	// ----------------------------------
-	function getStatuses() {
-		const {
-			id,
-			...statuses
-		} = state;
+	function getStatuses() {		
+		const statusesUpd = {};			
+		const rp = Comp.getReqProps();
 
-		return Object.entries(statuses).map(
+		rp.statusesAPI.forEach((statusAPI) => {
+			const status = statusAPI.getStatus({
+				src: props.id,
+			});
+
+			Object.assign(
+				statusesUpd,
+				status,
+			);					
+		});
+
+		return Object.entries(statusesUpd).map(
 				([status, value]) => {
 					return value === false ? null : (
 						<img key={status} src={`${status}.png`} />
@@ -110,12 +96,12 @@ function getAPI({
 	const deps = Comp.getDeps();	
 
 	return {
-		changeStatus: ({callback}) => {
-			const statusUpd = callback({
+		changeStatus: ({callback}) => {		
+			deps.setState({});
+				
+			callback({
 				src: deps.state.id,
 			});
-
-			deps.setState(statusUpd);
 		},
 	}
 };

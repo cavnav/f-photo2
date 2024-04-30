@@ -280,20 +280,12 @@ function getAPI({
 
 	// -----------------------
 
-	function getStatusObj({
-		value,
-	}) {
-		return {
-			toPrint: value,
-		};
-	}
-
 	function getStatus({
 		src,
 	}) {
-		return getStatusObj({
-			value: Boolean(resumeObj.get().files?.[src]),
-		});
+		return {
+			toPrint: Boolean(resumeObj.get().files?.[src]),
+		};
 	}
 
 	function toggleStatus({

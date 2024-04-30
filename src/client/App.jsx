@@ -3,11 +3,11 @@
 // check scroll in Print when toggle status,
 	// when remove, move, rename.
 // check all updates lists.
+// connect android by wifi
 
 // I
 // show overwrite confirmation for every files
 // remove ctg file
-// connect android by wifi
 
 // II
 // tablet using
