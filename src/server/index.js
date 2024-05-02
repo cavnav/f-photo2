@@ -40,13 +40,21 @@ app.use(express.static(ALBUM_DIR));
 app.use(express.static('assets'));
 app.use(bodyParser.json());
 
-if (process.env.NODE_ENV?.trim() === 'production') {
+const processEnv = process.env.NODE_ENV?.trim();
+
+if (processEnv === 'production') {
 	app.use(express.static('dist'));
 } else {
 	app.use(express.static('public'));
 }
 
-app.listen(8080, () => console.log('listening on port 8080'));
+const PORT = processEnv === 'production' ? 8080 : 3000;
+const IP_ADDRESS = '0.0.0.0'; // Привязываем к любому доступному интерфейсу
+
+app.listen(PORT, IP_ADDRESS, () => {
+	console.log(`Сервер доступен по адресу http://localhost:${PORT}/`);
+	console.log(`Сервер также доступен по адресу http://${IP_ADDRESS}:${PORT}/`);
+  });
 
 app.get('/api/getSharedRecipients', async (req, response) => {
 	const recipients = await getRecipients();
