@@ -215,10 +215,15 @@ function render(props) {
 			callback: ({
 				detail,
 			}) => {
-				const [id] = detail.selections;
+				const resumed = resumeObj.get();
+				const scrollTo = state.scrollTo;
+				const isScrollTo = Object.values(resumed.files).some((file) => {
+					return getSelectorSrc({id: file}) === scrollTo;
+				});
+				
 				setState({
-					...resumeObj.get(),
-					scrollTo: getSelectorSrc({id}),
+					...resumed,
+					scrollTo: isScrollTo ? scrollTo : '',
 				});				
 			},
 		}),

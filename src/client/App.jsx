@@ -3,6 +3,9 @@
 // check scroll in Print when toggle status,
 	// when remove, move, rename.
 // check all updates lists.
+// remove one. print - update items. scrollTo. no item. remove scrollTo. else dont updated.
+// remove any. print - update items. scrollTo. no item. remove scrollTo. else dont updated.
+
 // connect android by wifi
 
 // I

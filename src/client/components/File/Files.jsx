@@ -1,10 +1,11 @@
 import React from 'react';
 import { getBackgroundImageStyle } from '../../functions';
 import {File} from './File';
-import { BROWSE_ITEM_TYPES } from '../../constants';
+import { BROWSE_ITEM_TYPES, SEP } from '../../constants';
 
 
 export function Files({
+    browsePath,
     files,
     onSelectFile,
     onRequestFile,
@@ -14,7 +15,7 @@ export function Files({
     return (        
         files.map((file, ind) => {
             const style = getBackgroundImageStyle({
-                file,
+                file: `${browsePath}${SEP}${file}`,
             });
 
             return (
