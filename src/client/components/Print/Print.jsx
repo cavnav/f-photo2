@@ -16,6 +16,7 @@ import {
 	useOnClickItem,
 	initWindowEvent,
 	getSelectorSrc,
+	getScrollTo,
 } from '../../functions';
 import { createSteps } from './createSteps';
 import { channel } from '../../channel';
@@ -212,18 +213,16 @@ function render(props) {
 	useEffect(
 		() => initWindowEvent({
 			eventName: EVENT_NAMES.moveSelections,
-			callback: ({
-				detail,
-			}) => {
+			callback: () => {
 				const resumed = resumeObj.get();
-				const scrollTo = state.scrollTo;
-				const isScrollTo = Object.values(resumed.files).some((file) => {
-					return getSelectorSrc({id: file}) === scrollTo;
+				const scrollTo = getScrollTo({
+					files: resumed.files,
+					scrollTo,
 				});
 				
 				setState({
 					...resumed,
-					scrollTo: isScrollTo ? scrollTo : '',
+					scrollTo,
 				});				
 			},
 		}),

@@ -512,9 +512,7 @@ function renderAddPanel({
 								const curPhoto = state.curPhoto;
 								updateActionsLists({ lists: result?.updatedActionLists });
 								deleteFiles({ Comp });
-								sendEventOppositeWindow();
 								sendEventOppositeWindow({
-									eventName: EVENT_NAMES.scrollTo,
 									detail: {
 										scrollTo: getSelectorSrc({id: curPhoto}),
 									},

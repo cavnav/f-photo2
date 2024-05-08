@@ -12,6 +12,7 @@ import {
 	getSelectorSrc,
 	scrollToSelector,
 	useEventScrollTo,
+	getScrollTo,
 } from '../../functions';
 import { channel } from '../../channel';
 import { ResumeObj } from '../../resumeObj';
@@ -78,7 +79,9 @@ function render(
 	useEffect(
 		() => initWindowEvent({ 
 			eventName: EVENT_NAMES.refreshWindow,
-			callback: () => onRefreshWindow({ Comp }),
+			callback: () => {
+				onRefreshWindow({ Comp });
+			}
 		}),
 		[]
 	);
@@ -335,13 +338,21 @@ function onRefreshWindow({
 }) {
 	const rp = Comp.getReqProps();
 	const deps = Comp.getDeps();
+
+	console.log(111, deps.state.path);
 	
 	rp.server.toward()			
 		.then((res) => {
+			const scrollTo = getScrollTo({
+				files: res.files,
+				scrollTo: deps.state.scrollTo,
+			});			
+
 			deps.setState({
 				files: res.files,
 				dirs: res.dirs,
-			});
+				scrollTo,
+			});			
 		});
 }
 
@@ -510,13 +521,12 @@ function renderAddPanel({
 						.then((result) => {		
 							rp.server.checkProgress()
 							.then(() => {
-								const selections = state.selections;
-
 								onMoveSelections({
 									Comp,
 									actionLists:  result.updatedActionLists,
 								});
 							
+								const selections = state.selections;
 								sendEventOppositeWindow({
 									eventName: EVENT_NAMES.moveSelections,
 									detail: {
@@ -692,12 +702,6 @@ function onMoveSelections({
 		Comp,
 	});
 
-	const {setState} = Comp.getDeps();
-
-	setState({
-		scrollTo: "",
-	});
-	
 	refreshWindows();
 }
 

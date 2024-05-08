@@ -380,7 +380,7 @@ export function refreshWindows(
 
 	if (oppositeWindow) {
 
-		refreshWindow({ document: oppositeWindow });
+		refreshWindow({ document: oppositeWindow.document });
 	}
 }
 
@@ -750,4 +750,15 @@ export function magnify({
 		y = y - window.pageYOffset;
 		return { x: x, y: y };
 	}
+}
+
+export function getScrollTo({
+	files,
+	scrollTo,
+}) {
+	const isScrollTo = Object.values(files).some((file) => {
+		return getSelectorSrc({id: file}) === scrollTo
+	});
+
+	return isScrollTo ? scrollTo : '';
 }

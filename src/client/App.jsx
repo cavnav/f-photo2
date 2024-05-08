@@ -6,8 +6,6 @@
 // remove one. print - update items. scrollTo. no item. remove scrollTo. else dont updated.
 // remove any. print - update items. scrollTo. no item. remove scrollTo. else dont updated.
 
-// connect android by wifi
-
 // I
 // show overwrite confirmation for every files
 // remove ctg file
