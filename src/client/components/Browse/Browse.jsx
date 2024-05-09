@@ -12,7 +12,6 @@ import {
 	getSelectorSrc,
 	scrollToSelector,
 	useEventScrollTo,
-	getScrollTo,
 } from '../../functions';
 import { channel } from '../../channel';
 import { ResumeObj } from '../../resumeObj';
@@ -338,20 +337,12 @@ function onRefreshWindow({
 }) {
 	const rp = Comp.getReqProps();
 	const deps = Comp.getDeps();
-
-	console.log(111, deps.state.path);
 	
 	rp.server.toward()			
-		.then((res) => {
-			const scrollTo = getScrollTo({
-				files: res.files,
-				scrollTo: deps.state.scrollTo,
-			});			
-
+		.then((res) => {			
 			deps.setState({
 				files: res.files,
 				dirs: res.dirs,
-				scrollTo,
 			});			
 		});
 }

@@ -14,9 +14,8 @@ import {
 	useOnChangeSelections,
 	getRequestFileHandler,
 	useOnClickItem,
-	initWindowEvent,
 	getSelectorSrc,
-	getScrollTo,
+	useRefresh,
 } from '../../functions';
 import { createSteps } from './createSteps';
 import { channel } from '../../channel';
@@ -198,37 +197,13 @@ function render(props) {
 		[state.isCopyingScript]
 	);
 
-	useEffect(
-		() => initWindowEvent({
-			eventName: EVENT_NAMES.refreshWindow,
-			callback: () => {
-				setState({
-					...resumeObj.get(),
-				});				
-			},
-		}),
-		[]
-	);
+	useRefresh({
+		eventName: EVENT_NAMES.moveSelections,
+		Comp,
+	});
 
-	useEffect(
-		() => initWindowEvent({
-			eventName: EVENT_NAMES.moveSelections,
-			callback: () => {
-				const resumed = resumeObj.get();
-				const scrollTo = getScrollTo({
-					files: resumed.files,
-					scrollTo,
-				});
-				
-				setState({
-					...resumed,
-					scrollTo,
-				});				
-			},
-		}),
-		[]
-	);
-
+	useRefresh({Comp});
+		
 	useEffect(
 		() => {
 			scrollToSelector({selector: state.scrollTo});

@@ -1,10 +1,5 @@
-// systemPath and webSrc.
-// check scrollTo in Print, Share on changeStatus. add scroll into toggleStatus.
-// check scroll in Print when toggle status,
-	// when remove, move, rename.
+// when remove, move, rename.
 // check all updates lists.
-// remove one. print - update items. scrollTo. no item. remove scrollTo. else dont updated.
-// remove any. print - update items. scrollTo. no item. remove scrollTo. else dont updated.
 
 // I
 // show overwrite confirmation for every files

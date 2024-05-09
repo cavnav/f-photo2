@@ -77,7 +77,7 @@ export function isCatalogSelected({
 export function isBanMoveItems({
 	path,
 } = {}) {
-	// another side is: samePath, welcome, onePhoto, print, printed.
+	// another side is: samePath, welcome, onePhoto, print, printed, share, shared.
 
 
 	const destWindow = getOppositeWindow();
@@ -97,7 +97,7 @@ export function isBanMoveItems({
 			},
 		});
 
-		if (['Welcome', 'OnePhoto', 'Print', 'PrintedComp'].includes(destAction.action)) {
+		if (['Welcome', 'OnePhoto', 'Print', 'PrintedComp', 'Share', 'SharedComp'].includes(destAction.action)) {
 			return true;
 		}
 
@@ -752,13 +752,32 @@ export function magnify({
 	}
 }
 
-export function getScrollTo({
-	files,
-	scrollTo,
+export function useRefresh({
+	eventName = EVENT_NAMES.refreshWindow,
+	Comp,
+	deps = [],
 }) {
-	const isScrollTo = Object.values(files).some((file) => {
-		return getSelectorSrc({id: file}) === scrollTo
-	});
+	useEffect(
+		() => initWindowEvent({
+			eventName,
+			callback: () => {
+				const {resumeObj, deps} = Comp.getReqProps();	
+				deps.setState({
+					...resumeObj.get(),
+				});
+			},		
+		}),
+		deps,
+	);
+}
 
-	return isScrollTo ? scrollTo : '';
+export function useScrollTo({Comp}) {
+	const deps = Comp.getDeps();
+	
+	useEffect(
+		() => {			
+			scrollToSelector({selector: deps.state.scrollTo});
+		},
+		[deps.state.isNeedScrollTo, deps.state.files]
+	);
 }

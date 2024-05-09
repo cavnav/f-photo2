@@ -15,7 +15,7 @@ export function Files({
     return (        
         files.map((file, ind) => {
             const style = getBackgroundImageStyle({
-                file: `${browsePath}${SEP}${file}`,
+                file: browsePath ? `${browsePath}${SEP}${file}` : file,
             });
 
             return (
