@@ -1,4 +1,4 @@
-
+const os = require('os');
 const express = require('express');
 const bodyParser = require('body-parser');
 const fs = require('fs-extra');
@@ -49,7 +49,7 @@ if (processEnv === 'production') {
 }
 
 const PORT = processEnv === 'production' ? 8080 : 3000;
-const IP_ADDRESS = '0.0.0.0'; // Привязываем к любому доступному интерфейсу
+const IP_ADDRESS = getIPv4Address(); // Привязываем к любому доступному интерфейсу
 
 app.listen(PORT, IP_ADDRESS, () => {
 	console.log(`Сервер доступен по адресу http://localhost:${PORT}/`);
@@ -988,4 +988,17 @@ function getWebSrc({src}) {
 
 function getSystemSrc({src}) {
 	return src.replace(WEB_SRC_REG_EXP, path.sep);
+}
+
+function getIPv4Address() {
+    const networkInterfaces = os.networkInterfaces();
+    for (const interfaceName in networkInterfaces) {
+        const interfaces = networkInterfaces[interfaceName];
+        for (const iface of interfaces) {
+            if (!iface.internal && iface.family === 'IPv4') {
+                return iface.address;
+            }
+        }
+    }
+    return 'localhost'; // Default to localhost if no IPv4 address is found
 }

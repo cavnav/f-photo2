@@ -14,7 +14,7 @@ import {
 import { channel } from '../../channel';
 import { getCurDate } from '../../functions';
 import { useMutedReducer } from '../../mutedReducer';
-import { BTN_BACKWARD, BTN_MOVE, BTN_REMOVE, BTN_ZOOM, BTN_ZOOM_DEC, BTN_ZOOM_INC, setBtnTitle } from '../../common/additionalActions/const';
+import { BTN_BACKWARD, BTN_MOVE, BTN_REMOVE, BTN_ZOOM_DEC, BTN_ZOOM_INC, setBtnTitle } from '../../common/additionalActions/const';
 import { EVENT_NAMES, SEP } from '../../constants';
 
 export const OnePhoto = channel.addComp({
@@ -26,6 +26,7 @@ export const OnePhoto = channel.addComp({
 });
 
 const ON_TOGGLE_PHOTO = 'onTogglePhoto';
+const ON_IMAGE_ROTATE = 'onImageRotate';
 
 const resumeObj = new ResumeObj({
 	selector: [
@@ -62,11 +63,12 @@ function render(
 
 	const imgRef = useRef(null);
 
+	useEffect(addGesturesListener({Comp}));
 	useEffect(addKeyDownListener);
 	useEffect(() => {
 		if ({
 			[ON_TOGGLE_PHOTO]: 1,
-			onImgServerRotate: 1
+			[ON_IMAGE_ROTATE]: 1
 		}[state.action] === undefined) return;
 
 		setTimeout(() => {
@@ -201,7 +203,7 @@ function render(
 			files,
 		} = state;
 		const {
-			prevPhotoInd,
+			prev: prevPhotoInd,
 		} = getIndexes({
 			curPhotoInd: state.curPhotoInd,
 			filesLength: files.items.length,
@@ -211,8 +213,6 @@ function render(
 			ShareAPI,
 			PrintAPI,
 		} = Comp.getComps();
-
-		const stateUpd = {};
 
 		switch (e.which) {
 			case 13: // enter.
@@ -228,60 +228,16 @@ function render(
 				break;
 
 			case 37: // prev 
-				stateUpd.action = ON_TOGGLE_PHOTO;
-				stateUpd.curPhotoInd = prevPhotoInd;
-				stateUpd.curPhotoRotateDeg = 0;
-
+				prevImage({Comp});		
 				break;
 
 			case 39: // next
-				onToggleNextPhoto({
-					stateUpd,
-					curPhotoInd: state.curPhotoInd,
-					files,
-				});
+				nextImage({Comp});
 				break;
 
 			case 38: // rotate right
-				stateUpd.curPhotoRotateDeg = rotate({ deg: state.curPhotoRotateDeg + 90 });
-				stateUpd.action = onImgServerRotate.name;
-				break;
-
-			case 40:
-				stateUpd.curPhotoRotateDeg = rotate({ deg: state.curPhotoRotateDeg - 90 });
-				stateUpd.action = onImgServerRotate.name;
-				break; // rotate left
-		}
-
-		setState(stateUpd);
-
-		changeAddActions();
-
-		// ---------------------------
-
-		function rotate({ deg }) {
-			return Math.abs(deg) === 360 ? 0 : deg;
-		}
-
-		function changeAddActions() {
-			const [updatedProp] = Object.keys(stateUpd);
-			if (updatedProp) runTrigger({ updatedProp, });
-
-			// ---------------------------------------
-
-			function runTrigger({ updatedProp, }) {
-				return {
-					[updatedProp]: () => { },
-					curPhotoInd: () => { },
-					curPhotoRotateDeg: onImgServerRotate,
-				}[updatedProp]({
-					server,
-					state,
-					stateUpd,
-					setState,
-				}
-				);
-			}
+				rotateImage({Comp});
+				break;			
 		}
 	}
 }
@@ -347,34 +303,49 @@ function getIndexes({
 	curPhotoInd,
 	filesLength,
 }) {
-	const prevPhotoInd = curPhotoInd > 0 ? curPhotoInd - 1 : 0;
-	const nextPhotoInd = curPhotoInd < filesLength - 1 ? (curPhotoInd + 1) : (filesLength - 1);
+	const prev = curPhotoInd > 0 ? curPhotoInd - 1 : 0;
+	const next = curPhotoInd < filesLength - 1 ? (curPhotoInd + 1) : (filesLength - 1);
 	
 	return {
-		prevPhotoInd,
-		nextPhotoInd,
+		prev,
+		next,
 	};
 }
 
-function onToggleNextPhoto({
-	stateUpd,
+function getTogglePhotoProps({
 	curPhotoInd,
-	files,
+	filesLength,
 }) {
 	const {
-		nextPhotoInd,
+		prev,
+		next,
 	} = getIndexes({
 		curPhotoInd: curPhotoInd,
-		filesLength: files.items.length,
+		filesLength,
 	});
-	stateUpd.curPhotoInd = nextPhotoInd;
-	stateUpd.action = ON_TOGGLE_PHOTO;
 
-	return stateUpd;
+	const commonProps = {
+		action: ON_TOGGLE_PHOTO,
+		curPhotoRotateDeg: 0,
+	};
+	
+	return {	
+		get prev() {
+			return {
+				...commonProps,
+				curPhotoInd: prev,
+			};
+		},
+
+		get next() {
+			return {
+				...commonProps,
+				curPhotoInd: next,
+			};
+		}		
+	};
 }
 
-function onImgServerRotate({
-}) { }
 
 function getReqProps({ comps, channel, }) {
 	const resumeBrowse = comps.Browse.getAPI().getResumeObj({
@@ -598,6 +569,76 @@ function toggleBrowseAction(Comp) {
 	rp.AppAPI.toggleAction({
 		action: Browse.name,
 	});
+}
+
+function addGesturesListener({Comp}) {
+	return () => {
+		const event = 'touchstart';
+		const imageContainer = document.querySelector('.OnePhoto');
+
+		imageContainer.addEventListener(event, onGesture);
+
+		return () => {
+			imageContainer.removeEventListener(event, onGesture);
+		};
+
+		//----------------------------
+		function onGesture(e) {
+			imageContainer.removeEventListener(event, onGesture);
+
+			const touchX = e.touches[0].clientX;
+        	const touchY = e.touches[0].clientY;
+
+			// Calculate touch position relative to the image container
+			const rect = imageContainer.getBoundingClientRect();
+			const xRelativeToContainer = touchX - rect.left;
+			const yRelativeToContainer = touchY - rect.top;
+
+			// Determine gesture based on touch position
+			if (xRelativeToContainer < rect.width / 3) {
+				prevImage({Comp});
+			} else if (xRelativeToContainer > (2 * rect.width) / 3) {
+				nextImage({Comp});
+			} else if (yRelativeToContainer > (2 * rect.height) / 3) {
+				rotateImage({Comp});
+			}
+
+			imageContainer.addEventListener(event, onGesture);
+		}
+	}
+}
+
+function rotateImage({Comp}) {
+	const deps = Comp.getDeps();
+	const deg = deps.state.curPhotoRotateDeg + 90;
+	const degUpd = Math.abs(deg) === 360 ? 0 : deg;
+
+	deps.setState({
+		action: ON_IMAGE_ROTATE,
+		curPhotoRotateDeg: degUpd,
+	});
+}
+
+function nextImage({Comp}) {
+	const deps = Comp.getDeps();
+
+	deps.setState(
+		getTogglePhotoProps({
+			curPhotoInd: deps.state.curPhotoInd,
+			filesLength: deps.state.files.items.length,
+		}).next,
+	);
+}
+
+function prevImage({Comp}) {
+	const deps = Comp.getDeps();
+
+	deps.setState(
+		getTogglePhotoProps({
+			curPhotoInd: deps.state.curPhotoInd,
+			filesLength: deps.state.files.items.length,
+		}).prev,
+	);
 }
 
 function getStateInit() {

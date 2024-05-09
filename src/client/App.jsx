@@ -1,4 +1,9 @@
 // when remove, move, rename.
+// add date of image
+// for mobile add print, share btns.
+//	remove import from flash.
+//  fix zoom
+//  how suggest prev, next, rotate gestures.
 // check all updates lists.
 
 // I

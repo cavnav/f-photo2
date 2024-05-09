@@ -755,25 +755,27 @@ export function magnify({
 export function useRefresh({
 	eventName = EVENT_NAMES.refreshWindow,
 	Comp,
-	deps = [],
+	depends = [],
 }) {
 	useEffect(
 		() => initWindowEvent({
 			eventName,
 			callback: () => {
-				const {resumeObj, deps} = Comp.getReqProps();	
+				const resumeObj = Comp.getResumeObj();	
+				const deps = Comp.getDeps();
+				
 				deps.setState({
 					...resumeObj.get(),
 				});
 			},		
 		}),
-		deps,
+		depends,
 	);
 }
 
 export function useScrollTo({Comp}) {
 	const deps = Comp.getDeps();
-	
+
 	useEffect(
 		() => {			
 			scrollToSelector({selector: deps.state.scrollTo});
