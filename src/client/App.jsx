@@ -1,17 +1,16 @@
 // when remove, move, rename.
-// add date of image by request
-// for mobile add print, share btns.
-//	remove import from flash.
-//  fix zoom
-//  how suggest prev, next, rotate gestures.
 // check all updates lists.
+// remove ctg file
+// for mobile
+//  how suggest prev, next, rotate gestures.
+//  fix zoom
+// add date of image by request
+// help by paper.
 
 // I
 // show overwrite confirmation for every files
-// remove ctg file
 
 // II
-// tablet using
 // unselect all
 // select all
 
@@ -111,6 +110,57 @@ function getAppStateInit() {
 		SharedComp,
 	} = comps;
 
+	const isDesktop = !('ontouchstart' in window || navigator.maxTouchPoints > 0) ? false : true;
+
+
+	const actions = []; // order is important.
+
+	if (isDesktop) {
+		actions.push({
+			id: Copy.name,
+			title: 'Копировать с флешки',
+			isEnabled: true,
+		});
+	}
+
+	actions.push({
+		id: Browse.name,
+		title: 'Альбомы',
+		isEnabled: true,
+	});
+
+	actions.push({
+		id: OnePhoto.name,
+		title: 'Фото',
+		isEnabled: false,
+	});
+
+	if (isDesktop) {
+		actions.push({
+			id: Print.name,
+			title: 'Печатать',
+			isEnabled: true,
+		});
+
+		actions.push({
+			id: PrintedComp.name,
+			title: 'Архив печатей',
+			isEnabled: true,
+		});
+
+		actions.push({
+			id: Share.name,
+			title: 'Отправить',
+			isEnabled: true,
+		});
+
+		actions.push({
+			id: SharedComp.name,
+			title: 'Архив отправленных',
+			isEnabled: true,
+		});
+	}
+
 	return {
 		action: comps.Welcome.name,
 		doNeedHelp: false, // move to Help module.
@@ -118,48 +168,11 @@ function getAppStateInit() {
 			x: 0,
 			y: 0,
 		},
-		actions: [
-			{
-				id: Copy.name,
-				title: 'Копировать с флешки',
-				isEnabled: true,
-			},
-			{
-				id: Browse.name,
-				title: 'Альбомы',
-				isEnabled: true,
-			},		
-			{
-				id: OnePhoto.name,
-				title: 'Фото',
-				isEnabled: false,
-			},
-			{
-				id: Print.name,
-				title: 'Печатать',
-				isEnabled: true,
-			},
-			{
-				id: PrintedComp.name,
-				title: 'Архив печатей',
-				isEnabled: true,
-			},
-			{
-				id: Share.name,
-				title: 'Отправить',
-				isEnabled: true,
-			},
-			{
-				id: SharedComp.name,
-				title: 'Архив отправленных',
-				isEnabled: true,
-			}
-			// Help: {
-			//   title: '?',
-			//   isEnabled: true,
-			// }
-		],
+
 		...resumed,
+		
+		actions,
+
 	};
 };
 
