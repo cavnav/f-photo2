@@ -49,11 +49,12 @@ if (processEnv === 'production') {
 }
 
 const PORT = processEnv === 'production' ? 8080 : 3000;
-const IP_ADDRESS = getIPv4Address(); // Привязываем к любому доступному интерфейсу
+const IP_ADDRESS = '0.0.0.0';
+const IP_ADDRESS_EXTERNAL = getIPv4Address(); // Привязываем к любому доступному интерфейсу
 
 app.listen(PORT, IP_ADDRESS, () => {
 	console.log(`Сервер доступен по адресу http://localhost:${PORT}/`);
-	console.log(`Сервер также доступен по адресу http://${IP_ADDRESS}:${PORT}/`);
+	console.log(`Сервер также доступен по адресу http://${IP_ADDRESS_EXTERNAL}:${PORT}/`);
   });
 
 app.get('/api/getSharedRecipients', async (req, response) => {

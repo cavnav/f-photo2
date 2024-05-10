@@ -1,5 +1,5 @@
 // when remove, move, rename.
-// add date of image
+// add date of image by request
 // for mobile add print, share btns.
 //	remove import from flash.
 //  fix zoom
