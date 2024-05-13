@@ -1,5 +1,5 @@
 import React from 'react';
-import { BROWSE_ITEM_TYPES } from '../../constants';
+import { BROWSE_ITEM_TYPES} from '../../constants';
 
 export function Dirs({
 	dirs,
@@ -20,7 +20,7 @@ export function Dirs({
 						type={BROWSE_ITEM_TYPES.folder}
 						handler={onChangeDir}
 					>
-						{dir}
+						{dir.slice(1)}
 						<input
 							className={selectorClassNames}
 							type="checkbox"

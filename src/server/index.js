@@ -687,7 +687,11 @@ async function findFiles({
 		return `${fileUpd}`;
 	});
 
-	browseFiles = browseFiles.filter(isNotSVI);
+	browseFiles = (
+		browseFiles
+		.filter(isNotSVI)
+		.filter(isNotCTG)
+	);
 
 	if (!doNeedDirs) return {
 		files: browseFiles,
@@ -701,10 +705,10 @@ async function findFiles({
 
 	let browseDirs = dirs
 		.filter(isTopLevelFile)
-		.sort(sortByBirthday)
+		.sort(sortByBirthday);
 		
 	if (!doNeedFullPath) browseDirs = browseDirs.map((dir) => {
-		const dirUpd = path.basename(dir);
+		const dirUpd = SEP + path.basename(dir);
 		return dirUpd;
 	});
 
@@ -717,6 +721,9 @@ async function findFiles({
 	// ------------------------------------------- 
 	function isNotSVI(file) {
 		return !file.includes('System Volume Information');
+	}
+	function isNotCTG(file) {
+		return path.extname(file).toLowerCase() !== '.ctg';
 	}
 	function isTopLevelFile(file) {
 		return reqPath.length === file.lastIndexOf(path.sep);
@@ -793,7 +800,6 @@ function getToward({
 
 async function browseFiles({
 	reqPath,
-	rootDir,
 }) {
 	const {
 		files,
@@ -890,12 +896,13 @@ async function updateActionLists({
 	for (let item of items) {
 		const sourceFull = getWebSrc({src: path.join(sourceRel, path.sep, item)});		
 
-		updatedListsArr.forEach((files) => {
+		updatedListsArr.forEach((files) => {			 			
 			if (files[sourceFull]) {
 				if (destRel !== undefined) {					
 					const destFull = getWebSrc({src: path.join(destRel, path.sep, item)});
 					files[destFull] = files[sourceFull];
 				}
+
 				delete files[sourceFull];
 			}			
 		});

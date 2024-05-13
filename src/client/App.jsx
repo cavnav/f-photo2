@@ -1,4 +1,5 @@
 // when remove, move, rename.
+// on change second window, dont refresh opposit (for move btn i.e.)
 // check all updates lists.
 // remove ctg file
 // for mobile
@@ -6,6 +7,7 @@
 //  fix zoom
 // add date of image by request
 // help by paper.
+// bag from wrong path opposite window.
 
 // I
 // show overwrite confirmation for every files
@@ -110,7 +112,7 @@ function getAppStateInit() {
 		SharedComp,
 	} = comps;
 
-	const isDesktop = !('ontouchstart' in window || navigator.maxTouchPoints > 0) ? false : true;
+	const isDesktop = ('ontouchstart' in window || navigator.maxTouchPoints > 0) ? false : true;
 
 
 	const actions = []; // order is important.

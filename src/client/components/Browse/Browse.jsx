@@ -628,7 +628,7 @@ function isShowRename({selections}) {
 function getForwardPath({Comp, path}) {
 	const deps = Comp.getDeps();
 
-	return deps.state.path.concat(SEP, path);
+	return deps.state.path.concat(path);
 }
 
 function getBackwardPath({Comp}) {
