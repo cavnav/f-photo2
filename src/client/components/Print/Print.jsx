@@ -294,7 +294,7 @@ function getAPI({
 				files: resumed.files,
 				scrollTo: !printed ? getSelectorSrc({id: src}) : "",
 			},
-		});		
+		});	
 	}
 }
 

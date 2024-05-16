@@ -1,5 +1,4 @@
 // on change second window, dont refresh opposit (for move btn i.e.)
-// toggle status on second key.
 // bag from wrong path opposite window on browse from share.
 // adding of album not leed to scroll and selecting in printed, shared.
 // close album not leed to scroll and selecting in printed, shared.

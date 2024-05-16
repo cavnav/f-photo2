@@ -35,13 +35,10 @@ const resumeObj = new ResumeObj({
 	],
 });
 
-function render(
-	{ }
-) {
+function render() {
 	const Comp = this;
 	const {
 		resumeBrowse,
-		server,
 	} = Comp.getReqProps();
 
 	const myFiles = useMemo(
@@ -51,7 +48,7 @@ function render(
 		[resumeBrowse.files]
 	);
 
-	const {state, setState} = useMutedReducer({
+	const {state} = useMutedReducer({
 		reducer: (props) => selfReducer({...props, browsePath: resumeBrowse.path,}),
 		setCompDeps: Comp.setCompDeps,
 		initialState: {
@@ -64,7 +61,7 @@ function render(
 	const imgRef = useRef(null);
 
 	useEffect(addGesturesListener({Comp}));
-	useEffect(addKeyDownListener);
+	useEffect(addKeyDownListener({Comp}));
 	useEffect(() => {
 		if ({
 			[ON_TOGGLE_PHOTO]: 1,
@@ -131,114 +128,106 @@ function render(
 		[]
 	);
 	
+	const rp = Comp.getReqProps();
+	const {
+		PhotoStatuses,
+	} = rp;
 
-	return getRender();
+	const currentTotal = `${state.curPhotoInd + 1} / ${state.files.items.length}`;
 
-	//--------------------------------------------------------------------------
-	function getRender() {
-		const rp = Comp.getReqProps();
-		const {
-			PhotoStatuses,
-		} = rp;
-
-		const currentTotal = `${state.curPhotoInd + 1} / ${state.files.items.length}`;
-
-		return (
-			<div
-				className="OnePhoto fitScreen"
-			>
-				{state.isNoItems === false && (
-					<>
-						<img
-							ref={imgRef}
-							src={state.id}
-							style={{
-								transform: `rotate(${state.curPhotoRotateDeg}deg)`,
-								opacity: state.opacity,
-								visibility: state.visibility,
-							}}
-							onLoad={fitCurPhotoSize}
-						/>
-						<PhotoStatuses.r
-							id={state.id}
-						/>
-					</>
-				)}
-				<div className="current-total">{currentTotal}</div>
-			</div>
-		);
-	}
-
-	function toRenderHelp() {
-		return <div className="flexCenter marginBottom10">
-			Стрелка вправо - показать следующее фото.<br></br>
-			Стрелка влево - показать предыдущее фото.<br></br>
-			Стрелка вверх - повернуть текущее фото по часовой стрелке.<br></br>
-			Стрелка вниз - повернуть текущее фото против часовой стрелки.<br></br>
-			Цифра 1 - добавить фото к списку "Печатать".<br></br>
-			Цифра 2 - добавить фото к списку "Отправить".<br></br>
-			Цифра 0 - удалить фото.<br></br>
-			Пробел - сохранить изменения.<br></br>
-
+	return (
+		<div
+			className="OnePhoto fitScreen"
+		>
+			{state.isNoItems === false && (
+				<>
+					<img
+						ref={imgRef}
+						src={state.id}
+						style={{
+							transform: `rotate(${state.curPhotoRotateDeg}deg)`,
+							opacity: state.opacity,
+							visibility: state.visibility,
+						}}
+						onLoad={fitCurPhotoSize}
+					/>
+					<PhotoStatuses.r
+						id={state.id}
+					/>
+				</>
+			)}
+			<div className="current-total">{currentTotal}</div>
 		</div>
-	}
+	);
+}
 
-	function addKeyDownListener() {
-		document.addEventListener('keydown', onKeyDown);
+function toRenderHelp() {
+	return <div className="flexCenter marginBottom10">
+		Стрелка вправо - показать следующее фото.<br></br>
+		Стрелка влево - показать предыдущее фото.<br></br>
+		Стрелка вверх - повернуть текущее фото по часовой стрелке.<br></br>
+		Стрелка вниз - повернуть текущее фото против часовой стрелки.<br></br>
+		Цифра 1 - добавить фото к списку "Печатать".<br></br>
+		Цифра 2 - добавить фото к списку "Отправить".<br></br>
+		Цифра 0 - удалить фото.<br></br>
+		Пробел - сохранить изменения.<br></br>
 
-		return () => {
-			document.removeEventListener('keydown', onKeyDown);
-		};
-	}
+	</div>
+}
 
-	function fitCurPhotoSize(e) {
-		Object.assign(
-			e.target.style,
-			getFitSize(e.target.getBoundingClientRect()),
-		);
-	}
+function addKeyDownListener({Comp}) {
+	return (
+		() => {
+			const callback = (e) => onKeyDown({Comp, e});
+			document.addEventListener('keydown', callback);
 
-	function onKeyDown(e) {
-		const {
-			files,
-		} = state;
-		const {
-			prev: prevPhotoInd,
-		} = getIndexes({
-			curPhotoInd: state.curPhotoInd,
-			filesLength: files.items.length,
-		});
-		const rp = Comp.getReqProps();
-		const {
-			ShareAPI,
-			PrintAPI,
-		} = Comp.getComps();
-
-		switch (e.which) {
-			case 13: // enter.
-				rp.PhotoStatusesAPI.changeStatus({callback: ShareAPI.toggleStatus});
-				sendEventOppositeWindow();
-
-				break;
-
-			case 32:  // Space
-				rp.PhotoStatusesAPI.changeStatus({callback: PrintAPI.toggleStatus});	
-				sendEventOppositeWindow();			
-
-				break;
-
-			case 37: // prev 
-				prevImage({Comp});		
-				break;
-
-			case 39: // next
-				nextImage({Comp});
-				break;
-
-			case 38: // rotate right
-				rotateImage({Comp});
-				break;			
+			return () => {
+				document.removeEventListener('keydown', callback);
+			};
 		}
+	);
+}
+
+function fitCurPhotoSize(e) {
+	Object.assign(
+		e.target.style,
+		getFitSize(e.target.getBoundingClientRect()),
+	);
+}
+
+function onKeyDown({Comp, e}) {
+	const rp = Comp.getReqProps();
+	const {
+		ShareAPI,
+		PrintAPI,
+	} = Comp.getComps();
+
+	switch (e.which) {
+		case 13: // enter.
+			rp.PhotoStatusesAPI.changeStatus({callback: ShareAPI.toggleStatus});
+			sendEventOppositeWindow();
+
+			
+
+			break;
+
+		case 32:  // Space
+			rp.PhotoStatusesAPI.changeStatus({callback: PrintAPI.toggleStatus});	
+			sendEventOppositeWindow();			
+
+			break;
+
+		case 37: // prev 
+			prevImage({Comp});		
+			break;
+
+		case 39: // next
+			nextImage({Comp});
+			break;
+
+		case 38: // rotate right
+			rotateImage({Comp});
+			break;			
 	}
 }
 

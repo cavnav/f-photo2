@@ -20,9 +20,7 @@ function render(
 	const Comp = this;
 
 	useMutedReducer({
-		initialState: {
-			id: "",
-		},
+		initialState: getInitialState(),
 		props,
 		setCompDeps: Comp.setCompDeps,
 	});
@@ -96,14 +94,19 @@ function getAPI({
 	const deps = Comp.getDeps();	
 
 	return {
-		changeStatus: ({callback}) => {		
-			deps.setState({});
-				
+		changeStatus: ({callback}) => {									
 			callback({
 				src: deps.state.id,
 			});
+
+			deps.setState({});
 		},
 	}
 };
 
 
+function getInitialState() {
+	return {
+		id: "",
+	};
+}
