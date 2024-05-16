@@ -1,13 +1,13 @@
-// when remove, move, rename.
 // on change second window, dont refresh opposit (for move btn i.e.)
-// check all updates lists.
-// remove ctg file
+// toggle status on second key.
+// bag from wrong path opposite window on browse from share.
+// adding of album not leed to scroll and selecting in printed, shared.
+// close album not leed to scroll and selecting in printed, shared.
 // for mobile
 //  how suggest prev, next, rotate gestures.
 //  fix zoom
 // add date of image by request
 // help by paper.
-// bag from wrong path opposite window.
 
 // I
 // show overwrite confirmation for every files

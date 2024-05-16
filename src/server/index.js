@@ -886,25 +886,33 @@ async function updateActionLists({
 }) {
 	const printed = await fs.readJson(PRINTED_JSON).catch(e => new Object());
 	const shared = await fs.readJson(SHARED_JSON).catch(e => new Object());
-	const updatedListsArr = Object.values(updatedLists)
-		.concat(Object.values(printed))
-		.concat(Object.values(shared));
+	const updatedListsArr = Object.values(updatedLists);
 
 	const sourceRel = source.replace(ALBUM_DIR, '');
 	const destRel = dest?.replace(ALBUM_DIR, '');	
 
 	for (let item of items) {
-		const sourceFull = getWebSrc({src: path.join(sourceRel, path.sep, item)});		
+		const sourceFull = getWebSrc({src: path.join(sourceRel, path.sep, item)});	
+		const destFull = destRel === undefined ? undefined : getWebSrc({src: path.join(destRel, path.sep, item)});
 
 		updatedListsArr.forEach((files) => {			 			
-			if (files[sourceFull]) {
-				if (destRel !== undefined) {					
-					const destFull = getWebSrc({src: path.join(destRel, path.sep, item)});
-					files[destFull] = files[sourceFull];
-				}
+			update({files, sourceFull, destFull});
+		});
 
-				delete files[sourceFull];
-			}			
+		Object.entries(printed).forEach(([id, files]) => {
+			update({files, sourceFull, destFull});
+
+			if (Object.keys(files).length === 0) {
+				delete printed[id];
+			}
+		});
+	
+		Object.entries(shared).forEach(([id, files]) => {
+			updateShared({files, sourceFull, destFull});
+
+			if (files.files.length === 0) {
+				delete shared[id];
+			}
 		});
 	}
 
@@ -919,6 +927,34 @@ async function updateActionLists({
 	);
 
 	return updatedLists;
+
+	// ------------------------------
+	function update({files, sourceFull, destFull}) {
+		if (files[sourceFull]) {
+			if (destRel === undefined) {
+				delete files[sourceFull];
+				return;
+			}
+
+			files[destFull] = files[sourceFull];
+
+			delete files[sourceFull];
+		}
+	}	
+	
+	function updateShared({files, sourceFull, destFull}) {
+		if (destRel === undefined) {
+			files.files = files.files.filter((item) => item !== sourceFull);
+			
+			return;
+		}
+			
+		const itemIndex = files.files.indexOf(sourceFull);
+
+		if (itemIndex > -1) {
+			files.files[itemIndex] = destFull;
+		}		
+	}
 }
 
 async function getAllItems({

@@ -443,7 +443,7 @@ function renderAddPanel({
 			const [name] = state.selections;
 			rp.RenameAPI.forceUpdate({
 				isShow: isShowRename({selections: state.selections}),	
-				name,
+				name: name?.slice(1),
 				onSubmit: ({
 					name,
 					newName, 
