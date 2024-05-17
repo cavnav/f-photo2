@@ -214,7 +214,7 @@ app.post('/api/addAlbum',
 			return;
 		}
 
-		res.send(req.body);
+		res.send(RESPONSE_WORKING);
 	}
 );
 

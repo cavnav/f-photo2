@@ -356,9 +356,9 @@ async function onAddAlbum({
 	await rp.server.addAlbum({
 		name,
 	})
-	.then(({name}) => {
+	.then(() => {
 		const {setState} = Comp.getDeps();	
-		setState({scrollTo: getSelectorSrc({id: name})});
+		setState({scrollTo: getSelectorSrc({id: SEP + name})});
 	
 		refreshWindows({
 			Comp,
@@ -638,7 +638,7 @@ function getBackwardPath({Comp}) {
 
 	return {
 		backwardPath: deps.state.path.slice(0, lastIndex),
-		prevDir: deps.state.path.slice(lastIndex + 1),
+		prevDir: deps.state.path.slice(lastIndex),
 	};
 }
 

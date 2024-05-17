@@ -1,7 +1,6 @@
 // on change second window, dont refresh opposit (for move btn i.e.)
+// exit from folder in printed, shared.
 // bag from wrong path opposite window on browse from share.
-// adding of album not leed to scroll and selecting in printed, shared.
-// close album not leed to scroll and selecting in printed, shared.
 // for mobile
 //  how suggest prev, next, rotate gestures.
 //  fix zoom
