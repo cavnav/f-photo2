@@ -1,8 +1,10 @@
+// state.items.map is not a function at Recipients (Recipients.jsx:49:30)
+// share from shared - check selections before sending.
+// on share from shared - empty after sending and button close folder.
 // on change second window, dont refresh opposit (for move btn i.e.)
-// exit from folder in printed, shared.
 // bag from wrong path opposite window on browse from share.
 // for mobile
-//  how suggest prev, next, rotate gestures.
+//  how suggest prev, next, rotate gestures. on first render i.e.
 //  fix zoom
 // add date of image by request
 // help by paper.

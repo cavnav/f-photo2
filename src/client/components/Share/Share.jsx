@@ -5,13 +5,13 @@ import {
 	getRequestFileHandler,
 	getSelectorSrc,
 	getVarName, 
+	scrollToSelector, 
 	sendEventOppositeWindow, 
 	updateFiles,
 	useEffectSetHtmlSelection, 
 	useOnChangeSelections, 
 	useOnClickItem,
 	useRefresh,
-	useScrollTo,
 } from '../../functions';
 
 import { Recipients } from './components/Recipients';
@@ -464,6 +464,17 @@ function onChangeState({
 	};
 }
 
+function useScrollTo({Comp}) {
+	const deps = Comp.getDeps();
+
+	useEffect(
+		() => {			
+			scrollToSelector({selector: deps.state.scrollTo});
+		},
+		[deps.state.files]
+	);
+}
+
 
 function getInitialState(
 ) {
@@ -478,7 +489,6 @@ function getInitialState(
 		filesSelected: [],
 		recipientsAll: {},
 		scrollTo: '',
-		isNeedScrollTo: {},
 		isButtonCancel: false,
 		isButtonSelectTo: false,
 		isButtonBackward: false,

@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { channel } from '../../channel';
-import { getExistsProps, getSelectorSrc, getVarName, initWindowEvent, useOnChangeSelections, useOnClickItem } from '../../functions';
+import { getExistsProps, getSelectorSrc, getVarName, initWindowEvent, scrollToSelector, useOnChangeSelections, useOnClickItem } from '../../functions';
 import { useMutedReducer } from '../../mutedReducer';
 import { FilesOne } from '../File/FilesOne';
 import { EVENT_NAMES } from '../../constants';
@@ -85,10 +85,17 @@ function BrowseBaseWrap({PrintedComp}) {
         getPrinted({PrintedComp});
     }, [state.forceUpdate]);
 
+    useEffect(
+		() => {
+			scrollToSelector({selector: state.scrollTo});
+		},
+		[state.printed]
+	);
+
     return (
         <BrowseBase        
-            scrollTo={state.scrollTo}
             onClick={onClickItem}
+            isEmpty={!state.printed.length}
         >
             {FilesComp}
         </BrowseBase>

@@ -772,14 +772,3 @@ export function useRefresh({
 		depends,
 	);
 }
-
-export function useScrollTo({Comp}) {
-	const deps = Comp.getDeps();
-
-	useEffect(
-		() => {			
-			scrollToSelector({selector: deps.state.scrollTo});
-		},
-		[deps.state.isNeedScrollTo, deps.state.files]
-	);
-}

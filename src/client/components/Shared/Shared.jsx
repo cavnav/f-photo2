@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { ChannelComp, channel } from "../../channel";
-import { getSelectorSrc, getVarName, useOnChangeSelections, useOnClickItem } from '../../functions';
+import { getSelectorSrc, getVarName, scrollToSelector, useOnChangeSelections, useOnClickItem } from '../../functions';
 import { useMutedReducer } from '../../mutedReducer';
 import { FilesOne } from '../File/FilesOne';
 import { BrowseBase } from '../BrowseBase/BrowseBase';
@@ -92,10 +92,18 @@ function browseWrapRender({
         deps: []
     });
 
+    useEffect(
+		() => {
+			scrollToSelector({selector: scrollTo});
+		},
+		[files]
+	);
+
+
 
     return (
         <BrowseBase
-            scrollTo={scrollTo}
+            isEmpty={!files.length}
             onClick={onClickItem}
         >
             <FilesOne

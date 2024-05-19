@@ -4,7 +4,6 @@ import { LAST_ELEMENT } from '../../constants';
 
 export function BrowseBase(props) {
     const {
-        refHandler,
         isEmpty,
         
         onClick,
@@ -12,7 +11,6 @@ export function BrowseBase(props) {
 
     return (
         <div
-            ref={refHandler}
 			className={`browse-base layout`}
             onClick={onClick}
 		>
