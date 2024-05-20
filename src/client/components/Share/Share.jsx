@@ -95,7 +95,9 @@ function render(props) {
 		onClose: () => {
 			setState({
 				scrollTo: '',
+				filesSelected: [],
 			});
+			
 			state.onClose?.();
 		},
 		onCancelShare: onCancel_({ Comp }),

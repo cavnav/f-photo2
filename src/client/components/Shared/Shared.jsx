@@ -254,7 +254,7 @@ function getInitialState({Comp}) {
 
         sharedItems: {},
         recipients: {},
-        shared: '',
+        shared: '', // opened folder.
 
         ...resumed,
     };

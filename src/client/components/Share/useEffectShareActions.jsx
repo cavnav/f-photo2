@@ -91,7 +91,7 @@ function render({
                     });
                 }
                 
-                if (isButtonCancel) {
+                if (!onClose && isButtonCancel) {
                     const onClick = () => {
                         DialogAPI.showChoiceConfirmation({
                             message: "",
