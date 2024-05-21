@@ -16,6 +16,7 @@ import { getCurDate } from '../../functions';
 import { useMutedReducer } from '../../mutedReducer';
 import { BTN_BACKWARD, BTN_MOVE, BTN_REMOVE, BTN_ZOOM_DEC, BTN_ZOOM_INC, setBtnTitle } from '../../common/additionalActions/const';
 import { EVENT_NAMES, SEP } from '../../constants';
+import { DIALOG_STYLE } from '../Dialog/Dialog';
 
 export const OnePhoto = channel.addComp({
 	name: 'OnePhoto',
@@ -123,6 +124,16 @@ function render() {
 		() => {
 			sendEventOppositeWindow({
 				eventName: EVENT_NAMES.renderAddPanel,
+			});
+		},
+		[]
+	);
+
+	useEffect(
+		() => {
+			rp.DialogAPI.showConfirmation({
+				message: 'Листать фото - нажми пальцем левый/правый край фото.\n Повернуть - нажми пальцем нижний край фото.',
+				style: DIALOG_STYLE.center,
 			});
 		},
 		[]

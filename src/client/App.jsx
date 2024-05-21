@@ -1,7 +1,4 @@
 // state.items.map is not a function at Recipients (Recipients.jsx:49:30)
-// share from shared - check selections before sending.
-// on share from shared - empty after sending and button close folder.
-// clear scrollTo on exit from shared.
 // on change second window, dont refresh opposit (for move btn i.e.)
 // bag from wrong path opposite window on browse from share.
 // for mobile

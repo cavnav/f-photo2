@@ -5,12 +5,21 @@ import { channel } from '../../channel';
 import { useMutedReducer } from '../../mutedReducer';
 import classnames from 'classnames';
 
+
 export const DIALOG_TYPES = {
 	confirmation: 'confirmation',
 	error: 'error',
 	warning: 'warning',
 	notification: 'notification',
 };
+
+export const DIALOG_STYLE = {
+	center: {
+		top: '50%',
+		left: '50%',
+		transform: 'translate(-50%, -50%)',
+	},
+}
 
 export const Dialog = channel.addComp({
 	name: 'Dialog',
@@ -91,6 +100,8 @@ function render(props) {
 					top: rp.mouse.y,
 					transitionProperty: `opacity`,
 					transitionDuration: `${DELAY.s}s`,
+
+					...state.style,
 				}}
 				onMouseEnter={onMouseEnter}
 				onMouseLeave={onMouseLeave}
@@ -227,6 +238,7 @@ function getAPI({
 		message,
 		confirmBtn,
 		rejectBtn,
+		style,
 	}) {
 		return show({
 			type: type ?? 'confirmation',
@@ -238,6 +250,7 @@ function getAPI({
 			},
 			rejectBtn,
 			message,
+			style,
 		});
 	}
 
@@ -262,6 +275,7 @@ const initialState = {
 	isShow: false,
 	type: undefined,
 	message: '',
+	style: {},
 	render: null,
 	isHide: true, // признак - исчезает ли спустя время
 	isModal: true, // признак - модальный ли диалог
