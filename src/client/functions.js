@@ -697,59 +697,67 @@ export function magnify({
 }) {
 	var glass, w, h, bw;
 
-	const imgWidth = img.offsetWidth;
-	const imgHeight = img.offsetHeight;
+    const imgWidth = img.offsetWidth;
+    const imgHeight = img.offsetHeight;
 
-	/*create magnifier glass:*/
-	glass = document.createElement("DIV");
-	glass.setAttribute("class", IMG_ZOOM_CLASS);
-	/*insert magnifier glass:*/
-	img.parentElement.insertBefore(glass, img);
-	/*set background properties for the magnifier glass:*/
-	glass.style.backgroundImage = "url('" + img.src + "')";
-	glass.style.backgroundRepeat = "no-repeat";
-	glass.style.backgroundSize = (imgWidth * zoom) + "px " + (imgHeight * zoom) + "px";
-	bw = 3;
-	w = glass.offsetWidth / 2;
-	h = glass.offsetHeight / 2;
-	/*execute a function when someone moves the magnifier glass over the image:*/
-	glass.addEventListener("mousemove", moveMagnifier);
-	img.addEventListener("mousemove", moveMagnifier);
-	/*and also for touch screens:*/
-	glass.addEventListener("touchmove", moveMagnifier);
-	img.addEventListener("touchmove", moveMagnifier);
-	function moveMagnifier(e) {
-		var pos, x, y;
-		/*prevent any other actions that may occur when moving over the image*/
-		e.preventDefault();
-		/*get the cursor's x and y positions:*/
-		pos = getCursorPos(e);
-		x = pos.x;
-		y = pos.y;
-		/*prevent the magnifier glass from being positioned outside the image:*/
-		if (x > imgWidth - (w / zoom)) { x = imgWidth - (w / zoom); }
-		if (x < w / zoom) { x = w / zoom; }
-		if (y > imgHeight - (h / zoom)) { y = imgHeight - (h / zoom); }
-		if (y < h / zoom) { y = h / zoom; }
-		/*set the position of the magnifier glass:*/
-		glass.style.left = (x - w) + "px";
-		glass.style.top = (y - h) + "px";
-		/*display what the magnifier glass "sees":*/
-		glass.style.backgroundPosition = "-" + ((x * zoom) - w + bw) + "px -" + ((y * zoom) - h + bw) + "px";
-	}
-	function getCursorPos(e) {
-		var a, x = 0, y = 0;
-		e = e || window.event;
-		/*get the x and y positions of the image:*/
-		a = img.getBoundingClientRect();
-		/*calculate the cursor's x and y coordinates, relative to the image:*/
-		x = e.pageX - a.left;
-		y = e.pageY - a.top;
-		/*consider any page scrolling:*/
-		x = x - window.pageXOffset;
-		y = y - window.pageYOffset;
-		return { x: x, y: y };
-	}
+    /*create magnifier glass:*/
+    glass = document.createElement("DIV");
+    glass.setAttribute("class", IMG_ZOOM_CLASS);
+    /*insert magnifier glass:*/
+    img.parentElement.insertBefore(glass, img);
+    /*set background properties for the magnifier glass:*/
+    glass.style.backgroundImage = "url('" + img.src + "')";
+    glass.style.backgroundRepeat = "no-repeat";
+    glass.style.backgroundSize = (imgWidth * zoom) + "px " + (imgHeight * zoom) + "px";
+    bw = 3;
+    w = glass.offsetWidth / 2;
+    h = glass.offsetHeight / 2;
+    
+    /*execute a function when someone moves the magnifier glass over the image:*/
+    img.addEventListener("mousemove", moveMagnifier);
+    img.addEventListener("touchmove", moveMagnifier); // Добавляем обработчик для сенсорных устройств
+
+    function moveMagnifier(e) {
+        var pos, x, y;
+        /*prevent any other actions that may occur when moving over the image*/
+        e.preventDefault();
+        /*get the cursor's x and y positions:*/
+        pos = getCursorPos(e);
+        x = pos.x;
+        y = pos.y;
+        /*prevent the magnifier glass from being positioned outside the image:*/
+        if (x > imgWidth - (w / zoom)) { x = imgWidth - (w / zoom); }
+        if (x < w / zoom) { x = w / zoom; }
+        if (y > imgHeight - (h / zoom)) { y = imgHeight - (h / zoom); }
+        if (y < h / zoom) { y = h / zoom; }
+        /*set the position of the magnifier glass:*/
+        //glass.style.left = (x - w) + "px";
+        //glass.style.top = (y - h) + "px";
+        /*display what the magnifier glass "sees":*/
+        var backgroundPosX = -((x - w) * zoom);
+        var backgroundPosY = -((y - h) * zoom);
+        glass.style.backgroundPosition = backgroundPosX + "px " + backgroundPosY + "px";
+    }
+
+    function getCursorPos(e) {
+        var a, x = 0, y = 0;
+        e = e || window.event;
+        if (e.type === 'touchmove') {
+            // Используем координаты для сенсорных устройств
+            x = e.touches[0].clientX;
+            y = e.touches[0].clientY;
+        } else {
+            // Используем координаты для мыши
+            x = e.clientX;
+            y = e.clientY;
+        }
+        /*get the x and y positions of the image:*/
+        a = img.getBoundingClientRect();
+        /*calculate the cursor's x and y coordinates, relative to the image:*/
+        x = x - a.left - window.pageXOffset;
+        y = y - a.top - window.pageYOffset;
+        return { x: x, y: y };
+    }
 }
 
 export function useRefresh({

@@ -2,7 +2,6 @@
 // on change second window, dont refresh opposit (for move btn i.e.)
 // bag from wrong path opposite window on browse from share.
 // for mobile
-//  how suggest prev, next, rotate gestures. on first render i.e.
 //  fix zoom
 // add date of image by request
 // help by paper.

@@ -251,7 +251,8 @@ iframe,
 	border-radius: 50%;
 	cursor: none;
 	/*Set the size of the magnifier glass:*/
-	width: 300px;
-	height: 300px;
+	width: 100px;
+	height: 100px;
 	z-index: 1000;
+	pointer-events: none;
 }
