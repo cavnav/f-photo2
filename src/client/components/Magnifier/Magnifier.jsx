@@ -14,11 +14,9 @@ export function Magnifier({
 	useEffect(() => {		
 		const glass = magRef.current;
 		glass?.addEventListener('mousemove', onMoveMagnifier);
-		glass?.addEventListener('touchmove', onMoveMagnifier, {passive: false});
 
 		return () => {			
 			glass?.removeEventListener('mousemove', onMoveMagnifier);
-			glass?.removeEventListener('touchmove', onMoveMagnifier);
 		};
 		
 	}, [img, zoom]);	

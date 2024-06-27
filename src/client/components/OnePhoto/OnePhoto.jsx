@@ -8,13 +8,13 @@ import {
 	initWindowEvent,
 	getUpdatedActionLists,
 	getSelectorSrc,
+	IS_DESKTOP,
 } from '../../functions';
 import { channel } from '../../channel';
 import { getCurDate } from '../../functions';
 import { useMutedReducer } from '../../mutedReducer';
 import { BTN_BACKWARD, BTN_MOVE, BTN_REMOVE, BTN_ZOOM_DEC, BTN_ZOOM_INC, setBtnTitle } from '../../common/additionalActions/const';
 import { EVENT_NAMES, SEP } from '../../constants';
-import { DIALOG_STYLE } from '../Dialog/Dialog';
 import { Magnifier } from '../Magnifier/Magnifier';
 
 export const OnePhoto = channel.addComp({
@@ -60,7 +60,6 @@ function render() {
 
 	const imgRef = useRef(null);
 
-	useEffect(addGesturesListener({Comp}), []);
 	useEffect(addKeyDownListener({Comp}), []);
 	useEffect(() => {
 		if ({
@@ -127,16 +126,6 @@ function render() {
 		},
 		[]
 	);
-
-	useEffect(
-		() => {
-			rp.DialogAPI.showConfirmation({
-				message: 'Листать фото - нажми пальцем левый/правый край экрана.\n Повернуть - нажми пальцем нижний край.',
-				style: DIALOG_STYLE.center,
-			});
-		},
-		[]
-	);
 	
 	const rp = Comp.getReqProps();
 	const {
@@ -167,6 +156,17 @@ function render() {
 					<PhotoStatuses.r
 						id={state.id}
 					/>
+					{!IS_DESKTOP && <div className='controls'>
+						<button onTouchStart={() => prevImage({Comp})}>
+							&larr; {/* "стрелка влево" */}
+						</button>
+						<button onTouchStart={() => rotateImage({Comp})}>
+							&#x21bb; {/* "поворот" */}
+						</button>
+						<button onTouchStart={() => nextImage({Comp})}>
+							&rarr; {/* "стрелка вправо" */}
+						</button>
+					</div>}
 				</>
 			)}
 			<div className="current-total">{currentTotal}</div>
@@ -564,56 +564,6 @@ function toggleBrowseAction(Comp) {
 	rp.AppAPI.toggleAction({
 		action: Browse.name,
 	});
-}
-
-function addGesturesListener({Comp}) {
-	return () => {
-		let numberAttempts = 0;
-		const imageContainer = document.querySelector('.OnePhoto');		
-
-		const event = 'touchstart';
-
-		imageContainer.addEventListener(event, onGesture);
-
-		return () => {
-			imageContainer.removeEventListener(event, onGesture);
-		};
-
-		//----------------------------
-		function onGesture(e) {
-			const {state} = Comp.getDeps();
-			const rp = Comp.getReqProps();
-			
-			if (state.isMagnifier) {
-				if (++numberAttempts === 3) {
-					rp.DialogAPI.showConfirmation({
-						message: 'для перехода к другому изображению отключи увеличительное стекло',
-						style: DIALOG_STYLE.center,
-					});
-
-					numberAttempts = 0;
-				}
-				return;				
-			}
-
-			const touchX = e.touches[0].clientX;
-			const touchY = e.touches[0].clientY;
-
-			// Calculate touch position relative to the image container
-			const rect = imageContainer.getBoundingClientRect();
-			const xRelativeToContainer = touchX - rect.left;
-			const yRelativeToContainer = touchY - rect.top;
-
-			// Determine gesture based on touch position
-			if (xRelativeToContainer < rect.width / 3) {
-				prevImage({Comp});
-			} else if (xRelativeToContainer > (2 * rect.width) / 3) {
-				nextImage({Comp});
-			} else if (yRelativeToContainer > (2 * rect.height) / 3) {
-				rotateImage({Comp});
-			}
-		}
-	}
 }
 
 function rotateImage({Comp}) {

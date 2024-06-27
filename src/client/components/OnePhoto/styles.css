@@ -10,8 +10,6 @@
 
 .OnePhoto img {
   transition: opacity 1s linear;
-  border: 1px solid;
-  box-sizing: border-box;
 }
 
 .OnePhoto .current-total {
@@ -19,4 +17,17 @@
   left: 0;
   top: 0;
   background-color: var(--white);
+}
+
+.OnePhoto .controls {
+  display: flex;
+  position: absolute;
+  bottom: 0;
+  gap: 10px;
+  opacity: 0.3;
+}
+
+.OnePhoto .controls button {
+  font-size: larger;
+  background: white;
 }
