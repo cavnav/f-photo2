@@ -8,8 +8,6 @@ import {
 	initWindowEvent,
 	getUpdatedActionLists,
 	getSelectorSrc,
-	magnify,
-	IMG_ZOOM_CLASS,
 } from '../../functions';
 import { channel } from '../../channel';
 import { getCurDate } from '../../functions';
@@ -17,6 +15,7 @@ import { useMutedReducer } from '../../mutedReducer';
 import { BTN_BACKWARD, BTN_MOVE, BTN_REMOVE, BTN_ZOOM_DEC, BTN_ZOOM_INC, setBtnTitle } from '../../common/additionalActions/const';
 import { EVENT_NAMES, SEP } from '../../constants';
 import { DIALOG_STYLE } from '../Dialog/Dialog';
+import { Magnifier } from '../Magnifier/Magnifier';
 
 export const OnePhoto = channel.addComp({
 	name: 'OnePhoto',
@@ -61,8 +60,8 @@ function render() {
 
 	const imgRef = useRef(null);
 
-	useEffect(addGesturesListener({Comp}));
-	useEffect(addKeyDownListener({Comp}));
+	useEffect(addGesturesListener({Comp}), []);
+	useEffect(addKeyDownListener({Comp}), []);
 	useEffect(() => {
 		if ({
 			[ON_TOGGLE_PHOTO]: 1,
@@ -74,7 +73,7 @@ function render() {
 			imgRef.current.style.visibility = 'visible';
 			imgRef.current.style.opacity = '1';
 		}, 200);
-	});
+	}, []);
 
 	useEffect(() => {
 		const {
@@ -132,7 +131,7 @@ function render() {
 	useEffect(
 		() => {
 			rp.DialogAPI.showConfirmation({
-				message: 'Листать фото - нажми пальцем левый/правый край фото.\n Повернуть - нажми пальцем нижний край фото.',
+				message: 'Листать фото - нажми пальцем левый/правый край экрана.\n Повернуть - нажми пальцем нижний край.',
 				style: DIALOG_STYLE.center,
 			});
 		},
@@ -152,6 +151,9 @@ function render() {
 		>
 			{state.isNoItems === false && (
 				<>
+					{state.isMagnifier && <Magnifier
+						img={imgRef.current}
+					/>}	
 					<img
 						ref={imgRef}
 						src={state.id}
@@ -202,7 +204,7 @@ function addKeyDownListener({Comp}) {
 function fitCurPhotoSize(e) {
 	Object.assign(
 		e.target.style,
-		getFitSize(e.target.getBoundingClientRect()),
+		getFitSize(),
 	);
 }
 
@@ -217,8 +219,6 @@ function onKeyDown({Comp, e}) {
 		case 13: // enter.
 			rp.PhotoStatusesAPI.changeStatus({callback: ShareAPI.toggleStatus});
 			sendEventOppositeWindow();
-
-			
 
 			break;
 
@@ -260,12 +260,13 @@ function selfReducer({
 	const curPhoto = files.items[stateReduced.curPhotoInd];	
 
 	const id = `${browsePath}${SEP}${curPhoto}`;
-
+		
 	stateReduced = {
 		...stateReduced,
 		id,
 		curPhoto,
-		isNoItems: curPhoto ? false : true,		
+		isNoItems: curPhoto ? false : true,
+		isMagnifier: state.id !== id ? false : stateReduced.isMagnifier,
 		...getProps({ stateReduced }),
 	};	
 
@@ -292,7 +293,7 @@ function selfReducer({
 	}
 };
 
-function getFitSize({ width, height }) {
+function getFitSize() {
 	return {
 		width: 'auto',
 		height: '100%',
@@ -531,21 +532,15 @@ function renderAddPanel({
 					},
 				});
 			}
-
-			const magnifier = document.querySelector(`.${IMG_ZOOM_CLASS}`);
+			
 			rp.ZoomAPI.forceUpdate({
-				title: magnifier ? BTN_ZOOM_DEC : BTN_ZOOM_INC,
-				onClick: magnifier ? () => {
-					magnifier.remove();
+				title: state.isMagnifier ? BTN_ZOOM_DEC : BTN_ZOOM_INC,
+				onClick: () => {
 					const {setState} = Comp.getDeps();
-					setState({});
-				 } : () => {
-					magnify({					
-						img: document.querySelector(getSelectorSrc({id: state.id})),					
+					setState({
+						isMagnifier: !state.isMagnifier,
 					});
-					const {setState} = Comp.getDeps();
-					setState({});
-				}
+				},
 			});
 
 			rp.ExitFromOnePhotoAPI.forceUpdate({
@@ -573,8 +568,10 @@ function toggleBrowseAction(Comp) {
 
 function addGesturesListener({Comp}) {
 	return () => {
+		let numberAttempts = 0;
+		const imageContainer = document.querySelector('.OnePhoto');		
+
 		const event = 'touchstart';
-		const imageContainer = document.querySelector('.OnePhoto');
 
 		imageContainer.addEventListener(event, onGesture);
 
@@ -584,10 +581,23 @@ function addGesturesListener({Comp}) {
 
 		//----------------------------
 		function onGesture(e) {
-			imageContainer.removeEventListener(event, onGesture);
+			const {state} = Comp.getDeps();
+			const rp = Comp.getReqProps();
+			
+			if (state.isMagnifier) {
+				if (++numberAttempts === 3) {
+					rp.DialogAPI.showConfirmation({
+						message: 'для перехода к другому изображению отключи увеличительное стекло',
+						style: DIALOG_STYLE.center,
+					});
+
+					numberAttempts = 0;
+				}
+				return;				
+			}
 
 			const touchX = e.touches[0].clientX;
-        	const touchY = e.touches[0].clientY;
+			const touchY = e.touches[0].clientY;
 
 			// Calculate touch position relative to the image container
 			const rect = imageContainer.getBoundingClientRect();
@@ -602,8 +612,6 @@ function addGesturesListener({Comp}) {
 			} else if (yRelativeToContainer > (2 * rect.height) / 3) {
 				rotateImage({Comp});
 			}
-
-			imageContainer.addEventListener(event, onGesture);
 		}
 	}
 }
@@ -651,14 +659,16 @@ function getStateInit() {
 		progress: 100,
 		curPhoto: '',
 		curPhotoInd: -1,
-		curPhotoRotateDeg: 0,
 		curDate: getCurDate(),
 		opacity: '1',
 		visibility: 'visible',
 		action: ON_TOGGLE_PHOTO,
-		isNoItems: false,
-
+		isNoItems: false,		
+		
 		...resumed,
+		
+		curPhotoRotateDeg: 0,
+		isMagnifier: false,
 	};
 }
 

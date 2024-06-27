@@ -37,6 +37,7 @@ import { get as _get } from 'lodash';
 import { channel } from './channel';
 import { ResumeObj } from './resumeObj';
 import { useMutedReducer } from './mutedReducer';
+import { IS_DESKTOP } from './functions';
 
 export const App = channel.addComp({
 	name: 'App',
@@ -109,12 +110,9 @@ function getAppStateInit() {
 		SharedComp,
 	} = comps;
 
-	const isDesktop = ('ontouchstart' in window || navigator.maxTouchPoints > 0) ? false : true;
-
-
 	const actions = []; // order is important.
 
-	if (isDesktop) {
+	if (IS_DESKTOP) {
 		actions.push({
 			id: Copy.name,
 			title: 'Копировать с флешки',
@@ -134,7 +132,7 @@ function getAppStateInit() {
 		isEnabled: false,
 	});
 
-	if (isDesktop) {
+	if (IS_DESKTOP) {
 		actions.push({
 			id: Print.name,
 			title: 'Печатать',

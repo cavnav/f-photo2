@@ -10,6 +10,8 @@
 
 .OnePhoto img {
   transition: opacity 1s linear;
+  border: 1px solid;
+  box-sizing: border-box;
 }
 
 .OnePhoto .current-total {
