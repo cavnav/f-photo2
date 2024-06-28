@@ -167,6 +167,9 @@ iframe,
 .fontSize20 {
 	font-size: 20px;
 }
+.fontSize16 {
+	font-size: 16px;
+}
 
 .fitPreview {
 	height: var(--main-browse-size);

@@ -13,7 +13,7 @@ import {
 import { channel } from '../../channel';
 import { getCurDate } from '../../functions';
 import { useMutedReducer } from '../../mutedReducer';
-import { BTN_BACKWARD, BTN_MOVE, BTN_REMOVE, BTN_ZOOM_DEC, BTN_ZOOM_INC, setBtnTitle } from '../../common/additionalActions/const';
+import { BTN_BACKWARD, BTN_IMAGE_INFO, BTN_MOVE, BTN_REMOVE, BTN_ZOOM_DEC, BTN_ZOOM_INC, setBtnTitle } from '../../common/additionalActions/const';
 import { EVENT_NAMES, SEP } from '../../constants';
 import { Magnifier } from '../Magnifier/Magnifier';
 
@@ -155,7 +155,7 @@ function render() {
 					/>
 					<PhotoStatuses.r
 						id={state.id}
-					/>
+					/>					
 					{!IS_DESKTOP && <div className='controls'>
 						<button onTouchStart={() => prevImage({Comp})}>
 							&larr; {/* "стрелка влево" */}
@@ -169,7 +169,12 @@ function render() {
 					</div>}
 				</>
 			)}
-			<div className="current-total">{currentTotal}</div>
+			<div className="info">
+				<div className="fontSize20">{currentTotal}</div>
+				{state.imageMeta && <div className="fontSize16">
+					дата съёмки: {state.imageMeta.DateTimeOriginal}
+				</div>}
+			</div>			
 		</div>
 	);
 }
@@ -267,6 +272,7 @@ function selfReducer({
 		curPhoto,
 		isNoItems: curPhoto ? false : true,
 		isMagnifier: state.id !== id ? false : stateReduced.isMagnifier,
+		imageMeta: state.id !== id ? undefined : stateReduced.imageMeta,
 		...getProps({ stateReduced }),
 	};	
 
@@ -426,6 +432,7 @@ function getComps({
 			MoveSelections: Label,
 			RemoveSelections: Label,
 			Zoom: Label,
+			ImageMeta: Label,
 		},
 		items: {
 			App,
@@ -452,12 +459,26 @@ function renderAddPanel({
 		rp.MoveSelections,
 		rp.RemoveSelections,
 		rp.Zoom,
+		rp.ImageMeta,
 	];
 	rp.AdditionalPanelAPI.renderIt({
 		actions: Object.values(additionalActions),
 	})
 		.then(() => {
+			rp.ImageMetaAPI.forceUpdate({
+				title: BTN_IMAGE_INFO,
+				onClick: () => {
+					rp.server.getImageMeta({imageName: state.curPhoto})
+					.then(imageMeta => {
+						const {setState} = Comp.getDeps();
+						setState({
+							imageMeta,
+						});
+					});
+				},
+			})
 			rp.ExitFromOnePhotoAPI.forceUpdate({
+				title: BTN_BACKWARD,
 				onClick: () => {
 					toggleBrowseAction(Comp);
 					sendEventOppositeWindow({
@@ -542,10 +563,6 @@ function renderAddPanel({
 					});
 				},
 			});
-
-			rp.ExitFromOnePhotoAPI.forceUpdate({
-				title: BTN_BACKWARD,
-			});
 		});
 
 	return () => {
@@ -609,11 +626,11 @@ function getStateInit() {
 		progress: 100,
 		curPhoto: '',
 		curPhotoInd: -1,
-		curDate: getCurDate(),
 		opacity: '1',
 		visibility: 'visible',
 		action: ON_TOGGLE_PHOTO,
 		isNoItems: false,		
+		imageMeta: undefined,
 		
 		...resumed,
 		

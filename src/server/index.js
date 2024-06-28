@@ -1,5 +1,6 @@
 const os = require('os');
 const express = require('express');
+const ExifParser = require('exif-parser');
 const bodyParser = require('body-parser');
 const fs = require('fs-extra');
 const path = require('path');
@@ -56,6 +57,31 @@ app.listen(PORT, IP_ADDRESS, () => {
 	console.log(`Сервер доступен по адресу http://localhost:${PORT}/`);
 	console.log(`Сервер также доступен по адресу http://${IP_ADDRESS_EXTERNAL}:${PORT}/`);
   });
+
+app.post('/api/getImageMeta', async (request, response) => {
+    try {
+		const {imageName, curWindow} = request.body;
+
+		const imagePath = path.resolve(state[curWindow], imageName);
+        const buffer = await fs.readFile(imagePath);
+        const parser = ExifParser.create(buffer);
+        const result = parser.parse();
+        
+        if (result.tags && result.tags.DateTimeOriginal) {
+            response.json({
+				...result.tags,
+				DateTimeOriginal: new Date(result.tags.DateTimeOriginal * 1000).toISOString().split('.')[0],
+			});
+        } else {
+            response.status(500).json({
+				error: 'нет даты съемки.',
+			});
+        }
+    } catch (err) {
+        throw new Error(`Error extracting EXIF data: ${err.message}`);
+    }
+});
+  
 
 app.get('/api/getSharedRecipients', async (req, response) => {
 	const recipients = await getRecipients();

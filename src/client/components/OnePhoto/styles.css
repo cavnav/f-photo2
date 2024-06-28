@@ -1,3 +1,4 @@
+
 .fitScreen {
   position: relative;
   display: flex;
@@ -12,11 +13,12 @@
   transition: opacity 1s linear;
 }
 
-.OnePhoto .current-total {
+.OnePhoto .info {
   position: absolute;
   left: 0;
   top: 0;
   background-color: var(--white);
+  opacity: 0.7;
 }
 
 .OnePhoto .controls {

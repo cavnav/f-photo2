@@ -1,8 +1,6 @@
 // state.items.map is not a function at Recipients (Recipients.jsx:49:30)
 // on change second window, dont refresh opposit (for move btn i.e.)
 // bag from wrong path opposite window on browse from share.
-// for mobile
-//  fix zoom
 // add date of image by request
 // help by paper.
 

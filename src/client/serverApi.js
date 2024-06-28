@@ -1,4 +1,4 @@
-import { ProgressTitle, getChannelComps, loader, notifyServerError } from "./functions";
+import { ProgressTitle, getChannelComps, getVarName, loader, notifyServerError } from "./functions";
 
 class PostObjTmp {
 	constructor({ body = {} } = {}) {
@@ -46,6 +46,17 @@ export class AppServerAPI {
 	}
 
 	// не смог использовать function - declaration. В channel.addAPI контекст теряется.
+	getImageMeta = (params) => {
+		return fetchWithLoader(
+			this.getFullUrl({url: 'getImageMeta'}),
+			new PostObjTmp({
+				body: {
+					...params,
+					curWindow: window.name,
+				},
+			}),
+		);
+	}
 
 	checkProgress = () => {
 		return new Promise((resolve) => {
