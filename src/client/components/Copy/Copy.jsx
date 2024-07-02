@@ -4,6 +4,7 @@ import { Stepper } from '../';
 import './styles.css';
 import { channel } from '../../channel';
 import { useMutedReducer } from '../../mutedReducer';
+import { IS_DESKTOP } from '../../functions';
 
 export const Copy = channel.addComp({
 	name: 'Copy',
@@ -22,9 +23,14 @@ function render() {
 	const steps = createSteps();
 
 	return <div className="Copy">
-		<Stepper
+		{IS_DESKTOP ? <Stepper
 			steps={steps}
-		/>
+		/> : <input 
+				type="file" 
+				multiple 
+				onChange={(e) => onUpload({e, Comp})}
+			/>
+		}
 	</div>;
 
 	// -------------------------------
@@ -88,14 +94,8 @@ function render() {
 				stepNumDelta: -2,
 			}, {
 				trigger: () => {
-					const {AppAPI, Browse, BrowseAPI} = Comp.getReqProps();
 					const {state} = Comp.getDeps();
-
-					BrowseAPI.getForwardPath({path: state.destDir});
-
-					AppAPI.setState({
-						action: Browse.name,
-					});
+					browsePath({Comp, path: state.destDir});
 				}
 			}
 		];
@@ -175,6 +175,39 @@ function getComps({
 			Notification,
 		},
 	};
+}
+
+function onUpload({e, Comp}) {
+	const files = e.target.files;
+	const data = new FormData();
+
+	for (const file of files) {
+		console.log(file);
+		data.append('files', file);
+	}
+
+	console.log('1FormData contents:');
+	for (const pair of data.entries()) {
+		console.log(pair[0], pair[1].name);
+	}
+
+	const rp = Comp.getReqProps();
+	rp.server.upload({
+		data,
+	})
+	.then((path) => {
+		browsePath({Comp, path});
+	});
+}
+
+function browsePath({Comp, path}) {
+	const {AppAPI, Browse, BrowseAPI} = Comp.getReqProps();
+
+	BrowseAPI.getForwardPath({path});
+
+	AppAPI.setState({
+		action: Browse.name,
+	});
 }
 
 const initialState = {

@@ -1,5 +1,6 @@
 const os = require('os');
 const express = require('express');
+const multer = require('multer');
 const ExifParser = require('exif-parser');
 const bodyParser = require('body-parser');
 const fs = require('fs-extra');
@@ -20,6 +21,12 @@ const CHAT_IDS_FILE = path.join(__dirname, './chatIDs.json');
 const SEP = '/'; // for web src.
 const SYS_SRC_REG_EXP = new RegExp('[\\\\/]', 'g');
 const WEB_SRC_REG_EXP = new RegExp(SEP, 'g');
+const UPLOADS = path.join(__dirname, 'uploads');
+
+// Создаем директорию, если её нет
+if (!fs.existsSync(UPLOADS)) {
+    fs.mkdirSync(UPLOADS);
+}
 
 let state = {
 	newPhotos: [],
@@ -40,6 +47,46 @@ let state = {
 app.use(express.static(ALBUM_DIR));
 app.use(express.static('assets'));
 app.use(bodyParser.json());
+app.use((err, req, res, next) => {
+    if (err instanceof multer.MulterError) {
+        if (err.code === 'LIMIT_FILE_SIZE') {
+            return res.status(400).json({error: 'File size exceeds 5 MB limit.'});
+        } else if (err.code === 'LIMIT_UNEXPECTED_FILE') {
+            return res.status(400).json({error: 'Too many files.'});
+        } else {
+            return res.status(500).json({error: 'File upload error: ' + err.message});
+        }
+    } else if (err) {
+        return res.status(400).json({error: 'Error: ' + err.message});
+    }
+});
+
+const storage = multer.diskStorage({
+    // Устанавливаем папку для сохранения файлов
+    destination: function (req, file, cb) {
+        cb(null, UPLOADS);  // Путь к папке для загрузки файлов
+    },
+    // Создаем уникальное имя файла без расширения
+    filename: function (req, file, cb) {
+        // Очищаем имя файла
+        const sanitizedFileName = sanitizeFileName(path.basename(file.originalname, path.extname(file.originalname)));
+        // Генерируем уникальное имя файла
+        cb(null, sanitizedFileName + '-' + Date.now());
+    }
+});
+
+// Создаем экземпляр multer с настройками
+const upload = multer({ 
+    storage,  // Указываем конфигурацию хранилища
+    fileFilter: (req, file, cb) => {
+        // Проверка типа файла
+        if (!file.mimetype.match(/^(image\/(jpeg|png|gif)|application\/pdf)$/)) {
+            return cb(new Error('Only image and PDF files are allowed!'), false);
+        }
+        cb(null, true);  // Разрешаем загрузку файла
+    },
+    limits: { fileSize: 10 * 1024 * 1024 }
+});
 
 const processEnv = process.env.NODE_ENV?.trim();
 
@@ -57,6 +104,11 @@ app.listen(PORT, IP_ADDRESS, () => {
 	console.log(`Сервер доступен по адресу http://localhost:${PORT}/`);
 	console.log(`Сервер также доступен по адресу http://${IP_ADDRESS_EXTERNAL}:${PORT}/`);
   });
+
+// Маршрут для загрузки нескольких файлов
+app.post('/api/upload', upload.array('files', 5), (req, res) => {
+	res.send(`Uploaded ${req.files.length} files successfully.`);
+});
 
 app.post('/api/getImageMeta', async (request, response) => {
     try {
@@ -1072,3 +1124,9 @@ function getIPv4Address() {
     }
     return 'localhost'; // Default to localhost if no IPv4 address is found
 }
+
+const sanitizeFileName = (fileName) => {
+    // Убираем потенциально опасные символы из имени файла
+    return fileName.replace(/[^a-zA-Z0-9-_\.]/g, '_');
+}
+

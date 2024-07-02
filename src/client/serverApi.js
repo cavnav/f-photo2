@@ -46,6 +46,20 @@ export class AppServerAPI {
 	}
 
 	// не смог использовать function - declaration. В channel.addAPI контекст теряется.
+	upload = ({data}) => {
+		console.log('2 FormData contents:');
+		for (const pair of data.entries()) {
+			console.log(pair[0], pair[1].name);
+		}
+		return fetchWithLoader(
+			this.getFullUrl({url: 'upload'}),
+			{
+				method: 'POST',
+				body: data,
+			}
+		);
+	}
+
 	getImageMeta = (params) => {
 		return fetchWithLoader(
 			this.getFullUrl({url: 'getImageMeta'}),

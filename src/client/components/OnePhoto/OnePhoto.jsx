@@ -11,7 +11,6 @@ import {
 	IS_DESKTOP,
 } from '../../functions';
 import { channel } from '../../channel';
-import { getCurDate } from '../../functions';
 import { useMutedReducer } from '../../mutedReducer';
 import { BTN_BACKWARD, BTN_IMAGE_INFO, BTN_MOVE, BTN_REMOVE, BTN_ZOOM_DEC, BTN_ZOOM_INC, setBtnTitle } from '../../common/additionalActions/const';
 import { EVENT_NAMES, SEP } from '../../constants';

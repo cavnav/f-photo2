@@ -110,13 +110,11 @@ function getAppStateInit() {
 
 	const actions = []; // order is important.
 
-	if (IS_DESKTOP) {
-		actions.push({
-			id: Copy.name,
-			title: 'Копировать с флешки',
-			isEnabled: true,
-		});
-	}
+	actions.push({
+		id: Copy.name,
+		title: 'Импортировать',
+		isEnabled: true,
+	});
 
 	actions.push({
 		id: Browse.name,
