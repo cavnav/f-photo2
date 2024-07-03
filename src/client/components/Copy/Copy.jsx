@@ -22,16 +22,40 @@ function render() {
 
 	const steps = createSteps();
 
-	return <div className="Copy">
-		{IS_DESKTOP ? <Stepper
-			steps={steps}
-		/> : <input 
-				type="file" 
-				multiple 
-				onChange={(e) => onUpload({e, Comp})}
-			/>
-		}
-	</div>;
+	return (
+		<div className="Copy">
+			{IS_DESKTOP 
+			? 	<Stepper
+					steps={steps}
+				/> 
+			: 	<div>
+					<label htmlFor="files" className="btn">
+						выбрать файлы
+					</label>
+					<input type="file" id="files" multiple onChange={(e) => onSelectFiles({e, Comp})}/>			
+					количество файлов: {state.files.length}
+					<div className="filesList">
+						{state.files.map((file) => {
+							const url = URL.createObjectURL(file.blob);
+							return (
+								<div className="file" key={url}>
+									<img
+										src={url}
+										onLoad={() => URL.revokeObjectURL(file.blob)}
+									/>
+									<div>{file.name}</div>
+									<div className='progressContainer'>
+										<div className='progress'>{file.progress}%</div>
+									</div>
+								</div>
+							);
+						})}
+					</div>
+					<button onClick={onUpload}>загрузить файлы</button>			
+				</div>
+			}		
+		</div>
+	);
 
 	// -------------------------------
 	function createSteps() {
@@ -177,18 +201,24 @@ function getComps({
 	};
 }
 
-function onUpload({e, Comp}) {
-	const files = e.target.files;
+function onSelectFiles({e, Comp}) {
+	const selectedFiles = e.target.files;
+	const files = [];
+	for (const file of selectedFiles) {
+		files.push({blob: file});
+	}
+	const {setState} = Comp.getDeps();
+
+	setState({
+		files,
+	});
+}
+
+function onUpload({e, Comp}) {	
 	const data = new FormData();
 
 	for (const file of files) {
-		console.log(file);
 		data.append('files', file);
-	}
-
-	console.log('1FormData contents:');
-	for (const pair of data.entries()) {
-		console.log(pair[0], pair[1].name);
 	}
 
 	const rp = Comp.getReqProps();
@@ -216,4 +246,5 @@ const initialState = {
 	countNewPhotos: 0,
 	isHelp: false,
 	isCopyCompleted: false,
+	files: [],
 };
