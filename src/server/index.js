@@ -22,6 +22,7 @@ const SEP = '/'; // for web src.
 const SYS_SRC_REG_EXP = new RegExp('[\\\\/]', 'g');
 const WEB_SRC_REG_EXP = new RegExp(SEP, 'g');
 const UPLOADS = path.join(__dirname, 'uploads');
+const UPLOAD_BATCH_SIZE = 5;
 
 // Создаем директорию, если её нет
 if (!fs.existsSync(UPLOADS)) {
@@ -47,19 +48,7 @@ let state = {
 app.use(express.static(ALBUM_DIR));
 app.use(express.static('assets'));
 app.use(bodyParser.json());
-app.use((err, req, res, next) => {
-    if (err instanceof multer.MulterError) {
-        if (err.code === 'LIMIT_FILE_SIZE') {
-            return res.status(400).json({error: 'File size exceeds 5 MB limit.'});
-        } else if (err.code === 'LIMIT_UNEXPECTED_FILE') {
-            return res.status(400).json({error: 'Too many files.'});
-        } else {
-            return res.status(500).json({error: 'File upload error: ' + err.message});
-        }
-    } else if (err) {
-        return res.status(400).json({error: 'Error: ' + err.message});
-    }
-});
+
 
 const storage = multer.diskStorage({
     // Устанавливаем папку для сохранения файлов
@@ -81,11 +70,13 @@ const upload = multer({
     fileFilter: (req, file, cb) => {
         // Проверка типа файла
         if (!file.mimetype.match(/^(image\/(jpeg|png|gif)|application\/pdf)$/)) {
-            return cb(new Error('Only image and PDF files are allowed!'), false);
+			req.invalidFile = file.originalname;
+			console.log(111, file.originalname);
+			return cb(new Error('Only image and PDF files are allowed!'), false);
         }
         cb(null, true);  // Разрешаем загрузку файла
     },
-    limits: { fileSize: 10 * 1024 * 1024 }
+    limits: { fileSize: 5 * 1024 * 1024 }
 });
 
 const processEnv = process.env.NODE_ENV?.trim();
@@ -106,8 +97,14 @@ app.listen(PORT, IP_ADDRESS, () => {
   });
 
 // Маршрут для загрузки нескольких файлов
-app.post('/api/upload', upload.array('files', 5), (req, res) => {
-	res.send(`Uploaded ${req.files.length} files successfully.`);
+app.post('/api/upload', (req, res, next) => {
+    upload.array('files', UPLOAD_BATCH_SIZE)(req, res, (err) => {
+        if (err) {
+            console.log('Error during file upload:', err.message);
+            return next(err); // Передаем ошибку в следующий обработчик ошибок
+        }
+        res.json({ batchSize: UPLOAD_BATCH_SIZE, path: UPLOADS });
+    });
 });
 
 app.post('/api/getImageMeta', async (request, response) => {
@@ -707,6 +704,33 @@ app.post('/api/saveSettings', (req, res) => {
 			console.log(err);
 		});
 });
+
+app.use((err, req, res, next) => {
+    const withFileName = (error) => {
+        const fileName = req.file ? req.file.originalname : (req.invalidFile || 'unknown file');
+        return `${fileName}: ${error}`;
+    };
+
+    console.log('Error middleware triggered:', err.message); // Логируем сообщение об ошибке
+
+    if (err instanceof multer.MulterError) {
+        if (err.code === 'LIMIT_FILE_SIZE') {
+            return res.status(400).json({ error: withFileName('превышен размер файла: 5 MB.') });
+        } else if (err.code === 'LIMIT_UNEXPECTED_FILE') {
+            return res.status(400).json({ error: withFileName('превышен объем пачки для загрузки.') });
+        } else {
+            return res.status(500).json({ error: withFileName('Ошибка загрузки файла: ' + err.message) });
+        }
+    } else if (err) {
+        console.log('Non-Multer error:', err.message);
+        console.log(222, req.file ? req.file.originalname : req.invalidFile);
+        return res.status(400).json({ error: withFileName('Ошибка: ' + err.message) });
+    }
+});
+
+
+
+
 
 function setProgress({
 	iterationNumber = state.iterationNumber + 1,

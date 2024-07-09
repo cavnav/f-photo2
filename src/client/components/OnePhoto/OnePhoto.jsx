@@ -475,7 +475,7 @@ function renderAddPanel({
 						});
 					});
 				},
-			})
+			});
 			rp.ExitFromOnePhotoAPI.forceUpdate({
 				title: BTN_BACKWARD,
 				onClick: () => {

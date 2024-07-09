@@ -1,7 +1,6 @@
 // state.items.map is not a function at Recipients (Recipients.jsx:49:30)
 // on change second window, dont refresh opposit (for move btn i.e.)
 // bag from wrong path opposite window on browse from share.
-// add date of image by request
 // help by paper.
 
 // I
@@ -112,47 +111,45 @@ function getAppStateInit() {
 
 	actions.push({
 		id: Copy.name,
-		title: 'Импортировать',
+		title: 'импорт',
 		isEnabled: true,
 	});
 
 	actions.push({
 		id: Browse.name,
-		title: 'Альбомы',
+		title: 'альбомы',
 		isEnabled: true,
 	});
 
 	actions.push({
 		id: OnePhoto.name,
-		title: 'Фото',
+		title: 'фото',
 		isEnabled: false,
 	});
 
-	if (IS_DESKTOP) {
-		actions.push({
-			id: Print.name,
-			title: 'Печатать',
-			isEnabled: true,
-		});
+	actions.push({
+		id: Print.name,
+		title: 'печатать',
+		isEnabled: true,
+	});
 
-		actions.push({
-			id: PrintedComp.name,
-			title: 'Архив печатей',
-			isEnabled: true,
-		});
+	actions.push({
+		id: PrintedComp.name,
+		title: 'печати',
+		isEnabled: true,
+	});
 
-		actions.push({
-			id: Share.name,
-			title: 'Отправить',
-			isEnabled: true,
-		});
+	actions.push({
+		id: Share.name,
+		title: 'отправить',
+		isEnabled: true,
+	});
 
-		actions.push({
-			id: SharedComp.name,
-			title: 'Архив отправленных',
-			isEnabled: true,
-		});
-	}
+	actions.push({
+		id: SharedComp.name,
+		title: 'отправки',
+		isEnabled: true,
+	});
 
 	return {
 		action: comps.Welcome.name,

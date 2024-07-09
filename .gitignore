@@ -10,3 +10,4 @@ src/server/chatIDs.json
 src/server/printed.json
 src/server/shared.json
 src/server/shared
+src/server/uploads

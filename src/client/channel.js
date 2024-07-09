@@ -127,6 +127,8 @@ export class ChannelComp {
         this.deps = {};
         this.comps = undefined;
         this.r = render.bind(this);
+        this.render = this.r;
+        
         this.resumeObj = new ResumeObj(getResumeObj({name}));
         this.props = {
             name,

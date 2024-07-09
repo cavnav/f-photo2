@@ -201,14 +201,17 @@ iframe,
 	background-size: contain;
 }
 
-.layout {
+.browse-base {
 	position: relative;
-	display: flex;
-	align-content: flex-start;
-	flex-wrap: wrap;
 	height: 100%;
 	width: 100%;
 	overflow-y: auto;
+}
+
+.layout {
+	display: flex;
+	align-content: flex-start;
+	flex-wrap: wrap;	
 }
 
 .layout-items {

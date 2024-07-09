@@ -1,17 +1,18 @@
 import React from 'react';
 import {Empty} from '../Empty/Empty';
 import { LAST_ELEMENT } from '../../constants';
+import classNames from 'classnames';
 
 export function BrowseBase(props) {
     const {
         isEmpty,
-        
+        className = 'layout',
         onClick,
     } = props;  
 
     return (
         <div
-			className={`browse-base layout`}
+			className={classNames('browse-base', className)}
             onClick={onClick}
 		>
 			{props.children}

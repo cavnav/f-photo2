@@ -33,7 +33,7 @@ function render(
         Action,
       ) => {        
         return (
-          <Action.r 
+          <Action.render 
             key={Action.name}
           />        
         );

@@ -1,4 +1,10 @@
 {
-  "watch": ["src/server/"],
-  "ignore": ["src/server/printed.json", "src/server/shared.json"]
+	"watch": [
+		"src/server/"
+	],
+	"ignore": [
+		"src/server/printed.json",
+		"src/server/shared.json",
+		"src/server/uploads/"
+	]
 }

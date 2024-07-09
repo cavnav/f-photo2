@@ -1,10 +1,11 @@
-import React from 'react';
-import { Stepper } from '../';
+import React, {useEffect} from 'react';
+import { BrowseBase, Stepper } from '../';
 
 import './styles.css';
 import { channel } from '../../channel';
 import { useMutedReducer } from '../../mutedReducer';
 import { IS_DESKTOP } from '../../functions';
+import { BTN_SELECT_FILES, BTN_UPLOAD_FILES } from '../../common/additionalActions/const';
 
 export const Copy = channel.addComp({
 	name: 'Copy',
@@ -22,37 +23,35 @@ function render() {
 
 	const steps = createSteps();
 
+	useRederAddPanel({Comp});
+
 	return (
 		<div className="Copy">
 			{IS_DESKTOP 
 			? 	<Stepper
 					steps={steps}
 				/> 
-			: 	<div>
-					<label htmlFor="files" className="btn">
-						выбрать файлы
-					</label>
-					<input type="file" id="files" multiple onChange={(e) => onSelectFiles({e, Comp})}/>			
-					количество файлов: {state.files.length}
+			: 	<BrowseBase
+					className="scroll"
+				>															
 					<div className="filesList">
 						{state.files.map((file) => {
-							const url = URL.createObjectURL(file.blob);
+							const url = URL.createObjectURL(file);
 							return (
 								<div className="file" key={url}>
 									<img
 										src={url}
-										onLoad={() => URL.revokeObjectURL(file.blob)}
+										onLoad={() => URL.revokeObjectURL(file)}
 									/>
 									<div>{file.name}</div>
 									<div className='progressContainer'>
-										<div className='progress'>{file.progress}%</div>
+										<div className='progress'>{}%</div>
 									</div>
 								</div>
 							);
 						})}
 					</div>
-					<button onClick={onUpload}>загрузить файлы</button>			
-				</div>
+				</BrowseBase>
 			}		
 		</div>
 	);
@@ -190,13 +189,19 @@ function getComps({
 		App,
 		Browse,
 		Notification,
+		Label,
+		AdditionalPanel,
 	} = channelComps;
 
 	return {
+		toClone:{
+			UploadFiles: Label,
+		},
 		items: {
 			App,
 			Browse,
 			Notification,
+			AdditionalPanel,
 		},
 	};
 }
@@ -205,7 +210,7 @@ function onSelectFiles({e, Comp}) {
 	const selectedFiles = e.target.files;
 	const files = [];
 	for (const file of selectedFiles) {
-		files.push({blob: file});
+		files.push(file);
 	}
 	const {setState} = Comp.getDeps();
 
@@ -214,20 +219,34 @@ function onSelectFiles({e, Comp}) {
 	});
 }
 
-function onUpload({e, Comp}) {	
-	const data = new FormData();
+async function onUpload({files, Comp}) {	
+	const filesCount = files.length;
+	let response = await batchUpload({files, index: 0, end: 1});
+	const batchSize = response.batchSize;
 
-	for (const file of files) {
-		data.append('files', file);
+    for (let index = 1; index < filesCount; index += batchSize) {  	
+		response = await batchUpload({files, index, end: index + batchSize});    		
+    }	
+
+	if (!response.error) {
+		browsePath({Comp, path: response.path});
+	};
+
+
+	// ----------------------
+	async function batchUpload({files, index, end}) {
+		const data = new FormData();
+	
+		while (index < end) {
+			data.append('files', files[index]);
+			index++;
+		}
+	
+		const rp = Comp.getReqProps();
+		return rp.server.upload({
+			data,
+		});	
 	}
-
-	const rp = Comp.getReqProps();
-	rp.server.upload({
-		data,
-	})
-	.then((path) => {
-		browsePath({Comp, path});
-	});
 }
 
 function browsePath({Comp, path}) {
@@ -238,6 +257,53 @@ function browsePath({Comp, path}) {
 	AppAPI.setState({
 		action: Browse.name,
 	});
+}
+
+function useRederAddPanel({Comp}) {	
+	useEffect(() => {
+		if (!IS_DESKTOP) {
+			core();
+		}
+
+		function core() {
+			const {state} = Comp.getDeps();
+			const rp =  Comp.getReqProps();
+			const actions = [
+				SelectFiles({Comp}),
+				rp.UploadFiles,
+			];
+
+			rp.AdditionalPanelAPI.renderIt({
+				actions,
+			})
+			.then(() => {		
+				if (state.files.length) {
+					rp.UploadFilesAPI.forceUpdate({
+						title: `${BTN_UPLOAD_FILES} - ${state.files.length}`,
+						onClick: () => onUpload({files: state.files, Comp}),
+					});
+				}
+			});
+
+			return () => {
+				rp.AdditionalPanelAPI.renderIt({actions: []});
+			};
+		}
+	});	
+}
+
+function SelectFiles({Comp}) {
+	return {
+		name: SelectFiles.name,
+		render: () => (
+			<>
+				<label htmlFor="files" className="btn">
+					{BTN_SELECT_FILES}
+				</label>
+				<input type="file" id="files" multiple onChange={(e) => onSelectFiles({e, Comp})}/>			
+			</>
+		),
+	}
 }
 
 const initialState = {
