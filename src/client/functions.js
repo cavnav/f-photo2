@@ -400,14 +400,16 @@ export function notifyServerError(error) {
 
 	let message = "";
 
-	if (error.constructor != String) {
-		message = TEXT_SERVER_ERROR;
-	} else {
+	if (error.constructor === String) {
 		message = error;
+	} else {
+		message = TEXT_SERVER_ERROR;
 	}
 
 	console.log(error);
+	
 	DialogAPI.showConfirmation({
+		innerText: true,
 		message,
 		isHide: false,
 		type: DIALOG_TYPES.error,

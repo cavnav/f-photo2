@@ -106,7 +106,7 @@ function render(props) {
 				onMouseEnter={onMouseEnter}
 				onMouseLeave={onMouseLeave}
 			>
-				{state.message && <div>{state.message}</div>}
+				{state.message && <div className="message">{state.message}</div>}
 				{state.render && state.render}
 				{props.children}
 				{state.confirmBtn && (

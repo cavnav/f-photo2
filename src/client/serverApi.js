@@ -1,4 +1,4 @@
-import { ProgressTitle, getChannelComps, getVarName, loader, notifyServerError } from "./functions";
+import { ProgressTitle, getChannelComps, loader, notifyServerError } from "./functions";
 
 class PostObjTmp {
 	constructor({ body = {} } = {}) {
@@ -12,20 +12,22 @@ class PostObjTmp {
 	}
 };
 
-function fetchUpd(...params) {
-	return fetch.apply(null, params)
-	.then(async (result) => {
-		const json = await result.json();
-		if (json.error) {
-			notifyServerError(json.error);
-			
-			return Promise.reject();
+async function fetchUpd(...params) {
+	try {
+		const response = await fetch.apply(null, params);
+		const result = await response.json();
+
+		if (result.error) {
+			notifyServerError(result.error.message);	
+			return Promise.reject(result.error);
 		}
-		return json;
-	})
-	.catch((error) => {
+
+		return result;
+	} 
+	catch (error) {
 		notifyServerError(error);
-	});	
+		return Promise.reject();
+	}
 }
 
 function fetchWithLoader(...params) {

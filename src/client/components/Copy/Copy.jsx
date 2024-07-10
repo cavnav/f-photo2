@@ -223,12 +223,16 @@ async function onUpload({files, Comp}) {
 	const filesCount = files.length;
 	let response = await batchUpload({files, index: 0, end: 1});
 	const batchSize = response.batchSize;
+	const isUploadSuccess = false;
 
     for (let index = 1; index < filesCount; index += batchSize) {  	
-		response = await batchUpload({files, index, end: index + batchSize});    		
+		response = await batchUpload({files, index, end: index + batchSize});
+		if (response.error) {
+			isUploadSuccess = true;
+		}
     }	
 
-	if (!response.error) {
+	if (isUploadSuccess) {
 		browsePath({Comp, path: response.path});
 	};
 
@@ -243,9 +247,15 @@ async function onUpload({files, Comp}) {
 		}
 	
 		const rp = Comp.getReqProps();
-		return rp.server.upload({
-			data,
-		});	
+		try {
+			return await rp.server.upload({
+				data,
+			});	
+		}
+		catch (error) {
+			// ошибки уже обработаны в ServerAPI.fetchWithLoad.
+			return error;
+		}
 	}
 }
 
