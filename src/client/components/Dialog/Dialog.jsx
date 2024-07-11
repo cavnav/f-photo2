@@ -181,13 +181,17 @@ function getAPI({
 		deps.setState(props);
 	}
 
-	async function close({promiseResult} = {}) {
+	async function close({promiseResult, force = true} = {}) {
 		/**
 		 * очень жестоко было с этим местом.
 		 * если здесь менять какое - то значение стейт, то новое окно будет с примененным стилем __hide без учета transition. 
 		 * есть библиотека специальная ReactCSSTransitionGroup.
 		 * display: none не работает.
 		 */
+		if (!force) {
+			return;
+		}
+		
 		if (deps.state._ref.current) {
 			deps.state._ref.current.parentElement.classList.remove(`Dialog__modal`);
 			deps.state._ref.current.parentElement.classList.add(`Dialog__none`);

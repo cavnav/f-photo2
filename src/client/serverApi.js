@@ -34,11 +34,10 @@ function fetchWithLoader(...params) {
 	const timerId = setTimeout(() => loader({isActive: true}), 500);
 
 	return fetchUpd(...params)
-		.then((response) => {
+		.then((response) => response)
+		.finally(() => {
 			clearTimeout(timerId);
 			loader({isActive: false});
-
-			return response;
 		});
 }
 

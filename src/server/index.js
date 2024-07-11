@@ -25,6 +25,21 @@ const UPLOADS = path.join(__dirname, 'uploads');
 const UPLOAD_BATCH_SIZE = 5;
 const UPLOAD_FILE_SIZE = 5;
 
+const ERROR_HANDLERS = {
+    'LIMIT_FILE_SIZE': ({req, res, err}) => {
+        const file = req.files[err.index]?.originalname || 'unknown file';
+        res.status(400).json({
+			file,
+		});
+    },
+    'LIMIT_UNEXPECTED_FILE_TYPE': ({res, err}) => {
+        res.status(400).json({});
+    },
+    'default': ({res, err}) => {
+        res.status(500).json({error});
+    }
+};
+
 // Создаем директорию, если её нет
 if (!fs.existsSync(UPLOADS)) {
     fs.mkdirSync(UPLOADS);
@@ -84,43 +99,58 @@ app.listen(PORT, IP_ADDRESS, () => {
 
 // Создаем экземпляр multer с настройками
 const upload = multer({ 
-    storage,  // Указываем конфигурацию хранилища
-    fileFilter: (req, file, cb) => {
-		req.customData = {
-			file: file.originalname,
-		};
-
+    storage,
+    fileFilter: (req, file, cb) => {		
         // Проверка типа файла
         if (
 			!file.mimetype.match(/^image\//) && 
 			!file.mimetype.match(/^application\/pdf$/)
-		) {
-			req.customData.error = {
-				status: 400,
-				message: [
-					`требуется: изображение, pdf.`,
-					`получен: ${file.originalname}`
-				].join('\n')
-			};
-			return cb(true, false);
+		) {		
+			cb(null, false);
+			return;
         }
-        cb(null, true);  // Разрешаем загрузку файла
+        cb(null, true);  // Разрешаем загрузку файла.
     },
     limits: { fileSize: UPLOAD_FILE_SIZE * 1024 * 1024 }
-});
+}).array('files', UPLOAD_BATCH_SIZE);
 
-// Маршрут для загрузки нескольких файлов
-app.post('/api/upload', 
-	upload.array('files', UPLOAD_BATCH_SIZE),
-	(req, res) => {        
+// Маршрут для загрузки нескольких файлов.
+app.post('/api/upload', (req, res) => {
+	upload(req, res, (err) => {
+		if (err) {			
+			// Обработка ошибок
+			if (err instanceof multer.MulterError) {
+				if (err.code === 'LIMIT_FILE_SIZE') {
+					// Определяем файл, который вызвал ошибку
+					err.file = req.files[err.index]?.originalname || 'unknown file';
+				}
+			}
+			return next(err);  // Передаем ошибку в следующий обработчик ошибок
+		}
+		// Если ошибок нет, отправляем успешный ответ
+		res.json({ batchSize: UPLOAD_BATCH_SIZE, path: 'uploads' });
+	});
+});
+	upload,
+	async (req, res, next) => {        
+
         res.json({ batchSize: UPLOAD_BATCH_SIZE, path: UPLOADS });
+		next(error);
     }
 );
 
-app.use('/api/upload', (err, req, res, next) => {
-	const {file, error} = req.customData;    
-	const errorStatus = error.status ?? 500;
-	const message = error.message ?? err.message;
+app.use('/api/upload', (err, req, res, next) => {	
+	req.customData.errors.push({
+		file: file.originalname,
+		status: 400,
+		message: [
+			`требуется: изображение, pdf.`,
+			`получен: ${file.originalname}`
+		].join('\n')
+	});
+
+	ERROR_HANDLERS[err.code]?.(err, req, res);
+    
 
     if (err instanceof multer.MulterError) {
         if (err.code === 'LIMIT_FILE_SIZE') {
@@ -138,6 +168,9 @@ app.use('/api/upload', (err, req, res, next) => {
 				}
 			});
         } else {
+			errors.push({
+				file: 
+			})
             return res.status(500).json({ 
 				error: {
 					file,
@@ -145,12 +178,17 @@ app.use('/api/upload', (err, req, res, next) => {
 				}
 			});
         }
-    } else if (err) {     
+    } else if (err) {   
+		if (req.file) {
+			errors.push({
+				file: req.file.originalname,
+				status: 500,
+				message: err.message,
+			});
+		}
+
         return res.status(errorStatus).json({
-			error: {
-				file,
-				message, 
-			}
+			error: errors,
 		});
     }
 });
@@ -379,7 +417,7 @@ app.post('/api/rename',
 			res.send(result);
 
 		} catch (error) {
-			res.send({error: error.message});
+			res.send({error});
 		}		
 	}
 );
@@ -753,8 +791,11 @@ app.post('/api/saveSettings', (req, res) => {
 		});
 });
 
-
-
+// glbal error handler.
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(err.status || 500).json({ error: 'Internal Server Error' });
+});
 
 
 

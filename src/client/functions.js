@@ -407,7 +407,7 @@ export function notifyServerError(error) {
 	}
 
 	console.log(error);
-	
+
 	DialogAPI.showConfirmation({
 		innerText: true,
 		message,
@@ -444,7 +444,7 @@ export function loader({
 		DialogAPI.show({ message: TEXT_WAIT, isHide: false, type: DIALOG_TYPES.notification });
 	}
 	else {
-		DialogAPI.close();
+		DialogAPI.close({force: false});
 	}
 }
 
