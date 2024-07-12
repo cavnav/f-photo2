@@ -25,20 +25,7 @@ const UPLOADS = path.join(__dirname, 'uploads');
 const UPLOAD_BATCH_SIZE = 5;
 const UPLOAD_FILE_SIZE = 5;
 
-const ERROR_HANDLERS = {
-    'LIMIT_FILE_SIZE': ({req, res, err}) => {
-        const file = req.files[err.index]?.originalname || 'unknown file';
-        res.status(400).json({
-			file,
-		});
-    },
-    'LIMIT_UNEXPECTED_FILE_TYPE': ({res, err}) => {
-        res.status(400).json({});
-    },
-    'default': ({res, err}) => {
-        res.status(500).json({error});
-    }
-};
+
 
 // Создаем директорию, если её нет
 if (!fs.existsSync(UPLOADS)) {
@@ -114,83 +101,41 @@ const upload = multer({
     limits: { fileSize: UPLOAD_FILE_SIZE * 1024 * 1024 }
 }).array('files', UPLOAD_BATCH_SIZE);
 
+const tempStorage = multer({
+	storage: multer.memoryStorage(),
+	fileFilter: (req, file, cb) => {
+		req.customData = req.customData ?? [];
+		req.customData.files.push(file);  // Сохраняем текущий файл
+		cb(null, true);  // Пропускаем файл
+	}
+}).array('files', UPLOAD_BATCH_SIZE);
+
 // Маршрут для загрузки нескольких файлов.
-app.post('/api/upload', (req, res) => {
-	upload(req, res, (err) => {
-		if (err) {			
-			// Обработка ошибок
-			if (err instanceof multer.MulterError) {
-				if (err.code === 'LIMIT_FILE_SIZE') {
-					// Определяем файл, который вызвал ошибку
-					err.file = req.files[err.index]?.originalname || 'unknown file';
-				}
+app.post('/api/upload', (req, res, next) => {
+	
+	tempStorage(req, res, () => {
+
+		upload(req, res, (err) => {
+			if (err) {							
+				// Определяем файл, который вызвал ошибку
+				err.file = req.customData.files[err.index]?.originalname || 'unknown file';
+				
+				next(err);  // Передаем ошибку в следующий обработчик ошибок
+				return;
 			}
-			return next(err);  // Передаем ошибку в следующий обработчик ошибок
-		}
-		// Если ошибок нет, отправляем успешный ответ
-		res.json({ batchSize: UPLOAD_BATCH_SIZE, path: 'uploads' });
-	});
-});
-	upload,
-	async (req, res, next) => {        
-
-        res.json({ batchSize: UPLOAD_BATCH_SIZE, path: UPLOADS });
-		next(error);
-    }
-);
-
-app.use('/api/upload', (err, req, res, next) => {	
-	req.customData.errors.push({
-		file: file.originalname,
-		status: 400,
-		message: [
-			`требуется: изображение, pdf.`,
-			`получен: ${file.originalname}`
-		].join('\n')
-	});
-
-	ERROR_HANDLERS[err.code]?.(err, req, res);
-    
-
-    if (err instanceof multer.MulterError) {
-        if (err.code === 'LIMIT_FILE_SIZE') {
-            return res.status(400).json({ 
-				error: {
-					file,
-					message: `превышен размер файла: ${UPLOAD_FILE_SIZE} MB.`,
-				}
-			});
-        } else if (err.code === 'LIMIT_UNEXPECTED_FILE') {
-            return res.status(400).json({ 
-				error: {
-					file,
-					message: 'превышен объем пачки для загрузки.',
-				}
-			});
-        } else {
-			errors.push({
-				file: 
-			})
-            return res.status(500).json({ 
-				error: {
-					file,
-					message,	
-				}
-			});
-        }
-    } else if (err) {   
-		if (req.file) {
-			errors.push({
-				file: req.file.originalname,
-				status: 500,
-				message: err.message,
-			});
-		}
-
-        return res.status(errorStatus).json({
-			error: errors,
+			// Если ошибок нет, отправляем успешный ответ
+			res.json({ batchSize: UPLOAD_BATCH_SIZE, path: 'uploads' });
 		});
-    }
+	});
+	
+});
+
+app.use('/api/upload', (err, req, res, next) => {		
+	errorHandlers({
+		files: req.files,
+		res,
+		errorCode: err.code,
+	});
 });
 
 app.post('/api/getImageMeta', async (request, response) => {
@@ -1222,3 +1167,28 @@ const sanitizeFileName = (fileName) => {
     return fileName.replace(/[^a-zA-Z0-9-_\.]/g, '_');
 }
 
+function errorHandlers({files, res, errorCode}) {
+	const file = files[err.index]?.originalname || 'unknown file';
+
+	if (errorCode === 'LIMIT_FILE_SIZE') {		
+		res.status(400).json({
+			file,
+			message: `превышен размер файла: ${UPLOAD_FILE_SIZE} MB.`,
+		});
+	}
+	else if (errorCode === 'LIMIT_UNEXPECTED_FILE_TYPE') {
+		res.status(400).json({
+			file,
+			message: [
+				`требуется: изображение, pdf.`,
+				`получен: ${file}`
+			].join('\n')
+		});
+	}
+	else {
+		res.status(500).json({
+			file, 
+			message: errorCode,
+		});
+	}
+};
