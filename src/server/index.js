@@ -22,8 +22,20 @@ const SEP = '/'; // for web src.
 const SYS_SRC_REG_EXP = new RegExp('[\\\\/]', 'g');
 const WEB_SRC_REG_EXP = new RegExp(SEP, 'g');
 const UPLOADS = path.join(__dirname, 'uploads');
-const UPLOAD_BATCH_SIZE = 5;
-const UPLOAD_FILE_SIZE = 5;
+const UPLOAD_BATCH_COUNT = 5;
+const UPLOAD_FILE_SIZE_MB = 4;
+const UPLOAD_FILE_SIZE_BYTES = UPLOAD_FILE_SIZE_MB * 1024 * 1024;
+// const UPLOAD_ERROR_TYPES = {
+// 	LIMIT_FILE_SIZE: {
+// 		errorCode: 'LIMIT_FILE_SIZE'
+// 	}`превышен размер файла: ${UPLOAD_FILE_SIZE} MB.`,
+// 	UNEXPECTED_FILE_TYPE: ({file}) => {
+// 		return [
+// 			`требуется: изображение, pdf.`,
+// 			`получен: ${file}`
+// 		].join('\n');
+// 	},
+// });
 
 
 
@@ -60,6 +72,7 @@ const storage = multer.diskStorage({
     },
     // Создаем уникальное имя файла без расширения
     filename: function (req, file, cb) {
+		console.log('upload');
         // Очищаем имя файла
         const sanitizedFileName = sanitizeFileName(path.basename(file.originalname, path.extname(file.originalname)));
         // Генерируем уникальное имя файла
@@ -82,59 +95,19 @@ const IP_ADDRESS_EXTERNAL = getIPv4Address(); // Привязываем к лю�
 app.listen(PORT, IP_ADDRESS, () => {
 	console.log(`Сервер доступен по адресу http://localhost:${PORT}/`);
 	console.log(`Сервер также доступен по адресу http://${IP_ADDRESS_EXTERNAL}:${PORT}/`);
-  });
-
-// Создаем экземпляр multer с настройками
-const upload = multer({ 
-    storage,
-    fileFilter: (req, file, cb) => {		
-        // Проверка типа файла
-        if (
-			!file.mimetype.match(/^image\//) && 
-			!file.mimetype.match(/^application\/pdf$/)
-		) {		
-			cb(null, false);
-			return;
-        }
-        cb(null, true);  // Разрешаем загрузку файла.
-    },
-    limits: { fileSize: UPLOAD_FILE_SIZE * 1024 * 1024 }
-}).array('files', UPLOAD_BATCH_SIZE);
+});
 
 const tempStorage = multer({
 	storage: multer.memoryStorage(),
-	fileFilter: (req, file, cb) => {
-		req.customData = req.customData ?? [];
-		req.customData.files.push(file);  // Сохраняем текущий файл
-		cb(null, true);  // Пропускаем файл
-	}
-}).array('files', UPLOAD_BATCH_SIZE);
+}).array('files', UPLOAD_BATCH_COUNT);
 
 // Маршрут для загрузки нескольких файлов.
-app.post('/api/upload', (req, res, next) => {
-	
-	tempStorage(req, res, () => {
+app.post('/api/upload', tempStorage, checkFiles, uploadFiles);
 
-		upload(req, res, (err) => {
-			if (err) {							
-				// Определяем файл, который вызвал ошибку
-				err.file = req.customData.files[err.index]?.originalname || 'unknown file';
-				
-				next(err);  // Передаем ошибку в следующий обработчик ошибок
-				return;
-			}
-			// Если ошибок нет, отправляем успешный ответ
-			res.json({ batchSize: UPLOAD_BATCH_SIZE, path: 'uploads' });
-		});
-	});
-	
-});
-
-app.use('/api/upload', (err, req, res, next) => {		
-	errorHandlers({
-		files: req.files,
+app.use('/api/upload', (errors, req, res, next) => {		
+	errorHandlers({		
 		res,
-		errorCode: err.code,
+		errors,
 	});
 });
 
@@ -1167,28 +1140,113 @@ const sanitizeFileName = (fileName) => {
     return fileName.replace(/[^a-zA-Z0-9-_\.]/g, '_');
 }
 
-function errorHandlers({files, res, errorCode}) {
-	const file = files[err.index]?.originalname || 'unknown file';
-
-	if (errorCode === 'LIMIT_FILE_SIZE') {		
-		res.status(400).json({
-			file,
-			message: `превышен размер файла: ${UPLOAD_FILE_SIZE} MB.`,
-		});
-	}
-	else if (errorCode === 'LIMIT_UNEXPECTED_FILE_TYPE') {
-		res.status(400).json({
-			file,
-			message: [
+function errorHandlers({errors, res}) {
+	console.log('errorHandlers', errors)
+	if (!Array.isArray(errors)) {
+		res.status(400).json({errors});
+		console.log('here1')
+		return;
+	}	
+	
+	for (const error of errors) {
+		const errorCode = error.code;
+		if (errorCode === 'LIMIT_FILE_SIZE') {	
+			console.log('here')	
+			error.message = `превышен размер файла: ${UPLOAD_FILE_SIZE_MB} MB.`;
+		}
+		else if (errorCode === 'UNEXPECTED_FILE_TYPE') {
+			error.message = [
 				`требуется: изображение, pdf.`,
-				`получен: ${file}`
-			].join('\n')
-		});
-	}
-	else {
-		res.status(500).json({
-			file, 
-			message: errorCode,
-		});
-	}
+				`получен: ${error.file}`
+			].join('\n');
+		}
+		else if (errorCode === `SAVE_DISK_ERROR`) {
+			error.message = `ошибка записи`;
+			console.error(error.message, file);
+		}
+		else {
+			error.message = error.message;
+		}
+	}	
+
+	console.log('here2')
+	res.status(400).json({errors});
 };
+
+function checkFiles (req, res, next) {
+	req.customData = {
+		files: [],
+		errors: [],
+	};
+
+	const files = req.customData.files;
+	const errors = req.customData.errors;
+	
+	for (const file of req.files) {
+		if (
+			!file.mimetype.match(/^image\//) && 
+			!file.mimetype.match(/^application\/pdf$/)
+		) {		
+			errors.push({
+				file: file.originalname,
+				code: 'UNEXPECTED_FILE_TYPE',					
+			});
+		}
+		else if (file.size > UPLOAD_FILE_SIZE_BYTES) {
+			errors.push({
+				file: file.originalname,
+				code: 'LIMIT_FILE_SIZE',					
+			});
+		}		
+		else {
+			files.push(file);
+		}	
+	}		
+
+	console.log('checkFiles - approved', files.count)
+
+	next();
+}
+
+function uploadFiles(req, res, next) {		
+	const lastIndex = req.customData.files.length - 1;
+	const errors = req.customData.errors;
+
+    uploadNextFile({index: 0});
+
+
+	//---------------------------------------------------
+
+	function uploadNextFile({index}) {
+		console.log('index', index, lastIndex)
+        if (index > lastIndex) {
+            // Все файлы обработаны
+            if (errors.length > 0) {
+				console.log('errors', errors)
+                next(errors);
+				return;
+            }
+			
+			console.log('end of uploadFiles')
+			res.json({batchSize: UPLOAD_BATCH_COUNT, path: UPLOADS});
+			return;
+        }
+
+        const file = req.customData.files[index];
+		const filePath = path.join(UPLOADS, file.originalname);
+
+		console.log('before uploadOneFile');
+
+		fs.writeFile(filePath, file.buffer, (err) => {
+            if (err) {
+				console.log('uploadOneFile error', err)
+                errors.push({
+                    file: file.originalname,
+                    code: 'SAVE_DISK_ERROR',
+                });
+            }
+            
+            uploadNextFile({index: index + 1});
+        });
+    };
+}

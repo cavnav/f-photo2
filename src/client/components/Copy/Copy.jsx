@@ -223,13 +223,15 @@ async function onUpload({files, Comp}) {
 	const filesCount = files.length;
 	let response = await batchUpload({files, index: 0, end: 1});
 	const batchSize = response.batchSize;
-	const isUploadSuccess = true;
+	let isUploadSuccess = true;
 
     for (let index = 1; index < filesCount; index += batchSize) {  	
 		response = await batchUpload({files, index, end: index + batchSize});
-		if (response.error) {
+		if (response.errors?.length) {
 			isUploadSuccess = false;
 		}
+
+		console.log('loop batchUpload', index)
     }	
 
 	if (isUploadSuccess) {
