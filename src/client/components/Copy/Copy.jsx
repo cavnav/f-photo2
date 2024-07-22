@@ -223,10 +223,11 @@ async function onUpload({files, Comp}) {
 	const filesCount = files.length;
 	let response = await batchUpload({files, index: 0, end: 1});
 	const batchSize = response.batchSize;
+	let uploadDir = response.uploadDir;
 	let isUploadSuccess = true;
 
     for (let index = 1; index < filesCount; index += batchSize) {  	
-		response = await batchUpload({files, index, end: index + batchSize});
+		response = await batchUpload({uploadDir, files, index, end: index + batchSize});
 		if (response.errors?.length) {
 			isUploadSuccess = false;
 		}
@@ -235,23 +236,29 @@ async function onUpload({files, Comp}) {
     }	
 
 	if (isUploadSuccess) {
-		browsePath({Comp, path: response.path});
+		await rp.server.uploadEnd();
+		browsePath({Comp, path: uploadDir});
 	};
 
 
 	// ----------------------
-	async function batchUpload({files, index, end}) {
+	async function batchUpload({uploadDir, files, index, end}) {
 		const data = new FormData();
 	
 		while (index < end) {
 			data.append('files', files[index]);
 			index++;
 		}
+
+		if (uploadDir) {
+			data.append('uploadDir', uploadDir);
+		}
 	
 		const rp = Comp.getReqProps();
 		try {
 			return await rp.server.upload({
 				data,
+				uploadDir
 			});	
 		}
 		catch (error) {

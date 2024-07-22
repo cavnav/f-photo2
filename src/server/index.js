@@ -1,3 +1,18 @@
+// Обработка необработанных исключений
+process.on('uncaughtException', (error) => {
+    console.error('Необработанное исключение:', error);
+    // В зависимости от ситуации можно завершить процесс
+    // process.exit(1);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('Необработанный отказ промиса:', reason);
+    // Допустимо завершение процесса в зависимости от критичности ошибки
+    // process.exit(1);
+});
+
+
+
 const os = require('os');
 const express = require('express');
 const multer = require('multer');
@@ -22,10 +37,10 @@ const CHAT_IDS_FILE = path.join(__dirname, './chatIDs.json');
 const SEP = '/'; // for web src.
 const SYS_SRC_REG_EXP = new RegExp('[\\\\/]', 'g');
 const WEB_SRC_REG_EXP = new RegExp(SEP, 'g');
-const UPLOADS = path.join(__dirname, 'uploads');
 const UPLOAD_BATCH_COUNT = 5;
 const UPLOAD_FILE_SIZE_MB = 4;
 const UPLOAD_FILE_SIZE_BYTES = UPLOAD_FILE_SIZE_MB * 1024 * 1024;
+const SERVER_ERROR = {error: 'произошла ошибка. повтори свое действие или обратись в поддержку'};
 const UPLOAD_ERRORS = {
 	unexpectedFileType({file}) {
 		return [
@@ -41,12 +56,6 @@ const UPLOAD_ERRORS = {
 	}
 }
 
-
-
-// Создаем директорию, если её нет
-if (!fs.existsSync(UPLOADS)) {
-    fs.mkdirSync(UPLOADS);
-}
 
 let state = {
 	newPhotos: [],
@@ -97,7 +106,7 @@ const saveFilesToMemory = multer({
 }).array('files', UPLOAD_BATCH_COUNT);
 
 // Маршрут для загрузки нескольких файлов.
-app.post('/api/upload', saveFilesToMemory, checkFiles, uploadFiles);
+app.post('/api/upload', saveFilesToMemory, checkFiles, ensureUploadDir, uploadFiles);
 
 app.post('/api/getImageMeta', async (request, response) => {
     try {
@@ -119,7 +128,7 @@ app.post('/api/getImageMeta', async (request, response) => {
 			});
         }
     } catch (err) {
-        throw new Error(`Error extracting EXIF data: ${err.message}`);
+        console.error(`Error extracting EXIF data: ${err.message}`);
     }
 });
   
@@ -697,13 +706,6 @@ app.post('/api/saveSettings', (req, res) => {
 		});
 });
 
-// glbal error handler.
-app.use((err, req, res, next) => {
-    console.error('global error: ', err.stack);
-    res.status(err.status || 500).json({ error: 'Internal Server Error' });
-});
-
-
 
 
 function setProgress({
@@ -1123,12 +1125,8 @@ function getIPv4Address() {
     return 'localhost'; // Default to localhost if no IPv4 address is found
 }
 
-function errorHandlers({errors, res}) {	
-	res.status(400).json({errors});
-};
-
 function checkFiles (req, res, next) {
-	req.customData = {
+	req.customData = {	
 		files: [],
 		errors: [],
 	};
@@ -1160,45 +1158,60 @@ function checkFiles (req, res, next) {
 	next();
 }
 
-async function uploadFiles(req, res, next) {		
-	const lastIndex = req.customData.files.length - 1;
-	const errors = req.customData.errors;
+async function ensureUploadDir(req, res, next) {
+    req.body.uploadDir = req.body.uploadDir ?? path.resolve(ALBUM_DIR, getCurMoment());
 
-	 // Определяем папку, в которую нужно сохранить файлы
-	 const curMoment = getCurMoment();
-	 const uploadDir = path.resolve(ALBUM_DIR, curMoment);
-
-	// Создаем папку, если она не существует
-	await fs.mkdir(uploadDir);
-	
-    uploadNextFile({index: 0});
-
-	//---------------------------------------------------
-
-	function uploadNextFile({index}) {
-        if (index > lastIndex) {
-            // Все файлы обработаны
-            if (errors.length > 0) {
-                res.json(errors);
-				return;
-            }
-			
-			res.json({batchSize: UPLOAD_BATCH_COUNT, path: uploadDir});
-			return;
-        }
-
-        const file = req.customData.files[index];
-		const filePath = path.join(UPLOADS, file.originalname);
-
-		fs.writeFile(filePath, file.buffer, (err) => {
-            if (err) {
-                errors.push({
-                    file: file.originalname,
-                    message: UPLOAD_ERRORS.saveDisk(),
-                });
-            }
-            
-            uploadNextFile({index: index + 1});
+    try {
+        // Проверяем существование папки или создаем её
+        await fs.access(req.body.uploadDir).catch(async () => {
+            await fs.mkdir(req.body.uploadDir, { recursive: true });
         });
-    };
+
+        next();
+    } catch (error) {
+        // В случае ошибки передаем ошибку в глобальный обработчик
+        res.status(500).json(SERVER_ERROR);
+    }
+}
+
+function uploadFiles(req, res, next) {		
+	try {
+		const {errors, files} = req.customData;
+		const lastIndex = files.length - 1;
+		const uploadDir = req.body.uploadDir;
+		
+		uploadNextFile({index: 0});
+
+		//---------------------------------------------------
+
+		function uploadNextFile({index}) {
+			if (index > lastIndex) {
+				// Все файлы обработаны
+				if (errors.length > 0) {
+					res.json(errors);
+					return;
+				}
+				
+				res.json({batchSize: UPLOAD_BATCH_COUNT, uploadDir});
+				return;
+			}
+
+			const file = files[index];
+			const filePath = path.join(uploadDir, file.originalname);
+
+			fs.writeFile(filePath, file.buffer, (err) => {
+				if (err) {
+					errors.push({
+						file: file.originalname,
+						message: UPLOAD_ERRORS.saveDisk(),
+					});
+				}
+				
+				uploadNextFile({index: index + 1});
+			});
+		};
+	}
+	catch(error) {
+		res.status(500).json(SERVER_ERROR);
+	}
 }
