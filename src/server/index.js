@@ -1,6 +1,7 @@
 const os = require('os');
 const express = require('express');
 const multer = require('multer');
+const sanitizeFilename = require('sanitize-filename');
 const ExifParser = require('exif-parser');
 const bodyParser = require('body-parser');
 const fs = require('fs-extra');
@@ -25,17 +26,20 @@ const UPLOADS = path.join(__dirname, 'uploads');
 const UPLOAD_BATCH_COUNT = 5;
 const UPLOAD_FILE_SIZE_MB = 4;
 const UPLOAD_FILE_SIZE_BYTES = UPLOAD_FILE_SIZE_MB * 1024 * 1024;
-// const UPLOAD_ERROR_TYPES = {
-// 	LIMIT_FILE_SIZE: {
-// 		errorCode: 'LIMIT_FILE_SIZE'
-// 	}`превышен размер файла: ${UPLOAD_FILE_SIZE} MB.`,
-// 	UNEXPECTED_FILE_TYPE: ({file}) => {
-// 		return [
-// 			`требуется: изображение, pdf.`,
-// 			`получен: ${file}`
-// 		].join('\n');
-// 	},
-// });
+const UPLOAD_ERRORS = {
+	unexpectedFileType({file}) {
+		return [
+			`требуется: изображение, pdf.`,
+			`получен: ${file}`
+		].join('\n');
+	},
+	limitFileSize() {
+		return `превышен размер файла: ${UPLOAD_FILE_SIZE_MB} MB.`;
+	},
+	saveDisk() {
+		return `ошибка загрузки`;
+	}
+}
 
 
 
@@ -65,21 +69,6 @@ app.use(express.static('assets'));
 app.use(bodyParser.json());
 
 
-const storage = multer.diskStorage({
-    // Устанавливаем папку для сохранения файлов
-    destination: function (req, file, cb) {
-        cb(null, UPLOADS);  // Путь к папке для загрузки файлов
-    },
-    // Создаем уникальное имя файла без расширения
-    filename: function (req, file, cb) {
-		console.log('upload');
-        // Очищаем имя файла
-        const sanitizedFileName = sanitizeFileName(path.basename(file.originalname, path.extname(file.originalname)));
-        // Генерируем уникальное имя файла
-        cb(null, sanitizedFileName + '-' + Date.now());
-    }
-});
-
 const processEnv = process.env.NODE_ENV?.trim();
 
 if (processEnv === 'production') {
@@ -97,19 +86,18 @@ app.listen(PORT, IP_ADDRESS, () => {
 	console.log(`Сервер также доступен по адресу http://${IP_ADDRESS_EXTERNAL}:${PORT}/`);
 });
 
-const tempStorage = multer({
+const saveFilesToMemory = multer({
 	storage: multer.memoryStorage(),
+	filename: function (req, file, cb) {
+        // Санируем имя файла
+        const sanitizedFileName = sanitizeFilename(file.originalname);
+        // Генерируем полный путь для сохранения
+        cb(null, sanitizedFileName);
+    },
 }).array('files', UPLOAD_BATCH_COUNT);
 
 // Маршрут для загрузки нескольких файлов.
-app.post('/api/upload', tempStorage, checkFiles, uploadFiles);
-
-app.use('/api/upload', (errors, req, res, next) => {		
-	errorHandlers({		
-		res,
-		errors,
-	});
-});
+app.post('/api/upload', saveFilesToMemory, checkFiles, uploadFiles);
 
 app.post('/api/getImageMeta', async (request, response) => {
     try {
@@ -711,7 +699,7 @@ app.post('/api/saveSettings', (req, res) => {
 
 // glbal error handler.
 app.use((err, req, res, next) => {
-    console.error(err.stack);
+    console.error('global error: ', err.stack);
     res.status(err.status || 500).json({ error: 'Internal Server Error' });
 });
 
@@ -1135,41 +1123,7 @@ function getIPv4Address() {
     return 'localhost'; // Default to localhost if no IPv4 address is found
 }
 
-const sanitizeFileName = (fileName) => {
-    // Убираем потенциально опасные символы из имени файла
-    return fileName.replace(/[^a-zA-Z0-9-_\.]/g, '_');
-}
-
-function errorHandlers({errors, res}) {
-	console.log('errorHandlers', errors)
-	if (!Array.isArray(errors)) {
-		res.status(400).json({errors});
-		console.log('here1')
-		return;
-	}	
-	
-	for (const error of errors) {
-		const errorCode = error.code;
-		if (errorCode === 'LIMIT_FILE_SIZE') {	
-			console.log('here')	
-			error.message = `превышен размер файла: ${UPLOAD_FILE_SIZE_MB} MB.`;
-		}
-		else if (errorCode === 'UNEXPECTED_FILE_TYPE') {
-			error.message = [
-				`требуется: изображение, pdf.`,
-				`получен: ${error.file}`
-			].join('\n');
-		}
-		else if (errorCode === `SAVE_DISK_ERROR`) {
-			error.message = `ошибка записи`;
-			console.error(error.message, file);
-		}
-		else {
-			error.message = error.message;
-		}
-	}	
-
-	console.log('here2')
+function errorHandlers({errors, res}) {	
 	res.status(400).json({errors});
 };
 
@@ -1189,13 +1143,13 @@ function checkFiles (req, res, next) {
 		) {		
 			errors.push({
 				file: file.originalname,
-				code: 'UNEXPECTED_FILE_TYPE',					
+				message: UPLOAD_ERRORS.unexpectedFileType({file}),					
 			});
 		}
 		else if (file.size > UPLOAD_FILE_SIZE_BYTES) {
 			errors.push({
 				file: file.originalname,
-				code: 'LIMIT_FILE_SIZE',					
+				message: UPLOAD_ERRORS.limitFileSize(),					
 			});
 		}		
 		else {
@@ -1203,46 +1157,44 @@ function checkFiles (req, res, next) {
 		}	
 	}		
 
-	console.log('checkFiles - approved', files.count)
-
 	next();
 }
 
-function uploadFiles(req, res, next) {		
+async function uploadFiles(req, res, next) {		
 	const lastIndex = req.customData.files.length - 1;
 	const errors = req.customData.errors;
 
-    uploadNextFile({index: 0});
+	 // Определяем папку, в которую нужно сохранить файлы
+	 const curMoment = getCurMoment();
+	 const uploadDir = path.resolve(ALBUM_DIR, curMoment);
 
+	// Создаем папку, если она не существует
+	await fs.mkdir(uploadDir);
+	
+    uploadNextFile({index: 0});
 
 	//---------------------------------------------------
 
 	function uploadNextFile({index}) {
-		console.log('index', index, lastIndex)
         if (index > lastIndex) {
             // Все файлы обработаны
             if (errors.length > 0) {
-				console.log('errors', errors)
-                next(errors);
+                res.json(errors);
 				return;
             }
 			
-			console.log('end of uploadFiles')
-			res.json({batchSize: UPLOAD_BATCH_COUNT, path: UPLOADS});
+			res.json({batchSize: UPLOAD_BATCH_COUNT, path: uploadDir});
 			return;
         }
 
         const file = req.customData.files[index];
 		const filePath = path.join(UPLOADS, file.originalname);
 
-		console.log('before uploadOneFile');
-
 		fs.writeFile(filePath, file.buffer, (err) => {
             if (err) {
-				console.log('uploadOneFile error', err)
                 errors.push({
                     file: file.originalname,
-                    code: 'SAVE_DISK_ERROR',
+                    message: UPLOAD_ERRORS.saveDisk(),
                 });
             }
             
