@@ -1141,7 +1141,7 @@ function checkFiles (req, res, next) {
 		) {		
 			errors.push({
 				file: file.originalname,
-				message: UPLOAD_ERRORS.unexpectedFileType({file}),					
+				message: UPLOAD_ERRORS.unexpectedFileType({file: file.originalname}),					
 			});
 		}
 		else if (file.size > UPLOAD_FILE_SIZE_BYTES) {
@@ -1188,7 +1188,7 @@ function uploadFiles(req, res, next) {
 			if (index > lastIndex) {
 				// Все файлы обработаны
 				if (errors.length > 0) {
-					res.json(errors);
+					res.status(500).json({errors});
 					return;
 				}
 				

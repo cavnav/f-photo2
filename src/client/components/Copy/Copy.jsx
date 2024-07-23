@@ -207,19 +207,15 @@ function getComps({
 }
 
 function onSelectFiles({e, Comp}) {
-	const selectedFiles = e.target.files;
-	const files = [];
-	for (const file of selectedFiles) {
-		files.push(file);
-	}
 	const {setState} = Comp.getDeps();
 
 	setState({
-		files,
+		files: Array.from(e.target.files),
 	});
 }
 
 async function onUpload({files, Comp}) {	
+	const {state, setState} = Comp.getDeps();
 	const filesCount = files.length;
 	let response = await batchUpload({files, index: 0, end: 1});
 	const batchSize = response.batchSize;
@@ -230,15 +226,22 @@ async function onUpload({files, Comp}) {
 		response = await batchUpload({uploadDir, files, index, end: index + batchSize});
 		if (response.errors?.length) {
 			isUploadSuccess = false;
-		}
 
-		console.log('loop batchUpload', index)
-    }	
+			state.uploadErrors.push(...response.errors.map((error) => error.file));
+			setState({uploadErrors: state.uploadErrors});
+		}
+    }		
 
 	if (isUploadSuccess) {
-		await rp.server.uploadEnd();
 		browsePath({Comp, path: uploadDir});
-	};
+	}
+	else {
+		const errors = state.uploadErrors;
+		const filesWithError = files.filter(({name}) => {
+			return errors.includes(name);
+		});
+		setState({files: filesWithError});
+	}
 
 
 	// ----------------------
@@ -261,9 +264,9 @@ async function onUpload({files, Comp}) {
 				uploadDir
 			});	
 		}
-		catch (error) {
+		catch (errors) {
 			// ошибки уже обработаны в ServerAPI.fetchWithLoad.
-			return error;
+			return {errors};
 		}
 	}
 }
@@ -332,4 +335,5 @@ const initialState = {
 	isHelp: false,
 	isCopyCompleted: false,
 	files: [],
+	uploadErrors: [],
 };
