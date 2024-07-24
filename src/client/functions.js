@@ -331,21 +331,26 @@ export function getDefaultAPI({
 export function getCompsAPI({
 	items = {},
 	toClone = {},
+	custom = {},
 }) {
-	const comps = Object.entries(items ?? {}).concat(Object.entries(toClone ?? {}));
-	return comps && comps.reduce((res, [name, comp]) => {
-		const compUpd = toClone[name] ? comp.clone({
-			name,
-		}) : comp;
+	const comps = Object.entries(items)
+		.concat(Object.entries(toClone))
+		.concat(Object.entries(custom));
+	
+	return comps?.reduce(
+		(res, [name, comp]) => {
+			const compUpd = toClone[name] ? comp.clone({
+				name,
+			}) : comp;
 
-		return {
-			...res,
-			[name]: compUpd,
-			[`${name}API`]: {
-				...compUpd?.getAPI(),
-			},
-		};
-	},
+			return {
+				...res,
+				[name]: compUpd,
+				[`${name}API`]: {
+					...compUpd?.getAPI?.(),
+				},
+			};
+		},
 		{}
 	);
 }

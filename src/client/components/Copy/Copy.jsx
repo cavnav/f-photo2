@@ -27,13 +27,15 @@ function render() {
 
 	return (
 		<div className="Copy">
-			{IS_DESKTOP 
-			? 	<Stepper
+			{IS_DESKTOP ?
+			 	<Stepper
 					steps={steps}
 				/> 
-			: 	<BrowseBase
+			:	<>
+				{state.uploadErrors.length > 0 && <div className='error'>не удалось загрузить файлы:</div>}										
+				<BrowseBase
 					className="scroll"
-				>															
+				>					
 					<div className="filesList">
 						{state.files.map((file) => {
 							const url = URL.createObjectURL(file);
@@ -43,16 +45,13 @@ function render() {
 										src={url}
 										onLoad={() => URL.revokeObjectURL(file)}
 									/>
-									<div>{file.name}</div>
-									<div className='progressContainer'>
-										<div className='progress'>{}%</div>
-									</div>
+									<div>{file.name}</div>									
 								</div>
 							);
 						})}
 					</div>
 				</BrowseBase>
-			}		
+			</>}		
 		</div>
 	);
 
@@ -196,6 +195,7 @@ function getComps({
 	return {
 		toClone:{
 			UploadFiles: Label,
+			BrowseUploaded: Label,
 		},
 		items: {
 			App,
@@ -203,6 +203,9 @@ function getComps({
 			Notification,
 			AdditionalPanel,
 		},
+		custom: {
+			SelectFiles,
+		}
 	};
 }
 
@@ -291,8 +294,9 @@ function useRederAddPanel({Comp}) {
 			const {state} = Comp.getDeps();
 			const rp =  Comp.getReqProps();
 			const actions = [
-				SelectFiles({Comp}),
+				rp.SelectFiles({Comp}),
 				rp.UploadFiles,
+				rp.OpenUploaded,
 			];
 
 			rp.AdditionalPanelAPI.renderIt({
@@ -304,6 +308,12 @@ function useRederAddPanel({Comp}) {
 						title: `${BTN_UPLOAD_FILES} - ${state.files.length}`,
 						onClick: () => onUpload({files: state.files, Comp}),
 					});
+				}
+				if (true) {
+					rp.BrowseUploadedAPI.forceUpdate({
+						title: `${BTN_BROWSE_UPLOADED}`,
+						onClick: () => browsePath({Comp, path: state.uploadDir}),
+					})
 				}
 			});
 
@@ -327,6 +337,7 @@ function SelectFiles({Comp}) {
 		),
 	}
 }
+
 
 const initialState = {
 	destDir: '',
