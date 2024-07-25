@@ -249,3 +249,6 @@ iframe,
 .error {
 	color: var(--red);
 }
+.hidden {
+	display: none;
+}

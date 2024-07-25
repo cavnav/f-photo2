@@ -1,11 +1,11 @@
 import React, {useEffect} from 'react';
 import { BrowseBase, Stepper } from '../';
 
-import './styles.css';
+import styles from './styles.module.css';
 import { channel } from '../../channel';
 import { useMutedReducer } from '../../mutedReducer';
 import { IS_DESKTOP } from '../../functions';
-import { BTN_SELECT_FILES, BTN_UPLOAD_FILES } from '../../common/additionalActions/const';
+import { BTN_BROWSE_UPLOADED, BTN_SELECT_FILES, BTN_UPLOAD_FILES } from '../../common/additionalActions/const';
 
 export const Copy = channel.addComp({
 	name: 'Copy',
@@ -26,7 +26,7 @@ function render() {
 	useRederAddPanel({Comp});
 
 	return (
-		<div className="Copy">
+		<div className={styles.Copy}>
 			{IS_DESKTOP ?
 			 	<Stepper
 					steps={steps}
@@ -36,11 +36,11 @@ function render() {
 				<BrowseBase
 					className="scroll"
 				>					
-					<div className="filesList">
+					<div className={styles.filesList}>
 						{state.files.map((file) => {
 							const url = URL.createObjectURL(file);
 							return (
-								<div className="file" key={url}>
+								<div className={styles.file} key={url}>
 									<img
 										src={url}
 										onLoad={() => URL.revokeObjectURL(file)}
@@ -296,7 +296,7 @@ function useRederAddPanel({Comp}) {
 			const actions = [
 				rp.SelectFiles({Comp}),
 				rp.UploadFiles,
-				rp.OpenUploaded,
+				rp.BrowseUploaded,
 			];
 
 			rp.AdditionalPanelAPI.renderIt({
@@ -332,7 +332,7 @@ function SelectFiles({Comp}) {
 				<label htmlFor="files" className="btn">
 					{BTN_SELECT_FILES}
 				</label>
-				<input type="file" id="files" multiple onChange={(e) => onSelectFiles({e, Comp})}/>			
+				<input type="file" id="files" className="hidden" multiple onChange={(e) => onSelectFiles({e, Comp})}/>			
 			</>
 		),
 	}

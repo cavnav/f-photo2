@@ -3,10 +3,6 @@
   height: 100%;
 }
 
-#files {
-  display: none;
-}
-
 .Copy .filesList .file {
   display: flex;
 }
