@@ -22,10 +22,6 @@ async function fetchUpd(...params) {
 			return Promise.reject(result.error);
 		}
 
-		if (result.errors) {
-			return Promise.reject(result.errors);
-		}
-
 		return result;
 	} 
 	catch (error) {

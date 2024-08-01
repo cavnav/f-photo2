@@ -15,7 +15,7 @@ export const IS_DESKTOP = ('ontouchstart' in window || navigator.maxTouchPoints 
 
 const RESUME_OBJ = new ResumeObj();
 const TEXT_WAIT = 'подожди...';
-const TEXT_SERVER_ERROR = 'произошла ошибка. попробуй повторить свое действие или обратись в поддержку';
+const TEXT_SERVER_ERROR = 'произошла ошибка. попробуй повторить свое действие или обратись за помощью';
 
 class MyItems {
 	constructor({

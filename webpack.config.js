@@ -32,9 +32,10 @@ module.exports = {
 				  MiniCssExtractPlugin.loader,
 				  {
 					loader: 'css-loader',
-					options: {
-					  modules: true, // Включение CSS-модулей
-					  importLoaders: 1,
+					options: {						
+					  	modules: {
+							localIdentName: '[local]__[hash:base64:5]',
+						},
 					},
 				  },
 				],
@@ -51,8 +52,7 @@ module.exports = {
 		extensions: ['*', '.js', '.jsx'],
 	},
 	devServer: {
-		port: 3000,
-		open: true,
+		port: 3001,
 		proxy: {
 			'/api': 'http://localhost:3000',
 			'/': 'http://localhost:3000',

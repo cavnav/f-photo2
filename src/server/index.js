@@ -40,7 +40,7 @@ const WEB_SRC_REG_EXP = new RegExp(SEP, 'g');
 const UPLOAD_BATCH_COUNT = 5;
 const UPLOAD_FILE_SIZE_MB = 4;
 const UPLOAD_FILE_SIZE_BYTES = UPLOAD_FILE_SIZE_MB * 1024 * 1024;
-const SERVER_ERROR = {error: 'произошла ошибка. повтори свое действие или обратись в поддержку'};
+const SERVER_ERROR = {error: 'произошла ошибка. повтори свое действие или обратись за помощью'};
 const UPLOAD_ERRORS = {
 	unexpectedFileType({file}) {
 		return [
@@ -70,6 +70,7 @@ let state = {
 	usbDriveLetter: undefined,
 	reqBody: {},
 	error: '',
+	uploadDir: undefined,
 };
 
 
@@ -97,15 +98,8 @@ app.listen(PORT, IP_ADDRESS, () => {
 
 const saveFilesToMemory = multer({
 	storage: multer.memoryStorage(),
-	filename: function (req, file, cb) {
-        // Санируем имя файла
-        const sanitizedFileName = sanitizeFilename(file.originalname);
-        // Генерируем полный путь для сохранения
-        cb(null, sanitizedFileName);
-    },
 }).array('files', UPLOAD_BATCH_COUNT);
 
-// Маршрут для загрузки нескольких файлов.
 app.post('/api/upload', saveFilesToMemory, checkFiles, ensureUploadDir, uploadFiles);
 
 app.post('/api/getImageMeta', async (request, response) => {
@@ -1128,7 +1122,7 @@ function getIPv4Address() {
 function checkFiles (req, res, next) {
 	req.customData = {	
 		files: [],
-		errors: [],
+		errors: {},
 	};
 
 	const files = req.customData.files;
@@ -1139,16 +1133,10 @@ function checkFiles (req, res, next) {
 			!file.mimetype.match(/^image\//) && 
 			!file.mimetype.match(/^application\/pdf$/)
 		) {		
-			errors.push({
-				file: file.originalname,
-				message: UPLOAD_ERRORS.unexpectedFileType({file: file.originalname}),					
-			});
+			errors[file.originalname] = {error: UPLOAD_ERRORS.unexpectedFileType({file: file.originalname})};					
 		}
 		else if (file.size > UPLOAD_FILE_SIZE_BYTES) {
-			errors.push({
-				file: file.originalname,
-				message: UPLOAD_ERRORS.limitFileSize(),					
-			});
+			errors[file.originalname] = {error: UPLOAD_ERRORS.limitFileSize()};					
 		}		
 		else {
 			files.push(file);
@@ -1159,13 +1147,15 @@ function checkFiles (req, res, next) {
 }
 
 async function ensureUploadDir(req, res, next) {
-    req.body.uploadDir = req.body.uploadDir ?? path.resolve(ALBUM_DIR, getCurMoment());
+    const uploadDir = state.uploadDir ?? path.resolve(ALBUM_DIR, getCurMoment());
 
     try {
         // Проверяем существование папки или создаем её
-        await fs.access(req.body.uploadDir).catch(async () => {
-            await fs.mkdir(req.body.uploadDir, { recursive: true });
+        await fs.access(uploadDir).catch(async () => {
+            await fs.mkdir(uploadDir, { recursive: true });
         });
+
+		setState({uploadDir});
 
         next();
     } catch (error) {
@@ -1174,37 +1164,33 @@ async function ensureUploadDir(req, res, next) {
     }
 }
 
-function uploadFiles(req, res, next) {		
+function uploadFiles(req, res, next) {	
 	try {
 		const {errors, files} = req.customData;
-		const lastIndex = files.length - 1;
-		const uploadDir = req.body.uploadDir;
+		const lastIndex = files.length - 1;		
 		
 		uploadNextFile({index: 0});
 
 		//---------------------------------------------------
 
 		function uploadNextFile({index}) {
+			// Все файлы обработаны
 			if (index > lastIndex) {
-				// Все файлы обработаны
-				if (errors.length > 0) {
-					res.status(500).json({errors});
+				if (Object.keys(errors).length > 0) {
+					res.status(500).json({batchSize: UPLOAD_BATCH_COUNT, errors});
 					return;
 				}
 				
-				res.json({batchSize: UPLOAD_BATCH_COUNT, uploadDir});
+				res.json({batchSize: UPLOAD_BATCH_COUNT, uploadDir: path.relative(ALBUM_DIR, state.uploadDir)});
 				return;
 			}
 
 			const file = files[index];
-			const filePath = path.join(uploadDir, file.originalname);
+			const filePath = getUniqueFilePath(state.uploadDir, file.originalname);
 
 			fs.writeFile(filePath, file.buffer, (err) => {
 				if (err) {
-					errors.push({
-						file: file.originalname,
-						message: UPLOAD_ERRORS.saveDisk(),
-					});
+					errors[file.originalname] = {error: UPLOAD_ERRORS.saveDisk()};
 				}
 				
 				uploadNextFile({index: index + 1});
@@ -1215,3 +1201,27 @@ function uploadFiles(req, res, next) {
 		res.status(500).json(SERVER_ERROR);
 	}
 }
+
+// Function to generate a unique filename with sanitized base name and extension
+function getUniqueFilePath(dir, filename) {
+    // Sanitize the entire filename
+    const sanitized = sanitizeFilename(filename);
+
+    // Extract the sanitized base name and extension
+    const ext = path.extname(sanitized);
+    const baseName = path.basename(sanitized, ext);
+
+    // Initialize the new filename
+    let newFilename = `${baseName}${ext}`;
+    let counter = 1;
+	let filePath = path.join(dir, newFilename);
+
+    // Ensure the filename is unique
+    while (fs.existsSync(filePath)) {
+        newFilename = `${baseName}(${counter})${ext}`;
+		filePath = path.join(dir, newFilename);
+        counter += 1;
+    }
+
+    return filePath;
+};

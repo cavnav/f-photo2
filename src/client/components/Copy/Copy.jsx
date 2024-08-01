@@ -5,7 +5,12 @@ import styles from './styles.module.css';
 import { channel } from '../../channel';
 import { useMutedReducer } from '../../mutedReducer';
 import { IS_DESKTOP } from '../../functions';
-import { BTN_BROWSE_UPLOADED, BTN_SELECT_FILES, BTN_UPLOAD_FILES } from '../../common/additionalActions/const';
+import { 
+	BTN_BROWSE_UPLOADED, 
+	BTN_SELECT_FILES, 
+	BTN_UPLOAD_FILES 
+} from '../../common/additionalActions/const';
+import { File } from './File';
 
 export const Copy = channel.addComp({
 	name: 'Copy',
@@ -23,7 +28,9 @@ function render() {
 
 	const steps = createSteps();
 
-	useRederAddPanel({Comp});
+	useRenderAddPanel({Comp});
+
+	const isUploadErrors = Object.keys(state.uploadErrors).length > 0;
 
 	return (
 		<div className={styles.Copy}>
@@ -32,21 +39,18 @@ function render() {
 					steps={steps}
 				/> 
 			:	<>
-				{state.uploadErrors.length > 0 && <div className='error'>не удалось загрузить файлы:</div>}										
+				{isUploadErrors && <div className='error'>файлы загружены. но не удалось загрузить следующие файлы:</div>}										
 				<BrowseBase
 					className="scroll"
 				>					
 					<div className={styles.filesList}>
 						{state.files.map((file) => {
-							const url = URL.createObjectURL(file);
+							const error = state.uploadErrors[file.name]?.error;
 							return (
-								<div className={styles.file} key={url}>
-									<img
-										src={url}
-										onLoad={() => URL.revokeObjectURL(file)}
-									/>
-									<div>{file.name}</div>									
-								</div>
+								<File key={file.name} 
+									file={file} 
+									error={error}
+								/>
 							);
 						})}
 					</div>
@@ -175,8 +179,7 @@ function getReqProps({
 	channel,
 }) {
 	return {
-		server: channel.server,
-		Browse: comps.Browse,
+		server: channel.server,		
 		...comps,
 	};
 }
@@ -214,77 +217,76 @@ function onSelectFiles({e, Comp}) {
 
 	setState({
 		files: Array.from(e.target.files),
+		isButtonBrowseUploaded: false,
+		isUploadErrors: false,
 	});
 }
 
-async function onUpload({files, Comp}) {	
-	const {state, setState} = Comp.getDeps();
-	const filesCount = files.length;
-	let response = await batchUpload({files, index: 0, end: 1});
-	const batchSize = response.batchSize;
-	let uploadDir = response.uploadDir;
-	let isUploadSuccess = true;
+async function onUpload({files, Comp}) {		
+	let batchSize;
+	const uploadErrors = {};
+	let batchFiles = [files[0]];
 
-    for (let index = 1; index < filesCount; index += batchSize) {  	
-		response = await batchUpload({uploadDir, files, index, end: index + batchSize});
-		if (response.errors?.length) {
-			isUploadSuccess = false;
+    for (let index = 0; batchFiles.length; index += batchSize) {  		
+		const response = await batchUpload({files: batchFiles});
 
-			state.uploadErrors.push(...response.errors.map((error) => error.file));
-			setState({uploadErrors: state.uploadErrors});
+		if (response.batchSize) {
+			batchSize = response.batchSize;
 		}
+
+		Object.assign(
+			uploadErrors,
+			response.errors
+		);
+
+		batchFiles = files.slice(index, index + batchSize);	
     }		
 
-	if (isUploadSuccess) {
+	const filesWithError = files.filter(({name}) => {
+		return uploadErrors[name];
+	});
+	
+
+	const {state, setState} = Comp.getDeps();
+
+	if (filesWithError.length) {
+		setState({files: filesWithError, uploadErrors});
+		
+		if (state.isButtonBrowseUploaded === false && filesWithError.length < files.length) {
+			setState({isButtonBrowseUploaded: true});
+		}
+	} 
+	else {
 		browsePath({Comp, path: uploadDir});
 	}
-	else {
-		const errors = state.uploadErrors;
-		const filesWithError = files.filter(({name}) => {
-			return errors.includes(name);
-		});
-		setState({files: filesWithError});
-	}
-
 
 	// ----------------------
-	async function batchUpload({uploadDir, files, index, end}) {
+	async function batchUpload({files}) {
 		const data = new FormData();
 	
-		while (index < end) {
-			data.append('files', files[index]);
-			index++;
-		}
-
-		if (uploadDir) {
-			data.append('uploadDir', uploadDir);
+		for (const file of files) {
+			data.append('files', file);
 		}
 	
 		const rp = Comp.getReqProps();
-		try {
-			return await rp.server.upload({
-				data,
-				uploadDir
-			});	
-		}
-		catch (errors) {
-			// ошибки уже обработаны в ServerAPI.fetchWithLoad.
-			return {errors};
-		}
+
+		return await rp.server.upload({
+			data,
+		});	
 	}
 }
 
 function browsePath({Comp, path}) {
 	const {AppAPI, Browse, BrowseAPI} = Comp.getReqProps();
 
-	BrowseAPI.getForwardPath({path});
+	BrowseAPI.setForwardPath({path});
 
 	AppAPI.setState({
 		action: Browse.name,
 	});
 }
 
-function useRederAddPanel({Comp}) {	
+function useRenderAddPanel({Comp}) {	
 	useEffect(() => {
 		if (!IS_DESKTOP) {
 			core();
@@ -309,12 +311,10 @@ function useRederAddPanel({Comp}) {
 						onClick: () => onUpload({files: state.files, Comp}),
 					});
 				}
-				if (true) {
-					rp.BrowseUploadedAPI.forceUpdate({
-						title: `${BTN_BROWSE_UPLOADED}`,
-						onClick: () => browsePath({Comp, path: state.uploadDir}),
-					})
-				}
+				rp.BrowseUploadedAPI.forceUpdate({
+					title: `${state.isButtonBrowseUploaded ? BTN_BROWSE_UPLOADED : ''}`,
+					onClick: () => browsePath({Comp, path: state.uploadDir}),
+				})
 			});
 
 			return () => {
@@ -345,6 +345,7 @@ const initialState = {
 	countNewPhotos: 0,
 	isHelp: false,
 	isCopyCompleted: false,
+	isButtonBrowseUploaded: false,
 	files: [],
-	uploadErrors: [],
+	uploadErrors: {},
 };
