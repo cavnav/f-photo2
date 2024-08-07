@@ -39,17 +39,17 @@ function render() {
 					steps={steps}
 				/> 
 			:	<>
-				{isUploadErrors && <div className='error'>файлы загружены. но не удалось загрузить следующие файлы:</div>}										
+				{isUploadErrors && <div className='error'>некоторые файлы не удалось загрузить:</div>}										
 				<BrowseBase
 					className="scroll"
 				>					
 					<div className={styles.filesList}>
 						{state.files.map((file) => {
-							const error = state.uploadErrors[file.name]?.error;
+							const errors = state.uploadErrors[file.name]?.join('');
 							return (
 								<File key={file.name} 
 									file={file} 
-									error={error}
+									errors={errors}
 								/>
 							);
 						})}
@@ -218,26 +218,40 @@ function onSelectFiles({e, Comp}) {
 	setState({
 		files: Array.from(e.target.files),
 		isButtonBrowseUploaded: false,
+		isButtonUpload: true,
 		isUploadErrors: false,
 	});
 }
 
 async function onUpload({files, Comp}) {		
-	let batchSize;
 	const uploadErrors = {};
+	let batchSize;
 	let batchFiles = [files[0]];
+	let uploadDir;
 
-    for (let index = 0; batchFiles.length; index += batchSize) {  		
-		const response = await batchUpload({files: batchFiles});
+    for (let index = 1; batchFiles.length > 0; index += batchSize) {  		
+		const response = await batchUpload({files: batchFiles, uploadDir});
 
-		if (response.batchSize) {
-			batchSize = response.batchSize;
-		}
+		batchSize = index === 1 ? 7 : response.batchSize ?? 1
+		uploadDir = response.uploadDir;
 
 		Object.assign(
 			uploadErrors,
 			response.errors
-		);
+		)
+
+		console.log(response)
+
+		if (response.error) {
+			batchFiles.reduce(
+				(result, file) => {
+					result[file.name] = result[file.name] ?? []
+					result[file.name].push(response.error)
+					return result
+				}, 
+				uploadErrors
+			)
+		}
 
 		batchFiles = files.slice(index, index + batchSize);	
     }		
@@ -247,12 +261,17 @@ async function onUpload({files, Comp}) {
 	});
 	
 
-	const {state, setState} = Comp.getDeps();
+	const {setState} = Comp.getDeps();
 
-	if (filesWithError.length) {
-		setState({files: filesWithError, uploadErrors});
+	if (filesWithError.length > 0) {
+		setState({
+			files: filesWithError, 
+			uploadErrors, 
+			isButtonUpload: false,
+			uploadDir,
+		});
 		
-		if (state.isButtonBrowseUploaded === false && filesWithError.length < files.length) {
+		if (filesWithError.length < files.length) {
 			setState({isButtonBrowseUploaded: true});
 		}
 	} 
@@ -261,25 +280,32 @@ async function onUpload({files, Comp}) {
 	}
 
 	// ----------------------
-	async function batchUpload({files}) {
-		const data = new FormData();
+	function batchUpload({files, uploadDir}) {
+		const data = new FormData()
 	
 		for (const file of files) {
-			data.append('files', file);
+			data.append('files', file)
 		}
-	
-		const rp = Comp.getReqProps();
 
-		return await rp.server.upload({
+		if (uploadDir) {
+			data.append('uploadDir', uploadDir)
+		}
+
+		const rp = Comp.getReqProps()
+		
+		return rp.server.upload({
 			data,
-		});	
+		}).catch((errors) => {
+			console.log('errors', errors)
+			return errors
+		})
 	}
 }
 
 function browsePath({Comp, path}) {
 	const {AppAPI, Browse, BrowseAPI} = Comp.getReqProps();
 
-	BrowseAPI.setForwardPath({path});
+	BrowseAPI.setToResumeObj({val: {path}});
 
 	AppAPI.setState({
 		action: Browse.name,
@@ -305,12 +331,13 @@ function useRenderAddPanel({Comp}) {
 				actions,
 			})
 			.then(() => {		
-				if (state.files.length) {
-					rp.UploadFilesAPI.forceUpdate({
-						title: `${BTN_UPLOAD_FILES} - ${state.files.length}`,
-						onClick: () => onUpload({files: state.files, Comp}),
-					});
-				}
+				rp.UploadFilesAPI.forceUpdate({
+					title: !(state.files.length && state.isButtonUpload) ? '' : `${BTN_UPLOAD_FILES} - ${state.files.length}`,
+					onClick: () => {							
+						onUpload({files: state.files, Comp});
+					}
+				});
+
 				rp.BrowseUploadedAPI.forceUpdate({
 					title: `${state.isButtonBrowseUploaded ? BTN_BROWSE_UPLOADED : ''}`,
 					onClick: () => browsePath({Comp, path: state.uploadDir}),
@@ -346,6 +373,8 @@ const initialState = {
 	isHelp: false,
 	isCopyCompleted: false,
 	isButtonBrowseUploaded: false,
+	isButtonUpload: false,
 	files: [],
 	uploadErrors: {},
+	uploadDir: undefined,
 };

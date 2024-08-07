@@ -18,8 +18,8 @@ async function fetchUpd(...params) {
 		const result = await response.json();
 
 		if (result.error) {
-			notifyServerError(result.error.message);	
-			return Promise.reject(result.error);
+			notifyServerError(result.error);	
+			return Promise.reject(result);
 		}
 
 		return result;

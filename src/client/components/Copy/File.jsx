@@ -2,7 +2,7 @@ import React, {useState, useEffect} from 'react';
 import styles from './styles.module.css';
 import classNames from 'classnames';
 
-export function File({file, error}) {
+export function File({file, errors}) {
     const [url, setUrl] = useState('');
   
     useEffect(() => {
@@ -21,13 +21,13 @@ export function File({file, error}) {
     return (
       <div className={classNames({
         [styles.file]: true,
-        [styles.uploadError]: Boolean(error),
+        [styles.uploadError]: errors?.length > 0,
       })}>
         <img
           src={url}
         />
         <div>{file.name}</div>
-        <div className='error'>{error}</div>
+        <div className='error'>{errors}</div>
       </div>
     );
   };

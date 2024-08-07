@@ -57,6 +57,7 @@ module.exports = {
 			'/api': 'http://localhost:3000',
 			'/': 'http://localhost:3000',
 		},
+		client: {overlay: false},
 	},
 	plugins: [
 		new CleanWebpackPlugin(),

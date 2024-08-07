@@ -42,10 +42,9 @@ const UPLOAD_FILE_SIZE_MB = 4;
 const UPLOAD_FILE_SIZE_BYTES = UPLOAD_FILE_SIZE_MB * 1024 * 1024;
 const SERVER_ERROR = {error: 'произошла ошибка. повтори свое действие или обратись за помощью'};
 const UPLOAD_ERRORS = {
-	unexpectedFileType({file}) {
+	unexpectedFileType() {
 		return [
-			`требуется: изображение, pdf.`,
-			`получен: ${file}`
+			`требуется: изображение, pdf.`
 		].join('\n');
 	},
 	limitFileSize() {
@@ -70,7 +69,7 @@ let state = {
 	usbDriveLetter: undefined,
 	reqBody: {},
 	error: '',
-	uploadDir: undefined,
+	uploadDir: undefined, // not setted from request.
 };
 
 
@@ -100,7 +99,19 @@ const saveFilesToMemory = multer({
 	storage: multer.memoryStorage(),
 }).array('files', UPLOAD_BATCH_COUNT);
 
-app.post('/api/upload', saveFilesToMemory, checkFiles, ensureUploadDir, uploadFiles);
+app.post('/api/upload', 
+	(req, res, next) => saveFilesToMemory(req, res, (error) => {
+		if (error) {
+			console.error('saveFilesToMemory: ', error)
+			res.status(500).json(SERVER_ERROR)
+			return
+		}
+		next();
+	}), 
+	checkFiles, 
+	ensureUploadDir, 
+	uploadFiles
+);
 
 app.post('/api/getImageMeta', async (request, response) => {
     try {
@@ -1129,44 +1140,54 @@ function checkFiles (req, res, next) {
 	const errors = req.customData.errors;
 	
 	for (const file of req.files) {
+		const fileErrors = []
+
 		if (
 			!file.mimetype.match(/^image\//) && 
 			!file.mimetype.match(/^application\/pdf$/)
 		) {		
-			errors[file.originalname] = {error: UPLOAD_ERRORS.unexpectedFileType({file: file.originalname})};					
+			fileErrors.push(UPLOAD_ERRORS.unexpectedFileType());					
 		}
-		else if (file.size > UPLOAD_FILE_SIZE_BYTES) {
-			errors[file.originalname] = {error: UPLOAD_ERRORS.limitFileSize()};					
-		}		
-		else {
-			files.push(file);
+		if (file.size > UPLOAD_FILE_SIZE_BYTES) {
+			fileErrors.push(UPLOAD_ERRORS.limitFileSize());					
 		}	
+		
+		if (fileErrors.length === 0) {
+			files.push(file)
+		}	
+		else {
+			errors[file.originalname] = fileErrors
+		}
 	}		
+
+	if (files.length > 0) {
+		next();
+	}
+}
+
+async function ensureUploadDir(req, res, next) {
+	if (!state.uploadDir || state.uploadDir !== req.body.uploadDir) {
+		const dir = getCurMoment();
+		req.customData.uploadPath = path.resolve(ALBUM_DIR, dir);
+		setState({uploadDir: dir});
+
+		try {
+			await fs.mkdir(req.customData.uploadPath, { recursive: true });
+		}
+		catch (error) {
+			res.status(500).json(SERVER_ERROR);
+			return;
+		}		
+	}
+
+	req.customData.uploadPath = path.resolve(ALBUM_DIR, state.uploadDir);
 
 	next();
 }
 
-async function ensureUploadDir(req, res, next) {
-    const uploadDir = state.uploadDir ?? path.resolve(ALBUM_DIR, getCurMoment());
-
-    try {
-        // Проверяем существование папки или создаем её
-        await fs.access(uploadDir).catch(async () => {
-            await fs.mkdir(uploadDir, { recursive: true });
-        });
-
-		setState({uploadDir});
-
-        next();
-    } catch (error) {
-        // В случае ошибки передаем ошибку в глобальный обработчик
-        res.status(500).json(SERVER_ERROR);
-    }
-}
-
 function uploadFiles(req, res, next) {	
 	try {
-		const {errors, files} = req.customData;
+		const {errors, files, uploadPath} = req.customData;
 		const lastIndex = files.length - 1;		
 		
 		uploadNextFile({index: 0});
@@ -1174,23 +1195,30 @@ function uploadFiles(req, res, next) {
 		//---------------------------------------------------
 
 		function uploadNextFile({index}) {
+			const result = {
+				batchSize: UPLOAD_BATCH_COUNT,
+				uploadDir: getWebSrc({src: path.sep + state.uploadDir}),
+				...(Object.keys(errors).length > 0 ? {errors} : false),
+			}
+
 			// Все файлы обработаны
-			if (index > lastIndex) {
+			if (index > lastIndex) {				
+
 				if (Object.keys(errors).length > 0) {
-					res.status(500).json({batchSize: UPLOAD_BATCH_COUNT, errors});
+					res.status(500).json(result);
 					return;
 				}
 				
-				res.json({batchSize: UPLOAD_BATCH_COUNT, uploadDir: path.relative(ALBUM_DIR, state.uploadDir)});
+				res.json(result);
 				return;
 			}
 
 			const file = files[index];
-			const filePath = getUniqueFilePath(state.uploadDir, file.originalname);
+			const filePath = getUniqueFilePath(uploadPath, file.originalname);
 
-			fs.writeFile(filePath, file.buffer, (err) => {
-				if (err) {
-					errors[file.originalname] = {error: UPLOAD_ERRORS.saveDisk()};
+			fs.writeFile(filePath, file.buffer, (error) => {
+				if (error) {
+					errors[file.originalname] = [UPLOAD_ERRORS.saveDisk()];
 				}
 				
 				uploadNextFile({index: index + 1});
@@ -1198,6 +1226,7 @@ function uploadFiles(req, res, next) {
 		};
 	}
 	catch(error) {
+		console.error('uploadFiles: ' + error);
 		res.status(500).json(SERVER_ERROR);
 	}
 }
@@ -1225,3 +1254,24 @@ function getUniqueFilePath(dir, filename) {
 
     return filePath;
 };
+
+// save to future.
+async function checkValidPath({uploadDir}) {
+    // Проверяем, что uploadDir состоит из одной папки
+    if (!uploadDir || uploadDir.split(path.sep).length !== 1) {
+        return Promise.resolve(undefined);
+    }
+
+    // Преобразуем uploadDir в абсолютный путь относительно ALBUM_DIR
+    const absolutePath = path.resolve(ALBUM_DIR, uploadDir);
+
+    try {
+        // Проверяем, что путь существует и это директория
+        await fs.access(absolutePath); // Проверяем доступность пути
+        const stats = await fs.stat(absolutePath); // Получаем информацию о пути
+        return Promise.resolve(stats.isDirectory() ? absolutePath : undefined); // Проверяем, что это директория
+    } catch (err) {
+        console.err('checkValidPath' + err);
+        return Promise.resolve(undefined);
+    }
+}
