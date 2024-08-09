@@ -1186,10 +1186,17 @@ async function ensureUploadDir(req, res, next) {
 }
 
 function uploadFiles(req, res, next) {	
-	try {
-		const {errors, files, uploadPath} = req.customData;
-		const lastIndex = files.length - 1;		
-		
+	const {errors, files, uploadPath} = req.customData;
+	const lastIndex = files.length - 1;	
+	let notUploaded = files.reduce(
+		(result, file) => {
+			result[file.originalname] = []
+			return result
+		},
+		{}
+	)
+
+	try{					
 		uploadNextFile({index: 0});
 
 		//---------------------------------------------------
@@ -1220,6 +1227,8 @@ function uploadFiles(req, res, next) {
 				if (error) {
 					errors[file.originalname] = [UPLOAD_ERRORS.saveDisk()];
 				}
+
+				delete notUploaded[file.originalname]
 				
 				uploadNextFile({index: index + 1});
 			});
@@ -1227,7 +1236,10 @@ function uploadFiles(req, res, next) {
 	}
 	catch(error) {
 		console.error('uploadFiles: ' + error);
-		res.status(500).json(SERVER_ERROR);
+		res.status(500).json({
+			...SERVER_ERROR,
+			files: notUploaded,
+		})
 	}
 }
 

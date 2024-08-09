@@ -240,16 +240,16 @@ async function onUpload({files, Comp}) {
 			response.errors
 		)
 
-		console.log(response)
-
 		if (response.error) {
-			batchFiles.reduce(
-				(result, file) => {
-					result[file.name] = result[file.name] ?? []
-					result[file.name].push(response.error)
-					return result
-				}, 
-				uploadErrors
+			Object.assign(
+				uploadErrors,
+				response.files ?? batchFiles.reduce(
+					(result, file) => {
+						result[file.name] = []
+						return result
+					},
+					{}
+				)
 			)
 		}
 
