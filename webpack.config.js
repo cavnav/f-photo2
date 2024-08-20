@@ -9,6 +9,7 @@ module.exports = {
 		path: path.join(__dirname, 'dist'),
 		filename: 'bundle.js',
 	},
+	devtool: 'inline-source-map',
 	module: {
 		rules: [
 			{
@@ -54,8 +55,12 @@ module.exports = {
 	devServer: {
 		port: 3001,
 		proxy: {
-			'/api': 'http://localhost:3000',
-			'/': 'http://localhost:3000',
+			'/api': {
+				target: 'http://localhost:3000', 
+				changeOrigin: true, 
+				timeout: 10000, // 10 секунд
+				keepAlive: true,
+			  },
 		},
 		client: {overlay: false},
 	},

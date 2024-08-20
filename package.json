@@ -6,7 +6,7 @@
   "scripts": {
     "build": "webpack --mode production",
     "startb": "npm run build && set NODE_ENV=production && npm run server",
-    "client": "webpack-dev-server --mode development --devtool inline-source-map --hot",
+    "client": "webpack-dev-server --mode development",
     "server": "nodemon src/server/index.js",
     "serverp": "set NODE_ENV=production && npm run server",
     "start": "concurrently \"npm run server\" \"npm run client\"",

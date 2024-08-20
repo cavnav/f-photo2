@@ -233,7 +233,7 @@ async function onUpload({files, Comp}) {
 		const response = await batchUpload({files: batchFiles, uploadDir});
 
 		batchSize = index === 1 ? 7 : response.batchSize ?? 1
-		uploadDir = response.uploadDir;
+		uploadDir = uploadDir ?? response.uploadDir;
 
 		Object.assign(
 			uploadErrors,

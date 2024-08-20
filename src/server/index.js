@@ -100,14 +100,16 @@ const saveFilesToMemory = multer({
 }).array('files', UPLOAD_BATCH_COUNT);
 
 app.post('/api/upload', 
-	(req, res, next) => saveFilesToMemory(req, res, (error) => {
-		if (error) {
-			console.error('saveFilesToMemory: ', error)
-			res.status(500).json(SERVER_ERROR)
-			return
-		}
-		next();
-	}), 
+	(req, res, next) => {
+		return res.status(500).json(SERVER_ERROR);
+		// saveFilesToMemory(req, res, (error) => {
+		// 	return res.status(500).json(SERVER_ERROR);
+		// 	if (error) {
+		// 		return res.status(500).json(SERVER_ERROR);
+		// 	}
+		// 	next();
+		// });
+	}, 
 	checkFiles, 
 	ensureUploadDir, 
 	uploadFiles
@@ -1236,7 +1238,7 @@ function uploadFiles(req, res, next) {
 	}
 	catch(error) {
 		console.error('uploadFiles: ' + error);
-		res.status(500).json({
+		return res.status(500).json({
 			...SERVER_ERROR,
 			files: notUploaded,
 		})

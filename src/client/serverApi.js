@@ -26,7 +26,7 @@ async function fetchUpd(...params) {
 	} 
 	catch (error) {
 		notifyServerError(error);
-		return Promise.reject();
+		return Promise.reject(error);
 	}
 }
 
