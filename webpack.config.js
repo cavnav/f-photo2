@@ -2,12 +2,14 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const { WDS_PORT } = require('./config');
 
 module.exports = {
 	entry: ['./src/client/index.js'],
 	output: {
-		path: path.join(__dirname, 'dist'),
+		path: path.resolve(__dirname, 'dist'),
 		filename: 'bundle.js',
+		publicPath: '/'
 	},
 	devtool: 'inline-source-map',
 	module: {
@@ -53,22 +55,22 @@ module.exports = {
 		extensions: ['*', '.js', '.jsx'],
 	},
 	devServer: {
-		port: 3001,
+		port: WDS_PORT,
 		proxy: {
-			'/api': {
-				target: 'http://localhost:3000', 
-				changeOrigin: true, 
-				timeout: 10000, // 10 секунд
-				keepAlive: true,
-			  },
-		},
-		client: {overlay: false},
+			'/': {
+				target: 'http://localhost:3000', // Замените на адрес вашего веб-сервера, обслуживающего Z:/album
+			  	changeOrigin: true, 
+			}
+		},		
+		client: {
+			overlay: false
+		}
 	},
 	plugins: [
 		new CleanWebpackPlugin(),
 		new HtmlWebpackPlugin({
 			template: './public/index.html',
-			favicon: './assets/favicon.png',
+			favicon: './assets/favicon.ico',
 			inject: 'body', // This line is important for injecting CSS.
 		}),
 		new MiniCssExtractPlugin({

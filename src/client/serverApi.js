@@ -1,4 +1,6 @@
 import { ProgressTitle, getChannelComps, loader, notifyServerError } from "./functions";
+import { API_URL } from "../../config";
+
 
 class PostObjTmp {
 	constructor({ body = {} } = {}) {
@@ -43,7 +45,7 @@ function fetchWithLoader(...params) {
 
 export class AppServerAPI {
 	getFullUrl({ url }) {
-		return `/api/${url}`;
+		return `${API_URL}/api/${url}`;
 	}
 
 	// не смог использовать function - declaration. В channel.addAPI контекст теряется.
