@@ -235,15 +235,17 @@ async function onUpload({files, Comp}) {
 		batchSize = index === 1 ? 7 : response.batchSize ?? 1
 		uploadDir = uploadDir ?? response.uploadDir;
 
+		// if known errors.
 		Object.assign(
 			uploadErrors,
 			response.errors
 		)
 
+		// if unknown errors.
 		if (response.error) {
 			Object.assign(
 				uploadErrors,
-				response.files ?? batchFiles.reduce(
+				(response.files ?? batchFiles).reduce(
 					(result, file) => {
 						result[file.name] = []
 						return result
@@ -282,7 +284,7 @@ async function onUpload({files, Comp}) {
 	// ----------------------
 	function batchUpload({files, uploadDir}) {
 		const data = new FormData()
-	
+
 		for (const file of files) {
 			data.append('files', file)
 		}
@@ -293,12 +295,13 @@ async function onUpload({files, Comp}) {
 
 		const rp = Comp.getReqProps()
 		
-		return rp.server.upload({
-			data,
-		}).catch((errors) => {
-			console.log('errors', errors)
-			return errors
-		})
+		return  (
+			rp.server.upload({
+				data,
+			}).catch((errors) => {
+				return errors
+			})
+		)
 	}
 }
 

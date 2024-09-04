@@ -39,9 +39,10 @@ const SEP = '/'; // for web src.
 const SYS_SRC_REG_EXP = new RegExp('[\\\\/]', 'g');
 const WEB_SRC_REG_EXP = new RegExp(SEP, 'g');
 const UPLOAD_BATCH_COUNT = 5;
+const MAX_CONTENT_LENGTH = 15 * 1024 * 1024;
 const UPLOAD_FILE_SIZE_MB = 4;
 const UPLOAD_FILE_SIZE_BYTES = UPLOAD_FILE_SIZE_MB * 1024 * 1024;
-const SERVER_ERROR = {error: 'произошла ошибка. повтори свое действие или обратись за помощью'};
+const SERVER_ERROR = `произошла ошибка. повтори свое действие или обратись за помощью`
 const UPLOAD_ERRORS = {
 	unexpectedFileType() {
 		return [
@@ -53,6 +54,9 @@ const UPLOAD_ERRORS = {
 	},
 	saveDisk() {
 		return `ошибка загрузки`;
+	},
+	batchLimitExceeded() {
+		return `превышен объем пачки: ${MAX_CONTENT_LENGTH}`
 	}
 }
 
@@ -97,21 +101,13 @@ app.listen(PORT, IP_ADDRESS, () => {
 	console.log(`Сервер также доступен по адресу http://${IP_ADDRESS_EXTERNAL}:${PORT}/`);
 });
 
-const saveFilesToMemory = multer({
-	storage: multer.memoryStorage(),
-}).array('files', UPLOAD_BATCH_COUNT);
+const upload = multer({
+	storage: multer.memoryStorage(),	
+})
 
 app.post('/api/upload', 
-	(req, res, next) => {
-		return res.status(500).json(SERVER_ERROR);
-		// saveFilesToMemory(req, res, (error) => {
-		// 	return res.status(500).json(SERVER_ERROR);
-		// 	if (error) {
-		// 		return res.status(500).json(SERVER_ERROR);
-		// 	}
-		// 	next();
-		// });
-	}, 
+	checkContent, 
+	getFiles, // fill req.files and req.body. 
 	checkFiles, 
 	ensureUploadDir, 
 	uploadFiles
@@ -715,7 +711,32 @@ app.post('/api/saveSettings', (req, res) => {
 		});
 });
 
+app.use((err, req, res, next) => {
+    console.error('global errors: ' + err.stack); // Логирование ошибки в консоль
+})
 
+
+function getUploadedResult({errors, uploadDir}) {	
+	return {
+		batchSize: UPLOAD_BATCH_COUNT,
+		uploadDir,
+		...(Object.keys(errors).length > 0 ? {errors} : false),
+	}
+}
+
+function sendUploadedError({error, errors, files}) {
+	if (error) {
+		console.error(error)
+	}
+
+	const result = {
+		error: SERVER_ERROR,		
+		errors,
+		files,
+	}
+
+	return result
+}
 
 function setProgress({
 	iterationNumber = state.iterationNumber + 1,
@@ -1134,14 +1155,13 @@ function getIPv4Address() {
     return 'localhost'; // Default to localhost if no IPv4 address is found
 }
 
-function checkFiles (req, res, next) {
-	req.customData = {	
-		files: [],
-		errors: {},
-	};
+function checkFiles (req, res, next) {	
+	req.customData = req.customData ?? {}
+	req.customData.files = []
+	req.customData.errors = {}
 
-	const files = req.customData.files;
-	const errors = req.customData.errors;
+	const files = req.customData.files
+	const errors = req.customData.errors
 	
 	for (const file of req.files) {
 		const fileErrors = []
@@ -1164,33 +1184,43 @@ function checkFiles (req, res, next) {
 		}
 	}		
 
-	if (files.length > 0) {
-		next();
-	}
+	next()
 }
 
 async function ensureUploadDir(req, res, next) {
-	if (!state.uploadDir || state.uploadDir !== req.body.uploadDir) {
-		const dir = getCurMoment();
-		req.customData.uploadPath = path.resolve(ALBUM_DIR, dir);
-		setState({uploadDir: dir});
+	console.error('ensureUploadDir')	
 
-		try {
-			await fs.mkdir(req.customData.uploadPath, { recursive: true });
+	let uploadDir = req.body.uploadDir
+		
+	if (!state.uploadDir || state.uploadDir !== uploadDir) {
+		uploadDir = getCurMoment()		
+	} 
+
+	req.customData.uploadDir = uploadDir
+	req.customData.uploadPath = path.resolve(ALBUM_DIR, uploadDir)			
+	
+	fs.access(req.customData.uploadPath, (error) => { 
+		if (error) {
+			fs.mkdir(
+				req.customData.uploadPath, 
+				(error) => {
+					if (error) {
+						return res.status(500).json(sendUploadedError({error, errors:[]}))	
+					}			
+					
+					next()
+				}
+			);
+		} else { 
+			next()
 		}
-		catch (error) {
-			res.status(500).json(SERVER_ERROR);
-			return;
-		}		
-	}
-
-	req.customData.uploadPath = path.resolve(ALBUM_DIR, state.uploadDir);
-
-	next();
+	})
 }
 
 function uploadFiles(req, res, next) {	
-	const {errors, files, uploadPath} = req.customData;
+	console.error('uploadFiles')	
+	const {errors, files, uploadPath, uploadDir} = req.customData;
+
 	const lastIndex = files.length - 1;	
 	let notUploaded = files.reduce(
 		(result, file) => {
@@ -1198,30 +1228,27 @@ function uploadFiles(req, res, next) {
 			return result
 		},
 		{}
-	)
+	)					
 
-	try{					
+	try {		
 		uploadNextFile({index: 0});
 
-		//---------------------------------------------------
+		function uploadNextFile({index}) {			
 
-		function uploadNextFile({index}) {
-			const result = {
-				batchSize: UPLOAD_BATCH_COUNT,
-				uploadDir: getWebSrc({src: path.sep + state.uploadDir}),
-				...(Object.keys(errors).length > 0 ? {errors} : false),
-			}
+			// all files are processed.
+			if (index > lastIndex) {								
 
-			// Все файлы обработаны
-			if (index > lastIndex) {				
+				const result = getUploadedResult({errors, uploadDir})
+
+				setState({
+					uploadDir
+				})
 
 				if (Object.keys(errors).length > 0) {
-					res.status(500).json(result);
-					return;
+					return res.status(500).json(result);
 				}
 				
-				res.json(result);
-				return;
+				return res.json(result);
 			}
 
 			const file = files[index];
@@ -1229,6 +1256,7 @@ function uploadFiles(req, res, next) {
 
 			fs.writeFile(filePath, file.buffer, (error) => {
 				if (error) {
+					console.error(`uploadFiles: ${error}`)
 					errors[file.originalname] = [UPLOAD_ERRORS.saveDisk()];
 				}
 
@@ -1239,11 +1267,11 @@ function uploadFiles(req, res, next) {
 		};
 	}
 	catch(error) {
-		console.error('uploadFiles: ' + error);
-		return res.status(500).json({
-			...SERVER_ERROR,
+		return res.status(500).json(sendUploadedError({
+			error: 'uploadFiles: ' + error,
+			errors,
 			files: notUploaded,
-		})
+		}))
 	}
 }
 
@@ -1270,6 +1298,38 @@ function getUniqueFilePath(dir, filename) {
 
     return filePath;
 };
+
+function checkContent(req, res, next) {
+	let error
+
+	// check Content-Type
+	const contentType = req.headers['content-type'];
+	if (!contentType || !contentType.startsWith('multipart/form-data')) {			
+		error = `content-type error`
+	}
+
+	// check Content-Length
+	const contentLength = parseInt(req.headers['content-length'], 10);
+	if (contentLength > MAX_CONTENT_LENGTH) {
+		error = `${UPLOAD_ERRORS.batchLimitExceeded()}`
+	}
+	
+	if (!error) {
+		return next()
+	}
+
+	return res.status(500).json(sendUploadedError({error: `check content: ${error}`, errors: []}))		
+}
+
+function getFiles(req, res, next) {	
+	upload.array('files')(req, res, (error) => {
+		if (error) {				
+			return res.status(500).json(sendUploadedError({error: `upload: ${error}`, errors: []}))						
+		}
+		
+		next();
+	});
+} 
 
 // save to future.
 async function checkValidPath({uploadDir}) {

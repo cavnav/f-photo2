@@ -12,6 +12,18 @@ module.exports = {
 		publicPath: '/'
 	},
 	devtool: 'inline-source-map',
+	devServer: {
+		port: WDS_PORT,		
+		proxy: {
+			'/': {
+				target: 'http://localhost:3000', // Замените на адрес вашего веб-сервера, обслуживающего Z:/album
+				changeOrigin: true, 
+			}
+		},		
+		client: {
+			overlay: false
+		}
+	},
 	module: {
 		rules: [
 			{
@@ -53,18 +65,6 @@ module.exports = {
 	},
 	resolve: {
 		extensions: ['*', '.js', '.jsx'],
-	},
-	devServer: {
-		port: WDS_PORT,
-		proxy: {
-			'/': {
-				target: 'http://localhost:3000', // Замените на адрес вашего веб-сервера, обслуживающего Z:/album
-			  	changeOrigin: true, 
-			}
-		},		
-		client: {
-			overlay: false
-		}
 	},
 	plugins: [
 		new CleanWebpackPlugin(),

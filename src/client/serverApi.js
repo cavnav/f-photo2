@@ -14,7 +14,7 @@ class PostObjTmp {
 	}
 };
 
-async function fetchUpd(...params) {
+async function fetchUpd(params) {
 	try {
 		const response = await fetch.apply(null, params);
 		const result = await response.json();
@@ -35,7 +35,7 @@ async function fetchUpd(...params) {
 function fetchWithLoader(...params) {
 	const timerId = setTimeout(() => loader({isActive: true}), 500);
 
-	return fetchUpd(...params)
+	return fetchUpd(params)
 		.then((response) => response)
 		.finally(() => {
 			clearTimeout(timerId);
@@ -45,7 +45,7 @@ function fetchWithLoader(...params) {
 
 export class AppServerAPI {
 	getFullUrl({ url }) {
-		return `${API_URL}/api/${url}`;
+		return `/api/${url}`;
 	}
 
 	// не смог использовать function - declaration. В channel.addAPI контекст теряется.
